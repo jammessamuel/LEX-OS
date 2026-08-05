@@ -27,3 +27,7 @@ tmp/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+
+# Agent harness: shared rules and hooks are tracked, machine-local overrides are not
+.claude/settings.local.json
+.claude/*.local.json
