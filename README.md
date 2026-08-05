@@ -34,7 +34,9 @@ This repository contains **Delivery 7 — Persistent mock processing pipeline**.
 - API liveness, readiness, and process metrics;
 - named development volumes for PostgreSQL, Redis, and MinIO.
 
-Read [`AGENTS.md`](./AGENTS.md), the [local development guide](./docs/architecture/local-development.md), and the documents under [`docs/`](./docs/) before changing the system.
+Read [`AGENTS.md`](./AGENTS.md), the [local development guide](./docs/architecture/local-development.md), and the documents under [`docs/`](./docs/) before changing the system. [`CLAUDE.md`](./CLAUDE.md) is the routing table an agent should read first.
+
+[Roadmap alignment](./docs/product/roadmap-alignment.md) maps the conceptual proposal's 11 components and 4 phases onto the 12 deliveries, and records the four decisions that are still open.
 
 ## Prerequisites
 
@@ -148,6 +150,7 @@ Use `pnpm db:migrate:dev --name <descriptive_name>` only to create a reviewed fo
 - no e-mail adapter despite local Mailpit;
 - no legal workflow UI or real AI provider;
 - production object retention, legal hold, backup/restore, and irreversible purge policies remain governance blockers;
-- no CI workflow or Git hooks because Git has not been initialized.
+- CI runs the format, lint, typecheck, unit, build, migration-validation, Compose-config, and integration gates, but the full Playwright end-to-end matrix and dependency review remain scheduled for Delivery 11;
+- Git hooks cover commit-message policy only; a pre-commit lint/format gate is not installed yet.
 
 The next proposed checkpoint is **Delivery 8 — Timeline and checklist review**, subject to explicit authorization.

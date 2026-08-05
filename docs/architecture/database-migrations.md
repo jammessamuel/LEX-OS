@@ -15,6 +15,8 @@
 
 The generated Prisma client is ignored build output. Applications import the database package, which constructs Prisma Client with the pinned PostgreSQL driver adapter and exposes a bounded interactive-transaction helper.
 
+`packages/database` declares `react` and `react-dom` as development dependencies even though no source file imports them. The reason is transitive: `prisma@7.9.1` depends on `@prisma/studio-core@0.33.0`, which declares `react` and `react-dom` as peer dependencies, and this workspace runs with `strictPeerDependencies: true`. Without explicit declarations the peers are unsatisfied and `pnpm install` fails. Both versions are also listed in `minimumReleaseAgeExclude` in `pnpm-workspace.yaml` for the same reason. Remove them only after confirming that the installed Prisma release no longer pulls Studio into the CLI tree.
+
 ## Initial SQL review
 
 The migration creates 22 PostgreSQL enums and 24 application/support tables. Prisma generated the tables, UUID/timestamptz columns, ordinary/unique indexes, and foreign keys. The migration was then amended in the same review with capabilities that the Prisma schema cannot fully express:

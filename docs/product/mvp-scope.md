@@ -185,7 +185,18 @@ The first executable MVP is accepted when:
 
 ## Open product decisions
 
-These questions do not block the documentation/foundation bootstrap, but they must be resolved before their affected deliveries:
+Four of these have grown past a table row and now have their own decision records, each with options and a recommended conservative default awaiting a partner decision:
+
+| Question                                     | Record                                                       |
+| -------------------------------------------- | ------------------------------------------------------------ |
+| Scope of the internal assistant              | [ADR-009](../decisions/ADR-009-internal-assistant-scope.md)  |
+| Ingestion channels and WhatsApp positioning  | [ADR-010](../decisions/ADR-010-ingestion-channels.md)        |
+| Processing cost model and provider selection | [ADR-011](../decisions/ADR-011-processing-cost-model.md)     |
+| Retention, legal hold, and LGPD posture      | [ADR-012](../decisions/ADR-012-retention-legal-hold-lgpd.md) |
+
+See [roadmap alignment](./roadmap-alignment.md) for how this scope maps onto the conceptual proposal's 11 components and 4 phases.
+
+The remaining questions do not block the documentation/foundation bootstrap, but they must be resolved before their affected deliveries:
 
 | Decision                    | Conservative MVP default                               | Required before                     |
 | --------------------------- | ------------------------------------------------------ | ----------------------------------- |

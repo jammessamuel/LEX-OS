@@ -105,6 +105,11 @@ export class PipelineProcessorService {
         };
       }
       case 'VIRUS_SCAN':
+        // Deliberate fail-closed placeholder. Delivery 7 ships no scanner adapter, so a file
+        // that reached quarantine must never be released: every attempt is rejected, the
+        // bounded retries are exhausted, and the job reaches a terminal failure with the
+        // object still quarantined. Replacing this with a real scanner is a Delivery 11
+        // production blocker — do not soften it into a pass-through in the meantime.
         throw new RetryableProcessingError(
           'SCANNER_UNAVAILABLE',
           'O serviço de verificação antivírus está temporariamente indisponível.',
