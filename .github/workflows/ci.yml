@@ -1,0 +1,180 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# CI verifies. It never deploys, never publishes, and never touches a real environment.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '24.18.0'
+  PNPM_VERSION: '11.9.0'
+
+jobs:
+  quality:
+    name: Format, lint, typecheck, unit tests, build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      # `prisma validate` needs the datasource variable defined; it never connects here.
+      DATABASE_URL: postgresql://postgres:ci-postgres-password@127.0.0.1:5433/postgres?schema=public
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Database schema and migration validation
+        run: pnpm db:validate
+
+      - name: Build
+        run: pnpm build
+
+      - name: Compose configuration
+        run: pnpm infra:config
+        env:
+          DEPENDENCY_TIMEOUT_MS: '2000'
+          LOG_LEVEL: info
+          WEB_ORIGIN: http://localhost:5173
+          AUTH_ACCESS_TOKEN_SECRET: ci-access-token-secret-000000000000
+          AUTH_ACCESS_TOKEN_TTL_SECONDS: '900'
+          AUTH_REFRESH_TOKEN_TTL_SECONDS: '2592000'
+          AUTH_LOGIN_ATTEMPT_LIMIT: '5'
+          AUTH_LOGIN_ATTEMPT_WINDOW_SECONDS: '900'
+          DATABASE_NAME: postgres
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: ci-postgres-password
+          REDIS_PASSWORD: ci-redis-password
+          PROCESSING_QUEUE_PREFIX: lex-os
+          PROCESSING_JOB_ATTEMPTS: '3'
+          PROCESSING_JOB_BACKOFF_MS: '250'
+          PROCESSING_WORKER_CONCURRENCY: '2'
+          PROCESSING_STALE_AFTER_SECONDS: '60'
+          PROCESSING_RECONCILE_INTERVAL_SECONDS: '30'
+          OBJECT_STORAGE_BUCKET: lex-os-private
+          OBJECT_STORAGE_ACCESS_KEY: ci-minio-access-key
+          OBJECT_STORAGE_SECRET_KEY: ci-minio-secret-key
+          OBJECT_STORAGE_REGION: us-east-1
+          OBJECT_STORAGE_DOWNLOAD_URL_TTL_SECONDS: '60'
+          OBJECT_STORAGE_QUARANTINE_STALE_AFTER_SECONDS: '3600'
+          FILE_INTAKE_MAX_FILE_BYTES: '26214400'
+          FILE_INTAKE_MAX_FILES_PER_REQUEST: '10'
+          FILE_INTAKE_ALLOWED_MIME_TYPES: application/pdf,image/jpeg,image/png,text/plain
+
+  commit-message-guard:
+    name: Commit message guard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Self-test the guard hooks
+        run: bash .githooks/test-commit-msg-guard.sh
+
+      - name: Reject AI attribution in this branch's commits
+        if: github.event_name == 'pull_request'
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          failed=0
+          while IFS= read -r sha; do
+            [ -z "$sha" ] && continue
+            git log -1 --format=%B "$sha" > /tmp/msg
+            if ! sh .githooks/commit-msg /tmp/msg; then
+              echo "  ^ offending commit: $sha"
+              failed=1
+            fi
+          done <<< "$(git rev-list "$base".."$head")"
+          exit "$failed"
+
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # The integration suites call process.loadEnvFile('.env'), so the file must exist.
+      # Values are CI-only and match the Compose defaults; no secret is required.
+      - name: Create CI environment file
+        run: |
+          sed \
+            -e 's|replace-with-at-least-32-random-characters|ci-access-token-secret-000000000000|g' \
+            -e 's|replace-with-local-admin-password|ci-seed-admin-password|g' \
+            -e 's|replace-with-local-redis-password|ci-redis-password|g' \
+            -e 's|replace-with-local-access-key|ci-minio-access-key|g' \
+            -e 's|replace-with-local-secret-key|ci-minio-secret-key|g' \
+            -e 's|replace-with-local-password|ci-postgres-password|g' \
+            .env.example > .env
+          if grep -q 'replace-with' .env; then
+            echo 'A placeholder survived substitution.' >&2
+            grep -n 'replace-with' .env >&2
+            exit 1
+          fi
+
+      # Reuse the same Compose definition developers run locally, so CI and the local
+      # stack cannot drift apart.
+      - name: Start dependencies
+        run: pnpm infra:dependencies
+
+      - name: Apply migrations
+        run: pnpm db:migrate:deploy
+
+      - name: Migration status
+        run: pnpm db:migrate:status
+
+      - name: Seed fictional data
+        run: pnpm db:seed
+
+      - name: Integration tests
+        run: pnpm test:integration
+
+      - name: Dependency logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail 200
+
+      - name: Stop dependencies
+        if: always()
+        run: docker compose down --volumes
