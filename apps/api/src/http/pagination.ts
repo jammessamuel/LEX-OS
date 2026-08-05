@@ -1,4 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
+import { isUuidV4 } from '@lex-os/shared';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
@@ -28,6 +29,40 @@ export interface CursorPage<T> {
 
 export function encodeCursor(value: Readonly<Record<string, string>>): string {
   return Buffer.from(JSON.stringify(value), 'utf8').toString('base64url');
+}
+
+export type TimestampIdCursor<TField extends string> = { [K in TField]: Date } & { id: string };
+
+/**
+ * Builds the keyset-cursor parser shared by every tenant-owned list route.
+ *
+ * Each resource family orders by one timestamp column plus `id` as the tiebreaker, so the
+ * decoded payload is always `{ <timestampField>: ISO string, id: UUID }`. Anything else —
+ * a missing field, an unparseable date, a tampered identifier — returns `undefined`, and
+ * `decodeCursor` turns that into an `INVALID_CURSOR` response rather than letting an
+ * attacker-supplied value reach a query.
+ */
+export function createTimestampIdCursorParser<TField extends string>(
+  timestampField: TField,
+): (value: unknown) => TimestampIdCursor<TField> | undefined {
+  return (value: unknown): TimestampIdCursor<TField> | undefined => {
+    if (value === null || typeof value !== 'object') {
+      return undefined;
+    }
+
+    const candidate = value as Record<string, unknown>;
+    const timestamp = candidate[timestampField];
+
+    if (
+      typeof timestamp !== 'string' ||
+      Number.isNaN(Date.parse(timestamp)) ||
+      !isUuidV4(candidate.id)
+    ) {
+      return undefined;
+    }
+
+    return { [timestampField]: new Date(timestamp), id: candidate.id } as TimestampIdCursor<TField>;
+  };
 }
 
 export function decodeCursor<T>(

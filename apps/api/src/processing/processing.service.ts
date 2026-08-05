@@ -9,7 +9,13 @@ import { CasesService } from '../cases/cases.service.js';
 import { DatabaseService } from '../database/database.service.js';
 import { DocumentsService } from '../documents/documents.service.js';
 import { ApiException } from '../http/api-exception.js';
-import { decodeCursor, encodeCursor, type CursorPage } from '../http/pagination.js';
+import {
+  createTimestampIdCursorParser,
+  decodeCursor,
+  encodeCursor,
+  type CursorPage,
+} from '../http/pagination.js';
+import { MetricsService } from '../observability/metrics.service.js';
 import type { ListProcessingJobsQueryDto } from './dto/list-processing-jobs-query.dto.js';
 import type { ProcessingJobResponseDto } from './dto/processing-job-response.dto.js';
 import { ProcessingQueuePublisher } from './processing-queue.publisher.js';
@@ -19,23 +25,8 @@ import {
   type ProcessingJobRecord,
 } from './processing.repository.js';
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
-
-function parseCursor(value: unknown): ProcessingJobCursor | undefined {
-  if (value === null || typeof value !== 'object') {
-    return undefined;
-  }
-  const candidate = value as Record<string, unknown>;
-  if (
-    typeof candidate.createdAt !== 'string' ||
-    Number.isNaN(Date.parse(candidate.createdAt)) ||
-    typeof candidate.id !== 'string' ||
-    !uuidPattern.test(candidate.id)
-  ) {
-    return undefined;
-  }
-  return { createdAt: new Date(candidate.createdAt), id: candidate.id };
-}
+const parseCursor: (value: unknown) => ProcessingJobCursor | undefined =
+  createTimestampIdCursorParser('createdAt');
 
 function mapJob(record: ProcessingJobRecord): ProcessingJobResponseDto {
   return {
@@ -71,6 +62,7 @@ export class ProcessingService {
     private readonly documents: DocumentsService,
     private readonly audit: AuditService,
     private readonly queue: ProcessingQueuePublisher,
+    private readonly metrics: MetricsService,
   ) {}
 
   async list(
@@ -191,6 +183,9 @@ export class ProcessingService {
         jobType: 'OCR',
       });
     } catch {
+      // The job row is committed; the reconciler republishes it. Count the miss so a queue
+      // outage is visible in metrics instead of only in log noise.
+      this.metrics.recordDeferredEnqueue();
       this.#logger.warn('processing_job_enqueue_deferred', {
         job_id: job.id,
         organization_id: actor.organizationId,

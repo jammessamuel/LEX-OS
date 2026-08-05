@@ -9,7 +9,12 @@ import {
 import type { ActorContext } from '../auth/actor-context.js';
 import { DatabaseService } from '../database/database.service.js';
 import { ApiException } from '../http/api-exception.js';
-import { decodeCursor, encodeCursor, type CursorPage } from '../http/pagination.js';
+import {
+  createTimestampIdCursorParser,
+  decodeCursor,
+  encodeCursor,
+  type CursorPage,
+} from '../http/pagination.js';
 import type { ConfidentialityLevelCode } from './case.constants.js';
 import type { CaseResponseDto } from './dto/case-response.dto.js';
 import type { CreateCaseRequestDto } from './dto/create-case-request.dto.js';
@@ -22,23 +27,8 @@ import {
   type UpdateCaseData,
 } from './cases.repository.js';
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
-
-function parseCaseCursor(value: unknown): CaseCursor | undefined {
-  if (value === null || typeof value !== 'object') {
-    return undefined;
-  }
-  const candidate = value as Record<string, unknown>;
-  if (
-    typeof candidate.updatedAt !== 'string' ||
-    Number.isNaN(Date.parse(candidate.updatedAt)) ||
-    typeof candidate.id !== 'string' ||
-    !uuidPattern.test(candidate.id)
-  ) {
-    return undefined;
-  }
-  return { updatedAt: new Date(candidate.updatedAt), id: candidate.id };
-}
+const parseCaseCursor: (value: unknown) => CaseCursor | undefined =
+  createTimestampIdCursorParser('updatedAt');
 
 function mapCase(record: CaseRecord): CaseResponseDto {
   return {

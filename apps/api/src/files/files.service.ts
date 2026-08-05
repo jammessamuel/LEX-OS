@@ -13,7 +13,13 @@ import { CasesService } from '../cases/cases.service.js';
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
 import { DatabaseService } from '../database/database.service.js';
 import { ApiException } from '../http/api-exception.js';
-import { decodeCursor, encodeCursor, type CursorPage } from '../http/pagination.js';
+import {
+  createTimestampIdCursorParser,
+  decodeCursor,
+  encodeCursor,
+  type CursorPage,
+} from '../http/pagination.js';
+import { MetricsService } from '../observability/metrics.service.js';
 import { ProcessingQueuePublisher } from '../processing/processing-queue.publisher.js';
 import { OBJECT_STORAGE, type ObjectStorage } from '../storage/object-storage.js';
 import type {
@@ -39,8 +45,6 @@ import {
 } from './files.repository.js';
 import { VIRUS_SCANNER, type VirusScanner } from './virus-scanner.js';
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
-
 interface StagedFile {
   fileIndex: number;
   storageKey: string;
@@ -52,21 +56,8 @@ type StagedResult =
   | { accepted: true; staged: StagedFile }
   | { accepted: false; rejection: RejectedFileIntakeResponseDto; error: FileIntakeError };
 
-function parseFileCursor(value: unknown): FileCursor | undefined {
-  if (value === null || typeof value !== 'object') {
-    return undefined;
-  }
-  const candidate = value as Record<string, unknown>;
-  if (
-    typeof candidate.createdAt !== 'string' ||
-    Number.isNaN(Date.parse(candidate.createdAt)) ||
-    typeof candidate.id !== 'string' ||
-    !uuidPattern.test(candidate.id)
-  ) {
-    return undefined;
-  }
-  return { createdAt: new Date(candidate.createdAt), id: candidate.id };
-}
+const parseFileCursor: (value: unknown) => FileCursor | undefined =
+  createTimestampIdCursorParser('createdAt');
 
 function mapFile(record: StoredFileListRecord): FileResponseDto {
   const document = record.documents[0];
@@ -119,6 +110,7 @@ export class FilesService {
     private readonly cases: CasesService,
     private readonly audit: AuditService,
     private readonly processingQueue: ProcessingQueuePublisher,
+    private readonly metrics: MetricsService,
   ) {
     this.#allowedMimeTypes = new Set(config.fileIntake.allowedMimeTypes);
     const unsupported = config.fileIntake.allowedMimeTypes.filter(
@@ -551,6 +543,9 @@ export class FilesService {
         jobType: resources.job.jobType,
       });
     } catch {
+      // The intake transaction is already committed; the reconciler republishes the job.
+      // Count the miss so a queue outage is visible in metrics instead of only in log noise.
+      this.metrics.recordDeferredEnqueue();
       this.#logger.warn('processing_job_enqueue_deferred', {
         job_id: resources.job.id,
         organization_id: actor.organizationId,

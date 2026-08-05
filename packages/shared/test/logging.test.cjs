@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const { describe, it } = require('node:test');
 
-const { redactSensitiveData, writeStructuredLog } = require('../dist/index.js');
+const { isUuidV4, redactSensitiveData, writeStructuredLog } = require('../dist/index.js');
 
 describe('redactSensitiveData', () => {
   it('redacts nested credentials and identity fields', () => {
@@ -57,5 +57,30 @@ describe('redactSensitiveData', () => {
     assert.equal(output.includes('password-secret-value'), false);
     assert.equal(output.includes('bearer-secret-value'), false);
     assert.equal(output.includes('visible'), true);
+  });
+});
+
+describe('isUuidV4', () => {
+  it('accepts canonical v4 identifiers in either case', () => {
+    assert.equal(isUuidV4('00000000-0000-4000-8000-000000000001'), true);
+    assert.equal(isUuidV4('A1B2C3D4-E5F6-4A7B-9C8D-0E1F2A3B4C5D'), true);
+  });
+
+  it('rejects anything that is not a canonical v4 identifier', () => {
+    for (const value of [
+      undefined,
+      null,
+      42,
+      '',
+      'not-a-uuid',
+      '00000000-0000-1000-8000-000000000001', // version 1
+      '00000000-0000-4000-c000-000000000001', // invalid variant nibble
+      '00000000-0000-4000-8000-00000000000', // too short
+      '00000000-0000-4000-8000-0000000000011', // too long
+      ' 00000000-0000-4000-8000-000000000001', // leading space
+      '00000000-0000-4000-8000-000000000001\n', // trailing newline
+    ]) {
+      assert.equal(isUuidV4(value), false, `expected ${JSON.stringify(value)} to be rejected`);
+    }
   });
 });
