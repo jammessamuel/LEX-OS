@@ -12,6 +12,16 @@ export interface MetricsSnapshot {
     residentSet: number;
     heapUsed: number;
   };
+  processing: {
+    /**
+     * Jobs that were committed to PostgreSQL but could not be published to Redis.
+     *
+     * The stale-job reconciler republishes them, so a non-zero value is recoverable rather
+     * than lost work. A value that keeps climbing means the queue is unreachable and every
+     * upload is waiting on reconciliation instead of being processed promptly.
+     */
+    deferredEnqueues: number;
+  };
 }
 
 @Injectable()
@@ -20,12 +30,17 @@ export class MetricsService {
   readonly #byStatusClass = new Map<string, number>();
   #requestCount = 0;
   #totalDurationMs = 0;
+  #deferredEnqueues = 0;
 
   recordRequest(statusCode: number, durationMs: number): void {
     const statusClass = `${Math.floor(statusCode / 100)}xx`;
     this.#requestCount += 1;
     this.#totalDurationMs += durationMs;
     this.#byStatusClass.set(statusClass, (this.#byStatusClass.get(statusClass) ?? 0) + 1);
+  }
+
+  recordDeferredEnqueue(): void {
+    this.#deferredEnqueues += 1;
   }
 
   snapshot(): MetricsSnapshot {
@@ -45,6 +60,9 @@ export class MetricsService {
       memoryBytes: {
         residentSet: memory.rss,
         heapUsed: memory.heapUsed,
+      },
+      processing: {
+        deferredEnqueues: this.#deferredEnqueues,
       },
     };
   }
