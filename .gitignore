@@ -1,0 +1,29 @@
+# Dependencies and caches
+node_modules/
+.pnpm-store/
+.turbo/
+
+# Build and test output
+dist/
+packages/database/src/generated/
+coverage/
+coverage-integration/
+playwright-report/
+test-results/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime output
+*.log
+logs/
+tmp/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json

@@ -1,0 +1,30 @@
+{
+  "name": "@lex-os/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vue-tsc --noEmit && vite build",
+    "dev": "vite",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "pinia": "4.0.2",
+    "vue": "3.5.40",
+    "vue-router": "5.2.0"
+  },
+  "devDependencies": {
+    "@lex-os/eslint-config": "workspace:*",
+    "@lex-os/tsconfig": "workspace:*",
+    "@vitejs/plugin-vue": "6.0.8",
+    "@vue/compiler-sfc": "3.5.40",
+    "@vue/test-utils": "2.4.11",
+    "happy-dom": "20.11.1",
+    "vite": "8.2.0",
+    "vitest": "4.1.10",
+    "vue-tsc": "3.3.9"
+  }
+}

@@ -1,0 +1,431 @@
+const assert = require('node:assert/strict');
+const path = require('node:path');
+const { after, before, describe, it } = require('node:test');
+
+const { NestFactory } = require('@nestjs/core');
+const { Pool } = require('pg');
+const request = require('supertest');
+
+process.loadEnvFile(path.resolve(__dirname, '../../../../.env'));
+process.env.NODE_ENV = 'test';
+process.env.DATABASE_HOST = '127.0.0.1';
+process.env.DATABASE_PORT = '5433';
+process.env.REDIS_HOST = '127.0.0.1';
+process.env.PROCESSING_QUEUE_PREFIX = 'lex-os-resources-integration';
+
+const ORGANIZATION_ID = '00000000-0000-4000-8000-000000000001';
+const ADMIN_USER_ID = '00000000-0000-4000-8000-000000000002';
+const READ_ONLY_ROLE_ID = '00000000-0000-4000-8000-000000000106';
+const READ_ONLY_USER_ID = '30000000-0000-4000-8000-000000000001';
+const READ_ONLY_EMAIL = 'd5-read-only@lexos.invalid';
+const OTHER_ORGANIZATION_ID = '30000000-0000-4000-8000-000000000002';
+const OTHER_USER_ID = '30000000-0000-4000-8000-000000000003';
+const OTHER_PERSON_ID = '30000000-0000-4000-8000-000000000004';
+const OTHER_CASE_ID = '30000000-0000-4000-8000-000000000005';
+const ADMIN_EMAIL = 'admin@lexos.invalid';
+const TEST_CPF = '11144477735';
+const TEST_CNPJ = '11222333000181';
+
+const databaseUrl = process.env.DATABASE_URL;
+const seedPassword = process.env.SEED_ADMIN_PASSWORD;
+
+if (databaseUrl === undefined || seedPassword === undefined) {
+  throw new Error('DATABASE_URL and SEED_ADMIN_PASSWORD are required for API integration tests.');
+}
+
+const pool = new Pool({ connectionString: databaseUrl });
+let app;
+let http;
+let adminToken;
+let readOnlyToken;
+let individualId;
+let companyId;
+let standardCaseId;
+let confidentialCaseId;
+
+async function cleanup() {
+  await pool.query(
+    `DELETE FROM audit_logs
+     WHERE organization_id = $1
+       AND (action LIKE 'auth.%' OR action LIKE 'person.%' OR action LIKE 'case.%' OR action LIKE 'case_participant.%')`,
+    [ORGANIZATION_ID],
+  );
+  await pool.query('DELETE FROM audit_logs WHERE organization_id = $1', [OTHER_ORGANIZATION_ID]);
+  await pool.query(
+    `DELETE FROM case_participants
+     WHERE organization_id IN ($1, $2)
+       AND (case_id = $3 OR case_id IN (SELECT id FROM cases WHERE internal_code LIKE 'D5-%'))`,
+    [ORGANIZATION_ID, OTHER_ORGANIZATION_ID, OTHER_CASE_ID],
+  );
+  await pool.query("DELETE FROM cases WHERE internal_code LIKE 'D5-%' OR id = $1", [OTHER_CASE_ID]);
+  await pool.query(
+    "DELETE FROM persons WHERE full_name LIKE 'Pessoa Fictícia D5%' OR full_name LIKE 'Empresa Fictícia D5%' OR id = $1",
+    [OTHER_PERSON_ID],
+  );
+  await pool.query('DELETE FROM refresh_sessions WHERE user_id IN ($1, $2, $3)', [
+    ADMIN_USER_ID,
+    READ_ONLY_USER_ID,
+    OTHER_USER_ID,
+  ]);
+  await pool.query('DELETE FROM user_roles WHERE user_id IN ($1, $2)', [
+    READ_ONLY_USER_ID,
+    OTHER_USER_ID,
+  ]);
+  await pool.query('DELETE FROM users WHERE id IN ($1, $2)', [READ_ONLY_USER_ID, OTHER_USER_ID]);
+  await pool.query('DELETE FROM organizations WHERE id = $1', [OTHER_ORGANIZATION_ID]);
+}
+
+async function setupIsolationFixtures() {
+  await pool.query(
+    `INSERT INTO organizations
+      (id, legal_name, trade_name, document_number, subscription_plan, status, settings, updated_at)
+     VALUES ($1, 'Organização Externa Fictícia Ltda.', 'Tenant Externo Fictício', '00000000000000', 'TEST', 'ACTIVE', '{"fixture":true}', now())`,
+    [OTHER_ORGANIZATION_ID],
+  );
+  await pool.query(
+    `INSERT INTO users
+      (id, organization_id, name, email, password_hash, status, updated_at)
+     SELECT $1, $2, 'Leitor Fictício D5', $3, password_hash, 'ACTIVE', now()
+     FROM users WHERE id = $4`,
+    [READ_ONLY_USER_ID, ORGANIZATION_ID, READ_ONLY_EMAIL, ADMIN_USER_ID],
+  );
+  await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)', [
+    READ_ONLY_USER_ID,
+    READ_ONLY_ROLE_ID,
+  ]);
+  await pool.query(
+    `INSERT INTO users
+      (id, organization_id, name, email, password_hash, status, updated_at)
+     SELECT $1, $2, 'Usuário de Outro Tenant Fictício', 'd5-other@lexos.invalid', password_hash, 'ACTIVE', now()
+     FROM users WHERE id = $3`,
+    [OTHER_USER_ID, OTHER_ORGANIZATION_ID, ADMIN_USER_ID],
+  );
+  await pool.query(
+    `INSERT INTO persons
+      (id, organization_id, person_type, full_name, metadata, updated_at)
+     VALUES ($1, $2, 'INDIVIDUAL', 'Pessoa Fictícia D5 Outro Tenant', '{}', now())`,
+    [OTHER_PERSON_ID, OTHER_ORGANIZATION_ID],
+  );
+  await pool.query(
+    `INSERT INTO cases
+      (id, organization_id, internal_code, title, legal_area, case_type, status, priority,
+       confidentiality_level, responsible_user_id, updated_at)
+     VALUES ($1, $2, 'D5-OTHER-001', 'Caso Fictício de Outro Tenant', 'TESTE', 'TESTE',
+       'INTAKE', 'NORMAL', 'STANDARD', $3, now())`,
+    [OTHER_CASE_ID, OTHER_ORGANIZATION_ID, OTHER_USER_ID],
+  );
+}
+
+async function login(email) {
+  const response = await request(http)
+    .post('/api/v1/auth/login')
+    .send({ organizationId: ORGANIZATION_ID, email, password: seedPassword })
+    .expect(200);
+  return response.body.accessToken;
+}
+
+function authorized(method, url, token = adminToken) {
+  return request(http)[method](url).set('authorization', `Bearer ${token}`);
+}
+
+before(async () => {
+  await cleanup();
+  await setupIsolationFixtures();
+  const [{ AppModule }, { configureHttpPlatform }, { loadRuntimeConfig }] = await Promise.all([
+    import('../../dist/app.module.js'),
+    import('../../dist/http/http-platform.js'),
+    import('@lex-os/config'),
+  ]);
+  app = await NestFactory.create(AppModule, { logger: false, abortOnError: false });
+  configureHttpPlatform(app, loadRuntimeConfig());
+  await app.init();
+  http = app.getHttpServer();
+  adminToken = await login(ADMIN_EMAIL);
+  readOnlyToken = await login(READ_ONLY_EMAIL);
+});
+
+after(async () => {
+  await app?.close();
+  await cleanup();
+  await pool.end();
+});
+
+describe('Delivery 5 people, cases, and participants', () => {
+  it('publishes only the implemented Delivery 5 resource routes', async () => {
+    const response = await request(http).get('/api/v1/docs/openapi.json').expect(200);
+
+    assert.ok(response.body.paths['/api/v1/persons']);
+    assert.ok(response.body.paths['/api/v1/persons/{id}']);
+    assert.ok(response.body.paths['/api/v1/cases']);
+    assert.ok(response.body.paths['/api/v1/cases/{id}']);
+    assert.ok(response.body.paths['/api/v1/cases/{caseId}/participants']);
+    assert.ok(response.body.paths['/api/v1/cases/{caseId}/files/upload']);
+    assert.ok(response.body.paths['/api/v1/documents/{id}/reprocess']?.post);
+    assert.ok(response.body.paths['/api/v1/processing-jobs/{id}']?.get);
+  });
+
+  it('rejects invalid identifiers, participant vocabulary, unknown tenant fields, and cursors', async () => {
+    const invalidPerson = await authorized('post', '/api/v1/persons')
+      .send({
+        organizationId: OTHER_ORGANIZATION_ID,
+        personType: 'INDIVIDUAL',
+        fullName: 'Pessoa Fictícia D5 Inválida',
+        cpf: '000.000.000-00',
+      })
+      .expect(400);
+    assert.equal(invalidPerson.body.code, 'VALIDATION_ERROR');
+
+    const invalidCursor = await authorized('get', '/api/v1/persons?cursor=not+base64').expect(400);
+    assert.equal(invalidCursor.body.code, 'INVALID_CURSOR');
+
+    await authorized('post', `/api/v1/cases/${OTHER_CASE_ID}/participants`)
+      .send({ personId: OTHER_PERSON_ID, role: 'papel_inventado', side: 'lado_inventado' })
+      .expect(400);
+  });
+
+  it('creates, lists, reads, and updates people while masking normalized identifiers', async () => {
+    const individual = await authorized('post', '/api/v1/persons')
+      .send({
+        personType: 'INDIVIDUAL',
+        fullName: 'Pessoa Fictícia D5 Individual',
+        cpf: '111.444.777-35',
+        rg: 'FICTICIO1234',
+        birthDate: '1990-01-01',
+        email: 'PESSOA.D5@LEXOS.INVALID',
+      })
+      .expect(201);
+    individualId = individual.body.id;
+    assert.equal(individual.body.cpf, '***.***.***-35');
+    assert.equal(individual.body.rg, '****1234');
+    assert.equal(individual.body.email, 'pessoa.d5@lexos.invalid');
+    assert.equal(JSON.stringify(individual.body).includes(TEST_CPF), false);
+
+    const company = await authorized('post', '/api/v1/persons')
+      .send({
+        personType: 'COMPANY',
+        fullName: 'Empresa Fictícia D5 Ltda.',
+        tradeName: 'Empresa Fictícia D5',
+        cnpj: '11.222.333/0001-81',
+      })
+      .expect(201);
+    companyId = company.body.id;
+    assert.equal(company.body.cnpj, '**.***.***/****-81');
+
+    const stored = await pool.query('SELECT cpf, cnpj FROM persons WHERE id IN ($1, $2)', [
+      individualId,
+      companyId,
+    ]);
+    assert.equal(
+      stored.rows.some((row) => row.cpf === TEST_CPF),
+      true,
+    );
+    assert.equal(
+      stored.rows.some((row) => row.cnpj === TEST_CNPJ),
+      true,
+    );
+
+    const pageOne = await authorized('get', '/api/v1/persons?limit=1').expect(200);
+    assert.equal(pageOne.body.data.length, 1);
+    assert.equal(pageOne.body.pageInfo.hasNextPage, true);
+    const pageTwo = await authorized(
+      'get',
+      `/api/v1/persons?limit=1&cursor=${encodeURIComponent(pageOne.body.pageInfo.nextCursor)}`,
+    ).expect(200);
+    assert.notEqual(pageTwo.body.data[0].id, pageOne.body.data[0].id);
+
+    const updated = await authorized('patch', `/api/v1/persons/${individualId}`)
+      .send({ occupation: 'Profissão Fictícia' })
+      .expect(200);
+    assert.equal(updated.body.occupation, 'Profissão Fictícia');
+    await authorized('get', `/api/v1/persons/${individualId}`).expect(200);
+  });
+
+  it('fails person list, direct lookup, update, and soft-deleted reads safely across tenant boundaries', async () => {
+    const list = await authorized('get', '/api/v1/persons').expect(200);
+    assert.equal(
+      list.body.data.some((person) => person.id === OTHER_PERSON_ID),
+      false,
+    );
+    await authorized('get', `/api/v1/persons/${OTHER_PERSON_ID}`).expect(404);
+    await authorized('patch', `/api/v1/persons/${OTHER_PERSON_ID}`)
+      .send({ occupation: 'Tentativa inválida' })
+      .expect(404);
+    await authorized('delete', `/api/v1/persons/${OTHER_PERSON_ID}`).expect(404);
+
+    await authorized('delete', `/api/v1/persons/${companyId}`).expect(204);
+    await authorized('get', `/api/v1/persons/${companyId}`).expect(404);
+    const afterDelete = await authorized('get', '/api/v1/persons').expect(200);
+    assert.equal(
+      afterDelete.body.data.some((person) => person.id === companyId),
+      false,
+    );
+  });
+
+  it('creates and updates tenant-scoped cases with unique code and valid responsibility', async () => {
+    const created = await authorized('post', '/api/v1/cases')
+      .send({
+        internalCode: 'd5-standard-001',
+        title: 'Caso Fictício D5 Padrão',
+        description: 'Descrição jurídica inteiramente fictícia.',
+        legalArea: 'direito_trabalhista',
+        caseType: 'reclamacao_trabalhista',
+        responsibleUserId: ADMIN_USER_ID,
+      })
+      .expect(201);
+    standardCaseId = created.body.id;
+    assert.equal(created.body.internalCode, 'D5-STANDARD-001');
+    assert.equal(created.body.legalArea, 'DIREITO_TRABALHISTA');
+
+    const duplicate = await authorized('post', '/api/v1/cases')
+      .send({
+        internalCode: 'D5-STANDARD-001',
+        title: 'Outro Caso Fictício D5',
+        legalArea: 'TESTE',
+        caseType: 'TESTE',
+      })
+      .expect(409);
+    assert.equal(duplicate.body.code, 'CASE_INTERNAL_CODE_CONFLICT');
+
+    const invalidResponsible = await authorized('post', '/api/v1/cases')
+      .send({
+        internalCode: 'D5-INVALID-RESPONSIBLE',
+        title: 'Caso Fictício com Responsável Inválido',
+        legalArea: 'TESTE',
+        caseType: 'TESTE',
+        responsibleUserId: OTHER_USER_ID,
+      })
+      .expect(400);
+    assert.equal(invalidResponsible.body.code, 'INVALID_CASE_RESPONSIBLE');
+
+    const updated = await authorized('patch', `/api/v1/cases/${standardCaseId}`)
+      .send({ status: 'UNDER_ANALYSIS', priority: 'HIGH' })
+      .expect(200);
+    assert.equal(updated.body.status, 'UNDER_ANALYSIS');
+    assert.equal(updated.body.priority, 'HIGH');
+  });
+
+  it('hides cross-tenant and soft-deleted cases from list, detail, and update paths', async () => {
+    const list = await authorized('get', '/api/v1/cases').expect(200);
+    assert.equal(
+      list.body.data.some((item) => item.id === OTHER_CASE_ID),
+      false,
+    );
+    await authorized('get', `/api/v1/cases/${OTHER_CASE_ID}`).expect(404);
+    await authorized('patch', `/api/v1/cases/${OTHER_CASE_ID}`)
+      .send({ priority: 'URGENT' })
+      .expect(404);
+    await authorized('delete', `/api/v1/cases/${OTHER_CASE_ID}`).expect(404);
+
+    const deleted = await authorized('post', '/api/v1/cases')
+      .send({
+        internalCode: 'D5-DELETED-001',
+        title: 'Caso Fictício D5 Excluído',
+        legalArea: 'TESTE',
+        caseType: 'TESTE',
+      })
+      .expect(201);
+    await authorized('delete', `/api/v1/cases/${deleted.body.id}`).expect(204);
+    await authorized('get', `/api/v1/cases/${deleted.body.id}`).expect(404);
+    const afterDelete = await authorized('get', '/api/v1/cases').expect(200);
+    assert.equal(
+      afterDelete.body.data.some((item) => item.id === deleted.body.id),
+      false,
+    );
+  });
+
+  it('enforces confidential-case policy and audits authorized confidential reads', async () => {
+    const created = await authorized('post', '/api/v1/cases')
+      .send({
+        internalCode: 'D5-CONFIDENTIAL-001',
+        title: 'Caso Confidencial Fictício D5',
+        legalArea: 'TESTE',
+        caseType: 'TESTE',
+        confidentialityLevel: 'CONFIDENTIAL',
+      })
+      .expect(201);
+    confidentialCaseId = created.body.id;
+
+    await authorized('get', `/api/v1/cases/${confidentialCaseId}`).expect(200);
+    await authorized('get', `/api/v1/cases/${confidentialCaseId}`, readOnlyToken).expect(404);
+    const readOnlyList = await authorized('get', '/api/v1/cases', readOnlyToken).expect(200);
+    assert.equal(
+      readOnlyList.body.data.some((item) => item.id === confidentialCaseId),
+      false,
+    );
+
+    const audits = await pool.query(
+      `SELECT count(*)::int AS count FROM audit_logs
+       WHERE organization_id = $1 AND entity_id = $2 AND action = 'case.confidential.read'`,
+      [ORGANIZATION_ID, confidentialCaseId],
+    );
+    assert.ok(audits.rows[0].count > 0);
+  });
+
+  it('creates and lists validated participants without allowing cross-tenant relations', async () => {
+    const participant = await authorized('post', `/api/v1/cases/${standardCaseId}/participants`)
+      .send({ personId: individualId, role: 'reclamante', side: 'polo_ativo', isClient: true })
+      .expect(201);
+    assert.equal(participant.body.person.id, individualId);
+    assert.equal(participant.body.side, 'polo_ativo');
+
+    const list = await authorized('get', `/api/v1/cases/${standardCaseId}/participants`).expect(
+      200,
+    );
+    assert.equal(
+      list.body.data.some((item) => item.id === participant.body.id),
+      true,
+    );
+
+    await authorized('post', `/api/v1/cases/${standardCaseId}/participants`)
+      .send({ personId: individualId, role: 'reclamante', side: 'polo_ativo' })
+      .expect(409);
+    await authorized('post', `/api/v1/cases/${standardCaseId}/participants`)
+      .send({ personId: OTHER_PERSON_ID, role: 'testemunha' })
+      .expect(404);
+    await authorized('post', `/api/v1/cases/${OTHER_CASE_ID}/participants`)
+      .send({ personId: individualId, role: 'testemunha' })
+      .expect(404);
+    await authorized('get', `/api/v1/cases/${OTHER_CASE_ID}/participants`).expect(404);
+  });
+
+  it('denies mutations without granular permissions', async () => {
+    await authorized('post', '/api/v1/persons', readOnlyToken)
+      .send({ personType: 'INDIVIDUAL', fullName: 'Pessoa Fictícia D5 Negada' })
+      .expect(403);
+    await authorized('post', '/api/v1/cases', readOnlyToken)
+      .send({
+        internalCode: 'D5-DENIED-001',
+        title: 'Caso Fictício D5 Negado',
+        legalArea: 'TESTE',
+        caseType: 'TESTE',
+      })
+      .expect(403);
+    await authorized('patch', `/api/v1/cases/${standardCaseId}`, readOnlyToken)
+      .send({ priority: 'URGENT' })
+      .expect(403);
+    await authorized('delete', `/api/v1/cases/${standardCaseId}`, readOnlyToken).expect(403);
+  });
+
+  it('stores only allowlisted resource audit data without personal or legal content', async () => {
+    const result = await pool.query(
+      `SELECT action, coalesce(old_data::text, '') || coalesce(new_data::text, '') AS data
+       FROM audit_logs
+       WHERE organization_id = $1
+         AND (action LIKE 'person.%' OR action LIKE 'case.%' OR action LIKE 'case_participant.%')`,
+      [ORGANIZATION_ID],
+    );
+    const serialized = result.rows.map((row) => `${row.action}:${row.data}`).join('\n');
+
+    assert.ok(result.rowCount > 0);
+    for (const prohibited of [
+      TEST_CPF,
+      TEST_CNPJ,
+      'Pessoa Fictícia D5 Individual',
+      'Caso Fictício D5 Padrão',
+      'Descrição jurídica inteiramente fictícia.',
+      'FICTICIO1234',
+    ]) {
+      assert.equal(serialized.includes(prohibited), false);
+    }
+  });
+});

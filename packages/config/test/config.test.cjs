@@ -1,0 +1,105 @@
+const assert = require('node:assert/strict');
+const { describe, it } = require('node:test');
+
+const { loadRuntimeConfig } = require('../dist/index.js');
+
+function validEnvironment(overrides = {}) {
+  return {
+    API_PORT: '3000',
+    AUTH_ACCESS_TOKEN_SECRET: 'test-access-token-secret-with-at-least-32-characters',
+    AUTH_ACCESS_TOKEN_TTL_SECONDS: '900',
+    AUTH_LOGIN_ATTEMPT_LIMIT: '5',
+    AUTH_LOGIN_ATTEMPT_WINDOW_SECONDS: '900',
+    AUTH_REFRESH_TOKEN_TTL_SECONDS: '2592000',
+    DATABASE_HOST: '127.0.0.1',
+    DATABASE_NAME: 'postgres',
+    DATABASE_PASSWORD: 'local-password',
+    DATABASE_PORT: '5432',
+    DATABASE_SSL: 'false',
+    DATABASE_USER: 'postgres',
+    DEPENDENCY_TIMEOUT_MS: '2000',
+    FILE_INTAKE_ALLOWED_MIME_TYPES: 'application/pdf,image/jpeg,image/png,text/plain',
+    FILE_INTAKE_MAX_FILE_BYTES: '26214400',
+    FILE_INTAKE_MAX_FILES_PER_REQUEST: '10',
+    LOG_LEVEL: 'info',
+    NODE_ENV: 'development',
+    OBJECT_STORAGE_ACCESS_KEY: 'local-access-key',
+    OBJECT_STORAGE_BUCKET: 'lex-os-private',
+    OBJECT_STORAGE_ENDPOINT: 'http://127.0.0.1:9000',
+    OBJECT_STORAGE_PUBLIC_ENDPOINT: 'http://127.0.0.1:9000',
+    OBJECT_STORAGE_DOWNLOAD_URL_TTL_SECONDS: '60',
+    OBJECT_STORAGE_QUARANTINE_STALE_AFTER_SECONDS: '3600',
+    OBJECT_STORAGE_REGION: 'us-east-1',
+    OBJECT_STORAGE_SECRET_KEY: 'local-secret-key',
+    OBJECT_STORAGE_USE_SSL: 'false',
+    PROCESSING_JOB_ATTEMPTS: '3',
+    PROCESSING_JOB_BACKOFF_MS: '250',
+    PROCESSING_QUEUE_PREFIX: 'lex-os-test',
+    PROCESSING_RECONCILE_INTERVAL_SECONDS: '30',
+    PROCESSING_STALE_AFTER_SECONDS: '60',
+    PROCESSING_WORKER_CONCURRENCY: '2',
+    REDIS_HOST: '127.0.0.1',
+    REDIS_PASSWORD: 'local-redis-password',
+    REDIS_PORT: '6379',
+    WORKER_READY_FILE: '/tmp/lex-os-worker-ready',
+    WEB_ORIGIN: 'http://localhost:5173',
+    ...overrides,
+  };
+}
+
+describe('loadRuntimeConfig', () => {
+  it('returns typed values for an explicit development environment', () => {
+    const config = loadRuntimeConfig(validEnvironment());
+
+    assert.equal(config.service.apiPort, 3000);
+    assert.equal(config.database.port, 5432);
+    assert.equal(config.database.ssl, false);
+    assert.equal(config.objectStorage.useSsl, false);
+    assert.equal(config.fileIntake.maxFileBytes, 26_214_400);
+    assert.equal(config.processing.jobAttempts, 3);
+    assert.equal(config.processing.workerConcurrency, 2);
+    assert.deepEqual(config.fileIntake.allowedMimeTypes, [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'text/plain',
+    ]);
+  });
+
+  it('fails when a required value is absent', () => {
+    const environment = validEnvironment();
+    delete environment.DATABASE_HOST;
+
+    assert.throws(() => loadRuntimeConfig(environment), /DATABASE_HOST is required/u);
+  });
+
+  it('rejects development placeholders in production', () => {
+    const environment = validEnvironment({
+      DATABASE_PASSWORD: '1234',
+      NODE_ENV: 'production',
+      WORKER_READY_FILE: '/var/run/lex-os/worker-ready',
+    });
+
+    assert.throws(
+      () => loadRuntimeConfig(environment),
+      /DATABASE_PASSWORD must be replaced with a strong production secret/u,
+    );
+  });
+
+  it('rejects a weak access-token secret in production', () => {
+    const environment = validEnvironment({
+      AUTH_ACCESS_TOKEN_SECRET: 'jwt-secret-8fK2mQ7v4xP9cL6n',
+      DATABASE_PASSWORD: 'db-secret-8fK2mQ7v',
+      NODE_ENV: 'production',
+      OBJECT_STORAGE_ACCESS_KEY: 'strong-storage-access-key',
+      OBJECT_STORAGE_SECRET_KEY: 'strong-storage-secret-key',
+      REDIS_PASSWORD: 'redis-secret-9xT4pL6n',
+      WORKER_READY_FILE: '/var/run/lex-os/worker-ready',
+    });
+
+    assert.throws(
+      () => loadRuntimeConfig(environment),
+      /AUTH_ACCESS_TOKEN_SECRET must be replaced with a strong production secret/u,
+    );
+  });
+});

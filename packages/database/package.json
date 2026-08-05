@@ -1,0 +1,37 @@
+{
+  "name": "@lex-os/database",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/src/index.js",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "prisma generate && tsc -p tsconfig.build.json",
+    "db:format": "prisma format",
+    "db:generate": "prisma generate",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:status": "prisma migrate status",
+    "db:reset": "prisma migrate reset --force",
+    "db:seed": "prisma db seed",
+    "db:validate": "prisma format --check && prisma validate && node scripts/validate-migrations.mjs",
+    "lint": "eslint .",
+    "test": "node --test test/*.unit.test.cjs",
+    "test:integration": "node --test test/*.integration.test.cjs",
+    "typecheck": "prisma generate && tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "7.9.1",
+    "@prisma/client": "7.9.1",
+    "pg": "8.22.0"
+  },
+  "devDependencies": {
+    "@lex-os/eslint-config": "workspace:*",
+    "@lex-os/tsconfig": "workspace:*",
+    "@types/pg": "8.20.4",
+    "argon2": "0.45.1",
+    "prisma": "7.9.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  }
+}
