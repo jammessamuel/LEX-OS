@@ -8,8 +8,8 @@
     "dev": "tsx watch src/main.ts",
     "lint": "eslint .",
     "start": "node dist/main.js",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
-    "test:integration": "set -a; . ../../.env; set +a; NODE_ENV=test DATABASE_HOST=127.0.0.1 DATABASE_PORT=5433 REDIS_HOST=127.0.0.1 PROCESSING_QUEUE_PREFIX=lex-os-d7-worker-integration PROCESSING_STALE_AFTER_SECONDS=86400 PROCESSING_RECONCILE_INTERVAL_SECONDS=3600 PROCESSING_JOB_BACKOFF_MS=100 NODE_OPTIONS=--experimental-vm-modules jest --config test/jest.integration.config.cjs --passWithNoTests --runInBand",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
+    "test:integration": "node test/run-integration.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
