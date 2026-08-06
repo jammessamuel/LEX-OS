@@ -198,7 +198,12 @@ onMounted(() => {
                 <tbody>
                   <tr v-for="item in documents" :key="item.id">
                     <td>
-                      <span class="rows__title">{{ item.title }}</span>
+                      <RouterLink
+                        class="rows__title rows__title--link"
+                        :to="{ name: 'document-detail', params: { id: item.id } }"
+                      >
+                        {{ item.title }}
+                      </RouterLink>
                       <span class="rows__meta data">{{ item.file.filename }}</span>
                     </td>
                     <td class="muted">{{ item.documentType?.name ?? 'Não classificado' }}</td>
@@ -389,6 +394,17 @@ onMounted(() => {
 .rows__title {
   display: block;
   font-weight: 600;
+}
+
+.rows__title--link {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.rows__title--link:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .rows__meta {

@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão | Detalhe                                            |
-| ------ | -------------------------------------------------- |
-| —      | Nada em andamento. Próximo: revisão de procedência |
+| Cartão | Detalhe                                                  |
+| ------ | -------------------------------------------------------- |
+| —      | Nada em andamento. Próximo: correção humana de documento |
 
 ---
 
@@ -32,15 +32,13 @@ experiência central da `vision.md` e o componente 11 da proposta.
 
 | #   | Cartão                       | Rotas que já existem                                                  |
 | --- | ---------------------------- | --------------------------------------------------------------------- |
-| 1   | Revisão de procedência       | `GET /documents/:id/extractions`                                      |
-| 2   | Lista e detalhe de documento | `GET /cases/:caseId/documents` · `GET /documents/:id`                 |
-| 3   | Correção humana de documento | `PATCH /documents/:id`                                                |
-| 4   | Download autorizado          | `GET /files/:id/download-url` — URL assinada de 60 s                  |
-| 5   | Reprocessar documento        | `POST /documents/:id/reprocess`                                       |
-| 6   | Criar e editar caso          | `POST /cases` · `PATCH /cases/:id`                                    |
-| 7   | Participantes do caso        | `GET`/`POST /cases/:caseId/participants`                              |
-| 8   | Pessoas — CRUD               | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados |
-| 9   | Excluir caso e documento     | `DELETE /cases/:id` · `DELETE /documents/:id`                         |
+| 1   | Correção humana de documento | `PATCH /documents/:id`                                                |
+| 2   | Download autorizado          | `GET /files/:id/download-url` — URL assinada de 60 s                  |
+| 3   | Reprocessar documento        | `POST /documents/:id/reprocess`                                       |
+| 4   | Criar e editar caso          | `POST /cases` · `PATCH /cases/:id`                                    |
+| 5   | Participantes do caso        | `GET`/`POST /cases/:caseId/participants`                              |
+| 6   | Pessoas — CRUD               | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados |
+| 7   | Excluir caso e documento     | `DELETE /cases/:id` · `DELETE /documents/:id`                         |
 
 ## A fazer — qualidade de interface
 
@@ -57,16 +55,17 @@ experiência central da `vision.md` e o componente 11 da proposta.
 Nada aqui pode virar front antes de a rota existir. Registrado para deixar de ser
 invisível.
 
-| Cartão                       | O que falta                                                                                                                                                                                          |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Responsável do caso com nome | Não existe rota de usuários. `responsibleUserId` só pode virar UUID na tela. Precisa de `GET /users` ou de `responsible: { id, name }` embutido no caso, como já é feito com `file` e `documentType` |
-| Painel com números           | Nenhum endpoint devolve contagem ou agregado. Um resumo exigiria varrer páginas no cliente, o que não escala                                                                                         |
-| Cronologia                   | Delivery 8, não autorizada. `TimelineEvent` já existe no schema                                                                                                                                      |
-| Checklist                    | Delivery 8, não autorizada. Tabelas já existem                                                                                                                                                       |
-| Busca e memória              | Delivery 9. `KnowledgeChunk` e pgvector já estão no lugar                                                                                                                                            |
-| Tarefas                      | Sem rota                                                                                                                                                                                             |
-| Leitura de auditoria         | Sem rota                                                                                                                                                                                             |
-| Administração de usuários    | Sem rota                                                                                                                                                                                             |
+| Cartão                       | O que falta                                                                                                                                                                                                                         |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Confirmação de entidade      | A tela de procedência mostra "Aguardando revisão", mas não há rota para um humano confirmar uma entidade extraída. A confirmação humana está prevista na Delivery 8 para eventos de cronologia; entidades precisam do mesmo caminho |
+| Responsável do caso com nome | Não existe rota de usuários. `responsibleUserId` só pode virar UUID na tela. Precisa de `GET /users` ou de `responsible: { id, name }` embutido no caso, como já é feito com `file` e `documentType`                                |
+| Painel com números           | Nenhum endpoint devolve contagem ou agregado. Um resumo exigiria varrer páginas no cliente, o que não escala                                                                                                                        |
+| Cronologia                   | Delivery 8, não autorizada. `TimelineEvent` já existe no schema                                                                                                                                                                     |
+| Checklist                    | Delivery 8, não autorizada. Tabelas já existem                                                                                                                                                                                      |
+| Busca e memória              | Delivery 9. `KnowledgeChunk` e pgvector já estão no lugar                                                                                                                                                                           |
+| Tarefas                      | Sem rota                                                                                                                                                                                                                            |
+| Leitura de auditoria         | Sem rota                                                                                                                                                                                                                            |
+| Administração de usuários    | Sem rota                                                                                                                                                                                                                            |
 
 ---
 
@@ -102,6 +101,12 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
 
+- **Revisão de procedência** — a tela onde a promessa central vira produto: cada dado
+  identificado carrega uma nota de rodapé com arquivo, página, trecho, modelo e confiança,
+  revelada no cursor e no foco de teclado; quando a IA normalizou um valor, a nota preserva
+  o que estava escrito no documento; o texto extraído aparece em serifa com medida de
+  leitura; e a trilha append-only lista cada execução com provedor, modelo e hora. Sem
+  botão de confirmar de mentira: a rota não existe, e o bloqueio está registrado.
 - **Progresso de preparação** — o advogado acompanha documentos, não jobs: uma frase de
   resumo com contagem ("Preparando 3 documentos…"), a garantia explícita de que pode fechar
   a página, e o chip de cada documento com a etapa em verbo do dia a dia ("Extraindo

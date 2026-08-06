@@ -243,3 +243,50 @@ export interface ProcessingJob {
   createdAt: string;
   updatedAt: string;
 }
+
+export const extractionTypes = [
+  'OCR',
+  'TRANSCRIPTION',
+  'CLASSIFICATION',
+  'SUMMARY',
+  'ENTITY_EXTRACTION',
+  'IMAGE_ANALYSIS',
+  'TIMELINE_ANALYSIS',
+  'CHECKLIST_ANALYSIS',
+] as const;
+
+export type ExtractionType = (typeof extractionTypes)[number];
+
+export interface ExtractedEntity {
+  id: string;
+  entityType: string;
+  normalizedValue: string;
+  originalValue: string;
+  pageNumber: number | null;
+  startOffset: number | null;
+  endOffset: number | null;
+  confidenceScore: number | null;
+  linkedPersonId: string | null;
+  metadata: unknown;
+  createdAt: string;
+}
+
+/** Execução append-only: reprocessar cria outra, nunca sobrescreve esta. */
+export interface Extraction {
+  id: string;
+  documentId: string;
+  extractionType: ExtractionType;
+  provider: string;
+  modelName: string;
+  modelVersion: string | null;
+  executionId: string;
+  status: string;
+  rawText: string | null;
+  structuredData: unknown;
+  confidenceScore: number | null;
+  processingTimeMs: number | null;
+  promptVersion: string | null;
+  errorCode: string | null;
+  entities: ExtractedEntity[];
+  createdAt: string;
+}

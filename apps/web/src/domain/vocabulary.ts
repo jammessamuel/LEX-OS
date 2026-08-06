@@ -1,6 +1,7 @@
 import type {
   CaseStatus,
   ConfidentialityLevel,
+  ExtractionType,
   ParticipantRole,
   ParticipantSide,
   ProcessingJobType,
@@ -151,3 +152,44 @@ export const stageLabels: Readonly<Record<ProcessingJobType, string>> = {
   TIMELINE_GENERATION: 'Gerando cronologia',
   CHECKLIST_ANALYSIS: 'Analisando checklist',
 };
+
+export const extractionTypeLabels: Readonly<Record<ExtractionType, string>> = {
+  OCR: 'Extração de texto',
+  TRANSCRIPTION: 'Transcrição',
+  CLASSIFICATION: 'Classificação',
+  SUMMARY: 'Resumo',
+  ENTITY_EXTRACTION: 'Identificação de dados',
+  IMAGE_ANALYSIS: 'Análise de imagem',
+  TIMELINE_ANALYSIS: 'Análise de cronologia',
+  CHECKLIST_ANALYSIS: 'Análise de checklist',
+};
+
+/**
+ * Tipos de entidade são texto livre do provedor, não um catálogo fechado da API. Os
+ * conhecidos ganham nome próprio; o resto passa por humanizeCode para nunca vazar
+ * MAIÚSCULA_COM_UNDERSCORE na tela.
+ */
+const knownEntityTypes: Readonly<Record<string, string>> = {
+  CONTRACT_NUMBER: 'Número de contrato',
+  CASE_NUMBER: 'Número do processo',
+  DATE: 'Data',
+  CPF: 'CPF',
+  CNPJ: 'CNPJ',
+  RG: 'RG',
+  OAB: 'OAB',
+  PERSON_NAME: 'Nome de pessoa',
+  COMPANY_NAME: 'Empresa',
+  MONETARY_VALUE: 'Valor',
+  AMOUNT: 'Valor',
+  ADDRESS: 'Endereço',
+  EMAIL: 'E-mail',
+  PHONE: 'Telefone',
+};
+
+export function entityTypeLabel(entityType: string): string {
+  return knownEntityTypes[entityType] ?? humanizeCode(entityType);
+}
+
+export function formatConfidence(score: number | null): string {
+  return score === null ? '—' : `${Math.round(score * 100)}%`;
+}
