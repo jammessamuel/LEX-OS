@@ -27,11 +27,11 @@ withDefaults(
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   padding: 0.1rem 0.45rem 0.14rem;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   white-space: nowrap;
 }

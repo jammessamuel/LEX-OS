@@ -50,7 +50,7 @@ async function signOut(): Promise<void> {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-4);
-  padding: var(--space-3) var(--space-5);
+  padding: var(--space-3) var(--space-6);
   background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
@@ -116,8 +116,8 @@ async function signOut(): Promise<void> {
 }
 
 .shell__content {
-  padding: var(--space-6) var(--space-5);
-  width: min(72rem, 100%);
+  padding: var(--space-6) var(--space-6);
+  width: min(var(--content-max), 100%);
   margin-inline: auto;
 }
 </style>

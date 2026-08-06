@@ -140,7 +140,7 @@ async function submit(): Promise<void> {
   width: min(24rem, 100%);
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   padding: var(--space-6);
   box-shadow: var(--shadow);
   align-self: end;

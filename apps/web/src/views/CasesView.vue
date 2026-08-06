@@ -181,7 +181,7 @@ onMounted(() => {
 .panel {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -196,7 +196,7 @@ onMounted(() => {
 }
 
 .panel__count {
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   color: var(--text-3);
 }
 
@@ -217,7 +217,7 @@ onMounted(() => {
 
 .rows th {
   text-align: left;
-  font-size: 0.68rem;
+  font-size: 0.73rem;
   font-weight: 650;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -228,7 +228,7 @@ onMounted(() => {
 }
 
 .rows td {
-  padding: 0.5rem var(--space-4);
+  padding: 0.62rem var(--space-4);
   border-bottom: 1px solid var(--line);
   vertical-align: middle;
 }
@@ -249,7 +249,7 @@ onMounted(() => {
 
 .rows__meta {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   color: var(--text-3);
 }
 
@@ -267,7 +267,7 @@ onMounted(() => {
 .state {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   padding: var(--space-6);
   display: flex;
   flex-direction: column;
@@ -290,7 +290,7 @@ onMounted(() => {
 }
 
 .state__ref {
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   color: var(--text-3);
 }
 

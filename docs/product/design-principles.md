@@ -102,6 +102,28 @@ Os valores acima foram medidos, não estimados: todos os pares texto/fundo e con
 
 Uma escala definida, poucos degraus, aplicada sem exceção. Texto de leitura longa com medida controlada — documento jurídico já é denso, linha de 140 caracteres torna a leitura pior. Números tabulares em listas e valores monetários, para as colunas alinharem.
 
+A escala fica **um degrau acima do comum em software de gestão**: corpo em 16px, não 15px. O público lê documento denso o dia inteiro e boa parte trabalha em monitor ruim; economizar pixel de texto aqui não é elegância, é desconforto.
+
+| Token     | Valor    | Uso                               |
+| --------- | -------- | --------------------------------- |
+| `step--1` | 0.875rem | Metadado, rótulo, célula de lista |
+| `step-0`  | 1rem     | Corpo                             |
+| `step-1`  | 1.25rem  | Subtítulo                         |
+| `step-2`  | 1.75rem  | Título de seção                   |
+| `step-3`  | 2.375rem | Título de página                  |
+
+## Forma e aproveitamento de tela
+
+Cantos suaves, sem virar aplicativo de consumo. O raio cresce com a superfície: painel arredonda mais que controle, e marcador de estado quase nada, para não virar pílula.
+
+| Token       | Valor | Uso                         |
+| ----------- | ----- | --------------------------- |
+| `radius-sm` | 4px   | Marcador de estado          |
+| `radius`    | 7px   | Botão, campo                |
+| `radius-lg` | 12px  | Painel, card, área de envio |
+
+`content-max` é **108rem**. A interface ocupa a tela: software de revisão documental se beneficia de largura, porque mais colunas visíveis significa menos rolagem e menos comparação feita de cabeça. Largura confortável de leitura continua valendo para texto corrido, não para tabela.
+
 ## Estados obrigatórios
 
 Nenhuma tela é considerada pronta sem os quatro:
