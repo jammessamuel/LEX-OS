@@ -15,6 +15,8 @@
 
 The generated Prisma client is ignored build output. Applications import the database package, which constructs Prisma Client with the pinned PostgreSQL driver adapter and exposes a bounded interactive-transaction helper.
 
+`packages/database` runs `prisma generate` from a `postinstall` script. Without it the client only appears as a side effect of `build` or `typecheck`, so the documented database workflow — install, migrate, seed — failed on a clean checkout with `ERR_MODULE_NOT_FOUND` for `src/generated/prisma/client.js`. CI reproduced this on its first run of the integration job. Generation needs no database connection: the `datasource` block carries no `url`, which `prisma.config.ts` supplies only when `DATABASE_URL` is set.
+
 `packages/database` declares `react` and `react-dom` as development dependencies even though no source file imports them. The reason is transitive: `prisma@7.9.1` depends on `@prisma/studio-core@0.33.0`, which declares `react` and `react-dom` as peer dependencies, and this workspace runs with `strictPeerDependencies: true`. Without explicit declarations the peers are unsatisfied and `pnpm install` fails. Both versions are also listed in `minimumReleaseAgeExclude` in `pnpm-workspace.yaml` for the same reason. Remove them only after confirming that the installed Prisma release no longer pulls Studio into the CLI tree.
 
 ## Initial SQL review

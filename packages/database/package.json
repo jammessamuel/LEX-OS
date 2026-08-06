@@ -15,6 +15,7 @@
     "db:reset": "prisma migrate reset --force",
     "db:seed": "prisma db seed",
     "db:validate": "prisma format --check && prisma validate && node scripts/validate-migrations.mjs",
+    "postinstall": "prisma generate",
     "lint": "eslint .",
     "test": "node --test test/*.unit.test.cjs",
     "test:integration": "node --test test/*.integration.test.cjs",
