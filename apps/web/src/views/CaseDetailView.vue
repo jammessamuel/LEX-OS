@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 import { ApiError, request } from '../api/client.js';
 import type { CaseDocument, CaseSummary, CursorPage, Participant } from '../api/types.js';
 import FileIntakePanel from '../components/FileIntakePanel.vue';
+import PreparationStatus from '../components/PreparationStatus.vue';
 import StatusChip from '../components/StatusChip.vue';
 import {
   caseStatusLabels,
@@ -69,6 +70,34 @@ async function refreshDocuments(): Promise<void> {
   }
 }
 
+const preparation = ref<InstanceType<typeof PreparationStatus> | null>(null);
+const activeStages = ref<ReadonlyMap<string, string>>(new Map());
+
+function onStages(byDocument: ReadonlyMap<string, string>): void {
+  activeStages.value = byDocument;
+}
+
+/**
+ * A situação exibida combina a lista de documentos com a etapa ativa do preparo: enquanto
+ * o servidor trabalha, o chip diz o verbo da etapa ("Extraindo texto…") em vez do estado
+ * frio do documento. A posição das linhas nunca muda durante o polling.
+ */
+function situationFor(document: CaseDocument): {
+  label: string;
+  tone: 'neutro' | 'pendente' | 'confirmado' | 'rejeitado';
+} {
+  const stage = activeStages.value.get(document.id);
+  if (stage !== undefined) {
+    return { label: `${stage}…`, tone: 'pendente' };
+  }
+  return documentSituation(document);
+}
+
+function onIntakeFinished(): void {
+  void refreshDocuments();
+  preparation.value?.wake();
+}
+
 onMounted(() => {
   void load();
 });
@@ -130,7 +159,14 @@ onMounted(() => {
 
       <div class="split">
         <div class="stack">
-          <FileIntakePanel :case-id="caseId" @finished="refreshDocuments" />
+          <FileIntakePanel :case-id="caseId" @finished="onIntakeFinished" />
+
+          <PreparationStatus
+            ref="preparation"
+            :case-id="caseId"
+            @stages="onStages"
+            @settled="refreshDocuments"
+          />
 
           <section class="panel">
             <div class="panel__bar">
@@ -168,8 +204,8 @@ onMounted(() => {
                     <td class="muted">{{ item.documentType?.name ?? 'Não classificado' }}</td>
                     <td>
                       <StatusChip
-                        :label="documentSituation(item).label"
-                        :tone="documentSituation(item).tone"
+                        :label="situationFor(item).label"
+                        :tone="situationFor(item).tone"
                       />
                     </td>
                     <td class="data right nowrap">{{ formatBytes(item.file.sizeBytes) }}</td>

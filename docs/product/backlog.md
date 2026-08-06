@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                  | Detalhe                                                              |
-| ----------------------- | -------------------------------------------------------------------- |
-| Progresso de preparação | Reconstrói o estado após recarregar. `GET /processing-jobs` e `/:id` |
+| Cartão | Detalhe                                            |
+| ------ | -------------------------------------------------- |
+| —      | Nada em andamento. Próximo: revisão de procedência |
 
 ---
 
@@ -102,6 +102,11 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
 
+- **Progresso de preparação** — o advogado acompanha documentos, não jobs: uma frase de
+  resumo com contagem ("Preparando 3 documentos…"), a garantia explícita de que pode fechar
+  a página, e o chip de cada documento com a etapa em verbo do dia a dia ("Extraindo
+  texto…"). Polling com recuo que para sozinho, pausa com a aba escondida e acorda no
+  envio; as linhas nunca mudam de posição durante a atualização.
 - **Detalhe do caso e envio de arquivos** — a moldura do caso com documentos e partes em
   painéis independentes, e o envio multipart com pré-verificação local, fila editável e o
   resultado parcial (aceitos, recusados, quarentena) como estado de primeira classe.

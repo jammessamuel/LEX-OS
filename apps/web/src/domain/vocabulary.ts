@@ -3,6 +3,7 @@ import type {
   ConfidentialityLevel,
   ParticipantRole,
   ParticipantSide,
+  ProcessingJobType,
   Priority,
 } from '../api/types.js';
 
@@ -132,3 +133,21 @@ export function formatBytes(bytes: number): string {
   const rounded = unit === 0 ? value : Number(value.toFixed(value < 10 ? 1 : 0));
   return `${rounded.toLocaleString('pt-BR')} ${byteUnits[unit]}`;
 }
+
+/**
+ * Etapa do preparo em verbo do dia a dia. O advogado acompanha "Extraindo texto",
+ * nunca "OCR" ou "job": a etapa informa e tranquiliza sem exigir vocabulário técnico.
+ */
+export const stageLabels: Readonly<Record<ProcessingJobType, string>> = {
+  FILE_VALIDATION: 'Validando',
+  VIRUS_SCAN: 'Verificando segurança',
+  OCR: 'Extraindo texto',
+  TRANSCRIPTION: 'Transcrevendo',
+  DOCUMENT_CLASSIFICATION: 'Classificando',
+  ENTITY_EXTRACTION: 'Identificando dados',
+  SUMMARY: 'Resumindo',
+  EMBEDDING: 'Indexando',
+  DUPLICATE_DETECTION: 'Verificando duplicidade',
+  TIMELINE_GENERATION: 'Gerando cronologia',
+  CHECKLIST_ANALYSIS: 'Analisando checklist',
+};

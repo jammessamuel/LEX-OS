@@ -196,3 +196,50 @@ export interface FileIntakeBatch {
   accepted: AcceptedFileIntake[];
   rejected: RejectedFileIntake[];
 }
+
+export const processingJobTypes = [
+  'OCR',
+  'TRANSCRIPTION',
+  'DOCUMENT_CLASSIFICATION',
+  'ENTITY_EXTRACTION',
+  'SUMMARY',
+  'EMBEDDING',
+  'TIMELINE_GENERATION',
+  'CHECKLIST_ANALYSIS',
+  'DUPLICATE_DETECTION',
+  'FILE_VALIDATION',
+  'VIRUS_SCAN',
+] as const;
+
+export const processingJobStatuses = [
+  'QUEUED',
+  'PROCESSING',
+  'COMPLETED',
+  'FAILED',
+  'RETRYING',
+  'CANCELLED',
+] as const;
+
+export type ProcessingJobType = (typeof processingJobTypes)[number];
+export type ProcessingJobStatus = (typeof processingJobStatuses)[number];
+
+export interface ProcessingJob {
+  id: string;
+  caseId: string | null;
+  fileId: string | null;
+  documentId: string | null;
+  jobType: ProcessingJobType;
+  status: ProcessingJobStatus;
+  priority: number;
+  attempts: number;
+  version: number;
+  provider: string | null;
+  modelName: string | null;
+  outputMetadata: unknown;
+  errorCode: string | null;
+  errorMessage: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
