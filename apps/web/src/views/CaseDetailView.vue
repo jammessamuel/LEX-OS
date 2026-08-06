@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 
 import { ApiError, request } from '../api/client.js';
 import type { CaseDocument, CaseSummary, CursorPage, Participant } from '../api/types.js';
+import FileIntakePanel from '../components/FileIntakePanel.vue';
 import StatusChip from '../components/StatusChip.vue';
 import {
   caseStatusLabels,
@@ -54,6 +55,18 @@ async function load(): Promise<void> {
   documents.value = documentPage.status === 'fulfilled' ? documentPage.value.data : [];
   participants.value = participantPage.status === 'fulfilled' ? participantPage.value.data : [];
   loading.value = false;
+}
+
+/** Depois de um envio, os aceitos já têm documento criado; a lista é recarregada. */
+async function refreshDocuments(): Promise<void> {
+  try {
+    const page = await request<CursorPage<CaseDocument>>(`/cases/${caseId}/documents`, {
+      query: { limit: 50 },
+    });
+    documents.value = page.data;
+  } catch {
+    // A lista anterior continua válida; o painel de envio já comunicou o resultado.
+  }
 }
 
 onMounted(() => {
@@ -112,12 +125,13 @@ onMounted(() => {
         </div>
         <div class="head__actions">
           <button class="btn btn--ghost" type="button" disabled>Editar caso</button>
-          <button class="btn" type="button" disabled>Preparar processo</button>
         </div>
       </header>
 
       <div class="split">
         <div class="stack">
+          <FileIntakePanel :case-id="caseId" @finished="refreshDocuments" />
+
           <section class="panel">
             <div class="panel__bar">
               <span class="label">Documentos</span>

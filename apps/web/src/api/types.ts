@@ -160,3 +160,39 @@ export interface CaseDocument {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface StoredFile {
+  id: string;
+  documentId: string;
+  filename: string;
+  mimeType: string;
+  extension: string;
+  sizeBytes: number;
+  virusScanStatus: string;
+  status: string;
+  duplicateOfFileId: string | null;
+  createdAt: string;
+}
+
+export interface IntakeJob {
+  id: string;
+  jobType: string;
+  status: string;
+}
+
+export interface AcceptedFileIntake {
+  file: StoredFile;
+  job: IntakeJob;
+}
+
+export interface RejectedFileIntake {
+  fileIndex: number;
+  code: string;
+  message: string;
+}
+
+/** Resposta 202 do envio: o resultado parcial é o caso comum, não a exceção. */
+export interface FileIntakeBatch {
+  accepted: AcceptedFileIntake[];
+  rejected: RejectedFileIntake[];
+}

@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-06
+**Última atualização:** 2026-08-06 · envio de arquivos entregue
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                  | Detalhe                                                                    |
-| ----------------------- | -------------------------------------------------------------------------- |
-| Tela de detalhe do caso | A moldura onde envio, documentos e revisão acontecem. Usa `GET /cases/:id` |
+| Cartão                  | Detalhe                                                              |
+| ----------------------- | -------------------------------------------------------------------- |
+| Progresso de preparação | Reconstrói o estado após recarregar. `GET /processing-jobs` e `/:id` |
 
 ---
 
@@ -32,17 +32,15 @@ experiência central da `vision.md` e o componente 11 da proposta.
 
 | #   | Cartão                       | Rotas que já existem                                                  |
 | --- | ---------------------------- | --------------------------------------------------------------------- |
-| 1   | Envio de arquivos            | `POST /cases/:caseId/files/upload` · `GET /cases/:caseId/files`       |
-| 2   | Progresso de preparação      | `GET /processing-jobs` · `GET /processing-jobs/:id`                   |
-| 3   | Revisão de procedência       | `GET /documents/:id/extractions`                                      |
-| 4   | Lista e detalhe de documento | `GET /cases/:caseId/documents` · `GET /documents/:id`                 |
-| 5   | Correção humana de documento | `PATCH /documents/:id`                                                |
-| 6   | Download autorizado          | `GET /files/:id/download-url` — URL assinada de 60 s                  |
-| 7   | Reprocessar documento        | `POST /documents/:id/reprocess`                                       |
-| 8   | Criar e editar caso          | `POST /cases` · `PATCH /cases/:id`                                    |
-| 9   | Participantes do caso        | `GET`/`POST /cases/:caseId/participants`                              |
-| 10  | Pessoas — CRUD               | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados |
-| 11  | Excluir caso e documento     | `DELETE /cases/:id` · `DELETE /documents/:id`                         |
+| 1   | Revisão de procedência       | `GET /documents/:id/extractions`                                      |
+| 2   | Lista e detalhe de documento | `GET /cases/:caseId/documents` · `GET /documents/:id`                 |
+| 3   | Correção humana de documento | `PATCH /documents/:id`                                                |
+| 4   | Download autorizado          | `GET /files/:id/download-url` — URL assinada de 60 s                  |
+| 5   | Reprocessar documento        | `POST /documents/:id/reprocess`                                       |
+| 6   | Criar e editar caso          | `POST /cases` · `PATCH /cases/:id`                                    |
+| 7   | Participantes do caso        | `GET`/`POST /cases/:caseId/participants`                              |
+| 8   | Pessoas — CRUD               | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados |
+| 9   | Excluir caso e documento     | `DELETE /cases/:id` · `DELETE /documents/:id`                         |
 
 ## A fazer — qualidade de interface
 
@@ -104,6 +102,9 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
 
+- **Detalhe do caso e envio de arquivos** — a moldura do caso com documentos e partes em
+  painéis independentes, e o envio multipart com pré-verificação local, fila editável e o
+  resultado parcial (aceitos, recusados, quarentena) como estado de primeira classe.
 - **Interface** — fundação de design com tokens medidos nos dois temas, escala e raio
   ajustados, autenticação e lista de casos em Vue, protótipo clicável do fluxo de preparação.
 - **Correções que o CI expôs** — `prisma generate` no `postinstall`, que fazia o fluxo

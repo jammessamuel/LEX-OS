@@ -145,6 +145,52 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   return (await response.json()) as T;
 }
 
+/**
+ * Envio multipart. Separado de `request` porque aqui o corpo é FormData — o navegador
+ * define o Content-Type com o boundary sozinho, e forçar um cabeçalho quebraria o parse.
+ * O mesmo par renovação-silenciosa/401 se aplica.
+ */
+export async function upload<T>(
+  path: string,
+  files: readonly File[],
+  options: { skipRefresh?: boolean } = {},
+): Promise<T> {
+  const body = new FormData();
+  for (const file of files) {
+    body.append('files', file, file.name);
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(buildUrl(path, undefined), {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        ...(accessToken === null ? {} : { Authorization: `Bearer ${accessToken}` }),
+      },
+      body,
+    });
+  } catch {
+    throw offlineError();
+  }
+
+  if (response.status === 401 && options.skipRefresh !== true) {
+    const renewed = await renewSession();
+    if (renewed) {
+      return upload<T>(path, files, { skipRefresh: true });
+    }
+    onUnauthorized?.();
+    throw await readEnvelope(response);
+  }
+
+  if (!response.ok) {
+    throw await readEnvelope(response);
+  }
+
+  return (await response.json()) as T;
+}
+
 let inFlightRenewal: Promise<boolean> | null = null;
 
 /** Renova a sessão no máximo uma vez por vez, mesmo com várias requisições em paralelo. */
