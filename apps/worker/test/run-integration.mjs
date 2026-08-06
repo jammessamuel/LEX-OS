@@ -1,10 +1,8 @@
 #!/usr/bin/env node
-// Runs the worker integration suite.
+// Executa os testes de integração do worker.
 //
-// The previous inline script used POSIX shell syntax (`set -a; . ../../.env; set +a;` plus
-// `VAR=value` command prefixes), so it only ran on Unix shells. The API and database
-// packages already load configuration from Node instead; this runner brings the worker in
-// line so the same command works on Windows, macOS, Linux, and CI.
+// O executor Node substitui sintaxe exclusiva de shell POSIX para manter o mesmo comando
+// funcional no Windows, macOS, Linux e na CI.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -25,9 +23,8 @@ if (!existsSync(environmentFile)) {
 
 process.loadEnvFile(environmentFile);
 
-// Host-side overrides: the suite talks to the Compose services through published ports and
-// uses its own queue prefix so it never consumes another environment's jobs. Reconciliation
-// is pushed far into the future so it cannot race the assertions.
+// Os testes usam as portas publicadas pelo Compose e um prefixo de fila exclusivo. A
+// reconciliação fica distante para não disputar execução com as asserções.
 const overrides = {
   NODE_ENV: 'test',
   DATABASE_HOST: '127.0.0.1',

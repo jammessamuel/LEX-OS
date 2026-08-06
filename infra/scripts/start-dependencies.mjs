@@ -1,17 +1,9 @@
 #!/usr/bin/env node
-// Starts the local dependency stack: PostgreSQL, Redis, MinIO, the MinIO bucket bootstrap,
-// and Mailpit.
+// Inicia PostgreSQL, Redis, MinIO, a criação inicial do bucket e Mailpit.
 //
-// `docker compose up --wait` waits for every named service to reach running or healthy.
-// `minio-init` is a one-shot container that creates the bucket and exits 0, and `--wait`
-// reports that exit as a failure regardless of the code, so naming it alongside the
-// long-running services makes the command fail after everything came up correctly.
-//
-// The bootstrap therefore runs as its own foreground step, which both propagates its real
-// exit code and guarantees the bucket exists before anything downstream needs it.
-//
-// Written as a Node runner rather than a shell one-liner so it behaves identically in
-// PowerShell, cmd, and POSIX shells.
+// `minio-init` termina após criar o bucket, mas `docker compose up --wait` interpreta essa
+// saída como falha. Por isso a criação roda separadamente e em primeiro plano, propagando
+// o código de saída real. O executor Node mantém o comportamento igual entre sistemas.
 
 import { spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
@@ -45,7 +37,5 @@ if (started !== 0) {
   process.exit(started);
 }
 
-// `run --rm` blocks until the bootstrap finishes and returns its exit code, so a failed
-// bucket creation fails this command instead of silently leaving storage unconfigured.
-// `--no-TTY` keeps it well behaved on a CI runner, which has no terminal attached.
+// `run --rm` espera a criação terminar e propaga falhas; `--no-TTY` atende à CI sem terminal.
 process.exit(compose(['run', '--rm', '--no-TTY', 'minio-init']));

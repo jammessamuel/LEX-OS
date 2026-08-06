@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-06 · envio de arquivos entregue
+**Última atualização:** 2026-08-06 · revisão técnica e visual concluída
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -47,6 +47,9 @@ experiência central da `vision.md` e o componente 11 da proposta.
 | Alternador de tema persistente       | Escuro é o padrão; a escolha do usuário precisa sobreviver ao recarregar |
 | Passagem de teclado no fluxo crítico | Critério de aceite da Delivery 10, não item opcional                     |
 | Sincronizar a referência visual      | A página do sistema visual ficou na escala e no raio antigos             |
+| Erro parcial no detalhe do caso      | Falha de documentos/participantes não pode parecer lista vazia           |
+| Paginar o detalhe do caso            | Documentos e participantes exibem apenas os primeiros 50 registros       |
+| Retomar o destino após login         | O parâmetro `destino` é preservado na URL, mas ainda não é consumido     |
 
 ---
 
@@ -88,12 +91,10 @@ Nenhum é código. Cada um trava trabalho abaixo dele.
 
 Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
-| Cartão                            | Situação                                                                                                          |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Testes de integração              | Nunca executados fora do CI. A máquina de desenvolvimento usada até aqui não tem Docker                           |
-| `pnpm infra:up`                   | Pode ter o mesmo defeito de `--wait` com o `minio-init` que foi corrigido em `infra:dependencies`. Não verificado |
-| Gate de lint e formato pré-commit | Os hooks cobrem só mensagem de commit                                                                             |
-| Playwright ponta a ponta          | Delivery 11                                                                                                       |
+| Cartão                            | Situação                               |
+| --------------------------------- | -------------------------------------- |
+| Gate de lint e formato pré-commit | Os hooks cobrem só mensagem de commit  |
+| Playwright ponta a ponta          | Obrigatório para aceitar a Delivery 10 |
 
 ---
 
@@ -101,6 +102,10 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
 
+- **Revisão local do stack e da interface** — testes unitários e de integração executados
+  com Docker; `infra:up` verificado no Compose v5.3.1; build das imagens corrigido para o
+  `postinstall` do Prisma e para a URL da API no bundle web; fluxo login → casos → detalhe
+  exercitado em desktop e celular; verificação WCAG automatizada incorporada à revisão.
 - **Revisão de procedência** — a tela onde a promessa central vira produto: cada dado
   identificado carrega uma nota de rodapé com arquivo, página, trecho, modelo e confiança,
   revelada no cursor e no foco de teclado; quando a IA normalizou um valor, a nota preserva

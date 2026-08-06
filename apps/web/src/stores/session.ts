@@ -39,7 +39,13 @@ export const useSessionStore = defineStore('session', () => {
     email: string;
     password: string;
   }): Promise<void> {
-    apply(await request<AuthTokenResponse>('/auth/login', { method: 'POST', body: input }));
+    apply(
+      await request<AuthTokenResponse>('/auth/login', {
+        method: 'POST',
+        body: input,
+        skipRefresh: true,
+      }),
+    );
   }
 
   /**
@@ -49,7 +55,12 @@ export const useSessionStore = defineStore('session', () => {
   async function restore(): Promise<void> {
     restoring.value = true;
     try {
-      apply(await request<AuthTokenResponse>('/auth/refresh', { method: 'POST' }));
+      apply(
+        await request<AuthTokenResponse>('/auth/refresh', {
+          method: 'POST',
+          skipRefresh: true,
+        }),
+      );
     } catch {
       clear();
     } finally {

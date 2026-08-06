@@ -1,7 +1,7 @@
 # Alinhamento de roadmap: proposta conceitual x plano de implementação
 
 **Status:** Registro de reconciliação
-**Última atualização:** 2026-08-05
+**Última atualização:** 2026-08-06
 **Idioma:** este documento e os ADR-009 a ADR-012 são escritos em pt-BR porque o público é a sociedade da SAMUEL DEV LTDA, não a equipe de engenharia. A documentação técnica do repositório permanece em inglês, conforme `AGENTS.md`.
 
 ## Objetivo
@@ -36,30 +36,32 @@ Essa é a ordem correta de construção — nenhum dos 11 componentes pode entra
 
 ## Mapeamento dos componentes
 
-| #   | Componente              | Entrega responsável | Situação                                                                                                                                                                                                                                                    |
-| --- | ----------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Central de Ingestão     | 6 (parcial)         | **Parcial.** Apenas upload HTTP multipart. E-mail, scanner, pastas monitoradas e APIs não existem. WhatsApp está explicitamente fora do escopo do MVP — ver ADR-010                                                                                         |
-| 2   | Pipeline Inteligente    | 7                   | **Estrutura completa, inteligência simulada.** Contratos de fila, ciclo de vida do job, retry, reconciliação e proveniência têm forma de produção. Todos os provedores são mocks determinísticos. Não existe estágio de transcrição                         |
-| 3   | Organizador Inteligente | **nenhuma**         | **Sem entrega.** Existe apenas vínculo de duplicata por SHA-256 dentro do mesmo cliente. Estrutura de pastas, versionamento e renomeação inteligente não têm entrega no plano                                                                               |
-| 4   | OCR Jurídico            | 7 (mock)            | **Mock.** A extração de texto devolve fixtures determinísticos. Extração de CPF, CNPJ, OAB, datas, valores e número de processo _a partir do conteúdo do documento_ não existe. A validação de CPF/CNPJ que existe é de cadastro de pessoa, não de extração |
-| 5   | Extração Semântica      | 7 (mock)            | **Mock.** `ExtractedEntity` carrega página, offsets, confiança e `linkedPersonId`; os valores são fabricados                                                                                                                                                |
-| 6   | Timeline Engine         | 8                   | Não iniciada. Exige autorização explícita. `TimelineEvent` já existe no schema                                                                                                                                                                              |
-| 7   | Checklist Inteligente   | 8                   | Não iniciada. `ChecklistTemplate`, `CaseChecklist` e `CaseChecklistItem` já existem no schema                                                                                                                                                               |
-| 8   | Workspace               | 10                  | Não iniciada. A aplicação web é uma única página estática                                                                                                                                                                                                   |
-| 9   | Memory Engine           | 9                   | Não iniciada. `KnowledgeChunk` e a extensão pgvector já estão no lugar                                                                                                                                                                                      |
-| 10  | Assistente Interno      | **nenhuma**         | **Contradição.** A proposta lista como componente central e Fase 3. O `vision.md` lista "chatbot jurídico genérico" entre as coisas que o LEX OS **não é**. Ver ADR-009                                                                                     |
-| 11  | Agente Pré-Processo     | 6 + 7 + 10          | **Planejado e parcialmente construído.** É o fluxo "Preparar processo" do `vision.md`. A metade de backend existe em forma mock; a metade visível ao usuário é a Delivery 10                                                                                |
+| #   | Componente              | Entrega responsável | Situação                                                                                                                                                                                                                                                                                                    |
+| --- | ----------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Central de Ingestão     | 6 (parcial)         | **Parcial.** Apenas upload HTTP multipart. E-mail, scanner, pastas monitoradas e APIs não existem. WhatsApp está explicitamente fora do escopo do MVP — ver ADR-010                                                                                                                                         |
+| 2   | Pipeline Inteligente    | 7                   | **Estrutura completa, inteligência simulada.** Contratos de fila, ciclo de vida do job, retry, reconciliação e proveniência têm forma de produção. Todos os provedores são mocks determinísticos. Não existe estágio de transcrição                                                                         |
+| 3   | Organizador Inteligente | **nenhuma**         | **Sem entrega.** Existe apenas vínculo de duplicata por SHA-256 dentro do mesmo cliente. Estrutura de pastas, versionamento e renomeação inteligente não têm entrega no plano                                                                                                                               |
+| 4   | OCR Jurídico            | 7 (mock)            | **Mock.** A extração de texto devolve fixtures determinísticos. Extração de CPF, CNPJ, OAB, datas, valores e número de processo _a partir do conteúdo do documento_ não existe. A validação de CPF/CNPJ que existe é de cadastro de pessoa, não de extração                                                 |
+| 5   | Extração Semântica      | 7 (mock)            | **Mock.** `ExtractedEntity` carrega página, offsets, confiança e `linkedPersonId`; os valores são fabricados                                                                                                                                                                                                |
+| 6   | Timeline Engine         | 8                   | Não iniciada. Exige autorização explícita. `TimelineEvent` já existe no schema                                                                                                                                                                                                                              |
+| 7   | Checklist Inteligente   | 8                   | Não iniciada. `ChecklistTemplate`, `CaseChecklist` e `CaseChecklistItem` já existem no schema                                                                                                                                                                                                               |
+| 8   | Workspace               | 10                  | **Iniciada como preparação, não aceita como Entrega 10.** Login, lista/detalhe de caso, envio, progresso e procedência já usam a API real. Criação/edição, participantes, download, correção humana, timeline, checklist, busca, auditoria autorizada, matriz completa de acessibilidade e E2E ainda faltam |
+| 9   | Memory Engine           | 9                   | Não iniciada. `KnowledgeChunk` e a extensão pgvector já estão no lugar                                                                                                                                                                                                                                      |
+| 10  | Assistente Interno      | **nenhuma**         | **Contradição.** A proposta lista como componente central e Fase 3. O `vision.md` lista "chatbot jurídico genérico" entre as coisas que o LEX OS **não é**. Ver ADR-009                                                                                                                                     |
+| 11  | Agente Pré-Processo     | 6 + 7 + 10          | **Parcialmente construído e visível.** O backend mock e a interface de envio, progresso e procedência existem; correção humana, download, reprocessamento pela interface e verificação E2E ainda faltam                                                                                                     |
 
 ## Mapeamento das fases
 
 | Fase                                      | Componentes | Entregas                       | Cobertura                                                           |
 | ----------------------------------------- | ----------- | ------------------------------ | ------------------------------------------------------------------- |
 | Fase 1 — Ingestão, Organizador, OCR       | 1, 3, 4     | 6 (parcial), nenhuma, 7 (mock) | **A mais fraca.** Um componente parcial, um sem entrega, um mockado |
-| Fase 2 — Timeline, Checklist, Workspace   | 6, 7, 8     | 8, 8, 10                       | Totalmente especificada, não iniciada                               |
+| Fase 2 — Timeline, Checklist, Workspace   | 6, 7, 8     | 8, 8, 10                       | Timeline e checklist não iniciados; Workspace iniciado parcialmente |
 | Fase 3 — Memory Engine, Assistente        | 9, 10       | 9, nenhuma                     | Metade especificada; o assistente está em disputa                   |
 | Fase 4 — Integrações com ERPs e tribunais | —           | fora do escopo do MVP          | Excluída de propósito pelo `mvp-scope.md`                           |
 
 **A consequência que precisa ser dita:** a Delivery 8 é o próximo passo do plano de implementação, mas Timeline e Checklist pertencem à **Fase 2** da proposta. Se o roadmap da proposta é a sequência que manda, a Delivery 8 não é a próxima coisa a construir. Se a cadeia de dependências do plano é que manda, é. Essa escolha ainda não foi feita.
+
+As telas preparatórias não alteram o checkpoint formal: a Entrega 7 continua sendo a última aceita. Elas aproveitam rotas existentes sem autorizar comportamento das Entregas 8 e 9, e a Entrega 10 só poderá ser considerada concluída quando todos os seus critérios de aceite forem verificados.
 
 ## Reversões de stack deliberadas
 

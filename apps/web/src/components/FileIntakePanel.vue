@@ -191,6 +191,7 @@ async function send(): Promise<void> {
           type="file"
           multiple
           :accept="ACCEPT_ATTRIBUTE"
+          aria-label="Selecionar arquivos para envio"
           class="visually-hidden"
           @change="onPick"
         />

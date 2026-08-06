@@ -543,8 +543,8 @@ export class FilesService {
         jobType: resources.job.jobType,
       });
     } catch {
-      // The intake transaction is already committed; the reconciler republishes the job.
-      // Count the miss so a queue outage is visible in metrics instead of only in log noise.
+      // A entrada já foi persistida e o reconciliador republicará o job. A métrica torna a
+      // indisponibilidade da fila visível sem depender apenas dos logs.
       this.metrics.recordDeferredEnqueue();
       this.#logger.warn('processing_job_enqueue_deferred', {
         job_id: resources.job.id,
@@ -576,7 +576,7 @@ export class FilesService {
     try {
       await this.storage.deleteObject(this.config.objectStorage.bucket, storageKey);
     } catch {
-      // A later reconciliation report will surface the orphan without deleting it automatically.
+      // Uma reconciliação posterior sinalizará o órfão sem apagá-lo automaticamente.
     }
   }
 

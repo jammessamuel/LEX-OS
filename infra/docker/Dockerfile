@@ -21,10 +21,16 @@ COPY packages/database/package.json packages/database/package.json
 COPY packages/eslint-config/package.json packages/eslint-config/package.json
 COPY packages/shared/package.json packages/shared/package.json
 COPY packages/tsconfig/package.json packages/tsconfig/package.json
+COPY infra/scripts/setup-git-hooks.mjs infra/scripts/setup-git-hooks.mjs
+COPY packages/database/prisma.config.ts packages/database/prisma.config.ts
+COPY packages/database/prisma/schema.prisma packages/database/prisma/schema.prisma
 
 RUN pnpm install --frozen-lockfile
 
 FROM dependencies AS build
+
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 COPY . .
 

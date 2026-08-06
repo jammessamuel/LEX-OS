@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Points Git at the versioned .githooks/ directory so the commit-msg guard survives a
-// fresh clone. Runs from the root `prepare` script on `pnpm install`.
+// Aponta o Git para `.githooks`, mantendo a proteção commit-msg após uma nova clonagem.
+// Executa pelo script `prepare` da raiz durante `pnpm install`.
 //
-// Must never fail the install: Docker builds and CI checkouts may have no .git directory
-// and no git binary. In those environments there is nothing to wire up and that is fine.
+// Não pode interromper a instalação: imagens Docker e checkouts da CI podem não ter `.git`
+// ou o executável do Git, e nesses ambientes não há gancho a configurar.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';

@@ -34,13 +34,11 @@ export function encodeCursor(value: Readonly<Record<string, string>>): string {
 export type TimestampIdCursor<TField extends string> = { [K in TField]: Date } & { id: string };
 
 /**
- * Builds the keyset-cursor parser shared by every tenant-owned list route.
+ * Cria o analisador de cursor por chave compartilhado pelas listas de recursos do tenant.
  *
- * Each resource family orders by one timestamp column plus `id` as the tiebreaker, so the
- * decoded payload is always `{ <timestampField>: ISO string, id: UUID }`. Anything else —
- * a missing field, an unparseable date, a tampered identifier — returns `undefined`, and
- * `decodeCursor` turns that into an `INVALID_CURSOR` response rather than letting an
- * attacker-supplied value reach a query.
+ * Cada recurso ordena por uma data e pelo `id` como desempate, então o conteúdo decodificado
+ * deve ser `{ <timestampField>: data ISO, id: UUID }`. Campo ausente, data inválida ou
+ * identificador adulterado vira `INVALID_CURSOR` antes de alcançar a consulta.
  */
 export function createTimestampIdCursorParser<TField extends string>(
   timestampField: TField,

@@ -11,7 +11,7 @@ async function inspect(chunks, mimeType, extension) {
     new MockVirusScanner({ environment: 'test' }).createSession(),
   );
   for await (const chunk of Readable.from(chunks).pipe(inspector)) {
-    // The consumer intentionally discards each streamed chunk instead of aggregating the file.
+    // Descarta cada bloco do fluxo de propósito, sem agregar o arquivo em memória.
     void chunk;
   }
   return inspector.result(mimeType, extension);

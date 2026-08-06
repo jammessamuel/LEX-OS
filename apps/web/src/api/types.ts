@@ -271,7 +271,7 @@ export interface ExtractedEntity {
   createdAt: string;
 }
 
-/** Execução append-only: reprocessar cria outra, nunca sobrescreve esta. */
+/** Execução imutável: reprocessar cria outra em vez de sobrescrever esta. */
 export interface Extraction {
   id: string;
   documentId: string;

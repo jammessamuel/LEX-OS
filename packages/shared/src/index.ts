@@ -1,11 +1,11 @@
 const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
 /**
- * Narrows an untrusted value to a canonical v4 UUID string.
+ * Restringe um valor não confiável a uma string UUID v4 canônica.
  *
- * Used at every boundary that accepts an identifier it did not generate — decoded
- * pagination cursors and JWT claims among them. Validating the shape does not authorize
- * the identifier: tenant scoping and permission checks still apply.
+ * Usado nas fronteiras que recebem identificadores externos, como cursores e declarações
+ * JWT. Validar o formato não autoriza o identificador: o escopo do tenant e as permissões
+ * continuam obrigatórios.
  */
 export function isUuidV4(value: unknown): value is string {
   return typeof value === 'string' && uuidV4Pattern.test(value);

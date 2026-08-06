@@ -10,11 +10,8 @@ import { useId } from 'vue';
  * propósito: o advogado precisa saber, não ser interrompido.
  */
 defineProps<{
-  /** O valor exibido. */
   value: string;
-  /** Numeral da nota na tela (1, 2, 3…). */
   index: number;
-  /** Linhas da fonte, já em pt-BR, na ordem de leitura. */
   sourceLines: readonly string[];
   /** Identificador jurídico usa mono e números tabulares. */
   mono?: boolean;

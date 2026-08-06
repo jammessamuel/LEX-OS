@@ -1,17 +1,17 @@
 #!/usr/bin/env node
-// Claude Code PreToolUse guard for Bash calls.
+// Proteção PreToolUse do Claude Code para chamadas Bash.
 //
-// Blocks, before git runs:
-//   1. commit/tag/merge/revert messages carrying AI attribution;
-//   2. --no-verify, which would bypass the .githooks/commit-msg backstop;
-//   3. force pushes, which are destructive and outward-facing.
+// Bloqueia, antes da execução do Git:
+//   1. mensagens de commit/tag/merge/revert com atribuição a IA;
+//   2. --no-verify, que contornaria a proteção .githooks/commit-msg;
+//   3. envios forçados, que são destrutivos e externos.
 //
-// Contract: read the hook payload on stdin, exit 0 to allow, exit 2 to block with the
-// reason on stderr. Any other failure mode must stay non-blocking.
+// Contrato: lê o payload pela entrada padrão; retorna 0 para permitir ou 2 para bloquear,
+// explicando o motivo na saída de erro. Qualquer outra falha permanece não bloqueante.
 
 const attributionPatterns = [
   {
-    // Co-Authored-By / Signed-off-by naming a model or AI tool.
+    // Co-Authored-By ou Signed-off-by que nomeie modelo ou ferramenta de IA.
     pattern:
       /(?:co-?authored-by|signed-off-by|author)\s*:[^\n]*\b(?:claude|anthropic|copilot|cursor|codex|chatgpt|openai|gemini|devin|windsurf|aider|bot)\b/i,
     reason: 'an AI co-author or author trailer',
@@ -68,7 +68,7 @@ function readStdin() {
   });
 }
 
-// `git commit`, `git -c foo=bar commit`, `git -C path commit`, and the same for tag/merge/revert.
+// Reconhece variações de `git commit` e os comandos equivalentes de tag/merge/revert.
 const messageCommandPattern =
   /\bgit\b(?:\s+-[^\s]+(?:\s+[^\s-][^\s]*)?)*\s+(commit|tag|merge|revert)\b/i;
 const pushPattern = /\bgit\b(?:\s+-[^\s]+(?:\s+[^\s-][^\s]*)?)*\s+push\b/i;
@@ -81,7 +81,7 @@ let payload;
 try {
   payload = JSON.parse(payloadRaw);
 } catch {
-  allow(); // Unparseable payload is not the developer's fault — never block on it.
+  allow(); // Um payload ilegível não é culpa de quem desenvolve e nunca deve bloquear.
 }
 
 if (payload?.tool_name !== 'Bash') {
@@ -93,12 +93,11 @@ if (typeof command !== 'string' || !/\bgit\b/.test(command)) {
   allow();
 }
 
-// Flag detection must ignore anything inside the commit message itself. A message that
-// legitimately discusses `--no-verify` or `--force` — a commit documenting this very hook,
-// for instance — is not an attempt to pass the flag. Attribution checks still run against
-// the full command, because there the message content is exactly what matters.
+// A detecção de opções ignora o texto da mensagem: documentar `--no-verify` ou `--force`
+// não equivale a usá-los. Já a atribuição é verificada no comando completo, pois nesse caso
+// o conteúdo da mensagem é justamente o que importa.
 const withoutQuotedText = command
-  .replace(/<<-?\s*(['"]?)(\w+)\1[\s\S]*?^\s*\2\s*$/gm, ' ') // heredoc bodies
+  .replace(/<<-?\s*(['"]?)(\w+)\1[\s\S]*?^\s*\2\s*$/gm, ' ') // corpos de heredoc
   .replace(/"(?:[^"\\]|\\[\s\S])*"/g, ' ')
   .replace(/'(?:[^'\\]|\\[\s\S])*'/g, ' ');
 

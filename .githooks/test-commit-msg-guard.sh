@@ -1,9 +1,8 @@
 #!/bin/sh
-# Self-test for the commit-message guards described in CLAUDE.md section 0.1.
+# Autoteste das proteções de mensagem descritas na seção 0.1 de CLAUDE.md.
 #
-# Runs in CI and can be run by hand: sh .githooks/test-commit-msg-guard.sh
-# Exercises both guards — the Git commit-msg hook and the Claude Code PreToolUse hook —
-# so a regression in either one fails a pull request instead of leaking into history.
+# Executa na CI ou manualmente com: sh .githooks/test-commit-msg-guard.sh
+# Exercita os ganchos commit-msg e PreToolUse para impedir que uma regressão chegue ao histórico.
 
 set -u
 
@@ -14,7 +13,7 @@ trap 'rm -rf "$work"' EXIT
 failures=0
 checks=0
 
-# expect_msg <expected-exit> <label> <message>
+# expect_msg <saída-esperada> <rótulo> <mensagem>
 expect_msg() {
   expected="$1"
   label="$2"
@@ -30,7 +29,7 @@ expect_msg() {
   fi
 }
 
-# expect_hook <expected-exit> <label> <bash-command-json-string>
+# expect_hook <saída-esperada> <rótulo> <comando-bash-em-json>
 expect_hook() {
   expected="$1"
   label="$2"
@@ -46,7 +45,7 @@ expect_hook() {
   fi
 }
 
-# --- Git commit-msg hook -----------------------------------------------------------
+# --- Gancho commit-msg do Git ------------------------------------------------------
 
 expect_msg 0 'plain message' 'feat: add processing progress route\n'
 expect_msg 1 'claude co-author' 'fix: bug\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n'
@@ -60,7 +59,7 @@ expect_msg 0 'mentions the tool without claiming authorship' \
 expect_msg 0 'attribution inside a comment line' \
   'docs: note\n# Co-Authored-By: Claude <noreply@anthropic.com>\n'
 
-# --- Claude Code PreToolUse hook ---------------------------------------------------
+# --- Gancho PreToolUse do Claude Code ----------------------------------------------
 
 if command -v node >/dev/null 2>&1; then
   expect_hook 0 'plain commit' 'git commit -m \"feat: add route\"'
@@ -74,7 +73,7 @@ if command -v node >/dev/null 2>&1; then
   expect_hook 0 'mentions the tool without claiming authorship' \
     'git commit -m \"chore: add Claude Code decision harness\"'
   expect_hook 0 'unrelated command' 'pnpm lint'
-  # A message may discuss the flags without attempting to pass them.
+  # A mensagem pode citar as opções sem tentar passá-las ao comando.
   expect_hook 0 'flag named inside the message, not passed' \
     'git commit -m \"docs: explica por que --no-verify e --force sao bloqueados\"'
   expect_hook 2 'flag passed after a message that mentions it' \

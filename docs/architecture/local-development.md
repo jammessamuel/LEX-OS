@@ -1,7 +1,7 @@
 # Local development topology
 
 **Status:** Updated through Delivery 7  
-**Last updated:** 2026-08-05
+**Last updated:** 2026-08-06
 
 ## Purpose
 
@@ -53,7 +53,7 @@ pnpm infra:down
 
 `infra/scripts/start-dependencies.mjs` waits on the long-running services, then runs the bootstrap as its own foreground step, which propagates the real exit code and guarantees the bucket exists before anything downstream needs it.
 
-`infra:up` still names every service, including `minio-init`, in a single `--wait`. Whether Compose tolerates that because `api` and `worker` declare `minio-init: condition: service_completed_successfully` has not been verified. If `pnpm infra:up` fails with `container lex-os-minio-init-1 exited (0)`, it is the same defect and needs the same treatment.
+`infra:up` was exercised locally with Docker Compose v5.3.1. The dependency conditions on `api` and `worker` correctly accept the successful completion of `minio-init`, and the command returns only after PostgreSQL, Redis, MinIO, Mailpit, API, worker, and web report healthy.
 
 `infra:down` removes containers and networks but preserves named volumes. Deleting volumes is an explicit destructive maintenance action and is not part of the ordinary command.
 
@@ -135,4 +135,4 @@ The shared logger recursively redacts password, secret, authorization, cookie, t
 
 ## Delivery boundary
 
-The local stack, database layer, HTTP platform, authentication, tenant context, RBAC, people, cases, participants, private streamed intake, file/document metadata, authorized signed downloads, persistent BullMQ processing, mock extraction provenance, reprocessing, enqueue-gap recovery, soft delete, and safe audits are implemented through Delivery 7. E-mail behavior, timeline/checklist workflows, feature UI, search, and real AI/OCR/scanner providers remain scheduled for later deliveries.
+The formal delivery checkpoint remains Delivery 7. The stack, database layer, HTTP platform, authentication, tenant context, RBAC, people, cases, participants, private streamed intake, file/document metadata, authorized signed downloads, persistent BullMQ processing, mock extraction provenance, reprocessing, enqueue-gap recovery, soft delete, and safe audits are implemented. A preparatory subset of the Delivery 10 web experience now covers login, case list/detail, upload, processing progress, and extraction provenance; it does not complete or authorize Deliveries 8, 9, or 10. E-mail behavior, timeline/checklist workflows, search, the remaining feature UI, and real AI/OCR/scanner providers remain scheduled for later deliveries.

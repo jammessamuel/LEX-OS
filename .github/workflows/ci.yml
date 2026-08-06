@@ -5,7 +5,7 @@ on:
     branches: [main]
   pull_request:
 
-# CI verifies. It never deploys, never publishes, and never touches a real environment.
+# A CI apenas verifica: não implanta, publica nem acessa ambientes reais.
 permissions:
   contents: read
 
@@ -21,10 +21,38 @@ jobs:
   quality:
     name: Format, lint, typecheck, unit tests, build
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
-      # `prisma validate` needs the datasource variable defined; it never connects here.
+      # O `prisma validate` exige a fonte de dados definida, mas não abre conexão nesta etapa.
       DATABASE_URL: postgresql://postgres:ci-postgres-password@127.0.0.1:5433/postgres?schema=public
+      DEPENDENCY_TIMEOUT_MS: '2000'
+      LOG_LEVEL: info
+      WEB_ORIGIN: http://localhost:5173
+      VITE_API_BASE_URL: http://localhost:3000/api/v1
+      AUTH_ACCESS_TOKEN_SECRET: ci-access-token-secret-000000000000
+      AUTH_ACCESS_TOKEN_TTL_SECONDS: '900'
+      AUTH_REFRESH_TOKEN_TTL_SECONDS: '2592000'
+      AUTH_LOGIN_ATTEMPT_LIMIT: '5'
+      AUTH_LOGIN_ATTEMPT_WINDOW_SECONDS: '900'
+      DATABASE_NAME: postgres
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: ci-postgres-password
+      REDIS_PASSWORD: ci-redis-password
+      PROCESSING_QUEUE_PREFIX: lex-os
+      PROCESSING_JOB_ATTEMPTS: '3'
+      PROCESSING_JOB_BACKOFF_MS: '250'
+      PROCESSING_WORKER_CONCURRENCY: '2'
+      PROCESSING_STALE_AFTER_SECONDS: '60'
+      PROCESSING_RECONCILE_INTERVAL_SECONDS: '30'
+      OBJECT_STORAGE_BUCKET: lex-os-private
+      OBJECT_STORAGE_ACCESS_KEY: ci-minio-access-key
+      OBJECT_STORAGE_SECRET_KEY: ci-minio-secret-key
+      OBJECT_STORAGE_REGION: us-east-1
+      OBJECT_STORAGE_DOWNLOAD_URL_TTL_SECONDS: '60'
+      OBJECT_STORAGE_QUARANTINE_STALE_AFTER_SECONDS: '3600'
+      FILE_INTAKE_MAX_FILE_BYTES: '26214400'
+      FILE_INTAKE_MAX_FILES_PER_REQUEST: '10'
+      FILE_INTAKE_ALLOWED_MIME_TYPES: application/pdf,image/jpeg,image/png,text/plain
     steps:
       - uses: actions/checkout@v4
 
@@ -60,34 +88,9 @@ jobs:
 
       - name: Compose configuration
         run: pnpm infra:config
-        env:
-          DEPENDENCY_TIMEOUT_MS: '2000'
-          LOG_LEVEL: info
-          WEB_ORIGIN: http://localhost:5173
-          AUTH_ACCESS_TOKEN_SECRET: ci-access-token-secret-000000000000
-          AUTH_ACCESS_TOKEN_TTL_SECONDS: '900'
-          AUTH_REFRESH_TOKEN_TTL_SECONDS: '2592000'
-          AUTH_LOGIN_ATTEMPT_LIMIT: '5'
-          AUTH_LOGIN_ATTEMPT_WINDOW_SECONDS: '900'
-          DATABASE_NAME: postgres
-          DATABASE_USER: postgres
-          DATABASE_PASSWORD: ci-postgres-password
-          REDIS_PASSWORD: ci-redis-password
-          PROCESSING_QUEUE_PREFIX: lex-os
-          PROCESSING_JOB_ATTEMPTS: '3'
-          PROCESSING_JOB_BACKOFF_MS: '250'
-          PROCESSING_WORKER_CONCURRENCY: '2'
-          PROCESSING_STALE_AFTER_SECONDS: '60'
-          PROCESSING_RECONCILE_INTERVAL_SECONDS: '30'
-          OBJECT_STORAGE_BUCKET: lex-os-private
-          OBJECT_STORAGE_ACCESS_KEY: ci-minio-access-key
-          OBJECT_STORAGE_SECRET_KEY: ci-minio-secret-key
-          OBJECT_STORAGE_REGION: us-east-1
-          OBJECT_STORAGE_DOWNLOAD_URL_TTL_SECONDS: '60'
-          OBJECT_STORAGE_QUARANTINE_STALE_AFTER_SECONDS: '3600'
-          FILE_INTAKE_MAX_FILE_BYTES: '26214400'
-          FILE_INTAKE_MAX_FILES_PER_REQUEST: '10'
-          FILE_INTAKE_ALLOWED_MIME_TYPES: application/pdf,image/jpeg,image/png,text/plain
+
+      - name: Build application containers
+        run: docker compose build api worker web
 
   commit-message-guard:
     name: Commit message guard
@@ -136,8 +139,8 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      # The integration suites call process.loadEnvFile('.env'), so the file must exist.
-      # Values are CI-only and match the Compose defaults; no secret is required.
+      # Os testes de integração carregam `.env`; estes valores são exclusivos da CI e
+      # correspondem aos padrões do Compose, sem depender de segredos externos.
       - name: Create CI environment file
         run: |
           sed \
@@ -154,8 +157,7 @@ jobs:
             exit 1
           fi
 
-      # Reuse the same Compose definition developers run locally, so CI and the local
-      # stack cannot drift apart.
+      # A CI usa o mesmo Compose local para impedir divergência entre os ambientes.
       - name: Start dependencies
         run: pnpm infra:dependencies
 

@@ -50,7 +50,7 @@ async function load(): Promise<void> {
   }
 }
 
-/** A execução mais recente de cada tipo. O histórico completo fica na trilha abaixo. */
+/** Retorna a execução mais recente de cada tipo; o histórico completo continua preservado. */
 function latestOf(...types: readonly string[]): Extraction | undefined {
   return extractions.value.find(
     (extraction) => types.includes(extraction.extractionType) && extraction.status === 'COMPLETED',
@@ -146,7 +146,7 @@ onMounted(() => {
 
       <div class="split">
         <div class="stack">
-          <!-- Dados identificados: cada valor carrega a nota de rodapé com a origem. -->
+          <!-- Cada dado identificado carrega uma nota com sua origem. -->
           <section class="panel" aria-labelledby="entities-title">
             <div class="panel__bar">
               <span id="entities-title" class="label">Dados identificados</span>
@@ -184,7 +184,7 @@ onMounted(() => {
             </template>
           </section>
 
-          <!-- Texto extraído: leitura, não interface. Serifa e medida controlada. -->
+          <!-- O texto extraído usa tipografia própria para leitura prolongada. -->
           <section v-if="textExtraction?.rawText" class="panel">
             <div class="panel__bar">
               <span class="label">Texto extraído</span>
@@ -199,7 +199,7 @@ onMounted(() => {
         </div>
 
         <div class="stack">
-          <!-- Trilha append-only: cada execução preservada com provedor, modelo e hora. -->
+          <!-- A trilha preserva cada execução com provedor, modelo e horário. -->
           <section class="panel" aria-labelledby="history-title">
             <div class="panel__bar">
               <span id="history-title" class="label">Histórico de preparação</span>

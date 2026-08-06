@@ -183,8 +183,8 @@ export class ProcessingService {
         jobType: 'OCR',
       });
     } catch {
-      // The job row is committed; the reconciler republishes it. Count the miss so a queue
-      // outage is visible in metrics instead of only in log noise.
+      // O job já foi persistido e o reconciliador o republicará. A métrica torna a
+      // indisponibilidade da fila visível sem depender apenas dos logs.
       this.metrics.recordDeferredEnqueue();
       this.#logger.warn('processing_job_enqueue_deferred', {
         job_id: job.id,

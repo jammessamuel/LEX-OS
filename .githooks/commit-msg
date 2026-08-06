@@ -1,12 +1,11 @@
 #!/bin/sh
-# LEX OS commit-msg guard.
+# Proteção das mensagens de commit do LEX OS.
 #
-# Backstop for CLAUDE.md section 0.1: no commit message may carry AI attribution,
-# regardless of which tool produced it. This runs for every commit path the Claude Code
-# PreToolUse hook cannot see, including `git commit -F <file>`, editor commits, and
-# commits made by other agents or IDEs.
+# Segunda barreira para a seção 0.1 de CLAUDE.md: nenhuma mensagem pode atribuir autoria
+# a IA, independentemente da ferramenta. Ela cobre inclusive commits feitos por arquivo,
+# editor, outros agentes ou IDEs, que o gancho PreToolUse não consegue observar.
 #
-# Installed by infra/scripts/setup-git-hooks.mjs (core.hooksPath=.githooks).
+# Instalado por infra/scripts/setup-git-hooks.mjs (core.hooksPath=.githooks).
 
 message_file="$1"
 
@@ -14,7 +13,7 @@ if [ ! -f "$message_file" ]; then
   exit 0
 fi
 
-# Ignore comment lines: `git commit` templates legitimately mention tooling.
+# Ignora comentários, pois modelos legítimos de commit podem mencionar ferramentas.
 payload=$(grep -v '^#' "$message_file")
 
 fail() {

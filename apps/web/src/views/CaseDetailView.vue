@@ -327,6 +327,16 @@ onMounted(() => {
   }
 }
 
+@media (max-width: 36rem) {
+  .head {
+    flex-direction: column;
+  }
+
+  .head__actions {
+    margin-left: 0;
+  }
+}
+
 .stack {
   display: flex;
   flex-direction: column;

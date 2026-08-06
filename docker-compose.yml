@@ -43,6 +43,8 @@ x-runtime-environment: &runtime-environment
 x-application-build: &application-build
   context: .
   dockerfile: infra/docker/Dockerfile
+  args:
+    VITE_API_BASE_URL: ${VITE_API_BASE_URL:?VITE_API_BASE_URL is required}
 
 services:
   postgres:

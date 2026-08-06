@@ -3,10 +3,8 @@ const { describe, it } = require('node:test');
 
 require('reflect-metadata');
 
-// Nest resolves constructor dependencies at boot, so a service that injects a provider its
-// module never imports fails only when the application starts — no unit test catches it and
-// the API smoke test does not build the module graph. These assertions read the decorator
-// metadata directly, which is cheap and needs no database, Redis, or object storage.
+// O Nest resolve dependências dos construtores na inicialização. Estas asserções leem os
+// metadados dos decoradores para detectar importações ausentes sem banco, Redis ou storage.
 
 async function loadModuleMetadata(specifier, exportName) {
   const imported = await import(specifier);
@@ -24,8 +22,8 @@ function constructorDependencies(target) {
   return Reflect.getMetadata('design:paramtypes', target) ?? [];
 }
 
-// A @Global() module's exports are injectable anywhere without being imported, so they have
-// to be part of the available set. Nest records the flag under this metadata key.
+// Exportações de módulos @Global() são injetáveis sem importação explícita; o Nest registra
+// essa condição nesta chave de metadados.
 const GLOBAL_MODULE_METADATA = '__module:global__';
 
 async function globallyAvailableProviders() {
@@ -70,8 +68,8 @@ describe('API module graph', () => {
     );
   });
 
-  // Both services count deferred enqueues, which is only reachable if their module imports
-  // ObservabilityModule. Delete the import and this fails instead of the API failing to boot.
+  // Os dois serviços contam publicações adiadas e dependem de ObservabilityModule. Se a
+  // importação desaparecer, o teste falha antes da inicialização da API.
   for (const target of [
     {
       label: 'FilesService',
@@ -105,8 +103,8 @@ describe('API module graph', () => {
       }
 
       for (const dependency of constructorDependencies(service)) {
-        // Interface-typed and token-injected parameters erase to Object at runtime; those are
-        // resolved by @Inject() and are outside what this reflection can verify.
+        // Parâmetros por interface ou token viram Object em execução; @Inject() os resolve
+        // fora do alcance desta verificação por reflexão.
         if (typeof dependency !== 'function' || dependency === Object) {
           continue;
         }

@@ -13,6 +13,12 @@ vi.mock('../api/client.js', async () => {
 
 const { ApiError } = await import('../api/client');
 
+function mountView() {
+  return mount(CasesView, {
+    global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } },
+  });
+}
+
 const demoCase = {
   id: '00000000-0000-4000-8000-000000000003',
   internalCode: 'DEMO-0001',
@@ -42,7 +48,7 @@ describe('CasesView', () => {
       pageInfo: { nextCursor: null, hasNextPage: false },
     });
 
-    const wrapper = mount(CasesView);
+    const wrapper = mountView();
     await flushPromises();
     const text = wrapper.text();
 
@@ -57,7 +63,7 @@ describe('CasesView', () => {
   it('explica o vazio em vez de mostrar uma tabela sem linhas', async () => {
     request.mockResolvedValue({ data: [], pageInfo: { nextCursor: null, hasNextPage: false } });
 
-    const wrapper = mount(CasesView);
+    const wrapper = mountView();
     await flushPromises();
 
     expect(wrapper.text()).toContain('Nenhum caso por aqui ainda');
@@ -74,7 +80,7 @@ describe('CasesView', () => {
       }),
     );
 
-    const wrapper = mount(CasesView);
+    const wrapper = mountView();
     await flushPromises();
 
     const alert = wrapper.get('[role="alert"]');

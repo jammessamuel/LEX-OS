@@ -14,11 +14,11 @@ export interface MetricsSnapshot {
   };
   processing: {
     /**
-     * Jobs that were committed to PostgreSQL but could not be published to Redis.
+     * Jobs persistidos no PostgreSQL que não puderam ser publicados no Redis.
      *
-     * The stale-job reconciler republishes them, so a non-zero value is recoverable rather
-     * than lost work. A value that keeps climbing means the queue is unreachable and every
-     * upload is waiting on reconciliation instead of being processed promptly.
+     * O reconciliador os republica, portanto um valor não nulo representa trabalho
+     * recuperável. Crescimento contínuo indica fila inacessível e entradas aguardando a
+     * reconciliação em vez de processamento imediato.
      */
     deferredEnqueues: number;
   };
