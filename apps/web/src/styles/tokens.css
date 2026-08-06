@@ -1,0 +1,131 @@
+/*
+ * Design tokens do LEX OS.
+ *
+ * Valores definidos em docs/product/design-principles.md e medidos: todos os pares
+ * texto/fundo e contorno/fundo passam nos mínimos de contraste nos dois temas.
+ *
+ * O escuro é o tratamento principal, então ele vive em :root. O claro entra por
+ * preferência do sistema ou por data-theme explícito.
+ */
+
+:root {
+  color-scheme: dark;
+
+  --ink: #5aa9f0;
+  --ink-strong: #86c3f7;
+  --ink-soft: #3d8ed4;
+  --on-ink: #04121f;
+
+  --paper: #07090a;
+  --surface: #0d1113;
+  --surface-sunk: #141a1d;
+  --surface-raised: #182126;
+  --line: #36454d;
+  --line-strong: #5a6c76;
+
+  --text: #f4f7f8;
+  --text-2: #b3c0c6;
+  --text-3: #87949b;
+
+  --pendente: #f0b44e;
+  --pendente-bg: #241a09;
+  --confirmado: #55d18b;
+  --confirmado-bg: #0b2417;
+  --rejeitado: #ff8d84;
+  --rejeitado-bg: #2b1310;
+  --sigilo: #c39bf5;
+  --sigilo-bg: #1e1630;
+
+  --focus: #7ab9f5;
+  --shadow: 0 10px 30px -18px rgb(0 0 0 / 0.9);
+
+  /* Serifa para autoridade, sans para operar, mono para identificador jurídico.
+     A família definitiva ainda é decisão em aberto: ver design-principles.md. */
+  --serif:
+    ui-serif, 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --sans: ui-sans-serif, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, monospace;
+
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.5rem;
+  --step-3: 2rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --radius: 3px;
+  --shell-rail: 15rem;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+
+    --ink: #0b4e8f;
+    --ink-strong: #083c6f;
+    --ink-soft: #0f63b3;
+    --on-ink: #ffffff;
+
+    --paper: #f4f7f8;
+    --surface: #ffffff;
+    --surface-sunk: #e9eef1;
+    --surface-raised: #ffffff;
+    --line: #adbcc4;
+    --line-strong: #7d8d96;
+
+    --text: #05090b;
+    --text-2: #3d484e;
+    --text-3: #626e75;
+
+    --pendente: #7a4e05;
+    --pendente-bg: #fbf1da;
+    --confirmado: #10502c;
+    --confirmado-bg: #e1f0e7;
+    --rejeitado: #8e1912;
+    --rejeitado-bg: #fbe7e4;
+    --sigilo: #4e2380;
+    --sigilo-bg: #ece3f9;
+
+    --focus: #0f63b3;
+    --shadow: 0 10px 30px -20px rgb(5 9 11 / 0.35);
+  }
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --ink: #0b4e8f;
+  --ink-strong: #083c6f;
+  --ink-soft: #0f63b3;
+  --on-ink: #ffffff;
+
+  --paper: #f4f7f8;
+  --surface: #ffffff;
+  --surface-sunk: #e9eef1;
+  --surface-raised: #ffffff;
+  --line: #adbcc4;
+  --line-strong: #7d8d96;
+
+  --text: #05090b;
+  --text-2: #3d484e;
+  --text-3: #626e75;
+
+  --pendente: #7a4e05;
+  --pendente-bg: #fbf1da;
+  --confirmado: #10502c;
+  --confirmado-bg: #e1f0e7;
+  --rejeitado: #8e1912;
+  --rejeitado-bg: #fbe7e4;
+  --sigilo: #4e2380;
+  --sigilo-bg: #ece3f9;
+
+  --focus: #0f63b3;
+  --shadow: 0 10px 30px -20px rgb(5 9 11 / 0.35);
+}

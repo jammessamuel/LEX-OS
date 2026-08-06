@@ -1,0 +1,329 @@
+<script setup lang="ts">
+import { onMounted, ref } from 'vue';
+
+import { ApiError, request } from '../api/client.js';
+import type { CaseSummary, CursorPage } from '../api/types.js';
+import StatusChip from '../components/StatusChip.vue';
+import {
+  caseStatusLabels,
+  confidentialityLabels,
+  formatDate,
+  humanizeCode,
+  priorityLabels,
+} from '../domain/vocabulary.js';
+
+const cases = ref<CaseSummary[]>([]);
+const nextCursor = ref<string | null>(null);
+const loading = ref(true);
+const loadingMore = ref(false);
+const failure = ref<ApiError | null>(null);
+
+async function load(cursor?: string): Promise<void> {
+  const appending = cursor !== undefined;
+  if (appending) {
+    loadingMore.value = true;
+  } else {
+    loading.value = true;
+    failure.value = null;
+  }
+
+  try {
+    const page = await request<CursorPage<CaseSummary>>('/cases', {
+      query: { limit: 25, ...(cursor === undefined ? {} : { cursor }) },
+    });
+    cases.value = appending ? [...cases.value, ...page.data] : page.data;
+    nextCursor.value = page.pageInfo.hasNextPage ? page.pageInfo.nextCursor : null;
+  } catch (error) {
+    if (!appending) {
+      cases.value = [];
+    }
+    failure.value =
+      error instanceof ApiError
+        ? error
+        : new ApiError({
+            statusCode: 0,
+            code: 'UNEXPECTED',
+            message: 'Não foi possível carregar os casos.',
+          });
+  } finally {
+    loading.value = false;
+    loadingMore.value = false;
+  }
+}
+
+onMounted(() => {
+  void load();
+});
+</script>
+
+<template>
+  <section aria-labelledby="cases-title">
+    <header class="head">
+      <div>
+        <h1 id="cases-title">Casos</h1>
+        <p class="muted head__lede">Casos do escritório aos quais você tem acesso.</p>
+      </div>
+    </header>
+
+    <!-- Carregando: forma que antecipa o conteúdo, não spinner centralizado. -->
+    <div v-if="loading" class="panel" aria-busy="true">
+      <p class="visually-hidden">Carregando casos.</p>
+      <div v-for="row in 6" :key="row" class="skeleton-row">
+        <span class="skeleton" style="width: 18%" />
+        <span class="skeleton" style="width: 42%" />
+        <span class="skeleton" style="width: 14%" />
+        <span class="skeleton" style="width: 10%" />
+      </div>
+    </div>
+
+    <!-- Erro: o que houve, se é recuperável, e a próxima ação. Nunca detalhe interno. -->
+    <div v-else-if="failure" class="state state--error" role="alert">
+      <h2 class="state__title">Não foi possível carregar os casos</h2>
+      <p class="state__body">{{ failure.message }}</p>
+      <p v-if="failure.requestId" class="state__ref data">
+        Referência para o suporte: {{ failure.requestId }}
+      </p>
+      <button class="btn" type="button" @click="load()">Tentar novamente</button>
+    </div>
+
+    <!-- Vazio: explica o que apareceria ali e oferece a próxima ação. -->
+    <div v-else-if="cases.length === 0" class="state">
+      <h2 class="state__title">Nenhum caso por aqui ainda</h2>
+      <p class="state__body">
+        Quando um caso for aberto no escritório, ele aparece nesta lista com situação, prioridade e
+        responsável.
+      </p>
+    </div>
+
+    <div v-else class="panel">
+      <div class="panel__bar">
+        <span class="label">Casos acessíveis</span>
+        <span class="data panel__count">{{ cases.length }} carregados</span>
+      </div>
+
+      <div class="scroll-x">
+        <table class="rows">
+          <caption class="visually-hidden">
+            Lista de casos com código interno, título, situação, prioridade, sigilo e abertura.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Código</th>
+              <th scope="col">Caso</th>
+              <th scope="col">Situação</th>
+              <th scope="col">Prioridade</th>
+              <th scope="col">Sigilo</th>
+              <th scope="col" class="right">Aberto em</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in cases" :key="item.id">
+              <td class="data nowrap">{{ item.internalCode }}</td>
+              <td>
+                <span class="rows__title">{{ item.title }}</span>
+                <span class="rows__meta">{{ humanizeCode(item.caseType) }}</span>
+              </td>
+              <td><StatusChip :label="caseStatusLabels[item.status]" /></td>
+              <td>
+                <StatusChip
+                  :label="priorityLabels[item.priority]"
+                  :tone="
+                    item.priority === 'URGENT'
+                      ? 'rejeitado'
+                      : item.priority === 'HIGH'
+                        ? 'pendente'
+                        : 'neutro'
+                  "
+                />
+              </td>
+              <td>
+                <StatusChip
+                  v-if="item.confidentialityLevel !== 'STANDARD'"
+                  :label="confidentialityLabels[item.confidentialityLevel]"
+                  tone="sigilo"
+                />
+                <span v-else class="muted">—</span>
+              </td>
+              <td class="data right nowrap">{{ formatDate(item.openedAt) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div v-if="nextCursor" class="panel__more">
+        <button
+          class="btn btn--ghost"
+          type="button"
+          :disabled="loadingMore"
+          @click="load(nextCursor)"
+        >
+          {{ loadingMore ? 'Carregando…' : 'Carregar mais' }}
+        </button>
+      </div>
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.head__lede {
+  font-size: var(--step--1);
+  margin-top: var(--space-2);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.panel__bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-sunk);
+  border-bottom: 1px solid var(--line);
+}
+
+.panel__count {
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+
+.panel__more {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.scroll-x {
+  overflow-x: auto;
+}
+
+.rows {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--step--1);
+}
+
+.rows th {
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.rows td {
+  padding: 0.5rem var(--space-4);
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.rows tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.rows tbody tr:hover td {
+  background: var(--surface-sunk);
+}
+
+.rows__title {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.rows__meta {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+
+.right {
+  text-align: right;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+/* Estados vazio e de erro
+   ------------------------------------------------------------------------- */
+
+.state {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.state--error {
+  border-color: color-mix(in oklab, var(--rejeitado) 34%, var(--line));
+}
+
+.state__title {
+  font-size: var(--step-1);
+}
+
+.state__body {
+  color: var(--text-2);
+  font-size: var(--step--1);
+  max-width: 52ch;
+}
+
+.state__ref {
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+
+/* Esqueleto
+   ------------------------------------------------------------------------- */
+
+.skeleton-row {
+  display: flex;
+  gap: var(--space-4);
+  padding: 0.7rem var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.skeleton-row:last-child {
+  border-bottom: 0;
+}
+
+.skeleton {
+  height: 0.6rem;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-sunk) 0%,
+    var(--line) 50%,
+    var(--surface-sunk) 100%
+  );
+  background-size: 220% 100%;
+  animation: sweep 1.5s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  to {
+    background-position: -220% 0;
+  }
+}
+</style>
