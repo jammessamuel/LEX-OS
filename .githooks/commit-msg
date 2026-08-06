@@ -1,0 +1,47 @@
+#!/bin/sh
+# LEX OS commit-msg guard.
+#
+# Backstop for CLAUDE.md section 0.1: no commit message may carry AI attribution,
+# regardless of which tool produced it. This runs for every commit path the Claude Code
+# PreToolUse hook cannot see, including `git commit -F <file>`, editor commits, and
+# commits made by other agents or IDEs.
+#
+# Installed by infra/scripts/setup-git-hooks.mjs (core.hooksPath=.githooks).
+
+message_file="$1"
+
+if [ ! -f "$message_file" ]; then
+  exit 0
+fi
+
+# Ignore comment lines: `git commit` templates legitimately mention tooling.
+payload=$(grep -v '^#' "$message_file")
+
+fail() {
+  printf '\n%s\n\n' "commit-msg: rejected — the message contains $1." >&2
+  printf '%s\n' "LEX OS commit messages must carry no AI attribution (CLAUDE.md section 0.1)." >&2
+  printf '%s\n' "Rewrite it as a plain message: short imperative subject, optional body explaining why." >&2
+  printf '%s\n\n' "No Co-Authored-By trailers, no generated-with lines, no vendor links, no emoji." >&2
+  exit 1
+}
+
+printf '%s' "$payload" | grep -qiE '^[[:space:]]*(co-?authored-by|signed-off-by)[[:space:]]*:.*(claude|anthropic|copilot|cursor|codex|chatgpt|openai|gemini|devin|windsurf|aider|bot)' \
+  && fail "an AI co-author trailer"
+
+printf '%s' "$payload" | grep -qiE 'noreply@anthropic\.com|users\.noreply\.(anthropic|openai)\.com' \
+  && fail "a vendor no-reply e-mail address"
+
+printf '%s' "$payload" | grep -qiE 'generated[[:space:]]+with.{0,40}(claude|copilot|cursor|codex|gemini|[^a-z]ai[^a-z])' \
+  && fail "a generated-with attribution line"
+
+printf '%s' "$payload" | grep -qiE 'claude\.com/claude-code|claude\.ai/code' \
+  && fail "a Claude Code link"
+
+printf '%s' "$payload" | grep -qiE '(assisted|authored|written|created|produced)[[:space:]]+by[[:space:]]+(an?[[:space:]]+)?(ai|claude|anthropic|copilot|cursor|codex|gemini|llm)\b' \
+  && fail "an authored-by-AI phrase"
+
+if printf '%s' "$payload" | grep -q '🤖'; then
+  fail "a robot emoji"
+fi
+
+exit 0

@@ -20,6 +20,7 @@
     "infra:ps": "docker compose ps",
     "infra:up": "docker compose up --detach --build --wait",
     "lint": "turbo run lint",
+    "prepare": "node infra/scripts/setup-git-hooks.mjs",
     "test": "turbo run test",
     "test:integration": "turbo run test:integration",
     "typecheck": "turbo run typecheck",

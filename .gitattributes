@@ -1,0 +1,29 @@
+# Normalize every text file to LF in the repository and in the working tree.
+#
+# `.editorconfig` and Prettier both expect LF. Without this file a Windows checkout with
+# `core.autocrlf=true` writes CRLF to disk, which makes `pnpm format:check` fail on every
+# tracked file. `eol=lf` overrides `core.autocrlf`, so the gate behaves identically on
+# Windows, macOS, Linux, and in CI.
+* text=auto eol=lf
+
+# Shell scripts must keep LF even where a tool would otherwise guess: Git for Windows runs
+# .githooks/ through sh, and a CRLF shebang line breaks the interpreter.
+*.sh text eol=lf
+.githooks/* text eol=lf
+
+# Keep binaries byte-exact.
+*.avif binary
+*.gif binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.mp4 binary
+*.pdf binary
+*.png binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.zip binary
+
+# Generated; keep out of diffs and reviews.
+pnpm-lock.yaml linguist-generated=true -diff

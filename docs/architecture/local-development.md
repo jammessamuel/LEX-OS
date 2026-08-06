@@ -51,6 +51,12 @@ pnpm infra:down
 
 For host watch mode, start only dependencies with `pnpm infra:dependencies`, keep the project database on port `5433`, and then run `pnpm dev`. A separate local PostgreSQL on `5432` is outside this project and must not be selected by project commands.
 
+### Windows notes
+
+- Every workspace script is shell-agnostic and runs under PowerShell, `cmd`, and Git Bash alike. Keep it that way: no `VAR=value command` prefixes and no `set -a; . file` sourcing in `package.json`. When a script needs environment setup, put it in a Node runner, as `apps/worker/test/run-integration.mjs` does.
+- `.gitattributes` pins the working tree to LF. Do not set `core.autocrlf=true` for this repository; CRLF on disk makes `pnpm format:check` fail on every tracked file even though the content is correct.
+- `WORKER_READY_FILE` defaults to the POSIX path `/tmp/lex-os-worker-ready` because the Compose healthcheck reads that exact path inside the container. In host watch mode Node resolves it to `C:\tmp\lex-os-worker-ready` and creates the directory on demand. Override it in your local `.env` if you would rather keep `C:\tmp` clean.
+
 ## Database migration workflow
 
 Delivery 3 uses `DATABASE_URL` for Prisma CLI and runtime database connections. The recommended local target is the Compose PostgreSQL service published on `127.0.0.1:5433`; this avoids changing an existing PostgreSQL installation on host port 5432.
@@ -108,7 +114,7 @@ The response contains file/document/job identifiers and statuses, never a storag
 
 - `GET /api/v1/health/live` reports only that the API event loop can serve a request.
 - `GET /api/v1/health/ready` checks PostgreSQL, authenticated Redis, and MinIO with a configured upper time bound. It returns HTTP 503 if any dependency is down.
-- `GET /api/v1/metrics` exposes process uptime, memory, request count, status classes, and average request duration for local operations.
+- `GET /api/v1/metrics` exposes process uptime, memory, request count, status classes, average request duration, and `processing.deferredEnqueues` for local operations. A rising `deferredEnqueues` value means jobs committed to PostgreSQL could not be published to Redis and are waiting for the reconciler; the work is recoverable, but the queue needs attention.
 - the worker creates a mode-0600 readiness file only after its Nest application context starts, and removes it during graceful shutdown.
 
 Compose health checks depend on these signals, so a process that merely exists but cannot reach required infrastructure is not considered ready.

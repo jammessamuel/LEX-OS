@@ -6,6 +6,7 @@ import {
   type ExecutionContext,
 } from '@nestjs/common';
 import type { RuntimeConfig } from '@lex-os/config';
+import { isUuidV4 } from '@lex-os/shared';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 
@@ -24,8 +25,6 @@ interface AccessTokenPayload {
   typ: 'access';
 }
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
-
 function isAccessTokenPayload(value: unknown): value is AccessTokenPayload {
   if (value === null || typeof value !== 'object') {
     return false;
@@ -33,12 +32,9 @@ function isAccessTokenPayload(value: unknown): value is AccessTokenPayload {
 
   const payload = value as Record<string, unknown>;
   return (
-    typeof payload.sub === 'string' &&
-    uuidPattern.test(payload.sub) &&
-    typeof payload.org === 'string' &&
-    uuidPattern.test(payload.org) &&
-    typeof payload.sid === 'string' &&
-    uuidPattern.test(payload.sid) &&
+    isUuidV4(payload.sub) &&
+    isUuidV4(payload.org) &&
+    isUuidV4(payload.sid) &&
     payload.typ === 'access'
   );
 }

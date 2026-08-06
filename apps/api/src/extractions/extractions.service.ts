@@ -3,7 +3,12 @@ import { Injectable } from '@nestjs/common';
 import type { RequestAuditMetadata } from '../audit/audit.service.js';
 import type { ActorContext } from '../auth/actor-context.js';
 import { DocumentsService } from '../documents/documents.service.js';
-import { decodeCursor, encodeCursor, type CursorPage } from '../http/pagination.js';
+import {
+  createTimestampIdCursorParser,
+  decodeCursor,
+  encodeCursor,
+  type CursorPage,
+} from '../http/pagination.js';
 import type { ExtractionResponseDto } from './dto/extraction-response.dto.js';
 import type { ListExtractionsQueryDto } from './dto/list-extractions-query.dto.js';
 import {
@@ -12,23 +17,8 @@ import {
   type ExtractionRecord,
 } from './extractions.repository.js';
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
-
-function parseCursor(value: unknown): ExtractionCursor | undefined {
-  if (value === null || typeof value !== 'object') {
-    return undefined;
-  }
-  const candidate = value as Record<string, unknown>;
-  if (
-    typeof candidate.createdAt !== 'string' ||
-    Number.isNaN(Date.parse(candidate.createdAt)) ||
-    typeof candidate.id !== 'string' ||
-    !uuidPattern.test(candidate.id)
-  ) {
-    return undefined;
-  }
-  return { createdAt: new Date(candidate.createdAt), id: candidate.id };
-}
+const parseCursor: (value: unknown) => ExtractionCursor | undefined =
+  createTimestampIdCursorParser('createdAt');
 
 function decimal(value: { toNumber(): number } | null): number | null {
   return value?.toNumber() ?? null;

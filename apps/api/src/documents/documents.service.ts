@@ -6,7 +6,12 @@ import type { ActorContext } from '../auth/actor-context.js';
 import { CasesService } from '../cases/cases.service.js';
 import { DatabaseService } from '../database/database.service.js';
 import { ApiException } from '../http/api-exception.js';
-import { decodeCursor, encodeCursor, type CursorPage } from '../http/pagination.js';
+import {
+  createTimestampIdCursorParser,
+  decodeCursor,
+  encodeCursor,
+  type CursorPage,
+} from '../http/pagination.js';
 import type { DocumentResponseDto } from './dto/document-response.dto.js';
 import type { ListDocumentsQueryDto } from './dto/list-documents-query.dto.js';
 import type { UpdateDocumentRequestDto } from './dto/update-document-request.dto.js';
@@ -17,23 +22,8 @@ import {
   type UpdateDocumentData,
 } from './documents.repository.js';
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
-
-function parseDocumentCursor(value: unknown): DocumentCursor | undefined {
-  if (value === null || typeof value !== 'object') {
-    return undefined;
-  }
-  const candidate = value as Record<string, unknown>;
-  if (
-    typeof candidate.createdAt !== 'string' ||
-    Number.isNaN(Date.parse(candidate.createdAt)) ||
-    typeof candidate.id !== 'string' ||
-    !uuidPattern.test(candidate.id)
-  ) {
-    return undefined;
-  }
-  return { createdAt: new Date(candidate.createdAt), id: candidate.id };
-}
+const parseDocumentCursor: (value: unknown) => DocumentCursor | undefined =
+  createTimestampIdCursorParser('createdAt');
 
 function mapDocument(record: DocumentRecord): DocumentResponseDto {
   return {

@@ -5,7 +5,12 @@ import { AuditService, type RequestAuditMetadata } from '../audit/audit.service.
 import type { ActorContext } from '../auth/actor-context.js';
 import { DatabaseService } from '../database/database.service.js';
 import { ApiException } from '../http/api-exception.js';
-import { decodeCursor, encodeCursor, type CursorPage } from '../http/pagination.js';
+import {
+  createTimestampIdCursorParser,
+  decodeCursor,
+  encodeCursor,
+  type CursorPage,
+} from '../http/pagination.js';
 import type { CreatePersonRequestDto } from './dto/create-person-request.dto.js';
 import type { ListPersonsQueryDto } from './dto/list-persons-query.dto.js';
 import type { PersonResponseDto } from './dto/person-response.dto.js';
@@ -19,25 +24,8 @@ import {
   type UpdatePersonData,
 } from './persons.repository.js';
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
-
-function parsePersonCursor(value: unknown): PersonCursor | undefined {
-  if (value === null || typeof value !== 'object') {
-    return undefined;
-  }
-
-  const candidate = value as Record<string, unknown>;
-  if (
-    typeof candidate.createdAt !== 'string' ||
-    Number.isNaN(Date.parse(candidate.createdAt)) ||
-    typeof candidate.id !== 'string' ||
-    !uuidPattern.test(candidate.id)
-  ) {
-    return undefined;
-  }
-
-  return { createdAt: new Date(candidate.createdAt), id: candidate.id };
-}
+const parsePersonCursor: (value: unknown) => PersonCursor | undefined =
+  createTimestampIdCursorParser('createdAt');
 
 function asDate(value: string | null | undefined): Date | null | undefined {
   if (value === undefined || value === null) {
