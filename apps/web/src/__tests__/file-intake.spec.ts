@@ -29,6 +29,13 @@ describe('FileIntakePanel', () => {
     upload.mockReset();
   });
 
+  it('mantém um único ponto de foco para abrir o seletor de arquivos', () => {
+    const wrapper = mount(FileIntakePanel, { props: { caseId: 'caso-1' } });
+
+    expect(wrapper.get('button').text()).toBe('Selecionar arquivos');
+    expect(wrapper.get('input[type="file"]').attributes('tabindex')).toBe('-1');
+  });
+
   it('barra localmente arquivo grande demais, com o motivo e sem chamar a API', async () => {
     const wrapper = mount(FileIntakePanel, { props: { caseId: 'caso-1' } });
 

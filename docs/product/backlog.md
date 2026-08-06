@@ -47,9 +47,6 @@ experiência central da `vision.md` e o componente 11 da proposta.
 | Alternador de tema persistente       | Escuro é o padrão; a escolha do usuário precisa sobreviver ao recarregar |
 | Passagem de teclado no fluxo crítico | Critério de aceite da Delivery 10, não item opcional                     |
 | Sincronizar a referência visual      | A página do sistema visual ficou na escala e no raio antigos             |
-| Erro parcial no detalhe do caso      | Falha de documentos/participantes não pode parecer lista vazia           |
-| Paginar o detalhe do caso            | Documentos e participantes exibem apenas os primeiros 50 registros       |
-| Retomar o destino após login         | O parâmetro `destino` é preservado na URL, mas ainda não é consumido     |
 
 ---
 
@@ -102,6 +99,10 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
 
+- **Qualidade do fluxo autenticado** — o login retoma apenas destinos internos seguros; falhas
+  de documentos e partes são recuperáveis sem transformar erro em lista vazia; os dois painéis
+  usam paginação por cursor independente; e o seletor de arquivos tem um único ponto na ordem
+  de foco. Testes de componente cobrem retorno seguro, isolamento das falhas e acréscimo de páginas.
 - **Revisão local do stack e da interface** — testes unitários e de integração executados
   com Docker; `infra:up` verificado no Compose v5.3.1; build das imagens corrigido para o
   `postinstall` do Prisma e para a URL da API no bundle web; fluxo login → casos → detalhe

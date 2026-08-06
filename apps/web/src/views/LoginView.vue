@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { ApiError } from '../api/client.js';
 import { useSessionStore } from '../stores/session.js';
 
 const router = useRouter();
+const route = useRoute();
 const session = useSessionStore();
 
 const organizationId = ref('');
@@ -13,6 +14,15 @@ const email = ref('');
 const password = ref('');
 const submitting = ref(false);
 const failure = ref<ApiError | null>(null);
+
+function destinationAfterLogin(): string | { name: 'cases' } {
+  const destination = route.query.destino;
+  return typeof destination === 'string' &&
+    destination.startsWith('/') &&
+    !destination.startsWith('//')
+    ? destination
+    : { name: 'cases' };
+}
 
 async function submit(): Promise<void> {
   submitting.value = true;
@@ -23,7 +33,7 @@ async function submit(): Promise<void> {
       email: email.value.trim(),
       password: password.value,
     });
-    await router.replace({ name: 'cases' });
+    await router.replace(destinationAfterLogin());
   } catch (error) {
     failure.value =
       error instanceof ApiError

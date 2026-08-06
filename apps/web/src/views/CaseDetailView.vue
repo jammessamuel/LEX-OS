@@ -25,8 +25,16 @@ const caseId = String(route.params.id);
 const legalCase = ref<CaseSummary | null>(null);
 const documents = ref<CaseDocument[]>([]);
 const participants = ref<Participant[]>([]);
+const documentsNextCursor = ref<string | null>(null);
+const participantsNextCursor = ref<string | null>(null);
 const loading = ref(true);
+const loadingMoreDocuments = ref(false);
+const loadingMoreParticipants = ref(false);
 const failure = ref<ApiError | null>(null);
+const documentsFailure = ref<ApiError | null>(null);
+const participantsFailure = ref<ApiError | null>(null);
+const documentsMoreFailure = ref<ApiError | null>(null);
+const participantsMoreFailure = ref<ApiError | null>(null);
 
 function toApiError(error: unknown, fallback: string): ApiError {
   return error instanceof ApiError
@@ -37,6 +45,15 @@ function toApiError(error: unknown, fallback: string): ApiError {
 async function load(): Promise<void> {
   loading.value = true;
   failure.value = null;
+  legalCase.value = null;
+  documents.value = [];
+  participants.value = [];
+  documentsNextCursor.value = null;
+  participantsNextCursor.value = null;
+  documentsFailure.value = null;
+  participantsFailure.value = null;
+  documentsMoreFailure.value = null;
+  participantsMoreFailure.value = null;
 
   try {
     legalCase.value = await request<CaseSummary>(`/cases/${caseId}`);
@@ -46,28 +63,68 @@ async function load(): Promise<void> {
     return;
   }
 
-  // Documentos e participantes são painéis independentes: se um falhar, o caso continua
-  // legível em vez de a página inteira virar uma tela de erro.
-  const [documentPage, participantPage] = await Promise.allSettled([
-    request<CursorPage<CaseDocument>>(`/cases/${caseId}/documents`, { query: { limit: 50 } }),
-    request<CursorPage<Participant>>(`/cases/${caseId}/participants`, { query: { limit: 50 } }),
-  ]);
-
-  documents.value = documentPage.status === 'fulfilled' ? documentPage.value.data : [];
-  participants.value = participantPage.status === 'fulfilled' ? participantPage.value.data : [];
+  // Os painéis carregam em paralelo e tratam suas falhas sem esconder os dados do caso.
+  await Promise.all([loadDocuments(), loadParticipants()]);
   loading.value = false;
 }
 
-/** Depois de um envio, os aceitos já têm documento criado; a lista é recarregada. */
-async function refreshDocuments(): Promise<void> {
+async function loadDocuments(cursor?: string): Promise<void> {
+  const appending = cursor !== undefined;
+  if (appending) {
+    loadingMoreDocuments.value = true;
+    documentsMoreFailure.value = null;
+  } else {
+    documentsFailure.value = null;
+  }
+
   try {
     const page = await request<CursorPage<CaseDocument>>(`/cases/${caseId}/documents`, {
-      query: { limit: 50 },
+      query: { limit: 25, ...(cursor === undefined ? {} : { cursor }) },
     });
-    documents.value = page.data;
-  } catch {
-    // A lista anterior continua válida; o painel de envio já comunicou o resultado.
+    documents.value = appending ? [...documents.value, ...page.data] : page.data;
+    documentsNextCursor.value = page.pageInfo.hasNextPage ? page.pageInfo.nextCursor : null;
+  } catch (error) {
+    const apiError = toApiError(error, 'Não foi possível carregar os documentos.');
+    if (appending) {
+      documentsMoreFailure.value = apiError;
+    } else {
+      documentsFailure.value = apiError;
+    }
+  } finally {
+    loadingMoreDocuments.value = false;
   }
+}
+
+async function loadParticipants(cursor?: string): Promise<void> {
+  const appending = cursor !== undefined;
+  if (appending) {
+    loadingMoreParticipants.value = true;
+    participantsMoreFailure.value = null;
+  } else {
+    participantsFailure.value = null;
+  }
+
+  try {
+    const page = await request<CursorPage<Participant>>(`/cases/${caseId}/participants`, {
+      query: { limit: 25, ...(cursor === undefined ? {} : { cursor }) },
+    });
+    participants.value = appending ? [...participants.value, ...page.data] : page.data;
+    participantsNextCursor.value = page.pageInfo.hasNextPage ? page.pageInfo.nextCursor : null;
+  } catch (error) {
+    const apiError = toApiError(error, 'Não foi possível carregar as partes.');
+    if (appending) {
+      participantsMoreFailure.value = apiError;
+    } else {
+      participantsFailure.value = apiError;
+    }
+  } finally {
+    loadingMoreParticipants.value = false;
+  }
+}
+
+/** Depois de um envio, os aceitos já têm documento criado; a primeira página é recarregada. */
+async function refreshDocuments(): Promise<void> {
+  await loadDocuments();
 }
 
 const preparation = ref<InstanceType<typeof PreparationStatus> | null>(null);
@@ -171,10 +228,32 @@ onMounted(() => {
           <section class="panel">
             <div class="panel__bar">
               <span class="label">Documentos</span>
-              <span class="data panel__count">{{ documents.length }}</span>
+              <span class="data panel__count">{{ documents.length }} carregados</span>
             </div>
 
-            <div v-if="documents.length === 0" class="empty">
+            <div
+              v-if="documentsFailure"
+              class="panel-failure"
+              role="alert"
+              data-test="documents-failure"
+            >
+              <p class="panel-failure__title">
+                {{
+                  documents.length === 0
+                    ? 'Não foi possível carregar os documentos'
+                    : 'A lista de documentos pode estar desatualizada'
+                }}
+              </p>
+              <p>{{ documentsFailure.message }}</p>
+              <p v-if="documentsFailure.requestId" class="data panel-failure__ref">
+                Referência: {{ documentsFailure.requestId }}
+              </p>
+              <button class="btn btn--ghost" type="button" @click="loadDocuments()">
+                Tentar novamente
+              </button>
+            </div>
+
+            <div v-if="documents.length === 0 && !documentsFailure" class="empty">
               <p class="empty__t">Nenhum documento neste caso</p>
               <p class="empty__b">
                 Envie os arquivos que o cliente mandou. O LEX OS valida, extrai o texto e identifica
@@ -182,7 +261,7 @@ onMounted(() => {
               </p>
             </div>
 
-            <div v-else class="scroll-x">
+            <div v-if="documents.length > 0" class="scroll-x">
               <table class="rows">
                 <caption class="visually-hidden">
                   Documentos do caso com tipo, situação e tamanho.
@@ -218,6 +297,29 @@ onMounted(() => {
                 </tbody>
               </table>
             </div>
+
+            <div v-if="documentsMoreFailure" class="panel-more-error" role="alert">
+              <span>{{ documentsMoreFailure.message }}</span>
+              <button
+                v-if="documentsNextCursor"
+                class="btn btn--ghost"
+                type="button"
+                @click="loadDocuments(documentsNextCursor)"
+              >
+                Tentar novamente
+              </button>
+            </div>
+
+            <div v-else-if="documentsNextCursor" class="panel__more">
+              <button
+                class="btn btn--ghost"
+                type="button"
+                :disabled="loadingMoreDocuments"
+                @click="loadDocuments(documentsNextCursor)"
+              >
+                {{ loadingMoreDocuments ? 'Carregando…' : 'Carregar mais documentos' }}
+              </button>
+            </div>
           </section>
         </div>
 
@@ -225,14 +327,36 @@ onMounted(() => {
           <section class="panel">
             <div class="panel__bar">
               <span class="label">Partes</span>
-              <span class="data panel__count">{{ participants.length }}</span>
+              <span class="data panel__count">{{ participants.length }} carregadas</span>
             </div>
 
-            <div v-if="participants.length === 0" class="empty">
+            <div
+              v-if="participantsFailure"
+              class="panel-failure"
+              role="alert"
+              data-test="participants-failure"
+            >
+              <p class="panel-failure__title">
+                {{
+                  participants.length === 0
+                    ? 'Não foi possível carregar as partes'
+                    : 'A lista de partes pode estar desatualizada'
+                }}
+              </p>
+              <p>{{ participantsFailure.message }}</p>
+              <p v-if="participantsFailure.requestId" class="data panel-failure__ref">
+                Referência: {{ participantsFailure.requestId }}
+              </p>
+              <button class="btn btn--ghost" type="button" @click="loadParticipants()">
+                Tentar novamente
+              </button>
+            </div>
+
+            <div v-if="participants.length === 0 && !participantsFailure" class="empty">
               <p class="empty__b">Nenhuma parte associada a este caso ainda.</p>
             </div>
 
-            <ul v-else class="parts">
+            <ul v-if="participants.length > 0" class="parts">
               <li v-for="part in participants" :key="part.id" class="part">
                 <span class="part__name">
                   {{ part.person.tradeName ?? part.person.fullName }}
@@ -244,6 +368,29 @@ onMounted(() => {
                 <StatusChip v-if="part.isClient" label="Cliente" tone="confirmado" />
               </li>
             </ul>
+
+            <div v-if="participantsMoreFailure" class="panel-more-error" role="alert">
+              <span>{{ participantsMoreFailure.message }}</span>
+              <button
+                v-if="participantsNextCursor"
+                class="btn btn--ghost"
+                type="button"
+                @click="loadParticipants(participantsNextCursor)"
+              >
+                Tentar novamente
+              </button>
+            </div>
+
+            <div v-else-if="participantsNextCursor" class="panel__more">
+              <button
+                class="btn btn--ghost"
+                type="button"
+                :disabled="loadingMoreParticipants"
+                @click="loadParticipants(participantsNextCursor)"
+              >
+                {{ loadingMoreParticipants ? 'Carregando…' : 'Carregar mais partes' }}
+              </button>
+            </div>
           </section>
 
           <section class="panel">
@@ -363,6 +510,44 @@ onMounted(() => {
 .panel__count {
   font-size: 0.78rem;
   color: var(--text-3);
+}
+
+.panel__more,
+.panel-more-error {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.panel-more-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--rejeitado);
+  font-size: var(--step--1);
+}
+
+.panel-failure {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-bottom: 1px solid color-mix(in oklab, var(--rejeitado) 28%, var(--line));
+  background: var(--rejeitado-bg);
+  color: var(--text-2);
+  font-size: var(--step--1);
+}
+
+.panel-failure__title {
+  color: var(--rejeitado);
+  font-weight: 650;
+}
+
+.panel-failure__ref {
+  color: var(--text-3);
+  font-size: 0.78rem;
 }
 
 .scroll-x {
