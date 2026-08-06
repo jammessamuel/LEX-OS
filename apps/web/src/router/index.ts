@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import AppShell from '../components/AppShell.vue';
 import { useSessionStore } from '../stores/session.js';
+import CaseDetailView from '../views/CaseDetailView.vue';
 import CasesView from '../views/CasesView.vue';
 import LoginView from '../views/LoginView.vue';
 
@@ -22,6 +23,11 @@ export const router = createRouter({
           component: CasesView,
           name: 'cases',
           path: '',
+        },
+        {
+          component: CaseDetailView,
+          name: 'case-detail',
+          path: 'casos/:id',
         },
       ],
     },

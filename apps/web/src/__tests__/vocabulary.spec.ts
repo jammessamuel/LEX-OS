@@ -4,6 +4,8 @@ import { caseStatuses, confidentialityLevels, priorities } from '../api/types';
 import {
   caseStatusLabels,
   confidentialityLabels,
+  documentSituation,
+  formatBytes,
   humanizeCode,
   priorityLabels,
 } from '../domain/vocabulary';
@@ -27,5 +29,40 @@ describe('vocabulário da interface', () => {
   it('normaliza códigos livres que não têm catálogo fechado', () => {
     expect(humanizeCode('RECLAMACAO_TRABALHISTA')).toBe('Reclamacao trabalhista');
     expect(humanizeCode('DIREITO_TRABALHISTA')).toBe('Direito trabalhista');
+  });
+});
+
+describe('situação do documento', () => {
+  const base = {
+    processingStatus: 'COMPLETED',
+    classificationStatus: 'PENDING',
+    isDuplicate: false,
+  };
+
+  it('resume os dois eixos da API numa frase só', () => {
+    expect(documentSituation(base).label).toBe('Aguardando revisão');
+    expect(documentSituation({ ...base, classificationStatus: 'CONFIRMED' }).label).toBe(
+      'Revisado',
+    );
+    expect(documentSituation({ ...base, processingStatus: 'PROCESSING' }).label).toBe('Preparando');
+    expect(documentSituation({ ...base, processingStatus: 'FAILED' }).tone).toBe('rejeitado');
+  });
+
+  it('duplicata vence qualquer outro estado', () => {
+    expect(documentSituation({ ...base, isDuplicate: true }).label).toBe('Duplicado');
+  });
+
+  it('nunca devolve o código cru, mesmo para um estado desconhecido', () => {
+    const desconhecido = documentSituation({ ...base, processingStatus: 'ALGO_NOVO' });
+    expect(desconhecido.label).toBe('Em preparação');
+    expect(desconhecido.label).not.toMatch(/[A-Z]{2,}|_/u);
+  });
+});
+
+describe('formatBytes', () => {
+  it('usa unidade legível e separador brasileiro', () => {
+    expect(formatBytes(512)).toBe('512 B');
+    expect(formatBytes(2048)).toBe('2 KB');
+    expect(formatBytes(26_214_400)).toBe('25 MB');
   });
 });

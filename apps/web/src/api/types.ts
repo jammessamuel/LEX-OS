@@ -85,3 +85,78 @@ export interface ApiErrorEnvelope {
   details: ApiErrorDetail[];
   requestId: string;
 }
+
+export const participantRoles = [
+  'autor',
+  'reu',
+  'reclamante',
+  'reclamado',
+  'testemunha',
+  'perito',
+  'juiz',
+  'advogado',
+  'terceiro_interessado',
+  'representante_legal',
+] as const;
+
+export const participantSides = ['polo_ativo', 'polo_passivo', 'terceiro', 'neutro'] as const;
+export const personTypes = ['INDIVIDUAL', 'COMPANY', 'GOVERNMENT_ENTITY'] as const;
+
+export type ParticipantRole = (typeof participantRoles)[number];
+export type ParticipantSide = (typeof participantSides)[number];
+export type PersonType = (typeof personTypes)[number];
+
+export interface ParticipantPerson {
+  id: string;
+  personType: PersonType;
+  fullName: string;
+  tradeName: string | null;
+}
+
+export interface Participant {
+  id: string;
+  caseId: string;
+  role: ParticipantRole;
+  side: ParticipantSide | null;
+  isClient: boolean;
+  person: ParticipantPerson;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DocumentFileSummary {
+  filename: string;
+  mimeType: string;
+  sizeBytes: number;
+  virusScanStatus: string;
+  status: string;
+}
+
+export interface DocumentTypeSummary {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+}
+
+export interface CaseDocument {
+  id: string;
+  caseId: string | null;
+  fileId: string;
+  documentTypeId: string | null;
+  title: string;
+  description: string | null;
+  documentDate: string | null;
+  issuer: string | null;
+  recipient: string | null;
+  classificationStatus: string;
+  processingStatus: string;
+  isOriginal: boolean;
+  isSigned: boolean | null;
+  isLegible: boolean | null;
+  isDuplicate: boolean;
+  file: DocumentFileSummary;
+  documentType: DocumentTypeSummary | null;
+  createdAt: string;
+  updatedAt: string;
+}

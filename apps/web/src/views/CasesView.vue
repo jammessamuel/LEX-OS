@@ -118,7 +118,14 @@ onMounted(() => {
           </thead>
           <tbody>
             <tr v-for="item in cases" :key="item.id">
-              <td class="data nowrap">{{ item.internalCode }}</td>
+              <td class="data nowrap">
+                <RouterLink
+                  class="rows__link"
+                  :to="{ name: 'case-detail', params: { id: item.id } }"
+                >
+                  {{ item.internalCode }}
+                </RouterLink>
+              </td>
               <td>
                 <span class="rows__title">{{ item.title }}</span>
                 <span class="rows__meta">{{ humanizeCode(item.caseType) }}</span>
@@ -239,6 +246,17 @@ onMounted(() => {
 
 .rows tbody tr:hover td {
   background: var(--surface-sunk);
+}
+
+.rows__link {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.rows__link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .rows__title {
