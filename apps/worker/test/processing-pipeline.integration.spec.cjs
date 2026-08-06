@@ -3,10 +3,11 @@ const { resolve } = require('node:path');
 
 jest.setTimeout(40_000);
 
-const queuePrefix = 'lex-os-d7-worker-integration';
+const queuePrefix = 'lex-os-d8-worker-integration';
 const organizationId = '00000000-0000-4000-8000-000000000001';
 const userId = '00000000-0000-4000-8000-000000000002';
 const caseId = '00000000-0000-4000-8000-000000000003';
+const checklistTemplateId = '00000000-0000-4000-8000-000000000401';
 
 process.loadEnvFile(resolve(__dirname, '../../../.env'));
 process.env.NODE_ENV = 'test';
@@ -26,6 +27,7 @@ let reconciler;
 let repository;
 let Queue;
 let processingQueueNames;
+let otherDocumentTypeId;
 const documentIds = [];
 const fileIds = [];
 
@@ -37,6 +39,17 @@ async function waitFor(load, predicate, description, timeoutMs = 15_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const value = await load();
+    const failedJob = Array.isArray(value)
+      ? value.find((item) => item?.status === 'FAILED')
+      : undefined;
+    if (failedJob !== undefined) {
+      throw new Error(
+        `Processing failed while waiting for ${description}: ${failedJob.jobType} ${failedJob.errorCode}.`,
+      );
+    }
+    if (value?.processingStatus === 'FAILED') {
+      throw new Error(`Document processing failed while waiting for ${description}.`);
+    }
     if (predicate(value)) {
       return value;
     }
@@ -58,7 +71,7 @@ async function createFixture(jobType, inputMetadata = {}, quarantined = false) {
       organizationId,
       storageProvider: 'integration-test',
       storageBucket: 'integration-test',
-      storageKey: `delivery-7/${fileId}`,
+      storageKey: `delivery-8/${fileId}`,
       originalFilename: 'documento-ficticio.txt',
       mimeType: 'text/plain',
       extension: 'txt',
@@ -76,10 +89,28 @@ async function createFixture(jobType, inputMetadata = {}, quarantined = false) {
       organizationId,
       caseId,
       fileId,
-      title: 'Documento fictício da Entrega 7',
+      title: 'Documento fictício da Entrega 8',
       processingStatus: 'QUEUED',
+      ...(jobType === 'CHECKLIST_ANALYSIS' ? { documentTypeId: otherDocumentTypeId } : {}),
     },
   });
+  if (['ENTITY_EXTRACTION', 'TIMELINE_GENERATION', 'CHECKLIST_ANALYSIS'].includes(jobType)) {
+    await database.client.documentExtraction.create({
+      data: {
+        organizationId,
+        documentId,
+        extractionType: 'OCR',
+        provider: 'integration-fixture',
+        modelName: 'deterministic-v1',
+        modelVersion: '1',
+        executionId: `fixture:${processingJobId}`,
+        status: 'COMPLETED',
+        rawText:
+          'Contrato fictício LEX-2026-0001, celebrado em 05/08/2026. Conteúdo exclusivo para desenvolvimento.',
+        processingTimeMs: 1,
+      },
+    });
+  }
   await database.client.processingJob.create({
     data: {
       id: processingJobId,
@@ -126,6 +157,14 @@ beforeAll(async () => {
   if (seed === null) {
     throw new Error('The fictional development seed is required for this integration test.');
   }
+  const otherDocumentType = await database.client.documentType.findFirst({
+    where: { code: 'OUTRO', organizationId: null },
+    select: { id: true },
+  });
+  if (otherDocumentType === null) {
+    throw new Error('The fictional document-type seed is required for this integration test.');
+  }
+  otherDocumentTypeId = otherDocumentType.id;
 });
 
 afterAll(async () => {
@@ -135,6 +174,19 @@ afterAll(async () => {
     });
     await database.client.extractedEntity.deleteMany({
       where: { documentId: { in: documentIds } },
+    });
+    await database.client.timelineEvent.deleteMany({
+      where: { sourceId: { in: documentIds } },
+    });
+    const checklists = await database.client.caseChecklist.findMany({
+      where: { organizationId, caseId, templateId: checklistTemplateId },
+      select: { id: true },
+    });
+    await database.client.caseChecklistItem.deleteMany({
+      where: { caseChecklistId: { in: checklists.map((item) => item.id) } },
+    });
+    await database.client.caseChecklist.deleteMany({
+      where: { id: { in: checklists.map((item) => item.id) } },
     });
     await database.client.documentExtraction.deleteMany({
       where: { documentId: { in: documentIds } },
@@ -164,7 +216,7 @@ afterAll(async () => {
   }
 });
 
-describe('Delivery 7 persistent processing pipeline', () => {
+describe('Delivery 8 persistent processing pipeline', () => {
   it('acknowledges orphaned deliveries without retrying stale queue data', async () => {
     const orphaned = await processor.process(
       {
@@ -219,14 +271,16 @@ describe('Delivery 7 persistent processing pipeline', () => {
           where: { documentId: fixture.documentId },
           orderBy: { createdAt: 'asc' },
         }),
-      (rows) => rows.length === 4 && rows.every((job) => job.status === 'COMPLETED'),
-      'the four-stage pipeline',
+      (rows) => rows.length === 6 && rows.every((job) => job.status === 'COMPLETED'),
+      'the six-stage pipeline',
     );
     expect(jobs.map((job) => job.jobType)).toEqual([
       'FILE_VALIDATION',
       'OCR',
       'DOCUMENT_CLASSIFICATION',
       'ENTITY_EXTRACTION',
+      'TIMELINE_GENERATION',
+      'CHECKLIST_ANALYSIS',
     ]);
     expect(jobs.every((job) => job.attempts === 1 && job.finishedAt !== null)).toBe(true);
 
@@ -234,16 +288,39 @@ describe('Delivery 7 persistent processing pipeline', () => {
       where: { documentId: fixture.documentId },
       include: { extractedEntities: true },
     });
-    expect(extractions).toHaveLength(3);
+    expect(extractions).toHaveLength(5);
     expect(extractions.map((item) => item.extractionType).sort()).toEqual([
+      'CHECKLIST_ANALYSIS',
       'CLASSIFICATION',
       'ENTITY_EXTRACTION',
       'OCR',
+      'TIMELINE_ANALYSIS',
     ]);
     expect(extractions.every((item) => item.provider.startsWith('lex-os-mock'))).toBe(true);
     expect(
       extractions.find((item) => item.extractionType === 'ENTITY_EXTRACTION').extractedEntities,
     ).toHaveLength(2);
+
+    const timeline = await database.client.timelineEvent.findMany({
+      where: { organizationId, caseId, sourceId: fixture.documentId },
+    });
+    expect(timeline).toHaveLength(1);
+    expect(timeline[0]).toMatchObject({
+      sourceType: 'DOCUMENT',
+      createdByActorType: 'AI',
+      confirmedByUser: false,
+      confirmedById: null,
+    });
+    expect(timeline[0].extractionId).not.toBeNull();
+
+    const checklist = await database.client.caseChecklist.findFirst({
+      where: { organizationId, caseId, templateId: checklistTemplateId },
+      include: { items: true },
+    });
+    expect(checklist).not.toBeNull();
+    expect(checklist.templateVersion).toBe(1);
+    expect(checklist.items).toHaveLength(3);
+    expect(checklist.items.some((item) => item.status === 'AWAITING_VALIDATION')).toBe(true);
 
     const document = await database.client.document.findUnique({
       where: { id: fixture.documentId },

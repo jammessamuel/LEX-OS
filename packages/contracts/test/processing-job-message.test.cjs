@@ -16,6 +16,8 @@ describe('processing job message v1', () => {
     assert.deepEqual(contracts.parseProcessingJobMessage(message), message);
     assert.equal(contracts.queueNameForJobType('FILE_VALIDATION'), 'file-validation');
     assert.equal(contracts.queueNameForJobType('OCR'), 'ocr-processing');
+    assert.equal(contracts.queueNameForJobType('TIMELINE_GENERATION'), 'timeline-generation');
+    assert.equal(contracts.queueNameForJobType('CHECKLIST_ANALYSIS'), 'checklist-analysis');
   });
 
   it('rejects unsupported versions, malformed IDs, unsafe identifiers, and rich payloads', async () => {

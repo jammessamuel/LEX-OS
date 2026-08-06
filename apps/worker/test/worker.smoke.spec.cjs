@@ -1,9 +1,12 @@
 let WorkerService;
 let MockProcessingProvider;
+let MockReviewProcessingProvider;
 
 beforeAll(async () => {
   ({ WorkerService } = await import('../dist/worker.service.js'));
   ({ MockProcessingProvider } = await import('../dist/processing/mock-processing.provider.js'));
+  ({ MockReviewProcessingProvider } =
+    await import('../dist/processing/review-processing.provider.js'));
 });
 
 describe('WorkerService', () => {
@@ -19,6 +22,9 @@ describe('WorkerService', () => {
 
   it('refuses deterministic processing mocks in production', () => {
     expect(() => new MockProcessingProvider({ environment: 'production' })).toThrow(
+      /cannot run in production/u,
+    );
+    expect(() => new MockReviewProcessingProvider({ environment: 'production' })).toThrow(
       /cannot run in production/u,
     );
   });

@@ -80,7 +80,16 @@ export type DomainAuditEvent =
       entityType: 'case';
       newData: {
         access:
-          'DETAIL' | 'DOCUMENTS' | 'DOWNLOAD' | 'FILES' | 'LIST' | 'PARTICIPANTS' | 'PROCESSING';
+          | 'CHECKLISTS'
+          | 'DETAIL'
+          | 'DOCUMENTS'
+          | 'DOWNLOAD'
+          | 'FILES'
+          | 'LIST'
+          | 'PARTICIPANTS'
+          | 'PROCESSING'
+          | 'TASKS'
+          | 'TIMELINE';
         count?: number;
       };
     })
@@ -147,6 +156,45 @@ export type DomainAuditEvent =
       action: 'document.reprocessed';
       entityType: 'document';
       newData: { caseId: string; fileId: string; processingJobId: string; jobType: 'OCR' };
+    })
+  | (DomainAuditBase & {
+      action: 'timeline.event.confirmed';
+      entityType: 'timeline_event';
+      oldData: { confirmedByUser: false };
+      newData: { confirmedByUser: true; confirmedById: string; confirmedAt: string };
+    })
+  | (DomainAuditBase & {
+      action: 'checklist.applied';
+      entityType: 'case_checklist';
+      newData: {
+        caseId: string;
+        templateId: string;
+        templateVersion: number;
+        itemCount: number;
+      };
+    })
+  | (DomainAuditBase & {
+      action: 'checklist_item.updated';
+      entityType: 'case_checklist_item';
+      oldData: { status: string; documentId: string | null };
+      newData: {
+        status: string;
+        documentId: string | null;
+        validatedById: string | null;
+        changedFields: string[];
+      };
+    })
+  | (DomainAuditBase & {
+      action: 'task.created';
+      entityType: 'task';
+      newData: {
+        caseId: string;
+        sourceType: 'AI_CHECKLIST';
+        sourceId: string;
+        status: 'OPEN';
+        priority: string;
+        assignedToId: string | null;
+      };
     });
 
 function auditData(event: AuthenticationAuditEvent) {

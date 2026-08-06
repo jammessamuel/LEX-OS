@@ -129,6 +129,55 @@ for (const fragment of delivery7Fragments) {
   }
 }
 
+const delivery8Migration = migrationDirectories.find((name) =>
+  name.endsWith('_delivery_8_timeline_checklist_review'),
+);
+
+if (delivery8Migration === undefined) {
+  throw new Error('The reviewed Delivery 8 timeline/checklist migration is missing.');
+}
+
+const delivery8Sql = migrationSql.get(delivery8Migration);
+const delivery8Fragments = [
+  'CREATE UNIQUE INDEX "documents_organization_id_case_id_id_key"',
+  'CREATE UNIQUE INDEX "case_checklists_organization_id_case_id_id_key"',
+  'ADD CONSTRAINT "timeline_events_ai_source_required"',
+  'ADD CONSTRAINT "timeline_events_organization_id_case_id_source_id_fkey"',
+  'ADD CONSTRAINT "case_checklist_items_organization_id_case_id_document_id_fkey"',
+  'ADD CONSTRAINT "case_checklist_items_validation_consistent"',
+  'CREATE UNIQUE INDEX "tasks_active_ai_checklist_source_key"',
+  'WHERE "source_type" = \'AI_CHECKLIST\'',
+];
+
+for (const fragment of delivery8Fragments) {
+  if (delivery8Sql === undefined || !delivery8Sql.includes(fragment)) {
+    throw new Error(`Delivery 8 migration is missing the reviewed SQL fragment: ${fragment}`);
+  }
+}
+
+const delivery8IndexesMigration = migrationDirectories.find((name) =>
+  name.endsWith('_delivery_8_review_query_indexes'),
+);
+
+if (delivery8IndexesMigration === undefined) {
+  throw new Error('The reviewed Delivery 8 resource-index migration is missing.');
+}
+
+const delivery8IndexesSql = migrationSql.get(delivery8IndexesMigration);
+const delivery8IndexFragments = [
+  'CREATE INDEX "timeline_events_tenant_case_created_at_id_idx"',
+  'CREATE INDEX "case_checklists_tenant_case_created_at_id_idx"',
+  'CREATE INDEX "tasks_active_tenant_case_created_at_id_idx"',
+  '"created_at" DESC, "id" DESC',
+  'WHERE "deleted_at" IS NULL;',
+];
+
+for (const fragment of delivery8IndexFragments) {
+  if (delivery8IndexesSql === undefined || !delivery8IndexesSql.includes(fragment)) {
+    throw new Error(`Delivery 8 resource-index migration is missing: ${fragment}`);
+  }
+}
+
 for (const [name, migration] of migrationSql) {
   const destructive = /^\s*(DROP\s+(?:TABLE|SCHEMA|DATABASE)|TRUNCATE)\b/imu.exec(migration);
 

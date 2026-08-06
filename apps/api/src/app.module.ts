@@ -8,6 +8,7 @@ import { AppController } from './app.controller.js';
 import { AccessTokenGuard } from './auth/access-token.guard.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CasesModule } from './cases/cases.module.js';
+import { ChecklistsModule } from './checklists/checklists.module.js';
 import { RuntimeConfigModule } from './config/runtime-config.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { DocumentsModule } from './documents/documents.module.js';
@@ -20,6 +21,8 @@ import { OrganizationsModule } from './organizations/organizations.module.js';
 import { ParticipantsModule } from './participants/participants.module.js';
 import { PersonsModule } from './persons/persons.module.js';
 import { ProcessingModule } from './processing/processing.module.js';
+import { TasksModule } from './tasks/tasks.module.js';
+import { TimelineModule } from './timeline/timeline.module.js';
 
 @Module({
   imports: [
@@ -37,6 +40,9 @@ import { ProcessingModule } from './processing/processing.module.js';
     DocumentsModule,
     ExtractionsModule,
     ProcessingModule,
+    TimelineModule,
+    ChecklistsModule,
+    TasksModule,
     HealthModule,
   ],
   controllers: [AppController],

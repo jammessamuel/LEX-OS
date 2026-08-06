@@ -1,7 +1,7 @@
 # LEX OS system overview
 
-**Status:** Architecture implemented through Delivery 7  
-**Last updated:** 2026-08-05
+**Status:** Architecture implemented through Delivery 8
+**Last updated:** 2026-08-06
 
 ## Architectural goals
 
@@ -32,7 +32,7 @@ flowchart LR
 
 The API and worker are two processes of one modular backend, not independent microservices. They use the same application contracts and database. A queue keeps retryable or expensive work outside request latency.
 
-The implemented runtime topology, ports, health semantics, and local credential rules are documented in [Local development topology](./local-development.md). Executable contracts are documented in [Authentication and HTTP contract](../api/authentication.md), [People, cases, and participants API](../api/people-cases-participants.md), and [Files and documents API](../api/files-documents.md).
+The implemented runtime topology, ports, health semantics, and local credential rules are documented in [Local development topology](./local-development.md). Executable contracts are documented in [Authentication and HTTP contract](../api/authentication.md), [People, cases, and participants API](../api/people-cases-participants.md), [Files and documents API](../api/files-documents.md), [Processing API](../api/processing.md), and [Timeline, checklist, and tasks API](../api/timeline-checklists-tasks.md).
 
 ## Target monorepo
 
@@ -131,7 +131,7 @@ sequenceDiagram
 
 The access token identifies the user, organization, and session, but database state remains authoritative for blocked/revoked access where required. The API never trusts tenant identity from a path, query, form, or JSON body.
 
-This flow is implemented for authentication, current organization, people, cases, participants, files, documents, processing jobs, and extraction history. The request guard verifies a short-lived HS256 JWT and then reloads the refresh session, user, organization, and visible role permissions from PostgreSQL. Replay or logout revokes the refresh family; blocked, deleted, expired, revoked, or organization-inactive state fails closed.
+This flow is implemented for authentication, current organization, people, cases, participants, files, documents, processing jobs, extraction history, timeline events, checklists, and tasks. The request guard verifies a short-lived HS256 JWT and then reloads the refresh session, user, organization, and visible role permissions from PostgreSQL. Replay or logout revokes the refresh family; blocked, deleted, expired, revoked, or organization-inactive state fails closed.
 
 Authorization has four layers:
 
@@ -197,7 +197,9 @@ Implemented queue names are:
 - `virus-scan`;
 - `ocr-processing`;
 - `document-classification`;
-- `entity-extraction`.
+- `entity-extraction`;
+- `timeline-generation`;
+- `checklist-analysis`.
 
 ### Job state machine
 
@@ -221,7 +223,7 @@ State transitions are centralized and conditional so two workers cannot both fin
 
 Processors are idempotent. A retry must either find the output already associated with its execution/idempotency key or append exactly one new immutable extraction. Queue delivery is at least once, so exactly-once behavior must never be assumed.
 
-The implemented deterministic graph is `FILE_VALIDATION -> OCR -> DOCUMENT_CLASSIFICATION -> ENTITY_EXTRACTION`. Classification intentionally finishes as `NEEDS_REVIEW`; no mock output is treated as human-confirmed. `VIRUS_SCAN` retries a scanner outage and fails terminally without changing the quarantined file to available.
+The implemented deterministic graph is `FILE_VALIDATION -> OCR -> DOCUMENT_CLASSIFICATION -> ENTITY_EXTRACTION -> TIMELINE_GENERATION -> CHECKLIST_ANALYSIS`. The final document state is `NEEDS_REVIEW`; timeline output is unconfirmed and checklist findings remain proposals until authorized human action. `VIRUS_SCAN` retries a scanner outage and fails terminally without changing the quarantined file to available.
 
 ## AI provider boundary
 

@@ -1,7 +1,7 @@
 # Incremental implementation plan
 
-**Status:** Implemented through Delivery 7  
-**Last updated:** 2026-08-05
+**Status:** Implemented through Delivery 8
+**Last updated:** 2026-08-06
 
 ## Delivery strategy
 
@@ -282,18 +282,17 @@ At the end of each delivery, report:
 
 ## Next-step acceptance criteria
 
-The completed checkpoint is **Delivery 7 — Persistent mock processing pipeline**. It is complete only when:
+The completed checkpoint is **Delivery 8 — Timeline and checklist review**. It is complete only when:
 
-- queue messages are strict schema-v1 envelopes containing only processing-job, organization, and correlation identifiers;
-- HTTP commits and returns before the worker performs file validation, OCR/text extraction, classification, or entity extraction;
-- every worker attempt reloads and verifies authoritative same-tenant relationships, then uses guarded `status + version` transitions;
-- immutable extractions/entities retain provider, model, version, execution, timing, confidence, source offsets, and AI audit provenance;
-- retries are bounded, duplicate deliveries do not repeat completed results, and deterministic child IDs preserve one logical stage chain;
-- scanner outages remain fail-closed, reach a safe terminal failure, and never release quarantined objects;
-- stale queued/retrying rows missing from Redis are republished without inferring success from queue state;
-- progress/detail/extraction/reprocess routes enforce tenant isolation, RBAC, confidentiality, keyset pagination, and safe response allowlists;
-- reprocessing appends a new OCR-root execution and rejects concurrent active processing;
-- success, retry, terminal failure, cancellation-ready, reconciliation, tenant/RBAC/confidentiality, OpenAPI, and prior-delivery regression tests pass;
+- the persistent graph ends with separate `TIMELINE_GENERATION` and `CHECKLIST_ANALYSIS` jobs rather than running review analysis in HTTP;
+- provider outputs are strict schema-v1 values and reject unknown fields, invalid statuses, duplicate template items, and source locators outside authorized text;
+- every AI timeline event links the same tenant/case document and its generation extraction, and starts unconfirmed;
+- human confirmation records user/time and an allowlisted audit in one transaction without modifying the immutable extraction;
+- a seeded active template is selected by legal area/case type, and applied case items retain title, description, requirement, and template-version snapshots;
+- document-to-checklist links are constrained to the same organization and case;
+- only authorized humans update checklist state, and one active `AI_CHECKLIST` task is traceable to each selected pending item;
+- timeline, checklist, and task routes enforce tenant isolation, confidentiality, RBAC, DTO validation, opaque failures, and safe audit fields;
+- worker retry/idempotency and all prior Delivery 7 behavior remain passing;
 - the full format, lint, typecheck, unit, integration, build, migration-validation, and Compose gates pass.
 
-After this checkpoint is accepted, the next proposed step is **Delivery 8 — Timeline and checklist review**. It requires explicit authorization.
+After this checkpoint is accepted, the next proposed step is **Delivery 9 — Text and semantic search foundation**. It requires explicit authorization.

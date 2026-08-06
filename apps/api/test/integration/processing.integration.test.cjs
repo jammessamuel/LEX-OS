@@ -296,10 +296,12 @@ after(async () => {
   await cleanup();
   await app?.close();
   const queues = [
+    'checklist-analysis',
     'document-classification',
     'entity-extraction',
     'file-validation',
     'ocr-processing',
+    'timeline-generation',
     'virus-scan',
   ].map(
     (name) =>

@@ -376,3 +376,238 @@ describe('Delivery 7 processing pipeline metadata', () => {
     });
   });
 });
+
+describe('Delivery 8 timeline and checklist review invariants', () => {
+  it('installs tenant/case source constraints and traceable-task indexes', async () => {
+    const constraints = await pool.query(
+      `SELECT conname
+       FROM pg_constraint
+       WHERE conname = ANY($1::text[])
+       ORDER BY conname`,
+      [
+        [
+          'case_checklist_items_organization_id_case_id_document_id_fkey',
+          'case_checklist_items_validation_consistent',
+          'timeline_events_ai_source_required',
+          'timeline_events_organization_id_case_id_source_id_fkey',
+        ],
+      ],
+    );
+    assert.deepEqual(
+      constraints.rows.map((row) => row.conname),
+      [
+        'case_checklist_items_organization_id_case_id_document_id_fkey',
+        'case_checklist_items_validation_consistent',
+        'timeline_events_ai_source_required',
+        'timeline_events_organization_id_case_id_source_id_fkey',
+      ],
+    );
+
+    const indexes = await pool.query(
+      `SELECT indexname, indexdef
+       FROM pg_indexes
+       WHERE schemaname = 'public'
+         AND indexname = ANY($1::text[])
+       ORDER BY indexname`,
+      [
+        [
+          'case_checklists_tenant_case_created_at_id_idx',
+          'case_checklist_items_organization_id_case_id_document_id_idx',
+          'tasks_active_ai_checklist_source_key',
+          'tasks_active_tenant_case_created_at_id_idx',
+          'timeline_events_tenant_case_created_at_id_idx',
+          'timeline_events_organization_id_source_id_extraction_id_idx',
+        ],
+      ],
+    );
+    assert.equal(indexes.rowCount, 6);
+    assert.match(
+      indexes.rows.find((row) => row.indexname === 'tasks_active_ai_checklist_source_key').indexdef,
+      /WHERE/iu,
+    );
+    assert.match(
+      indexes.rows.find((row) => row.indexname === 'tasks_active_tenant_case_created_at_id_idx')
+        .indexdef,
+      /WHERE \(deleted_at IS NULL\)$/iu,
+    );
+  });
+
+  it('rejects unsourced AI events and cross-case event/checklist links', async () => {
+    await inRolledBackTransaction(async (client) => {
+      const organization = id(51);
+      const user = id(52);
+      const caseA = id(53);
+      const caseB = id(54);
+      const file = id(55);
+      const document = id(56);
+      const extraction = id(57);
+      const template = id(58);
+      const templateItem = id(59);
+      const checklist = id(60);
+      const checklistItem = id(61);
+
+      await client.query(
+        `INSERT INTO organizations
+          (id, legal_name, trade_name, document_number, subscription_plan, updated_at)
+         VALUES ($1, 'Organização D8', 'D8', 'D8', 'TEST', now())`,
+        [organization],
+      );
+      await client.query(
+        `INSERT INTO users
+          (id, organization_id, name, email, password_hash, status, updated_at)
+         VALUES ($1, $2, 'Usuário D8', 'd8@example.invalid', 'argon2id-test-hash', 'ACTIVE', now())`,
+        [user, organization],
+      );
+      await client.query(
+        `INSERT INTO cases
+          (id, organization_id, internal_code, title, legal_area, case_type, updated_at)
+         VALUES ($1, $2, 'D8-A', 'Caso A', 'TEST', 'TEST', now()),
+                ($3, $2, 'D8-B', 'Caso B', 'TEST', 'TEST', now())`,
+        [caseA, organization, caseB],
+      );
+      await client.query(
+        `INSERT INTO files
+          (id, organization_id, storage_provider, storage_bucket, storage_key,
+           original_filename, mime_type, extension, size_bytes, checksum_sha256,
+           uploaded_by, upload_source, updated_at)
+         VALUES ($1, $2, 'test', 'test', 'd8-source', 'd8.txt', 'text/plain',
+                 'txt', 10, $3, $4, 'TEST', now())`,
+        [file, organization, 'a'.repeat(64), user],
+      );
+      await client.query(
+        `INSERT INTO documents
+          (id, organization_id, case_id, file_id, title, updated_at)
+         VALUES ($1, $2, $3, $4, 'Documento D8', now())`,
+        [document, organization, caseA, file],
+      );
+      await client.query(
+        `INSERT INTO document_extractions
+          (id, organization_id, document_id, extraction_type, provider, model_name,
+           execution_id, status)
+         VALUES ($1, $2, $3, 'TIMELINE_ANALYSIS', 'fixture', 'v1', 'd8-execution', 'COMPLETED')`,
+        [extraction, organization, document],
+      );
+
+      await expectDatabaseError(
+        client,
+        `INSERT INTO timeline_events
+          (id, organization_id, case_id, event_type, title, description, date_precision,
+           source_type, created_by_actor_type, updated_at)
+         VALUES ($1, $2, $3, 'DATE', 'Evento', 'Fixture', 'DAY', 'DOCUMENT', 'AI', now())`,
+        [id(62), organization, caseA],
+        '23514',
+      );
+      await expectDatabaseError(
+        client,
+        `INSERT INTO timeline_events
+          (id, organization_id, case_id, event_type, title, description, date_precision,
+           source_type, source_id, source_locator, extraction_id, created_by_actor_type, updated_at)
+         VALUES ($1, $2, $3, 'DATE', 'Evento', 'Fixture', 'DAY', 'DOCUMENT', $4,
+                 '{"pageNumber":1,"startOffset":0,"endOffset":1}', $5, 'AI', now())`,
+        [id(63), organization, caseB, document, extraction],
+        '23503',
+      );
+
+      await client.query(
+        `INSERT INTO checklist_templates
+          (id, name, legal_area, case_type, version, updated_at)
+         VALUES ($1, 'Template D8', 'TEST', 'TEST', 1, now())`,
+        [template],
+      );
+      await client.query(
+        `INSERT INTO checklist_template_items
+          (id, template_id, title, is_required, sort_order)
+         VALUES ($1, $2, 'Item D8', true, 1)`,
+        [templateItem, template],
+      );
+      await client.query(
+        `INSERT INTO case_checklists
+          (id, organization_id, case_id, template_id, template_version, updated_at)
+         VALUES ($1, $2, $3, $4, 1, now())`,
+        [checklist, organization, caseB, template],
+      );
+      await expectDatabaseError(
+        client,
+        `INSERT INTO case_checklist_items
+          (id, organization_id, case_id, case_checklist_id, template_item_id,
+           title_snapshot, is_required_snapshot, status, document_id, updated_at)
+         VALUES ($1, $2, $3, $4, $5, 'Item D8', true, 'AWAITING_VALIDATION', $6, now())`,
+        [checklistItem, organization, caseB, checklist, templateItem, document],
+        '23503',
+      );
+    });
+  });
+
+  it('allows only one active task per AI checklist source', async () => {
+    await inRolledBackTransaction(async (client) => {
+      const organization = id(71);
+      const user = id(72);
+      const caseId = id(73);
+      const template = id(74);
+      const templateItem = id(75);
+      const checklist = id(76);
+      const checklistItem = id(77);
+
+      await client.query(
+        `INSERT INTO organizations
+          (id, legal_name, trade_name, document_number, subscription_plan, updated_at)
+         VALUES ($1, 'Organização D8 Task', 'D8T', 'D8T', 'TEST', now())`,
+        [organization],
+      );
+      await client.query(
+        `INSERT INTO users
+          (id, organization_id, name, email, password_hash, status, updated_at)
+         VALUES ($1, $2, 'Usuário D8 Task', 'd8-task@example.invalid', 'argon2id-test-hash', 'ACTIVE', now())`,
+        [user, organization],
+      );
+      await client.query(
+        `INSERT INTO cases
+          (id, organization_id, internal_code, title, legal_area, case_type, updated_at)
+         VALUES ($1, $2, 'D8-TASK', 'Caso Task', 'TEST', 'TEST', now())`,
+        [caseId, organization],
+      );
+      await client.query(
+        `INSERT INTO checklist_templates
+          (id, name, legal_area, case_type, version, updated_at)
+         VALUES ($1, 'Template Task', 'TEST', 'TEST', 1, now())`,
+        [template],
+      );
+      await client.query(
+        `INSERT INTO checklist_template_items
+          (id, template_id, title, is_required, sort_order)
+         VALUES ($1, $2, 'Item Task', true, 1)`,
+        [templateItem, template],
+      );
+      await client.query(
+        `INSERT INTO case_checklists
+          (id, organization_id, case_id, template_id, template_version, updated_at)
+         VALUES ($1, $2, $3, $4, 1, now())`,
+        [checklist, organization, caseId, template],
+      );
+      await client.query(
+        `INSERT INTO case_checklist_items
+          (id, organization_id, case_id, case_checklist_id, template_item_id,
+           title_snapshot, is_required_snapshot, status, updated_at)
+         VALUES ($1, $2, $3, $4, $5, 'Item Task', true, 'MISSING', now())`,
+        [checklistItem, organization, caseId, checklist, templateItem],
+      );
+      await client.query(
+        `INSERT INTO tasks
+          (id, organization_id, case_id, title, task_type, source_type, source_id,
+           created_by, updated_at)
+         VALUES ($1, $2, $3, 'Tarefa D8', 'DOCUMENT_COLLECTION', 'AI_CHECKLIST', $4, $5, now())`,
+        [id(78), organization, caseId, checklistItem, user],
+      );
+      await expectDatabaseError(
+        client,
+        `INSERT INTO tasks
+          (id, organization_id, case_id, title, task_type, source_type, source_id,
+           created_by, updated_at)
+         VALUES ($1, $2, $3, 'Tarefa D8 duplicada', 'DOCUMENT_COLLECTION',
+                 'AI_CHECKLIST', $4, $5, now())`,
+        [id(79), organization, caseId, checklistItem, user],
+        '23505',
+      );
+    });
+  });
+});

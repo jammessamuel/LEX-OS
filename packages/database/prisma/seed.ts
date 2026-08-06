@@ -14,6 +14,10 @@ const IDS = {
   partnerRole: '00000000-0000-4000-8000-000000000104',
   internRole: '00000000-0000-4000-8000-000000000105',
   readOnlyRole: '00000000-0000-4000-8000-000000000106',
+  laborChecklistTemplate: '00000000-0000-4000-8000-000000000401',
+  laborChecklistIdentification: '00000000-0000-4000-8000-000000000402',
+  laborChecklistRepresentation: '00000000-0000-4000-8000-000000000403',
+  laborChecklistInitialEvidence: '00000000-0000-4000-8000-000000000404',
 } as const;
 
 const permissions = [
@@ -331,6 +335,8 @@ async function main(): Promise<void> {
           },
         });
 
+        const documentTypeIdsByCode = new Map<string, string>();
+
         for (const [index, [code, name, category]] of documentTypes.entries()) {
           const id = `00000000-0000-4000-8000-${String(301 + index).padStart(12, '0')}`;
 
@@ -352,6 +358,83 @@ async function main(): Promise<void> {
               description: `${name} — catálogo global fictício de demonstração.`,
               requiredFields: {},
               isSystem: true,
+            },
+          });
+          documentTypeIdsByCode.set(code, id);
+        }
+
+        await transaction.checklistTemplate.upsert({
+          where: { id: IDS.laborChecklistTemplate },
+          update: {
+            organizationId: null,
+            name: 'Checklist trabalhista inicial',
+            legalArea: 'TRABALHISTA',
+            caseType: 'RECLAMACAO_TRABALHISTA',
+            version: 1,
+            isActive: true,
+          },
+          create: {
+            id: IDS.laborChecklistTemplate,
+            organizationId: null,
+            name: 'Checklist trabalhista inicial',
+            legalArea: 'TRABALHISTA',
+            caseType: 'RECLAMACAO_TRABALHISTA',
+            version: 1,
+            isActive: true,
+          },
+        });
+
+        const checklistItems = [
+          {
+            id: IDS.laborChecklistIdentification,
+            documentTypeCode: 'RG',
+            title: 'Documento de identificação',
+            description: 'Documento fictício para identificação da parte atendida.',
+            sortOrder: 1,
+          },
+          {
+            id: IDS.laborChecklistRepresentation,
+            documentTypeCode: 'PROCURACAO',
+            title: 'Procuração',
+            description: 'Instrumento de representação para a atuação jurídica.',
+            sortOrder: 2,
+          },
+          {
+            id: IDS.laborChecklistInitialEvidence,
+            documentTypeCode: 'OUTRO',
+            title: 'Documento inicial para análise',
+            description: 'Material inicial fictício que fundamenta a triagem do caso.',
+            sortOrder: 3,
+          },
+        ] as const;
+
+        for (const item of checklistItems) {
+          const documentTypeId = documentTypeIdsByCode.get(item.documentTypeCode);
+
+          if (documentTypeId === undefined) {
+            throw new Error(`Missing seeded document type: ${item.documentTypeCode}`);
+          }
+
+          await transaction.checklistTemplateItem.upsert({
+            where: { id: item.id },
+            update: {
+              organizationId: null,
+              templateId: IDS.laborChecklistTemplate,
+              documentTypeId,
+              title: item.title,
+              description: item.description,
+              isRequired: true,
+              sortOrder: item.sortOrder,
+            },
+            create: {
+              id: item.id,
+              organizationId: null,
+              templateId: IDS.laborChecklistTemplate,
+              documentTypeId,
+              title: item.title,
+              description: item.description,
+              isRequired: true,
+              sortOrder: item.sortOrder,
             },
           });
         }
@@ -386,7 +469,7 @@ async function main(): Promise<void> {
     );
 
     console.info(
-      `Fictional seed complete: 1 organization, 1 admin, 6 roles, ${permissions.length} permissions, ${documentTypes.length} document types, and 1 demo case.`,
+      `Fictional seed complete: 1 organization, 1 admin, 6 roles, ${permissions.length} permissions, ${documentTypes.length} document types, 1 checklist template, and 1 demo case.`,
     );
   } finally {
     await prisma.$disconnect();

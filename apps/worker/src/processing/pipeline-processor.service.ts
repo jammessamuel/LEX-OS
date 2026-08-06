@@ -11,6 +11,12 @@ import {
   type StageCompletion,
 } from './processing.repository.js';
 import { ProcessingQueuePublisher } from './processing-queue.publisher.js';
+import {
+  CHECKLIST_ANALYSIS_PROVIDER,
+  type ChecklistAnalysisProvider,
+  TIMELINE_PROVIDER,
+  type TimelineProvider,
+} from './review-processing.provider.js';
 
 function hasRetryOnceHook(value: Prisma.JsonValue | null): boolean {
   return (
@@ -28,6 +34,9 @@ export class PipelineProcessorService {
   constructor(
     private readonly repository: ProcessingRepository,
     @Inject(PROCESSING_PROVIDER) private readonly provider: ProcessingProvider,
+    @Inject(TIMELINE_PROVIDER) private readonly timelineProvider: TimelineProvider,
+    @Inject(CHECKLIST_ANALYSIS_PROVIDER)
+    private readonly checklistAnalysisProvider: ChecklistAnalysisProvider,
     private readonly publisher: ProcessingQueuePublisher,
   ) {}
 
@@ -56,7 +65,7 @@ export class PipelineProcessorService {
           'Falha transitória simulada durante o processamento.',
         );
       }
-      const completion = this.#executeStage(claim.job);
+      const completion = await this.#executeStage(claim.job);
       const child = await this.repository.complete(claim.job, completion, message.correlationId);
       if (child !== null) {
         try {
@@ -85,7 +94,7 @@ export class PipelineProcessorService {
     }
   }
 
-  #executeStage(job: ClaimedProcessingJob): StageCompletion {
+  async #executeStage(job: ClaimedProcessingJob): Promise<StageCompletion> {
     switch (job.jobType) {
       case 'FILE_VALIDATION': {
         if (
@@ -156,7 +165,7 @@ export class PipelineProcessorService {
           modelName: result.modelName,
           outputMetadata: {
             stage: 'ENTITY_EXTRACTION',
-            progress: 100,
+            progress: 70,
             entityCount: result.entities.length,
           },
           extraction: {
@@ -166,6 +175,81 @@ export class PipelineProcessorService {
             confidenceScore: 0.98,
             processingTimeMs: 1,
             entities: result.entities,
+          },
+          nextJobType: 'TIMELINE_GENERATION',
+        };
+      }
+      case 'TIMELINE_GENERATION': {
+        const sourceExtraction = job.document.extractions[0];
+        if (sourceExtraction?.rawText === null || sourceExtraction?.rawText === undefined) {
+          throw new PermanentProcessingError(
+            'TIMELINE_SOURCE_MISSING',
+            'A cronologia exige uma extração textual autorizada do mesmo documento.',
+          );
+        }
+        const result = this.timelineProvider.generate({
+          sourceTextLength: sourceExtraction.rawText.length,
+        });
+        return {
+          provider: result.provider,
+          modelName: result.modelName,
+          outputMetadata: {
+            stage: 'TIMELINE_GENERATION',
+            progress: 85,
+            eventCount: result.events.length,
+          },
+          extraction: {
+            type: 'TIMELINE_ANALYSIS',
+            executionId: `mock-v1:${job.id}`,
+            structuredData: {
+              schemaVersion: result.schemaVersion,
+              sourceExtractionId: sourceExtraction.id,
+              eventCount: result.events.length,
+            },
+            confidenceScore: Math.min(...result.events.map((event) => event.confidenceScore)),
+            processingTimeMs: 1,
+            promptVersion: result.promptVersion,
+          },
+          timeline: { events: result.events },
+          nextJobType: 'CHECKLIST_ANALYSIS',
+        };
+      }
+      case 'CHECKLIST_ANALYSIS': {
+        const template = await this.repository.findChecklistTemplate(job);
+        if (template === null || template.items.length === 0) {
+          throw new PermanentProcessingError(
+            'CHECKLIST_TEMPLATE_MISSING',
+            'Não há checklist ativo para o tipo deste caso.',
+          );
+        }
+        const result = this.checklistAnalysisProvider.analyze({
+          documentTypeCode: job.document.documentType?.code ?? null,
+          items: template.items,
+        });
+        return {
+          provider: result.provider,
+          modelName: result.modelName,
+          outputMetadata: {
+            stage: 'CHECKLIST_ANALYSIS',
+            progress: 100,
+            itemCount: result.items.length,
+          },
+          extraction: {
+            type: 'CHECKLIST_ANALYSIS',
+            executionId: `mock-v1:${job.id}`,
+            structuredData: {
+              schemaVersion: result.schemaVersion,
+              templateId: template.id,
+              templateVersion: template.version,
+              itemCount: result.items.length,
+            },
+            processingTimeMs: 1,
+            promptVersion: result.promptVersion,
+          },
+          checklist: {
+            templateId: template.id,
+            templateVersion: template.version,
+            items: result.items,
           },
           finalDocumentStatus: 'NEEDS_REVIEW',
         };

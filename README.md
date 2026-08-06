@@ -2,7 +2,7 @@
 
 LEX OS is an intelligent legal operations system for Brazilian law firms. The project receives disorganized operational material and prepares a structured, searchable, and traceable legal dossier for human analysis.
 
-This repository contains **Delivery 7 — Persistent mock processing pipeline**. It provides the reproducible local stack, authenticated and tenant-aware legal/file platform, BullMQ delivery, persistent optimistic job state, deterministic mock OCR/text/classification/entity stages, append-only provenance, progress reads, reprocessing, and enqueue-gap recovery. Timeline/checklist workflows, real providers, and feature UI remain intentionally deferred.
+This repository contains **Delivery 8 — Timeline and checklist review**. It provides the reproducible local stack, authenticated and tenant-aware legal/file platform, a six-stage persistent BullMQ pipeline, deterministic sourced timeline and checklist analysis, human event confirmation, versioned checklist snapshots, item review, traceable tasks, and safe audit provenance. Search/embeddings, real providers, and feature UI remain intentionally deferred.
 
 ## Architecture baseline
 
@@ -28,7 +28,10 @@ This repository contains **Delivery 7 — Persistent mock processing pipeline**.
 - strict versioned queue messages containing only job/tenant/correlation identifiers, with one BullMQ queue per implemented stage;
 - optimistic persistent job transitions, bounded exponential retries, deterministic child IDs, duplicate-delivery safety, and stale-job reconciliation;
 - deterministic development/test OCR/text, classification, and entity extraction with append-only provenance and mandatory human-review state;
+- validated deterministic timeline/checklist outputs, same-case source locators, immutable generation extractions, and unconfirmed AI events;
+- audited human timeline confirmation, versioned checklist snapshots, item review, and one traceable task per selected pending item;
 - tenant/RBAC/confidentiality-aware processing progress, extraction history, and reprocessing HTTP routes;
+- tenant/RBAC/confidentiality-aware timeline, checklist, and task HTTP routes;
 - typed environment configuration with explicit production validation;
 - structured JSON logs with request and correlation IDs;
 - API liveness, readiness, and process metrics;
@@ -117,7 +120,7 @@ pnpm infra:config
 
 `db:validate` formats and validates the Prisma schema and checks that the reviewed raw SQL additions remain in the migration. Database integration tests require the Compose PostgreSQL service with the migration already applied.
 
-API authentication and tenant contract tests also require the Compose PostgreSQL on `5433`, authenticated Redis, and private MinIO. See [Authentication and HTTP contract](./docs/api/authentication.md), [People, cases, and participants API](./docs/api/people-cases-participants.md), [Files and documents API](./docs/api/files-documents.md), and [Processing API](./docs/api/processing.md).
+API authentication and tenant contract tests also require the Compose PostgreSQL on `5433`, authenticated Redis, and private MinIO. See [Authentication and HTTP contract](./docs/api/authentication.md), [People, cases, and participants API](./docs/api/people-cases-participants.md), [Files and documents API](./docs/api/files-documents.md), [Processing API](./docs/api/processing.md), and [Timeline, checklist, and tasks API](./docs/api/timeline-checklists-tasks.md).
 
 ## Database workflow
 
@@ -148,9 +151,9 @@ Use `pnpm db:migrate:dev --name <descriptive_name>` only to create a reviewed fo
 - duplicate uploads are linked within one tenant, but their second object is retained until a production retention/deduplication policy is approved;
 - reconciliation reports missing, stale-quarantine, and orphan conditions without automatically deleting legal evidence;
 - no e-mail adapter despite local Mailpit;
-- no legal workflow UI or real AI provider;
+- no legal workflow UI, search/embedding implementation, or real AI provider;
 - production object retention, legal hold, backup/restore, and irreversible purge policies remain governance blockers;
 - CI runs the format, lint, typecheck, unit, build, migration-validation, Compose-config, and integration gates, but the full Playwright end-to-end matrix and dependency review remain scheduled for Delivery 11;
 - Git hooks cover commit-message policy only; a pre-commit lint/format gate is not installed yet.
 
-The next proposed checkpoint is **Delivery 8 — Timeline and checklist review**, subject to explicit authorization.
+The next proposed checkpoint is **Delivery 9 — Text and semantic search foundation**, subject to explicit authorization.

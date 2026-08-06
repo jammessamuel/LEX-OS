@@ -30,6 +30,13 @@ const jobTargetSelect = {
       caseId: true,
       fileId: true,
       deletedAt: true,
+      documentType: { select: { id: true, code: true } },
+      extractions: {
+        where: { extractionType: 'OCR', status: 'COMPLETED' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: 1,
+        select: { id: true, rawText: true },
+      },
       file: {
         select: {
           id: true,
@@ -40,7 +47,15 @@ const jobTargetSelect = {
           deletedAt: true,
         },
       },
-      case: { select: { id: true, organizationId: true, deletedAt: true } },
+      case: {
+        select: {
+          id: true,
+          organizationId: true,
+          legalArea: true,
+          caseType: true,
+          deletedAt: true,
+        },
+      },
     },
   },
 } satisfies Prisma.ProcessingJobSelect;
@@ -64,6 +79,15 @@ export interface NextProcessingJob {
   jobType: ProcessingJobType;
 }
 
+export interface ChecklistTemplateForProcessing {
+  id: string;
+  version: number;
+  items: readonly {
+    id: string;
+    documentTypeCode: string | null;
+  }[];
+}
+
 export type ClaimResult =
   | { disposition: 'PROCESS'; job: ClaimedProcessingJob }
   | { disposition: 'SKIP'; status?: JobStatus };
@@ -73,12 +97,14 @@ export interface StageCompletion {
   modelName: string;
   outputMetadata: Prisma.InputJsonObject;
   extraction?: {
-    type: 'OCR' | 'CLASSIFICATION' | 'ENTITY_EXTRACTION';
+    type:
+      'OCR' | 'CLASSIFICATION' | 'ENTITY_EXTRACTION' | 'TIMELINE_ANALYSIS' | 'CHECKLIST_ANALYSIS';
     executionId: string;
     rawText?: string;
     structuredData?: Prisma.InputJsonObject;
     confidenceScore?: number;
     processingTimeMs: number;
+    promptVersion?: string;
     entities?: readonly {
       entityType: string;
       normalizedValue: string;
@@ -90,6 +116,26 @@ export interface StageCompletion {
     }[];
   };
   classification?: { documentTypeCode: 'OUTRO'; confidenceScore: number };
+  timeline?: {
+    events: readonly {
+      eventType: string;
+      title: string;
+      description: string;
+      occurredAt: string;
+      datePrecision: 'DAY';
+      importance: 'NORMAL';
+      sourceLocator: { pageNumber: number; startOffset: number; endOffset: number };
+      confidenceScore: number;
+    }[];
+  };
+  checklist?: {
+    templateId: string;
+    templateVersion: number;
+    items: readonly {
+      templateItemId: string;
+      status: 'MISSING' | 'AWAITING_VALIDATION';
+    }[];
+  };
   nextJobType?: ProcessingJobType;
   finalDocumentStatus?: 'NEEDS_REVIEW';
 }
@@ -130,6 +176,49 @@ function assertTenantRelationships(job: JobTargetRecord): asserts job is JobTarg
 @Injectable()
 export class ProcessingRepository {
   constructor(private readonly database: DatabaseService) {}
+
+  async findChecklistTemplate(
+    job: ClaimedProcessingJob,
+  ): Promise<ChecklistTemplateForProcessing | null> {
+    const select = {
+      id: true,
+      version: true,
+      items: {
+        orderBy: [{ sortOrder: 'asc' as const }, { id: 'asc' as const }],
+        select: {
+          id: true,
+          documentType: { select: { code: true } },
+        },
+      },
+    } satisfies Prisma.ChecklistTemplateSelect;
+    const where = {
+      legalArea: job.document.case.legalArea,
+      caseType: job.document.case.caseType,
+      isActive: true,
+    } satisfies Prisma.ChecklistTemplateWhereInput;
+    const template =
+      (await this.database.client.checklistTemplate.findFirst({
+        where: { ...where, organizationId: job.organizationId },
+        orderBy: [{ version: 'desc' }, { id: 'asc' }],
+        select,
+      })) ??
+      (await this.database.client.checklistTemplate.findFirst({
+        where: { ...where, organizationId: null },
+        orderBy: [{ version: 'desc' }, { id: 'asc' }],
+        select,
+      }));
+
+    return template === null
+      ? null
+      : {
+          id: template.id,
+          version: template.version,
+          items: template.items.map((item) => ({
+            id: item.id,
+            documentTypeCode: item.documentType?.code ?? null,
+          })),
+        };
+  }
 
   async claim(
     organizationId: string,
@@ -240,7 +329,9 @@ export class ProcessingRepository {
               ? {}
               : { confidenceScore: completion.extraction.confidenceScore }),
             processingTimeMs: completion.extraction.processingTimeMs,
-            promptVersion: completion.extraction.type === 'OCR' ? null : 'deterministic-prompt-v1',
+            promptVersion:
+              completion.extraction.promptVersion ??
+              (completion.extraction.type === 'OCR' ? null : 'deterministic-prompt-v1'),
           },
           select: { id: true },
         });
@@ -303,6 +394,181 @@ export class ProcessingRepository {
         });
       }
 
+      if (completion.timeline !== undefined) {
+        if (extractionId === undefined) {
+          throw new Error('Timeline events require their analysis extraction.');
+        }
+        for (const [index, event] of completion.timeline.events.entries()) {
+          const eventId = deterministicJobId(job.id, `TIMELINE_EVENT:${index}`);
+          await transaction.timelineEvent.create({
+            data: {
+              id: eventId,
+              organizationId: job.organizationId,
+              caseId: job.caseId,
+              eventType: event.eventType,
+              title: event.title,
+              description: event.description,
+              occurredAt: new Date(event.occurredAt),
+              datePrecision: event.datePrecision,
+              importance: event.importance,
+              sourceType: 'DOCUMENT',
+              sourceId: job.documentId,
+              sourceLocator: asJson(event.sourceLocator),
+              extractionId,
+              confidenceScore: event.confidenceScore,
+              createdByActorType: 'AI',
+              confirmedByUser: false,
+            },
+          });
+          await this.#audit(transaction, {
+            organizationId: job.organizationId,
+            processingJobId: job.id,
+            actorType: 'AI',
+            action: 'timeline.event.created',
+            entityType: 'timeline_event',
+            entityId: eventId,
+            correlationId,
+            data: {
+              caseId: job.caseId,
+              eventType: event.eventType,
+              sourceType: 'DOCUMENT',
+              sourceId: job.documentId,
+              extractionId,
+              confirmedByUser: false,
+            },
+          });
+        }
+      }
+
+      let caseChecklistId: string | undefined;
+      if (completion.checklist !== undefined) {
+        const template = await transaction.checklistTemplate.findFirst({
+          where: {
+            id: completion.checklist.templateId,
+            version: completion.checklist.templateVersion,
+            legalArea: job.document.case.legalArea,
+            caseType: job.document.case.caseType,
+            isActive: true,
+            OR: [{ organizationId: null }, { organizationId: job.organizationId }],
+          },
+          select: {
+            id: true,
+            version: true,
+            items: {
+              orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                isRequired: true,
+              },
+            },
+          },
+        });
+        if (template === null) {
+          throw new Error('The checklist template is no longer available.');
+        }
+        const expectedItemIds = new Set(template.items.map((item) => item.id));
+        if (
+          completion.checklist.items.length !== expectedItemIds.size ||
+          completion.checklist.items.some((item) => !expectedItemIds.has(item.templateItemId))
+        ) {
+          throw new Error('Checklist analysis does not match the selected template.');
+        }
+
+        const deterministicChecklistId = deterministicJobId(
+          job.caseId,
+          `CHECKLIST:${template.id}:${template.version}`,
+        );
+        const checklist = await transaction.caseChecklist.upsert({
+          where: {
+            caseId_templateId_templateVersion: {
+              caseId: job.caseId,
+              templateId: template.id,
+              templateVersion: template.version,
+            },
+          },
+          update: {},
+          create: {
+            id: deterministicChecklistId,
+            organizationId: job.organizationId,
+            caseId: job.caseId,
+            templateId: template.id,
+            templateVersion: template.version,
+            status: 'IN_PROGRESS',
+          },
+          select: { id: true },
+        });
+        caseChecklistId = checklist.id;
+        const inserted = await transaction.caseChecklistItem.createMany({
+          data: template.items.map((item) => ({
+            id: deterministicJobId(checklist.id, `CHECKLIST_ITEM:${item.id}`),
+            organizationId: job.organizationId,
+            caseId: job.caseId,
+            caseChecklistId: checklist.id,
+            templateItemId: item.id,
+            titleSnapshot: item.title,
+            descriptionSnapshot: item.description,
+            isRequiredSnapshot: item.isRequired,
+            status: 'MISSING',
+          })),
+          skipDuplicates: true,
+        });
+        if (inserted.count > 0) {
+          await this.#audit(transaction, {
+            organizationId: job.organizationId,
+            processingJobId: job.id,
+            actorType: 'SYSTEM',
+            action: 'checklist.applied',
+            entityType: 'case_checklist',
+            entityId: checklist.id,
+            correlationId,
+            data: {
+              caseId: job.caseId,
+              templateId: template.id,
+              templateVersion: template.version,
+              itemCount: inserted.count,
+            },
+          });
+        }
+
+        let updatedItemCount = 0;
+        for (const result of completion.checklist.items) {
+          if (result.status !== 'AWAITING_VALIDATION') {
+            continue;
+          }
+          const updated = await transaction.caseChecklistItem.updateMany({
+            where: {
+              organizationId: job.organizationId,
+              caseId: job.caseId,
+              caseChecklistId: checklist.id,
+              templateItemId: result.templateItemId,
+              status: 'MISSING',
+            },
+            data: { status: 'AWAITING_VALIDATION', documentId: job.documentId },
+          });
+          updatedItemCount += updated.count;
+        }
+        await transaction.caseChecklist.updateMany({
+          where: { id: checklist.id, organizationId: job.organizationId, caseId: job.caseId },
+          data: { status: 'NEEDS_REVIEW' },
+        });
+        await this.#audit(transaction, {
+          organizationId: job.organizationId,
+          processingJobId: job.id,
+          actorType: 'AI',
+          action: 'checklist.analysis.completed',
+          entityType: 'case_checklist',
+          entityId: checklist.id,
+          correlationId,
+          data: {
+            caseId: job.caseId,
+            documentId: job.documentId,
+            updatedItemCount,
+          },
+        });
+      }
+
       let nextJob: NextProcessingJob | null = null;
       if (completion.nextJobType !== undefined) {
         const id = deterministicJobId(job.id, completion.nextJobType);
@@ -347,6 +613,7 @@ export class ProcessingRepository {
           outputMetadata: {
             ...completion.outputMetadata,
             ...(extractionId === undefined ? {} : { extractionId }),
+            ...(caseChecklistId === undefined ? {} : { caseChecklistId }),
             ...(nextJob === null ? {} : { nextProcessingJobId: nextJob.id }),
           },
           errorCode: null,
@@ -451,6 +718,8 @@ export class ProcessingRepository {
             'OCR',
             'DOCUMENT_CLASSIFICATION',
             'ENTITY_EXTRACTION',
+            'TIMELINE_GENERATION',
+            'CHECKLIST_ANALYSIS',
           ],
         },
       },

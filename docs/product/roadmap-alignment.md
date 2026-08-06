@@ -19,7 +19,7 @@ Nada liga um ao outro. Por isso a pergunta "onde estamos na Fase 1?" hoje não t
 
 A proposta conceitual enumera capacidades de produto. Ela não tem nenhuma linha para isolamento entre clientes, autenticação, RBAC, auditoria, entrada segura de arquivos ou pipeline de processamento — a plataforma sobre a qual essas capacidades se apoiam.
 
-Cinco das sete entregas concluídas foram exatamente nisso:
+Cinco das nove entregas concluídas foram exatamente nisso:
 
 | Entrega | Resultado                                    | Componente na proposta         |
 | ------- | -------------------------------------------- | ------------------------------ |
@@ -31,6 +31,7 @@ Cinco das sete entregas concluídas foram exatamente nisso:
 | 5       | Pessoas, casos e participantes               | nenhum                         |
 | 6       | Entrada segura de arquivos e documentos      | parte do #1                    |
 | 7       | Pipeline de processamento persistente        | #2, e a forma mock dos #4 e #5 |
+| 8       | Timeline, checklist e tarefas rastreáveis    | #6 e #7                        |
 
 Essa é a ordem correta de construção — nenhum dos 11 componentes pode entrar em produção com segurança sem ela. Mas significa que a maior parte do trabalho feito até aqui não aparece quando se lê a proposta. Essa lacuna é de percepção e de documentação, não de entrega.
 
@@ -43,8 +44,8 @@ Essa é a ordem correta de construção — nenhum dos 11 componentes pode entra
 | 3   | Organizador Inteligente | **nenhuma**         | **Sem entrega.** Existe apenas vínculo de duplicata por SHA-256 dentro do mesmo cliente. Estrutura de pastas, versionamento e renomeação inteligente não têm entrega no plano                                                                                                                               |
 | 4   | OCR Jurídico            | 7 (mock)            | **Mock.** A extração de texto devolve fixtures determinísticos. Extração de CPF, CNPJ, OAB, datas, valores e número de processo _a partir do conteúdo do documento_ não existe. A validação de CPF/CNPJ que existe é de cadastro de pessoa, não de extração                                                 |
 | 5   | Extração Semântica      | 7 (mock)            | **Mock.** `ExtractedEntity` carrega página, offsets, confiança e `linkedPersonId`; os valores são fabricados                                                                                                                                                                                                |
-| 6   | Timeline Engine         | 8                   | Não iniciada. Exige autorização explícita. `TimelineEvent` já existe no schema                                                                                                                                                                                                                              |
-| 7   | Checklist Inteligente   | 8                   | Não iniciada. `ChecklistTemplate`, `CaseChecklist` e `CaseChecklistItem` já existem no schema                                                                                                                                                                                                               |
+| 6   | Timeline Engine         | 8                   | **Concluída com inteligência simulada.** Eventos carregam documento, localizador, extração, confiança e começam não confirmados; a confirmação humana preserva a extração original                                                                                                                          |
+| 7   | Checklist Inteligente   | 8                   | **Concluída com inteligência simulada.** Template versionado, snapshot por caso, revisão de itens, vínculo documental no mesmo caso e tarefa rastreável estão implementados                                                                                                                                 |
 | 8   | Workspace               | 10                  | **Iniciada como preparação, não aceita como Entrega 10.** Login, lista/detalhe de caso, envio, progresso e procedência já usam a API real. Criação/edição, participantes, download, correção humana, timeline, checklist, busca, auditoria autorizada, matriz completa de acessibilidade e E2E ainda faltam |
 | 9   | Memory Engine           | 9                   | Não iniciada. `KnowledgeChunk` e a extensão pgvector já estão no lugar                                                                                                                                                                                                                                      |
 | 10  | Assistente Interno      | **nenhuma**         | **Contradição.** A proposta lista como componente central e Fase 3. O `vision.md` lista "chatbot jurídico genérico" entre as coisas que o LEX OS **não é**. Ver ADR-009                                                                                                                                     |
@@ -52,16 +53,16 @@ Essa é a ordem correta de construção — nenhum dos 11 componentes pode entra
 
 ## Mapeamento das fases
 
-| Fase                                      | Componentes | Entregas                       | Cobertura                                                           |
-| ----------------------------------------- | ----------- | ------------------------------ | ------------------------------------------------------------------- |
-| Fase 1 — Ingestão, Organizador, OCR       | 1, 3, 4     | 6 (parcial), nenhuma, 7 (mock) | **A mais fraca.** Um componente parcial, um sem entrega, um mockado |
-| Fase 2 — Timeline, Checklist, Workspace   | 6, 7, 8     | 8, 8, 10                       | Timeline e checklist não iniciados; Workspace iniciado parcialmente |
-| Fase 3 — Memory Engine, Assistente        | 9, 10       | 9, nenhuma                     | Metade especificada; o assistente está em disputa                   |
-| Fase 4 — Integrações com ERPs e tribunais | —           | fora do escopo do MVP          | Excluída de propósito pelo `mvp-scope.md`                           |
+| Fase                                      | Componentes | Entregas                       | Cobertura                                                             |
+| ----------------------------------------- | ----------- | ------------------------------ | --------------------------------------------------------------------- |
+| Fase 1 — Ingestão, Organizador, OCR       | 1, 3, 4     | 6 (parcial), nenhuma, 7 (mock) | **A mais fraca.** Um componente parcial, um sem entrega, um mockado   |
+| Fase 2 — Timeline, Checklist, Workspace   | 6, 7, 8     | 8, 8, 10                       | Timeline e checklist mock concluídos; Workspace iniciado parcialmente |
+| Fase 3 — Memory Engine, Assistente        | 9, 10       | 9, nenhuma                     | Metade especificada; o assistente está em disputa                     |
+| Fase 4 — Integrações com ERPs e tribunais | —           | fora do escopo do MVP          | Excluída de propósito pelo `mvp-scope.md`                             |
 
-**A consequência que precisa ser dita:** a Delivery 8 é o próximo passo do plano de implementação, mas Timeline e Checklist pertencem à **Fase 2** da proposta. Se o roadmap da proposta é a sequência que manda, a Delivery 8 não é a próxima coisa a construir. Se a cadeia de dependências do plano é que manda, é. Essa escolha ainda não foi feita.
+**A escolha registrada:** a sociedade autorizou seguir a cadeia de dependências do plano, e a Entrega 8 foi concluída mesmo pertencendo à **Fase 2** da proposta. Isso não resolve as lacunas da Fase 1; apenas evita bloquear capacidades independentes que já tinham fundação segura.
 
-As telas preparatórias não alteram o checkpoint formal: a Entrega 7 continua sendo a última aceita. Elas aproveitam rotas existentes sem autorizar comportamento das Entregas 8 e 9, e a Entrega 10 só poderá ser considerada concluída quando todos os seus critérios de aceite forem verificados.
+As telas preparatórias não alteram o checkpoint formal: a Entrega 8 é a última aceita. A Entrega 9 ainda exige autorização explícita, e a Entrega 10 só poderá ser considerada concluída quando todos os seus critérios de aceite forem verificados.
 
 ## Reversões de stack deliberadas
 

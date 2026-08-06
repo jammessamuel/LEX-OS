@@ -1,0 +1,15 @@
+import { Module } from '@nestjs/common';
+
+import { AuditModule } from '../audit/audit.module.js';
+import { CasesModule } from '../cases/cases.module.js';
+import { ChecklistsModule } from '../checklists/checklists.module.js';
+import { TasksController } from './tasks.controller.js';
+import { TasksRepository } from './tasks.repository.js';
+import { TasksService } from './tasks.service.js';
+
+@Module({
+  imports: [AuditModule, CasesModule, ChecklistsModule],
+  controllers: [TasksController],
+  providers: [TasksRepository, TasksService],
+})
+export class TasksModule {}

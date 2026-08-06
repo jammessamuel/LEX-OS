@@ -155,7 +155,8 @@ export class CasesService {
     actor: ActorContext,
     id: string,
     metadata: RequestAuditMetadata,
-    access?: 'DOCUMENTS' | 'DOWNLOAD' | 'FILES' | 'PROCESSING',
+    access?:
+      'CHECKLISTS' | 'DOCUMENTS' | 'DOWNLOAD' | 'FILES' | 'PROCESSING' | 'TASKS' | 'TIMELINE',
   ): Promise<void> {
     const record = await this.#findAccessible(actor, id);
     if (access !== undefined && isConfidential(record.confidentialityLevel)) {
@@ -351,7 +352,16 @@ export class CasesService {
   async #auditConfidentialRead(
     actor: ActorContext,
     caseId: string,
-    access: 'DETAIL' | 'DOCUMENTS' | 'DOWNLOAD' | 'FILES' | 'PARTICIPANTS' | 'PROCESSING',
+    access:
+      | 'CHECKLISTS'
+      | 'DETAIL'
+      | 'DOCUMENTS'
+      | 'DOWNLOAD'
+      | 'FILES'
+      | 'PARTICIPANTS'
+      | 'PROCESSING'
+      | 'TASKS'
+      | 'TIMELINE',
     metadata: RequestAuditMetadata,
   ): Promise<void> {
     await this.audit.recordDomain({

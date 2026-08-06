@@ -138,7 +138,7 @@ Permission bundles will be seeded, but organization-specific roles may later com
 
 ## Required API surface
 
-Routes live under `/api/v1` and are exposed only when their delivery is implemented. Delivery 7 exposes authentication, current organization, people, cases, participant association/listing, secure file intake/list/download authorization, document list/detail/correction/soft delete, processing progress/detail, extraction history, and reprocessing. Users, timeline, checklist, tasks, search, and general audit endpoints remain scheduled for later deliveries.
+Routes live under `/api/v1` and are exposed only when their delivery is implemented. Delivery 8 exposes authentication, current organization, people, cases, participant association/listing, secure file intake/list/download authorization, document list/detail/correction/soft delete, processing progress/detail, extraction history/reprocessing, timeline review/confirmation, checklist application/item review, and traceable task creation/listing. Users, search, and general audit endpoints remain scheduled for later deliveries.
 
 Every list route must define pagination, sorting allowlists, filters, and stable ordering. Every error uses:
 
@@ -161,7 +161,8 @@ Local-only seed data contains:
 - organization `Lex OS Demonstração` with reserved fixture identifiers and invalid all-zero document data;
 - user `admin@lexos.invalid`, whose local-only password is supplied through `SEED_ADMIN_PASSWORD` and is never embedded in documentation;
 - six global role bundles, 24 granular permissions, and 21 global document types;
-- fictional case `DEMO-0001`, explicitly described as containing no real people, documents, or facts.
+- fictional case `DEMO-0001`, explicitly described as containing no real people, documents, or facts;
+- one global version-1 labor checklist template with three fictional requirements.
 
 The password must never be used outside local development and must not be emitted in application logs.
 

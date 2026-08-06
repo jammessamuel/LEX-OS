@@ -558,11 +558,13 @@ model Document {
   classifiedBy      User?                @relation("DocumentClassifiedBy", fields: [organizationId, classifiedById], references: [organizationId, id])
   extractions       DocumentExtraction[]
   extractedEntities ExtractedEntity[]
+  timelineEvents    TimelineEvent[]      @relation("TimelineEventSourceDocument")
   checklistItems    CaseChecklistItem[]
   knowledgeChunks   KnowledgeChunk[]
   processingJobs    ProcessingJob[]
 
   @@unique([organizationId, id])
+  @@unique([organizationId, caseId, id])
   @@index([organizationId, caseId, processingStatus])
   @@index([organizationId, fileId])
   @@index([organizationId, parentDocumentId])
@@ -651,15 +653,16 @@ model TimelineEvent {
   createdAt          DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt          DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  organization Organization        @relation(fields: [organizationId], references: [id])
-  case         Case                @relation(fields: [organizationId, caseId], references: [organizationId, id])
-  extraction   DocumentExtraction? @relation(fields: [organizationId, extractionId], references: [organizationId, id])
-  confirmedBy  User?               @relation("TimelineConfirmedBy", fields: [organizationId, confirmedById], references: [organizationId, id])
+  organization   Organization        @relation(fields: [organizationId], references: [id])
+  case           Case                @relation(fields: [organizationId, caseId], references: [organizationId, id])
+  sourceDocument Document?           @relation("TimelineEventSourceDocument", fields: [organizationId, caseId, sourceId], references: [organizationId, caseId, id])
+  extraction     DocumentExtraction? @relation(fields: [organizationId, sourceId, extractionId], references: [organizationId, documentId, id])
+  confirmedBy    User?               @relation("TimelineConfirmedBy", fields: [organizationId, confirmedById], references: [organizationId, id])
 
   @@unique([organizationId, id])
   @@index([organizationId, caseId, occurredAt])
   @@index([organizationId, caseId, confirmedByUser])
-  @@index([organizationId, extractionId])
+  @@index([organizationId, sourceId, extractionId])
   @@index([organizationId, confirmedById])
   @@map("timeline_events")
 }
@@ -722,6 +725,7 @@ model CaseChecklist {
   items        CaseChecklistItem[]
 
   @@unique([organizationId, id])
+  @@unique([organizationId, caseId, id])
   @@unique([caseId, templateId, templateVersion])
   @@index([organizationId, caseId, status])
   @@index([templateId])
@@ -731,6 +735,7 @@ model CaseChecklist {
 model CaseChecklistItem {
   id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   organizationId      String          @map("organization_id") @db.Uuid
+  caseId              String          @map("case_id") @db.Uuid
   caseChecklistId     String          @map("case_checklist_id") @db.Uuid
   templateItemId      String          @map("template_item_id") @db.Uuid
   titleSnapshot       String          @map("title_snapshot") @db.VarChar(200)
@@ -745,15 +750,15 @@ model CaseChecklistItem {
   updatedAt           DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   organization  Organization          @relation(fields: [organizationId], references: [id])
-  caseChecklist CaseChecklist         @relation(fields: [organizationId, caseChecklistId], references: [organizationId, id], onDelete: Cascade)
+  caseChecklist CaseChecklist         @relation(fields: [organizationId, caseId, caseChecklistId], references: [organizationId, caseId, id], onDelete: Cascade)
   templateItem  ChecklistTemplateItem @relation(fields: [templateItemId], references: [id])
-  document      Document?             @relation(fields: [organizationId, documentId], references: [organizationId, id])
+  document      Document?             @relation(fields: [organizationId, caseId, documentId], references: [organizationId, caseId, id])
   validatedBy   User?                 @relation("ChecklistValidatedBy", fields: [organizationId, validatedById], references: [organizationId, id])
 
   @@unique([organizationId, id])
   @@unique([caseChecklistId, templateItemId])
-  @@index([organizationId, caseChecklistId, status])
-  @@index([organizationId, documentId])
+  @@index([organizationId, caseId, caseChecklistId, status])
+  @@index([organizationId, caseId, documentId])
   @@index([organizationId, validatedById])
   @@index([templateItemId])
   @@map("case_checklist_items")
@@ -787,6 +792,7 @@ model Task {
   @@index([organizationId, caseId, status, dueAt])
   @@index([organizationId, assignedToId, status])
   @@index([organizationId, createdById])
+  @@index([organizationId, sourceType, sourceId])
   @@map("tasks")
 }
 

@@ -7,11 +7,19 @@ import { ProcessingQueuePublisher } from './processing-queue.publisher.js';
 import { ProcessingReconcilerService } from './processing-reconciler.service.js';
 import { ProcessingRepository } from './processing.repository.js';
 import { ProcessingWorkersService } from './processing-workers.service.js';
+import {
+  CHECKLIST_ANALYSIS_PROVIDER,
+  MockReviewProcessingProvider,
+  TIMELINE_PROVIDER,
+} from './review-processing.provider.js';
 
 @Module({
   imports: [RuntimeConfigModule],
   providers: [
     { provide: PROCESSING_PROVIDER, useClass: MockProcessingProvider },
+    MockReviewProcessingProvider,
+    { provide: TIMELINE_PROVIDER, useExisting: MockReviewProcessingProvider },
+    { provide: CHECKLIST_ANALYSIS_PROVIDER, useExisting: MockReviewProcessingProvider },
     PipelineProcessorService,
     ProcessingQueuePublisher,
     ProcessingReconcilerService,

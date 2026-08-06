@@ -1,7 +1,7 @@
 # LEX OS initial data model
 
-**Status:** Schema implemented in Delivery 3; application behavior implemented through Delivery 7  
-**Last updated:** 2026-08-05
+**Status:** Schema implemented in Delivery 3; application behavior implemented through Delivery 8
+**Last updated:** 2026-08-06
 
 ## Modeling principles
 
@@ -177,17 +177,23 @@ An event includes its case, type, title/description, occurrence and date precisi
 
 Confirmation never changes the original extraction or actor attribution. If a human edits the event content, audit preserves the before/after safe fields.
 
+Delivery 8 adds a composite document source relationship on `(organization_id, case_id, source_id)` and an extraction relationship on `(organization_id, source_id, extraction_id)`. PostgreSQL also rejects an `AI` event without a document source, structured locator, and generation extraction. These checks complement provider-output validation; they do not replace resource authorization.
+
 ## Checklists
 
 A template is versioned. Editing a used template should create a new version instead of mutating historical meaning. `case_checklists` record which template version was applied. Case items copy the relevant title/description/requirement snapshot so historical checklists remain understandable even if a template is later deactivated.
 
 Global templates and organization templates follow the same visibility rule as document types. A linked document must belong to the same organization and, under the initial policy, to the same case unless an explicit cross-case reuse policy is later accepted.
 
+Delivery 8 persists the case ID on each checklist item and uses composite checklist/document foreign keys, so an item cannot be moved across a tenant or case accidentally. Human-reviewed statuses record the validating user and time together. Template deactivation does not delete the applied checklist or its copied item fields.
+
 ## Tasks and generated sources
 
 Tasks support nullable case scope and human assignment. `source_type` and `source_id` identify `USER`, `AI_CHECKLIST`, `AI_DOCUMENT_ANALYSIS`, `COURT_MOVEMENT`, or `WORKFLOW`. Only the first three are relevant to the MVP; the presence of `COURT_MOVEMENT` is not authorization to build a connector.
 
 Source ID is polymorphic and therefore not enforced by a simple foreign key. Creation services validate the source and tenant, and tests cover it. Automated tasks retain the originating processing/extraction metadata through source linkage and audit.
+
+For `AI_CHECKLIST`, Delivery 8 adds a tenant/source partial unique index for non-deleted tasks. This makes repeated requests fail consistently instead of creating multiple active tasks for one selected checklist item.
 
 ## Knowledge chunks and vectors
 
@@ -215,6 +221,8 @@ Full-text search uses a PostgreSQL generated `tsvector` column or expression ind
 The application owns allowed transitions. Redis/BullMQ data may expire without erasing the historical job record. Error messages are sanitized and must not contain document text, tokens, bucket URLs, or raw vendor responses.
 
 Delivery 7 constrains lifecycle/error consistency in PostgreSQL and updates jobs with tenant, expected state, and optimistic version predicates. Queue messages contain no resource metadata. Each completed stage may create one deterministic child job; OCR/classification/entity executions append immutable extraction rows, and entity rows commit in one batch with their owning extraction.
+
+Delivery 8 extends the graph with timeline and checklist jobs. Each stage appends its own immutable extraction; timeline events reference the timeline execution, while its structured provenance identifies the source text extraction. Checklist analysis creates or reuses the case/template-version snapshot and never resets a human-reviewed item to an AI proposal.
 
 ## Audit logs
 

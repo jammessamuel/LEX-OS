@@ -175,6 +175,9 @@ importers:
 
   apps/worker:
     dependencies:
+      '@lex-os/ai-prompts':
+        specifier: workspace:*
+        version: link:../../packages/ai-prompts
       '@lex-os/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -212,6 +215,15 @@ importers:
       jest:
         specifier: 30.4.2
         version: 30.4.2(@types/node@24.13.3)
+
+  packages/ai-prompts:
+    devDependencies:
+      '@lex-os/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@lex-os/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
 
   packages/config:
     devDependencies:
