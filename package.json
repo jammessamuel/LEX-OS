@@ -15,7 +15,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "infra:config": "docker compose config --quiet",
-    "infra:dependencies": "docker compose up --detach --wait postgres redis minio minio-init mailpit",
+    "infra:dependencies": "node infra/scripts/start-dependencies.mjs",
     "infra:down": "docker compose down",
     "infra:ps": "docker compose ps",
     "infra:up": "docker compose up --detach --build --wait",

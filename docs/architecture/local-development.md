@@ -47,6 +47,14 @@ pnpm infra:down
 
 `infra:up` builds application images and waits until all long-running services are healthy. `minio-init` is a one-shot bootstrap container and must finish successfully. It creates the configured bucket if needed and explicitly sets anonymous access to `none`.
 
+### Why `infra:dependencies` is a script
+
+`docker compose up --wait` waits for every named service to reach running or healthy, and reports a container that _exits_ as a failure even when it exits `0`. `minio-init` creates the bucket and exits, so naming it alongside the long-running services made the command fail after the whole stack had come up correctly. CI caught this on its first clean run.
+
+`infra/scripts/start-dependencies.mjs` waits on the long-running services, then runs the bootstrap as its own foreground step, which propagates the real exit code and guarantees the bucket exists before anything downstream needs it.
+
+`infra:up` still names every service, including `minio-init`, in a single `--wait`. Whether Compose tolerates that because `api` and `worker` declare `minio-init: condition: service_completed_successfully` has not been verified. If `pnpm infra:up` fails with `container lex-os-minio-init-1 exited (0)`, it is the same defect and needs the same treatment.
+
 `infra:down` removes containers and networks but preserves named volumes. Deleting volumes is an explicit destructive maintenance action and is not part of the ordinary command.
 
 For host watch mode, start only dependencies with `pnpm infra:dependencies`, keep the project database on port `5433`, and then run `pnpm dev`. A separate local PostgreSQL on `5432` is outside this project and must not be selected by project commands.
