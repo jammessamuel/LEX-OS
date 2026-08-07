@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-06 · revisão técnica e visual concluída
+**Última atualização:** 2026-08-07 · Delivery 8 do backend analisada e integrada; cronologia, checklist e tarefas destravadas para o front
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão | Detalhe                                                  |
-| ------ | -------------------------------------------------------- |
-| —      | Nada em andamento. Próximo: correção humana de documento |
+| Cartão | Detalhe                                                                    |
+| ------ | -------------------------------------------------------------------------- |
+| —      | Nada em andamento. Próximo: cronologia do caso, destravada pela Delivery 8 |
 
 ---
 
@@ -30,15 +30,18 @@ Regras do quadro:
 Em ordem de valor. Os três primeiros formam o fluxo "Preparar processo", que é a
 experiência central da `vision.md` e o componente 11 da proposta.
 
-| #   | Cartão                       | Rotas que já existem                                                  |
-| --- | ---------------------------- | --------------------------------------------------------------------- |
-| 1   | Correção humana de documento | `PATCH /documents/:id`                                                |
-| 2   | Download autorizado          | `GET /files/:id/download-url` — URL assinada de 60 s                  |
-| 3   | Reprocessar documento        | `POST /documents/:id/reprocess`                                       |
-| 4   | Criar e editar caso          | `POST /cases` · `PATCH /cases/:id`                                    |
-| 5   | Participantes do caso        | `GET`/`POST /cases/:caseId/participants`                              |
-| 6   | Pessoas — CRUD               | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados |
-| 7   | Excluir caso e documento     | `DELETE /cases/:id` · `DELETE /documents/:id`                         |
+| #   | Cartão                             | Rotas que já existem                                                                                     |
+| --- | ---------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1   | Cronologia do caso com confirmação | `GET /cases/:id/timeline-events` · `POST /timeline-events/:id/confirm` — Delivery 8                      |
+| 2   | Checklist do caso                  | `GET /cases/:id/checklist-templates` · `GET`/`POST /cases/:id/checklists` · `PATCH /checklist-items/:id` |
+| 3   | Tarefas do caso                    | `GET /cases/:id/tasks` · `POST /checklist-items/:id/tasks`                                               |
+| 4   | Correção humana de documento       | `PATCH /documents/:id`                                                                                   |
+| 5   | Download autorizado                | `GET /files/:id/download-url` — URL assinada de 60 s                                                     |
+| 6   | Reprocessar documento              | `POST /documents/:id/reprocess`                                                                          |
+| 7   | Criar e editar caso                | `POST /cases` · `PATCH /cases/:id`                                                                       |
+| 8   | Participantes do caso              | `GET`/`POST /cases/:caseId/participants`                                                                 |
+| 9   | Pessoas — CRUD                     | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados                                    |
+| 10  | Excluir caso e documento           | `DELETE /cases/:id` · `DELETE /documents/:id`                                                            |
 
 ## A fazer — qualidade de interface
 
@@ -60,10 +63,7 @@ invisível.
 | Confirmação de entidade      | A tela de procedência mostra "Aguardando revisão", mas não há rota para um humano confirmar uma entidade extraída. A confirmação humana está prevista na Delivery 8 para eventos de cronologia; entidades precisam do mesmo caminho |
 | Responsável do caso com nome | Não existe rota de usuários. `responsibleUserId` só pode virar UUID na tela. Precisa de `GET /users` ou de `responsible: { id, name }` embutido no caso, como já é feito com `file` e `documentType`                                |
 | Painel com números           | Nenhum endpoint devolve contagem ou agregado. Um resumo exigiria varrer páginas no cliente, o que não escala                                                                                                                        |
-| Cronologia                   | Delivery 8, não autorizada. `TimelineEvent` já existe no schema                                                                                                                                                                     |
-| Checklist                    | Delivery 8, não autorizada. Tabelas já existem                                                                                                                                                                                      |
-| Busca e memória              | Delivery 9. `KnowledgeChunk` e pgvector já estão no lugar                                                                                                                                                                           |
-| Tarefas                      | Sem rota                                                                                                                                                                                                                            |
+| Busca e memória              | Delivery 9, não autorizada. `KnowledgeChunk` e pgvector já estão no lugar                                                                                                                                                           |
 | Leitura de auditoria         | Sem rota                                                                                                                                                                                                                            |
 | Administração de usuários    | Sem rota                                                                                                                                                                                                                            |
 
