@@ -4,6 +4,7 @@ import AppShell from '../components/AppShell.vue';
 import { useSessionStore } from '../stores/session.js';
 import CaseDetailView from '../views/CaseDetailView.vue';
 import CasesView from '../views/CasesView.vue';
+import CaseTimelineView from '../views/CaseTimelineView.vue';
 import DocumentDetailView from '../views/DocumentDetailView.vue';
 import LoginView from '../views/LoginView.vue';
 
@@ -29,6 +30,11 @@ export const router = createRouter({
           component: CaseDetailView,
           name: 'case-detail',
           path: 'casos/:id',
+        },
+        {
+          component: CaseTimelineView,
+          name: 'case-timeline',
+          path: 'casos/:id/cronologia',
         },
         {
           component: DocumentDetailView,

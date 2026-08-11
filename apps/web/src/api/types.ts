@@ -290,3 +290,41 @@ export interface Extraction {
   entities: ExtractedEntity[];
   createdAt: string;
 }
+
+export const datePrecisions = ['EXACT', 'DAY', 'MONTH', 'YEAR', 'APPROXIMATE', 'UNKNOWN'] as const;
+export const importances = ['LOW', 'NORMAL', 'HIGH', 'CRITICAL'] as const;
+
+export type DatePrecision = (typeof datePrecisions)[number];
+export type Importance = (typeof importances)[number];
+
+export interface TimelineExtractionSummary {
+  id: string;
+  provider: string;
+  modelName: string;
+  modelVersion: string | null;
+  promptVersion: string | null;
+  createdAt: string;
+}
+
+/** Evento de cronologia: nasce de IA não confirmado; a confirmação preserva a origem. */
+export interface TimelineEvent {
+  id: string;
+  caseId: string;
+  eventType: string;
+  title: string;
+  description: string;
+  occurredAt: string | null;
+  datePrecision: DatePrecision;
+  importance: Importance;
+  sourceType: string;
+  sourceId: string | null;
+  sourceLocator: Record<string, unknown> | null;
+  extraction: TimelineExtractionSummary | null;
+  confidenceScore: number | null;
+  createdByActorType: string;
+  confirmedByUser: boolean;
+  confirmedById: string | null;
+  confirmedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

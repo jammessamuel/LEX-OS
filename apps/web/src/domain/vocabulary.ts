@@ -1,7 +1,9 @@
 import type {
   CaseStatus,
   ConfidentialityLevel,
+  DatePrecision,
   ExtractionType,
+  Importance,
   ParticipantRole,
   ParticipantSide,
   ProcessingJobType,
@@ -192,4 +194,53 @@ export function entityTypeLabel(entityType: string): string {
 
 export function formatConfidence(score: number | null): string {
   return score === null ? '—' : `${Math.round(score * 100)}%`;
+}
+
+export const importanceLabels: Readonly<Record<Importance, string>> = {
+  LOW: 'Baixa',
+  NORMAL: 'Normal',
+  HIGH: 'Alta',
+  CRITICAL: 'Crítica',
+};
+
+// Datas de fato jurídico formatam em UTC: o dia veio de um documento, não do relógio de
+// quem lê. Sem isso, 14/03 vira 13/03 em qualquer fuso a oeste de Greenwich.
+const eventDay = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+const monthYear = new Intl.DateTimeFormat('pt-BR', {
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+const yearOnly = new Intl.DateTimeFormat('pt-BR', { year: 'numeric', timeZone: 'UTC' });
+
+/**
+ * A data do evento respeita a precisão registrada: mostrar "14/03/2019" quando o documento
+ * só sustenta "março de 2019" seria inventar certeza — exatamente o que o produto promete
+ * não fazer.
+ */
+export function formatEventDate(iso: string | null, precision: DatePrecision): string {
+  if (iso === null || precision === 'UNKNOWN') {
+    return 'Data não identificada';
+  }
+  const date = new Date(iso);
+  switch (precision) {
+    case 'MONTH':
+      return monthYear.format(date);
+    case 'YEAR':
+      return yearOnly.format(date);
+    case 'APPROXIMATE':
+      return `Por volta de ${eventDay.format(date)}`;
+    default:
+      return eventDay.format(date);
+  }
+}
+
+/** Tipos de evento são texto livre do provedor; nunca vazam em MAIÚSCULA_COM_UNDERSCORE. */
+export function eventTypeLabel(eventType: string): string {
+  return humanizeCode(eventType);
 }

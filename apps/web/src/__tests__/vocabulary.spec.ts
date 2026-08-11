@@ -6,6 +6,7 @@ import {
   confidentialityLabels,
   documentSituation,
   formatBytes,
+  formatEventDate,
   humanizeCode,
   priorityLabels,
 } from '../domain/vocabulary';
@@ -64,5 +65,22 @@ describe('formatBytes', () => {
     expect(formatBytes(512)).toBe('512 B');
     expect(formatBytes(2048)).toBe('2 KB');
     expect(formatBytes(26_214_400)).toBe('25 MB');
+  });
+});
+
+describe('formatEventDate', () => {
+  it('formata em UTC para o dia não derivar pelo fuso de quem lê', () => {
+    expect(formatEventDate('2019-03-14T00:00:00.000Z', 'DAY')).toBe('14/03/2019');
+    expect(formatEventDate('2019-03-14T00:00:00.000Z', 'EXACT')).toBe('14/03/2019');
+    expect(formatEventDate('2019-03-14T00:00:00.000Z', 'APPROXIMATE')).toBe(
+      'Por volta de 14/03/2019',
+    );
+  });
+
+  it('respeita a precisão em vez de inventar certeza', () => {
+    expect(formatEventDate('2019-03-14T00:00:00.000Z', 'MONTH')).toBe('03/2019');
+    expect(formatEventDate('2019-03-14T00:00:00.000Z', 'YEAR')).toBe('2019');
+    expect(formatEventDate(null, 'DAY')).toBe('Data não identificada');
+    expect(formatEventDate('2019-03-14T00:00:00.000Z', 'UNKNOWN')).toBe('Data não identificada');
   });
 });

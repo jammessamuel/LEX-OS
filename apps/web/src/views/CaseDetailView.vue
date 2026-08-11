@@ -210,6 +210,12 @@ onMounted(() => {
           </div>
         </div>
         <div class="head__actions">
+          <RouterLink
+            class="btn btn--ghost"
+            :to="{ name: 'case-timeline', params: { id: caseId } }"
+          >
+            Cronologia
+          </RouterLink>
           <button class="btn btn--ghost" type="button" disabled>Editar caso</button>
         </div>
       </header>

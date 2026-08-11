@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-07 · Delivery 8 do backend analisada e integrada; cronologia, checklist e tarefas destravadas para o front
+**Última atualização:** 2026-08-07 · cronologia entregue; ADR-013 proposto; issues #2 e #3 abertas
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão | Detalhe                                                                    |
-| ------ | -------------------------------------------------------------------------- |
-| —      | Nada em andamento. Próximo: cronologia do caso, destravada pela Delivery 8 |
+| Cartão | Detalhe                                       |
+| ------ | --------------------------------------------- |
+| —      | Nada em andamento. Próximo: checklist do caso |
 
 ---
 
@@ -30,18 +30,17 @@ Regras do quadro:
 Em ordem de valor. Os três primeiros formam o fluxo "Preparar processo", que é a
 experiência central da `vision.md` e o componente 11 da proposta.
 
-| #   | Cartão                             | Rotas que já existem                                                                                     |
-| --- | ---------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| 1   | Cronologia do caso com confirmação | `GET /cases/:id/timeline-events` · `POST /timeline-events/:id/confirm` — Delivery 8                      |
-| 2   | Checklist do caso                  | `GET /cases/:id/checklist-templates` · `GET`/`POST /cases/:id/checklists` · `PATCH /checklist-items/:id` |
-| 3   | Tarefas do caso                    | `GET /cases/:id/tasks` · `POST /checklist-items/:id/tasks`                                               |
-| 4   | Correção humana de documento       | `PATCH /documents/:id`                                                                                   |
-| 5   | Download autorizado                | `GET /files/:id/download-url` — URL assinada de 60 s                                                     |
-| 6   | Reprocessar documento              | `POST /documents/:id/reprocess`                                                                          |
-| 7   | Criar e editar caso                | `POST /cases` · `PATCH /cases/:id`                                                                       |
-| 8   | Participantes do caso              | `GET`/`POST /cases/:caseId/participants`                                                                 |
-| 9   | Pessoas — CRUD                     | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados                                    |
-| 10  | Excluir caso e documento           | `DELETE /cases/:id` · `DELETE /documents/:id`                                                            |
+| #   | Cartão                       | Rotas que já existem                                                                                     |
+| --- | ---------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1   | Checklist do caso            | `GET /cases/:id/checklist-templates` · `GET`/`POST /cases/:id/checklists` · `PATCH /checklist-items/:id` |
+| 2   | Tarefas do caso              | `GET /cases/:id/tasks` · `POST /checklist-items/:id/tasks`                                               |
+| 3   | Correção humana de documento | `PATCH /documents/:id`                                                                                   |
+| 4   | Download autorizado          | `GET /files/:id/download-url` — URL assinada de 60 s                                                     |
+| 5   | Reprocessar documento        | `POST /documents/:id/reprocess`                                                                          |
+| 6   | Criar e editar caso          | `POST /cases` · `PATCH /cases/:id`                                                                       |
+| 7   | Participantes do caso        | `GET`/`POST /cases/:caseId/participants`                                                                 |
+| 8   | Pessoas — CRUD               | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados                                    |
+| 9   | Excluir caso e documento     | `DELETE /cases/:id` · `DELETE /documents/:id`                                                            |
 
 ## A fazer — qualidade de interface
 
@@ -101,6 +100,12 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
 
+- **Cronologia com confirmação humana** — a primeira ação de escrita de revisão do
+  produto: eventos na ordem dos fatos, data respeitando a precisão registrada (mês vira
+  03/2019, nunca um dia inventado — e formatada em UTC para não derivar pelo fuso), nota
+  de procedência no título enquanto não confirmado, e o botão Confirmar que troca o
+  evento pela resposta do servidor. O 409 de corrida recarrega e mostra o estado real em
+  vez de erro. ADR-013 (notificações) escrito e issues #2 e #3 abertas para o backend.
 - **Qualidade do fluxo autenticado** — o login retoma apenas destinos internos seguros; falhas
   de documentos e partes são recuperáveis sem transformar erro em lista vazia; os dois painéis
   usam paginação por cursor independente; e o seletor de arquivos tem um único ponto na ordem
