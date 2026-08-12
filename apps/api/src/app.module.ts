@@ -21,6 +21,7 @@ import { OrganizationsModule } from './organizations/organizations.module.js';
 import { ParticipantsModule } from './participants/participants.module.js';
 import { PersonsModule } from './persons/persons.module.js';
 import { ProcessingModule } from './processing/processing.module.js';
+import { SearchModule } from './search/search.module.js';
 import { TasksModule } from './tasks/tasks.module.js';
 import { TimelineModule } from './timeline/timeline.module.js';
 
@@ -40,6 +41,7 @@ import { TimelineModule } from './timeline/timeline.module.js';
     DocumentsModule,
     ExtractionsModule,
     ProcessingModule,
+    SearchModule,
     TimelineModule,
     ChecklistsModule,
     TasksModule,

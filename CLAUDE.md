@@ -55,8 +55,8 @@ Approval for one commit is not standing approval for the next.
 
 ### 0.3 Respect the delivery boundary
 
-The completed checkpoint is **Delivery 8 — Timeline and checklist review**.
-Delivery 9 and later require explicit authorization. Do not implement future-delivery
+The completed checkpoint is **Delivery 9 — Text and semantic search foundation**.
+Delivery 10 and later require explicit authorization. Do not implement future-delivery
 behavior opportunistically, even when it looks like a small addition.
 
 ### 0.4 Never suppress a failing gate
@@ -129,7 +129,7 @@ fits, read `AGENTS.md` section headings only, then the one section that applies.
 | Queue, worker, job state          | `docs/architecture/delivery-7-processing-design.md`; `packages/contracts/src/index.ts`; `docs/decisions/ADR-007-background-jobs.md`                               |
 | DB schema or migration            | `packages/database/prisma/schema.prisma` (canonical); `docs/architecture/database-migrations.md`; `docs/architecture/data-model.md`                               |
 | AI provider / prompt / provenance | `docs/decisions/ADR-006-provider-agnostic-ai.md`; `AGENTS.md` §"AI data and provenance"                                                                           |
-| Search, embeddings, pgvector      | `docs/decisions/ADR-005-pgvector.md`; `docs/architecture/system-overview.md`                                                                                      |
+| Search, embeddings, pgvector      | `docs/api/search.md`; `docs/architecture/search-performance.md`; `docs/decisions/ADR-005-pgvector.md`; `docs/architecture/system-overview.md`                     |
 | "Is X in scope?"                  | `docs/product/mvp-scope.md` only                                                                                                                                  |
 | "Where are we against the pitch?" | `docs/product/roadmap-alignment.md` only — it maps the 11 conceptual components and 4 phases onto the 12 deliveries                                               |
 | Any user-facing screen or copy    | `docs/product/design-principles.md` — read before writing markup; it is the standard §0.5 enforces                                                                |

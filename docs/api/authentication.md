@@ -38,7 +38,7 @@ Validation details contain field names and safe constraints. Authentication fail
 | POST   | `/api/v1/auth/logout`           | Bearer JWT     | authenticated identity | Revokes the complete refresh-token family   |
 | GET    | `/api/v1/organizations/current` | Bearer JWT     | `organizations.read`   | Returns the tenant derived from the session |
 
-Health, metrics, and OpenAPI routes are public operational endpoints. The table above remains the Delivery 4 authentication surface. Later implemented resources are documented in [People, cases, and participants API](./people-cases-participants.md) and [Files and documents API](./files-documents.md). Processing, search, and general audit routes remain deferred.
+Health, metrics, and OpenAPI routes are public operational endpoints. The table above remains the Delivery 4 authentication surface. Later implemented resources are documented in [People, cases, and participants API](./people-cases-participants.md), [Files and documents API](./files-documents.md), [Processing API](./processing.md), [Timeline, checklists, and tasks API](./timeline-checklists-tasks.md), and [Search API](./search.md). General audit routes remain deferred.
 
 The login body is:
 

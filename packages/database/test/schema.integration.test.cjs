@@ -74,6 +74,44 @@ describe('initial database migration', () => {
     assert.equal(tables.rows[0].count, 25);
   });
 
+  it('installs the Delivery 9 generated search vector and tenant-first indexes', async () => {
+    const column = await pool.query(
+      `SELECT is_generated, generation_expression
+       FROM information_schema.columns
+       WHERE table_schema = 'public'
+         AND table_name = 'knowledge_chunks'
+         AND column_name = 'search_vector'`,
+    );
+    assert.equal(column.rowCount, 1);
+    assert.equal(column.rows[0].is_generated, 'ALWAYS');
+    assert.match(column.rows[0].generation_expression, /to_tsvector\('portuguese'/u);
+
+    const indexes = await pool.query(
+      `SELECT indexname, indexdef
+       FROM pg_indexes
+       WHERE schemaname = 'public'
+         AND indexname IN (
+           'knowledge_chunks_search_vector_gin_idx',
+           'knowledge_chunks_tenant_source_lookup_idx',
+           'knowledge_chunks_tenant_embedding_scope_idx'
+         )
+       ORDER BY indexname`,
+    );
+    assert.deepEqual(
+      indexes.rows.map((row) => row.indexname),
+      [
+        'knowledge_chunks_search_vector_gin_idx',
+        'knowledge_chunks_tenant_embedding_scope_idx',
+        'knowledge_chunks_tenant_source_lookup_idx',
+      ],
+    );
+    assert.match(
+      indexes.rows.find((row) => row.indexname === 'knowledge_chunks_search_vector_gin_idx')
+        .indexdef,
+      /USING gin \(search_vector\)/iu,
+    );
+  });
+
   it('rejects representative cross-tenant relationships', async () => {
     await inRolledBackTransaction(async (client) => {
       const organizationA = id(1);

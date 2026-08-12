@@ -47,22 +47,22 @@ Essa é a ordem correta de construção — nenhum dos 11 componentes pode entra
 | 6   | Timeline Engine         | 8                        | **Concluída com inteligência simulada.** Eventos carregam documento, localizador, extração, confiança e começam não confirmados; a confirmação humana preserva a extração original                                                                                                                          |
 | 7   | Checklist Inteligente   | 8                        | **Concluída com inteligência simulada.** Template versionado, snapshot por caso, revisão de itens, vínculo documental no mesmo caso e tarefa rastreável estão implementados                                                                                                                                 |
 | 8   | Workspace               | 10                       | **Iniciada como preparação, não aceita como Entrega 10.** Login, lista/detalhe de caso, envio, progresso e procedência já usam a API real. Criação/edição, participantes, download, correção humana, timeline, checklist, busca, auditoria autorizada, matriz completa de acessibilidade e E2E ainda faltam |
-| 9   | Memory Engine           | 9                        | **Autorizada.** `KnowledgeChunk` e pgvector já existem como fundação; a Entrega 9 implementa indexação determinística, busca lexical/semântica e resultados citáveis                                                                                                                                        |
+| 9   | Memory Engine           | 9                        | **Concluída com embeddings simulados.** Indexação determinística, busca full-text em português, vetor exato, ranking híbrido, filtros no banco, citações e recusa sem evidência estão implementados                                                                                                         |
 | 10  | Assistente Interno      | incremento posterior à 9 | **Decidido.** Será resposta ancorada em fontes autorizadas, com recusa sem evidência. Não é chat jurídico genérico. A Entrega 9 fornece a recuperação; a superfície de resposta continua sem entrega agendada — ver ADR-009                                                                                 |
 | 11  | Agente Pré-Processo     | 6 + 7 + 10               | **Parcialmente construído e visível.** O backend mock e a interface de envio, progresso e procedência existem; correção humana, download, reprocessamento pela interface e verificação E2E ainda faltam                                                                                                     |
 
 ## Mapeamento das fases
 
-| Fase                                      | Componentes | Entregas                       | Cobertura                                                                                |
-| ----------------------------------------- | ----------- | ------------------------------ | ---------------------------------------------------------------------------------------- |
-| Fase 1 — Ingestão, Organizador, OCR       | 1, 3, 4     | 6 (parcial), nenhuma, 7 (mock) | **A mais fraca.** Um componente parcial, um sem entrega, um mockado                      |
-| Fase 2 — Timeline, Checklist, Workspace   | 6, 7, 8     | 8, 8, 10                       | Timeline e checklist mock concluídos; Workspace iniciado parcialmente                    |
-| Fase 3 — Memory Engine, Assistente        | 9, 10       | 9, posterior à 9               | Memory Engine autorizado; política do assistente decidida, superfície ainda não agendada |
-| Fase 4 — Integrações com ERPs e tribunais | —           | fora do escopo do MVP          | Excluída de propósito pelo `mvp-scope.md`                                                |
+| Fase                                      | Componentes | Entregas                       | Cobertura                                                                                    |
+| ----------------------------------------- | ----------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
+| Fase 1 — Ingestão, Organizador, OCR       | 1, 3, 4     | 6 (parcial), nenhuma, 7 (mock) | **A mais fraca.** Um componente parcial, um sem entrega, um mockado                          |
+| Fase 2 — Timeline, Checklist, Workspace   | 6, 7, 8     | 8, 8, 10                       | Timeline e checklist mock concluídos; Workspace iniciado parcialmente                        |
+| Fase 3 — Memory Engine, Assistente        | 9, 10       | 9, posterior à 9               | Memory Engine mock concluído; política do assistente decidida, superfície ainda não agendada |
+| Fase 4 — Integrações com ERPs e tribunais | —           | fora do escopo do MVP          | Excluída de propósito pelo `mvp-scope.md`                                                    |
 
 **A escolha registrada:** a sociedade autorizou seguir a cadeia de dependências do plano, e a Entrega 8 foi concluída mesmo pertencendo à **Fase 2** da proposta. Isso não resolve as lacunas da Fase 1; apenas evita bloquear capacidades independentes que já tinham fundação segura.
 
-As telas preparatórias não alteram o checkpoint formal: a Entrega 8 é a última aceita. A Entrega 9 foi autorizada para o incremento atual e só se torna checkpoint após todos os critérios de aceite serem verificados. A Entrega 10 continua separada.
+O checkpoint formal agora é a Entrega 9. A Entrega 10 continua separada e só poderá ser considerada concluída quando todos os seus critérios de aceite forem verificados.
 
 ## Reversões de stack deliberadas
 

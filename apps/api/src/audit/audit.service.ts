@@ -88,6 +88,7 @@ export type DomainAuditEvent =
           | 'LIST'
           | 'PARTICIPANTS'
           | 'PROCESSING'
+          | 'SEARCH'
           | 'TASKS'
           | 'TIMELINE';
         count?: number;
@@ -194,6 +195,22 @@ export type DomainAuditEvent =
         status: 'OPEN';
         priority: string;
         assignedToId: string | null;
+      };
+    })
+  | (DomainAuditBase & {
+      action: 'knowledge.search.executed';
+      entityType: 'knowledge_search';
+      newData: {
+        mode: 'HYBRID' | 'LEXICAL' | 'SEMANTIC';
+        queryLength: number;
+        resultCount: number;
+        status: 'RESULTS' | 'INSUFFICIENT_EVIDENCE';
+        filters: {
+          caseId: string | null;
+          documentId: string | null;
+          documentTypeId: string | null;
+          legalArea: string | null;
+        };
       };
     });
 

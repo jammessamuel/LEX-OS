@@ -1,7 +1,8 @@
 # LEX OS system overview
 
-**Status:** Architecture implemented through Delivery 8
-**Last updated:** 2026-08-06
+**Status:** Architecture implemented through Delivery 9
+
+**Last updated:** 2026-08-12
 
 ## Architectural goals
 
@@ -256,6 +257,8 @@ The initial search path stays inside PostgreSQL:
 7. return excerpts and resolvable source citations.
 
 Vector dimensionality is provider configuration, not a domain constant. The initial proposal stores model and dimensions alongside the vector and delays an ANN index until one compatible production embedding configuration is selected. PostgreSQL full-text search is the lexical baseline; OpenSearch is not part of the MVP.
+
+Delivery 9 implements this path with deterministic 16-dimension mock embeddings, exact cosine search, PostgreSQL Portuguese full-text search, and reciprocal-rank fusion. Both database paths join and filter authorized sources before ranking, and retrieval returns `INSUFFICIENT_EVIDENCE` rather than generated text when the source set is empty. The measured synthetic plan baseline is recorded in [`search-performance.md`](./search-performance.md).
 
 ## Transaction and consistency boundaries
 

@@ -24,14 +24,14 @@
     "test": "turbo run test",
     "test:integration": "turbo run test:integration",
     "typecheck": "turbo run typecheck",
-    "db:format": "pnpm --filter @lex-os/database db:format",
-    "db:generate": "pnpm --filter @lex-os/database db:generate",
-    "db:migrate:deploy": "pnpm --filter @lex-os/database db:migrate:deploy",
-    "db:migrate:dev": "pnpm --filter @lex-os/database db:migrate:dev",
-    "db:migrate:status": "pnpm --filter @lex-os/database db:migrate:status",
-    "db:reset": "pnpm --filter @lex-os/database db:reset",
-    "db:seed": "pnpm --filter @lex-os/database db:seed",
-    "db:validate": "pnpm --filter @lex-os/database db:validate"
+    "db:format": "corepack pnpm --filter @lex-os/database db:format",
+    "db:generate": "corepack pnpm --filter @lex-os/database db:generate",
+    "db:migrate:deploy": "corepack pnpm --filter @lex-os/database db:migrate:deploy",
+    "db:migrate:dev": "corepack pnpm --filter @lex-os/database db:migrate:dev",
+    "db:migrate:status": "corepack pnpm --filter @lex-os/database db:migrate:status",
+    "db:reset": "corepack pnpm --filter @lex-os/database db:reset",
+    "db:seed": "corepack pnpm --filter @lex-os/database db:seed",
+    "db:validate": "corepack pnpm --filter @lex-os/database db:validate"
   },
   "devDependencies": {
     "@lex-os/eslint-config": "workspace:*",

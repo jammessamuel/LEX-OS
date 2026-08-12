@@ -1,7 +1,8 @@
 # Processing API
 
-**Status:** Extended through Delivery 8
-**Last updated:** 2026-08-06
+**Status:** Extended through Delivery 9
+
+**Last updated:** 2026-08-12
 
 ## Contract summary
 
@@ -28,15 +29,15 @@ The deterministic development graph is:
 
 ```text
 FILE_VALIDATION -> OCR -> DOCUMENT_CLASSIFICATION -> ENTITY_EXTRACTION
-                -> TIMELINE_GENERATION -> CHECKLIST_ANALYSIS
+                -> TIMELINE_GENERATION -> CHECKLIST_ANALYSIS -> EMBEDDING
 ```
 
 Each stage is a separate persistent job and BullMQ delivery. A worker claims `QUEUED` or `RETRYING` with an optimistic `status + version` update, increments attempts, writes results/next job/audits in a short transaction, and publishes the child only after commit. Completed, failed, or cancelled duplicate deliveries are acknowledged without repeating results.
 
-Classification uses the global/same-tenant `OUTRO` type with deliberately low mock confidence. Timeline and checklist stages append their own immutable executions; timeline events start unconfirmed and checklist matches start `AWAITING_VALIDATION`. The chain finishes with the document `NEEDS_REVIEW`. Reprocessing requires an `AVAILABLE/CLEAN` file, rejects another active chain with `409 DOCUMENT_PROCESSING_ACTIVE`, creates a fresh OCR root, and never overwrites earlier extractions.
+Classification uses the global/same-tenant `OUTRO` type with deliberately low mock confidence. Timeline and checklist stages append their own immutable executions; timeline events start unconfirmed and checklist matches start `AWAITING_VALIDATION`. `EMBEDDING` then normalizes and chunks the latest completed OCR extraction, records hashes/locators/provider metadata, and inserts exact-search vectors idempotently. The chain finishes with the document `NEEDS_REVIEW`. Reprocessing requires an `AVAILABLE/CLEAN` file, rejects another active chain with `409 DOCUMENT_PROCESSING_ACTIVE`, creates a fresh OCR root, and never overwrites earlier extractions or chunks.
 
 `VIRUS_SCAN` remains fail-closed: the deterministic scanner outage retries with bounded exponential backoff and finishes as a safe failure while the object stays quarantined. A periodic reconciler republishes stale `QUEUED`/`RETRYING` rows missing from Redis.
 
 ## Production boundary
 
-Mock text/OCR, classification, entity, timeline, checklist, and scanner adapters refuse production startup. Delivery 8 does not implement embeddings/search, real provider calls, cancellation HTTP, general audit routes, user administration, or feature UI.
+Mock text/OCR, classification, entity, timeline, checklist, embedding, and scanner adapters refuse production startup. Delivery 9 implements retrieval through the deterministic mock only; it does not implement real provider calls, grounded answer generation, cancellation HTTP, general audit routes, user administration, or feature UI.

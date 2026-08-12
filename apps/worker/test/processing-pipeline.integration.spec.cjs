@@ -94,7 +94,11 @@ async function createFixture(jobType, inputMetadata = {}, quarantined = false) {
       ...(jobType === 'CHECKLIST_ANALYSIS' ? { documentTypeId: otherDocumentTypeId } : {}),
     },
   });
-  if (['ENTITY_EXTRACTION', 'TIMELINE_GENERATION', 'CHECKLIST_ANALYSIS'].includes(jobType)) {
+  if (
+    ['ENTITY_EXTRACTION', 'TIMELINE_GENERATION', 'CHECKLIST_ANALYSIS', 'EMBEDDING'].includes(
+      jobType,
+    )
+  ) {
     await database.client.documentExtraction.create({
       data: {
         organizationId,
@@ -188,6 +192,9 @@ afterAll(async () => {
     await database.client.caseChecklist.deleteMany({
       where: { id: { in: checklists.map((item) => item.id) } },
     });
+    await database.client.knowledgeChunk.deleteMany({
+      where: { documentId: { in: documentIds } },
+    });
     await database.client.documentExtraction.deleteMany({
       where: { documentId: { in: documentIds } },
     });
@@ -271,8 +278,8 @@ describe('Delivery 8 persistent processing pipeline', () => {
           where: { documentId: fixture.documentId },
           orderBy: { createdAt: 'asc' },
         }),
-      (rows) => rows.length === 6 && rows.every((job) => job.status === 'COMPLETED'),
-      'the six-stage pipeline',
+      (rows) => rows.length === 7 && rows.every((job) => job.status === 'COMPLETED'),
+      'the seven-stage pipeline',
     );
     expect(jobs.map((job) => job.jobType)).toEqual([
       'FILE_VALIDATION',
@@ -281,6 +288,7 @@ describe('Delivery 8 persistent processing pipeline', () => {
       'ENTITY_EXTRACTION',
       'TIMELINE_GENERATION',
       'CHECKLIST_ANALYSIS',
+      'EMBEDDING',
     ]);
     expect(jobs.every((job) => job.attempts === 1 && job.finishedAt !== null)).toBe(true);
 
@@ -322,6 +330,48 @@ describe('Delivery 8 persistent processing pipeline', () => {
     expect(checklist.items).toHaveLength(3);
     expect(checklist.items.some((item) => item.status === 'AWAITING_VALIDATION')).toBe(true);
 
+    const chunks = await database.client.knowledgeChunk.findMany({
+      where: { organizationId, caseId, documentId: fixture.documentId },
+      select: {
+        id: true,
+        sourceType: true,
+        sourceId: true,
+        chunkIndex: true,
+        content: true,
+        contentHash: true,
+        embeddingProvider: true,
+        embeddingModel: true,
+        embeddingVersion: true,
+        embeddingDimensions: true,
+        metadata: true,
+      },
+    });
+    expect(chunks).toHaveLength(1);
+    expect(chunks[0]).toMatchObject({
+      sourceType: 'DOCUMENT_EXTRACTION',
+      chunkIndex: 0,
+      embeddingProvider: 'lex-os-mock-embedding',
+      embeddingModel: 'deterministic-hash-v1',
+      embeddingVersion: '1',
+      embeddingDimensions: 16,
+    });
+    expect(chunks[0].contentHash).toMatch(/^[a-f0-9]{64}$/u);
+    expect(chunks[0].metadata.locator).toMatchObject({
+      pageNumber: 1,
+      startOffset: 0,
+      endOffset: chunks[0].content.length,
+    });
+    expect(chunks[0].metadata.sourceExtractionId).toBe(chunks[0].sourceId);
+    await expect(
+      database.client.auditLog.count({
+        where: {
+          processingJob: { documentId: fixture.documentId },
+          action: 'knowledge.document.indexed',
+          actorType: 'AI',
+        },
+      }),
+    ).resolves.toBe(1);
+
     const document = await database.client.document.findUnique({
       where: { id: fixture.documentId },
     });
@@ -329,6 +379,9 @@ describe('Delivery 8 persistent processing pipeline', () => {
     expect(document.classificationStatus).toBe('NEEDS_REVIEW');
 
     const beforeDuplicate = await database.client.documentExtraction.count({
+      where: { documentId: fixture.documentId },
+    });
+    const chunksBeforeDuplicate = await database.client.knowledgeChunk.count({
       where: { documentId: fixture.documentId },
     });
     const duplicate = await processor.process(
@@ -346,6 +399,9 @@ describe('Delivery 8 persistent processing pipeline', () => {
     await expect(
       database.client.documentExtraction.count({ where: { documentId: fixture.documentId } }),
     ).resolves.toBe(beforeDuplicate);
+    await expect(
+      database.client.knowledgeChunk.count({ where: { documentId: fixture.documentId } }),
+    ).resolves.toBe(chunksBeforeDuplicate);
   });
 
   it('records a transient retry and then completes exactly once', async () => {

@@ -1,7 +1,8 @@
 # LEX OS initial data model
 
-**Status:** Schema implemented in Delivery 3; application behavior implemented through Delivery 8
-**Last updated:** 2026-08-06
+**Status:** Schema implemented in Delivery 3; application behavior implemented through Delivery 9
+
+**Last updated:** 2026-08-12
 
 ## Modeling principles
 
@@ -212,7 +213,7 @@ Unique `(organization_id, source_type, source_id, chunk_index, content_hash)` ma
 
 The proposal uses Prisma `Unsupported("vector")` and a reviewed SQL migration for the pgvector extension. An unbounded vector column avoids embedding dimension in the domain. It also prevents an efficient approximate-nearest-neighbor index across mixed dimensions, so the MVP uses exact search on a small corpus or no vector index until a configured production embedding dimension is selected. A future migration may separate embeddings by model/dimension.
 
-Full-text search uses a PostgreSQL generated `tsvector` column or expression index created in SQL because Prisma does not model it fully. The canonical content remains `knowledge_chunks.content`.
+Delivery 9 implements full-text search with a stored generated Portuguese `tsvector` column and GIN index created in SQL, while declaring the unsupported field in the canonical Prisma schema to prevent migration drift. The canonical content remains `knowledge_chunks.content`.
 
 ## Processing jobs
 
@@ -223,6 +224,8 @@ The application owns allowed transitions. Redis/BullMQ data may expire without e
 Delivery 7 constrains lifecycle/error consistency in PostgreSQL and updates jobs with tenant, expected state, and optimistic version predicates. Queue messages contain no resource metadata. Each completed stage may create one deterministic child job; OCR/classification/entity executions append immutable extraction rows, and entity rows commit in one batch with their owning extraction.
 
 Delivery 8 extends the graph with timeline and checklist jobs. Each stage appends its own immutable extraction; timeline events reference the timeline execution, while its structured provenance identifies the source text extraction. Checklist analysis creates or reuses the case/template-version snapshot and never resets a human-reviewed item to an AI proposal.
+
+Delivery 9 adds the terminal `EMBEDDING` job. It consumes the latest completed OCR extraction, creates deterministic source-located chunks, and inserts vectors idempotently. Search joins back to the source extraction and excludes it when a newer completed OCR extraction exists, retaining old chunks for provenance without returning stale evidence.
 
 ## Audit logs
 
