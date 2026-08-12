@@ -1,7 +1,7 @@
 # People, cases, and participants API
 
-**Status:** Implemented in Delivery 5  
-**Last updated:** 2026-08-05
+**Status:** Implemented in Delivery 5; case responsibility response extended in Delivery 10
+**Last updated:** 2026-08-12
 
 File and document resources nested under an authorized case are documented separately in [Files and documents API](./files-documents.md).
 
@@ -47,6 +47,8 @@ The database keeps the normalized value for authorized future workflows. Current
 ## Cases and confidentiality
 
 Internal codes normalize to uppercase and are unique per organization. Legal area and case type are stable uppercase technical codes. A responsible user must be active, not soft-deleted, and belong to the current organization. `closedAt` cannot precede `openedAt`.
+
+Case responses preserve `responsibleUserId` for filtering and future assignment forms and also embed `responsible: { id, name } | null`. The relation is selected with the case under the same tenant-consistent database relationship, avoiding client-side N+1 requests. E-mail, status, roles, and other user fields are not exposed by this summary.
 
 Status values are `INTAKE`, `DOCUMENT_COLLECTION`, `UNDER_ANALYSIS`, `READY_TO_FILE`, `FILED`, `ACTIVE`, `SUSPENDED`, `SETTLED`, `CLOSED`, and `ARCHIVED`. Priorities are `LOW`, `NORMAL`, `HIGH`, and `URGENT`. Confidentiality is `STANDARD`, `CONFIDENTIAL`, or `RESTRICTED`.
 

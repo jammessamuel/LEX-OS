@@ -9,6 +9,14 @@ import {
   type PriorityCode,
 } from '../case.constants.js';
 
+export class CaseResponsibleDto {
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+
+  @ApiProperty({ example: 'Advogada Fictícia' })
+  name!: string;
+}
+
 export class CaseResponseDto {
   @ApiProperty({ format: 'uuid' })
   id!: string;
@@ -39,6 +47,9 @@ export class CaseResponseDto {
 
   @ApiPropertyOptional({ format: 'uuid', nullable: true })
   responsibleUserId!: string | null;
+
+  @ApiProperty({ type: CaseResponsibleDto, nullable: true })
+  responsible!: CaseResponsibleDto | null;
 
   @ApiProperty({ format: 'date-time' })
   openedAt!: string;

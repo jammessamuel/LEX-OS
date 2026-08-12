@@ -415,10 +415,8 @@ onMounted(() => {
               <dt v-if="legalCase.closedAt">Encerrado em</dt>
               <dd v-if="legalCase.closedAt" class="data">{{ formatDate(legalCase.closedAt) }}</dd>
               <dt>Responsável</dt>
-              <!-- A API ainda não expõe nome de usuário; mostrar UUID seria pior que dizer
-                   que a informação não está disponível. Ver backlog: bloqueado por rota. -->
-              <dd class="muted">
-                {{ legalCase.responsibleUserId ? 'Atribuído' : 'Sem responsável' }}
+              <dd :class="{ muted: legalCase.responsible === null }">
+                {{ legalCase.responsible?.name ?? 'Sem responsável' }}
               </dd>
             </dl>
           </section>

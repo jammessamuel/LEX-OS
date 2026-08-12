@@ -162,6 +162,10 @@ describe('Delivery 5 people, cases, and participants', () => {
     assert.ok(response.body.paths['/api/v1/cases/{caseId}/files/upload']);
     assert.ok(response.body.paths['/api/v1/documents/{id}/reprocess']?.post);
     assert.ok(response.body.paths['/api/v1/processing-jobs/{id}']?.get);
+    assert.equal(
+      response.body.components.schemas.CaseResponseDto.properties.responsible.nullable,
+      true,
+    );
   });
 
   it('rejects invalid identifiers, participant vocabulary, unknown tenant fields, and cursors', async () => {
@@ -275,6 +279,12 @@ describe('Delivery 5 people, cases, and participants', () => {
     standardCaseId = created.body.id;
     assert.equal(created.body.internalCode, 'D5-STANDARD-001');
     assert.equal(created.body.legalArea, 'DIREITO_TRABALHISTA');
+    assert.deepEqual(created.body.responsible, {
+      id: ADMIN_USER_ID,
+      name: 'Administrador Fictício',
+    });
+    assert.equal('email' in created.body.responsible, false);
+    assert.equal('status' in created.body.responsible, false);
 
     const duplicate = await authorized('post', '/api/v1/cases')
       .send({
@@ -302,6 +312,19 @@ describe('Delivery 5 people, cases, and participants', () => {
       .expect(200);
     assert.equal(updated.body.status, 'UNDER_ANALYSIS');
     assert.equal(updated.body.priority, 'HIGH');
+
+    const listed = await authorized('get', '/api/v1/cases').expect(200);
+    const listedCase = listed.body.data.find((item) => item.id === standardCaseId);
+    assert.deepEqual(listedCase.responsible, {
+      id: ADMIN_USER_ID,
+      name: 'Administrador Fictício',
+    });
+
+    const detail = await authorized('get', `/api/v1/cases/${standardCaseId}`).expect(200);
+    assert.deepEqual(detail.body.responsible, {
+      id: ADMIN_USER_ID,
+      name: 'Administrador Fictício',
+    });
   });
 
   it('hides cross-tenant and soft-deleted cases from list, detail, and update paths', async () => {

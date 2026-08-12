@@ -45,6 +45,11 @@ export interface AuthTokenResponse {
   organization: AuthenticatedOrganization;
 }
 
+export interface CaseResponsible {
+  id: string;
+  name: string;
+}
+
 export interface CaseSummary {
   id: string;
   internalCode: string;
@@ -56,6 +61,7 @@ export interface CaseSummary {
   priority: Priority;
   confidentialityLevel: ConfidentialityLevel;
   responsibleUserId: string | null;
+  responsible: CaseResponsible | null;
   openedAt: string;
   closedAt: string | null;
   createdAt: string;
