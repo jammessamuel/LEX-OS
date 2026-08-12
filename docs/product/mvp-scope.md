@@ -138,7 +138,7 @@ Permission bundles will be seeded, but organization-specific roles may later com
 
 ## Required API surface
 
-Routes live under `/api/v1` and are exposed only when their delivery is implemented. Delivery 8 exposes authentication, current organization, people, cases, participant association/listing, secure file intake/list/download authorization, document list/detail/correction/soft delete, processing progress/detail, extraction history/reprocessing, timeline review/confirmation, checklist application/item review, and traceable task creation/listing. Users, search, and general audit endpoints remain scheduled for later deliveries.
+Routes live under `/api/v1` and are exposed only when their delivery is implemented. Delivery 9 exposes authentication, current organization, people, cases, participant association/listing, secure file intake/list/download authorization, document list/detail/correction/soft delete, processing progress/detail, extraction history/reprocessing, timeline review/confirmation, checklist application/item review, traceable task creation/listing, and authorized text/semantic search. Users, grounded answer generation, and general audit endpoints remain scheduled for later deliveries.
 
 Every list route must define pagination, sorting allowlists, filters, and stable ordering. Every error uses:
 
@@ -184,28 +184,27 @@ The first executable MVP is accepted when:
 12. The web application displays the case, processing state, results, and actionable failures.
 13. Formatting, lint, typecheck, unit, integration, essential Playwright, migration validation, and build checks pass in CI.
 
-## Open product decisions
+## Accepted product decisions
 
-Four of these have grown past a table row and now have their own decision records, each with options and a recommended conservative default awaiting a partner decision:
+The partners accepted the following decisions on 2026-08-07. Acceptance fixes the product policy, but does not authorize implementing a capability outside its delivery increment.
 
-| Question                                     | Record                                                       |
-| -------------------------------------------- | ------------------------------------------------------------ |
-| Scope of the internal assistant              | [ADR-009](../decisions/ADR-009-internal-assistant-scope.md)  |
-| Ingestion channels and WhatsApp positioning  | [ADR-010](../decisions/ADR-010-ingestion-channels.md)        |
-| Processing cost model and provider selection | [ADR-011](../decisions/ADR-011-processing-cost-model.md)     |
-| Retention, legal hold, and LGPD posture      | [ADR-012](../decisions/ADR-012-retention-legal-hold-lgpd.md) |
+| Decision                                     | Accepted direction                                                                 | Record                                                       |
+| -------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Scope of the internal assistant              | Source-grounded answers; refuse when no authorized source supports the response    | [ADR-009](../decisions/ADR-009-internal-assistant-scope.md)  |
+| Ingestion channels and WhatsApp positioning  | Upload and e-mail in the MVP; WhatsApp remains a future connector                  | [ADR-010](../decisions/ADR-010-ingestion-channels.md)        |
+| Processing cost model and provider selection | User subscription with included allowance, measured overage, and hard case ceiling | [ADR-011](../decisions/ADR-011-processing-cost-model.md)     |
+| Retention, legal hold, and LGPD posture      | Preserve by default, no automatic purge, case hold fails closed                    | [ADR-012](../decisions/ADR-012-retention-legal-hold-lgpd.md) |
+| Internal notifications                       | Minimum-content e-mail with server-resolved recipients and worker delivery         | [ADR-013](../decisions/ADR-013-notificacoes-internas.md)     |
 
 See [roadmap alignment](./roadmap-alignment.md) for how this scope maps onto the conceptual proposal's 11 components and 4 phases.
 
-The remaining questions do not block the documentation/foundation bootstrap, but they must be resolved before their affected deliveries:
+The remaining questions do not reopen those decisions, but they must be resolved before their affected releases:
 
 | Decision                    | Conservative MVP default                               | Required before                     |
 | --------------------------- | ------------------------------------------------------ | ----------------------------------- |
 | Organization onboarding     | Administrative provisioning only                       | Public authentication release       |
-| Data region and residency   | Single documented region; no cross-region copies       | Production storage selection        |
-| Retention and legal hold    | Preserve; no automatic purge                           | Production data onboarding          |
 | Maximum file/archive limits | Deny by configurable allowlist; safe low defaults      | File upload release                 |
 | Malware scanner outage      | Keep file quarantined and retry                        | File download release               |
 | Refresh sessions            | Per-device hashed token family with rotation           | Authentication release              |
-| Embedding model/dimension   | Mock configuration; store model and dimension metadata | Semantic indexing release           |
+| Production embedding model  | Mock configuration; store model and dimension metadata | First real embedding provider       |
 | Confidentiality inheritance | Case policy applies to derived artifacts by default    | Case/document authorization release |

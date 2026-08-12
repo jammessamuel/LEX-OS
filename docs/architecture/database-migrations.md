@@ -1,7 +1,7 @@
 # Database migrations
 
-**Status:** Initial migration plus Delivery 5, 6, and 7 indexes/constraints implemented and reviewed  
-**Last updated:** 2026-08-05
+**Status:** Initial migration plus Delivery 5 through 9 migrations implemented and reviewed
+**Last updated:** 2026-08-12
 
 ## Canonical artifacts
 
@@ -10,6 +10,8 @@
 - Delivery 5 indexes: [`packages/database/prisma/migrations/20260805154500_delivery_5_resource_indexes/migration.sql`](../../packages/database/prisma/migrations/20260805154500_delivery_5_resource_indexes/migration.sql)
 - Delivery 6 file/document indexes and checksum check: [`packages/database/prisma/migrations/20260805170000_delivery_6_secure_file_indexes/migration.sql`](../../packages/database/prisma/migrations/20260805170000_delivery_6_secure_file_indexes/migration.sql)
 - Delivery 7 processing indexes and lifecycle checks: [`packages/database/prisma/migrations/20260805183000_delivery_7_processing_pipeline/migration.sql`](../../packages/database/prisma/migrations/20260805183000_delivery_7_processing_pipeline/migration.sql)
+- Delivery 8 timeline/checklist schema and review indexes: [`packages/database/prisma/migrations/20260806145340_delivery_8_timeline_checklist_review/migration.sql`](../../packages/database/prisma/migrations/20260806145340_delivery_8_timeline_checklist_review/migration.sql) and [`packages/database/prisma/migrations/20260806182000_delivery_8_review_query_indexes/migration.sql`](../../packages/database/prisma/migrations/20260806182000_delivery_8_review_query_indexes/migration.sql)
+- Delivery 9 search foundation and forward-only reconciliation: [`packages/database/prisma/migrations/20260812120000_delivery_9_search_foundation/migration.sql`](../../packages/database/prisma/migrations/20260812120000_delivery_9_search_foundation/migration.sql), [`packages/database/prisma/migrations/20260812150929_delivery_9_search_foundation/migration.sql`](../../packages/database/prisma/migrations/20260812150929_delivery_9_search_foundation/migration.sql), and [`packages/database/prisma/migrations/20260812152000_delivery_9_search_schema_reconciliation/migration.sql`](../../packages/database/prisma/migrations/20260812152000_delivery_9_search_schema_reconciliation/migration.sql)
 - fictional seed: [`packages/database/prisma/seed.ts`](../../packages/database/prisma/seed.ts)
 - SQL integration tests: [`packages/database/test/schema.integration.test.cjs`](../../packages/database/test/schema.integration.test.cjs)
 
@@ -39,9 +41,15 @@ Delivery 6 adds partial tenant-first indexes for active file/document keyset pag
 
 Delivery 7 adds the tenant/creation keyset indexes used by processing and extraction APIs, plus a partial `(status, updated_at, id)` index limited to reconcilable queued/retrying jobs. Reviewed checks bound priority/confidence/page/offset values and require lifecycle timestamps and safe error codes to agree with every job state.
 
+## Delivery 9 search foundation
+
+Delivery 9 adds a stored generated `search_vector` using the Portuguese configuration, a GIN lexical index, a tenant/source lookup index, and a partial tenant/provider/model/dimension scope index for populated embeddings. Normalization, hashes, source locators, idempotent insertion, source visibility, and both query modes have dedicated tests.
+
+The first Delivery 9 migration exposed SQL-managed indexes and the generated column as Prisma drift. Prisma created a second applied migration that removed the unmodeled objects and normalized two generated names. Because applied migrations are immutable, a third forward-only reconciliation migration restored the search column and every removed reviewed index; the canonical Prisma schema now declares the unsupported `tsvector` field, GIN index, and prior non-partial indexes. `prisma migrate diff` against the local datasource is empty after reconciliation.
+
 ## Deliberate deferrals
 
-The `knowledge_chunks.embedding` column is an unbounded pgvector value. No HNSW or IVFFlat index is created until one production embedding dimension/model is selected and benchmarked with synthetic representative data. Portuguese full-text generated columns/indexes are also deferred until normalization and text-search configuration have dedicated tests.
+The `knowledge_chunks.embedding` column remains an unbounded pgvector value. No HNSW or IVFFlat index is created until one production embedding dimension/model is selected and benchmarked with representative data. The Delivery 9 synthetic exact-search baseline is recorded in [`search-performance.md`](./search-performance.md).
 
 Global-or-organization visibility for roles, document types, and checklist templates cannot be completely encoded by an ordinary foreign key. Delivery 4 enforces role visibility while assembling the authenticated permission set. Delivery 6 enforces global/same-tenant document-type visibility during human document correction. Checklist-template visibility remains deferred to its product delivery.
 

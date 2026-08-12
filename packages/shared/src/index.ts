@@ -11,6 +11,19 @@ export function isUuidV4(value: unknown): value is string {
   return typeof value === 'string' && uuidV4Pattern.test(value);
 }
 
+export {
+  assertEmbeddingBatch,
+  chunkKnowledgeText,
+  DeterministicMockEmbeddingProvider,
+  deterministicEmbeddingDescriptor,
+} from './knowledge.js';
+export type {
+  DeterministicKnowledgeChunk,
+  EmbeddingDescriptor,
+  EmbeddingProvider,
+  KnowledgeSourceLocator,
+} from './knowledge.js';
+
 export type StructuredLogLevel = 'debug' | 'error' | 'info' | 'warn';
 
 export interface StructuredLogEntry {

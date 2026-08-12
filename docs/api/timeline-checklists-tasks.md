@@ -38,4 +38,4 @@ A task can be created only from a pending `MISSING`, `INVALID`, `EXPIRED`, or `I
 
 ## Deferred boundary
 
-Delivery 8 does not add search/embeddings, task status/update routes, real AI/OCR providers, user administration, general audit browsing, or the feature UI. Those remain assigned to later authorized deliveries.
+Delivery 8 did not add search/embeddings; Delivery 9 implements that separate foundation. Task status/update routes, real AI/OCR/embedding providers, user administration, general audit browsing, grounded answer generation, and the complete feature UI remain assigned to later authorized deliveries.

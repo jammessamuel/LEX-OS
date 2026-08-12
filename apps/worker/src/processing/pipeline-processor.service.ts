@@ -1,9 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@lex-os/database';
 import type { ProcessingJobMessageV1, ProcessingJobType } from '@lex-os/contracts';
+import { assertEmbeddingBatch, chunkKnowledgeText, type EmbeddingProvider } from '@lex-os/shared';
 import { UnrecoverableError } from 'bullmq';
 
 import { PROCESSING_PROVIDER, type ProcessingProvider } from './mock-processing.provider.js';
+import { EMBEDDING_PROVIDER } from './mock-embedding.provider.js';
 import { PermanentProcessingError, RetryableProcessingError } from './processing-error.js';
 import {
   ProcessingRepository,
@@ -37,6 +39,7 @@ export class PipelineProcessorService {
     @Inject(TIMELINE_PROVIDER) private readonly timelineProvider: TimelineProvider,
     @Inject(CHECKLIST_ANALYSIS_PROVIDER)
     private readonly checklistAnalysisProvider: ChecklistAnalysisProvider,
+    @Inject(EMBEDDING_PROVIDER) private readonly embeddingProvider: EmbeddingProvider,
     private readonly publisher: ProcessingQueuePublisher,
   ) {}
 
@@ -250,6 +253,47 @@ export class PipelineProcessorService {
             templateId: template.id,
             templateVersion: template.version,
             items: result.items,
+          },
+          nextJobType: 'EMBEDDING',
+        };
+      }
+      case 'EMBEDDING': {
+        const sourceExtraction = job.document.extractions[0];
+        if (sourceExtraction?.rawText === null || sourceExtraction?.rawText === undefined) {
+          throw new PermanentProcessingError(
+            'EMBEDDING_SOURCE_MISSING',
+            'A indexação exige uma extração textual autorizada do mesmo documento.',
+          );
+        }
+        const chunks = chunkKnowledgeText(sourceExtraction.rawText);
+        if (chunks.length === 0) {
+          throw new PermanentProcessingError(
+            'EMBEDDING_SOURCE_EMPTY',
+            'A extração textual não contém conteúdo pesquisável.',
+          );
+        }
+        const embeddings = await this.embeddingProvider.embed(chunks.map((chunk) => chunk.content));
+        assertEmbeddingBatch(
+          embeddings,
+          chunks.length,
+          this.embeddingProvider.descriptor.dimensions,
+        );
+        return {
+          provider: this.embeddingProvider.descriptor.provider,
+          modelName: this.embeddingProvider.descriptor.model,
+          outputMetadata: {
+            stage: 'EMBEDDING',
+            progress: 100,
+            chunkCount: chunks.length,
+          },
+          knowledgeIndex: {
+            sourceExtractionId: sourceExtraction.id,
+            embeddingVersion: this.embeddingProvider.descriptor.version,
+            embeddingDimensions: this.embeddingProvider.descriptor.dimensions,
+            chunks: chunks.map((chunk, index) => ({
+              ...chunk,
+              embedding: embeddings[index] ?? [],
+            })),
           },
           finalDocumentStatus: 'NEEDS_REVIEW',
         };

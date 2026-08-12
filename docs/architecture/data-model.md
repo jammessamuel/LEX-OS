@@ -1,7 +1,8 @@
 # LEX OS initial data model
 
-**Status:** Schema implemented in Delivery 3; application behavior implemented through Delivery 8
-**Last updated:** 2026-08-06
+**Status:** Schema implemented in Delivery 3; application behavior implemented through Delivery 9
+
+**Last updated:** 2026-08-12
 
 ## Modeling principles
 
@@ -212,7 +213,7 @@ Unique `(organization_id, source_type, source_id, chunk_index, content_hash)` ma
 
 The proposal uses Prisma `Unsupported("vector")` and a reviewed SQL migration for the pgvector extension. An unbounded vector column avoids embedding dimension in the domain. It also prevents an efficient approximate-nearest-neighbor index across mixed dimensions, so the MVP uses exact search on a small corpus or no vector index until a configured production embedding dimension is selected. A future migration may separate embeddings by model/dimension.
 
-Full-text search uses a PostgreSQL generated `tsvector` column or expression index created in SQL because Prisma does not model it fully. The canonical content remains `knowledge_chunks.content`.
+Delivery 9 implements full-text search with a stored generated Portuguese `tsvector` column and GIN index created in SQL, while declaring the unsupported field in the canonical Prisma schema to prevent migration drift. The canonical content remains `knowledge_chunks.content`.
 
 ## Processing jobs
 
@@ -223,6 +224,8 @@ The application owns allowed transitions. Redis/BullMQ data may expire without e
 Delivery 7 constrains lifecycle/error consistency in PostgreSQL and updates jobs with tenant, expected state, and optimistic version predicates. Queue messages contain no resource metadata. Each completed stage may create one deterministic child job; OCR/classification/entity executions append immutable extraction rows, and entity rows commit in one batch with their owning extraction.
 
 Delivery 8 extends the graph with timeline and checklist jobs. Each stage appends its own immutable extraction; timeline events reference the timeline execution, while its structured provenance identifies the source text extraction. Checklist analysis creates or reuses the case/template-version snapshot and never resets a human-reviewed item to an AI proposal.
+
+Delivery 9 adds the terminal `EMBEDDING` job. It consumes the latest completed OCR extraction, creates deterministic source-located chunks, and inserts vectors idempotently. Search joins back to the source extraction and excludes it when a newer completed OCR extraction exists, retaining old chunks for provenance without returning stale evidence.
 
 ## Audit logs
 
@@ -251,11 +254,13 @@ The initial migrations should include:
 
 Index selection must be verified with representative synthetic query plans; tenant-first does not mean one wide index for every possible filter.
 
-## Deletion and retention
+## Deletion, retention, and legal hold
 
 Soft deletion hides user-facing master records from normal queries but does not remove objects, audit, or immutable extraction history. Authorization remains necessary to retrieve deleted data through administrative flows.
 
-Production retention, legal holds, data subject requests, backups, and cryptographic deletion are unresolved governance requirements. Until approved, the system must not implement automatic irreversible purging. Development fixtures may be reset only through explicit local commands.
+ADR-012 fixes the conservative policy: preserve by default, never purge automatically, use soft deletion as the only MVP deletion, and make case-level legal hold fail closed. No path may irreversibly remove case data when hold state is active or cannot be determined. Development fixtures may be reset only through explicit local commands.
+
+The policy decision does not by itself provide the missing production mechanism. Case hold state, authorized hold transitions, subject-request procedures, retention/legal-basis records, regional backup controls, and the eventual separately reviewed hard-purge capability remain production blockers and require their own delivery. No production or marketing material may claim LGPD compliance before those procedures exist.
 
 ## Schema proposal and migration notes
 
@@ -278,8 +283,8 @@ Before affected implementation, confirm:
 2. exact confidentiality levels and case-team membership semantics;
 3. CPF/CNPJ encryption/tokenization and authorized display policy;
 4. production embedding model/dimension and migration behavior;
-5. retention, legal hold, and hard-deletion requirements;
+5. representation and authorized transitions for the accepted case-level legal hold policy;
 6. per-file, per-request, and expanded-archive limits;
 7. whether duplicate physical bytes are retained or referenced after quarantine.
 
-None blocks documentation or monorepo bootstrap. Items 1, 3, and 4 block a production-ready authentication/case release; items 5 and 7–8 block their respective search/upload release.
+None blocks documentation or monorepo bootstrap. Items 1 and 3 block a production-ready authentication/case release; item 4 blocks a real embedding provider; item 5 blocks production data onboarding; items 6–7 block their respective upload lifecycle decisions.

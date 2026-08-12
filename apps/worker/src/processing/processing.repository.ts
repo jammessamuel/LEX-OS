@@ -136,12 +136,35 @@ export interface StageCompletion {
       status: 'MISSING' | 'AWAITING_VALIDATION';
     }[];
   };
+  knowledgeIndex?: {
+    sourceExtractionId: string;
+    embeddingVersion: string;
+    embeddingDimensions: number;
+    chunks: readonly {
+      chunkIndex: number;
+      content: string;
+      contentHash: string;
+      locator: { pageNumber: number; startOffset: number; endOffset: number };
+      embedding: readonly number[];
+    }[];
+  };
   nextJobType?: ProcessingJobType;
   finalDocumentStatus?: 'NEEDS_REVIEW';
 }
 
 function asJson(value: object): Prisma.InputJsonObject {
   return { ...value } as Prisma.InputJsonObject;
+}
+
+function vectorLiteral(values: readonly number[], expectedDimensions: number): string {
+  if (
+    values.length !== expectedDimensions ||
+    values.length === 0 ||
+    values.some((value) => !Number.isFinite(value))
+  ) {
+    throw new Error('Cannot persist an invalid embedding vector.');
+  }
+  return `[${values.join(',')}]`;
 }
 
 function assertTenantRelationships(job: JobTargetRecord): asserts job is JobTargetRecord & {
@@ -569,6 +592,89 @@ export class ProcessingRepository {
         });
       }
 
+      let indexedChunkCount: number | undefined;
+      if (completion.knowledgeIndex !== undefined) {
+        const sourceExtraction = job.document.extractions[0];
+        if (
+          sourceExtraction === undefined ||
+          sourceExtraction.id !== completion.knowledgeIndex.sourceExtractionId
+        ) {
+          throw new Error('Knowledge indexing source does not match the current document text.');
+        }
+
+        indexedChunkCount = 0;
+        for (const chunk of completion.knowledgeIndex.chunks) {
+          const chunkId = deterministicJobId(
+            completion.knowledgeIndex.sourceExtractionId,
+            `KNOWLEDGE_CHUNK:${chunk.chunkIndex}:${chunk.contentHash}`,
+          );
+          const metadata = JSON.stringify({
+            schemaVersion: 1,
+            locator: chunk.locator,
+            sourceExtractionId: completion.knowledgeIndex.sourceExtractionId,
+          });
+          const inserted = await transaction.$executeRaw(Prisma.sql`
+            INSERT INTO "knowledge_chunks" (
+              "id",
+              "organization_id",
+              "case_id",
+              "document_id",
+              "source_type",
+              "source_id",
+              "chunk_index",
+              "content",
+              "content_hash",
+              "embedding",
+              "embedding_provider",
+              "embedding_model",
+              "embedding_version",
+              "embedding_dimensions",
+              "metadata"
+            ) VALUES (
+              ${chunkId}::uuid,
+              ${job.organizationId}::uuid,
+              ${job.caseId}::uuid,
+              ${job.documentId}::uuid,
+              'DOCUMENT_EXTRACTION',
+              ${completion.knowledgeIndex.sourceExtractionId}::uuid,
+              ${chunk.chunkIndex},
+              ${chunk.content},
+              ${chunk.contentHash},
+              ${vectorLiteral(chunk.embedding, completion.knowledgeIndex.embeddingDimensions)}::vector,
+              ${completion.provider},
+              ${completion.modelName},
+              ${completion.knowledgeIndex.embeddingVersion},
+              ${completion.knowledgeIndex.embeddingDimensions},
+              ${metadata}::jsonb
+            )
+            ON CONFLICT (
+              "organization_id", "source_type", "source_id", "chunk_index", "content_hash"
+            ) DO NOTHING
+          `);
+          indexedChunkCount += inserted;
+        }
+
+        await this.#audit(transaction, {
+          organizationId: job.organizationId,
+          processingJobId: job.id,
+          actorType: 'AI',
+          action: 'knowledge.document.indexed',
+          entityType: 'document',
+          entityId: job.documentId,
+          correlationId,
+          data: {
+            caseId: job.caseId,
+            sourceExtractionId: completion.knowledgeIndex.sourceExtractionId,
+            chunkCount: completion.knowledgeIndex.chunks.length,
+            insertedChunkCount: indexedChunkCount,
+            provider: completion.provider,
+            modelName: completion.modelName,
+            embeddingVersion: completion.knowledgeIndex.embeddingVersion,
+            embeddingDimensions: completion.knowledgeIndex.embeddingDimensions,
+          },
+        });
+      }
+
       let nextJob: NextProcessingJob | null = null;
       if (completion.nextJobType !== undefined) {
         const id = deterministicJobId(job.id, completion.nextJobType);
@@ -614,6 +720,7 @@ export class ProcessingRepository {
             ...completion.outputMetadata,
             ...(extractionId === undefined ? {} : { extractionId }),
             ...(caseChecklistId === undefined ? {} : { caseChecklistId }),
+            ...(indexedChunkCount === undefined ? {} : { indexedChunkCount }),
             ...(nextJob === null ? {} : { nextProcessingJobId: nextJob.id }),
           },
           errorCode: null,
@@ -720,6 +827,7 @@ export class ProcessingRepository {
             'ENTITY_EXTRACTION',
             'TIMELINE_GENERATION',
             'CHECKLIST_ANALYSIS',
+            'EMBEDDING',
           ],
         },
       },

@@ -1,7 +1,8 @@
 # Incremental implementation plan
 
-**Status:** Implemented through Delivery 8
-**Last updated:** 2026-08-06
+**Status:** Implemented through Delivery 9
+
+**Last updated:** 2026-08-12
 
 ## Delivery strategy
 
@@ -251,6 +252,18 @@ ZIP extraction remains disabled unless expanded-size, recursion, file-count, pat
 - restore and reconciliation procedures are exercised with synthetic data;
 - remaining limitations and production blockers are explicitly recorded.
 
+## Governed follow-up increments
+
+ADRs 009–013 define product policy that extends beyond the numbered Delivery 0–11 plan. They do not authorize opportunistic implementation. Each capability must receive a separate vertical increment with schema, security, audit, failure-path, and documentation acceptance criteria before coding begins:
+
+- source-grounded assistant responses after Delivery 9 retrieval is accepted (ADR-009);
+- authenticated e-mail ingestion that reuses the hostile-file intake pipeline (ADR-010);
+- per-execution cost accounting and a hard recoverable case ceiling before any real provider (ADR-011);
+- fail-closed case legal hold and required governance procedures before real client data (ADR-012);
+- minimum-content worker e-mail notifications with preferences and body-free audit records (ADR-013).
+
+Governance and cost controls precede real providers. Retrieval precedes assistant responses. Inbound ingestion and outbound notification remain distinct increments. Exact ordering after Delivery 11 requires a reviewed plan update and explicit authorization.
+
 ## Cross-delivery security test matrix
 
 Every tenant-owned capability must test at least:
@@ -282,17 +295,19 @@ At the end of each delivery, report:
 
 ## Next-step acceptance criteria
 
-The completed checkpoint is **Delivery 8 — Timeline and checklist review**. It is complete only when:
+The completed checkpoint is **Delivery 9 — Text and semantic search foundation**. It is complete only when:
 
-- the persistent graph ends with separate `TIMELINE_GENERATION` and `CHECKLIST_ANALYSIS` jobs rather than running review analysis in HTTP;
-- provider outputs are strict schema-v1 values and reject unknown fields, invalid statuses, duplicate template items, and source locators outside authorized text;
-- every AI timeline event links the same tenant/case document and its generation extraction, and starts unconfirmed;
-- human confirmation records user/time and an allowlisted audit in one transaction without modifying the immutable extraction;
-- a seeded active template is selected by legal area/case type, and applied case items retain title, description, requirement, and template-version snapshots;
-- document-to-checklist links are constrained to the same organization and case;
-- only authorized humans update checklist state, and one active `AI_CHECKLIST` task is traceable to each selected pending item;
-- timeline, checklist, and task routes enforce tenant isolation, confidentiality, RBAC, DTO validation, opaque failures, and safe audit fields;
-- worker retry/idempotency and all prior Delivery 7 behavior remain passing;
-- the full format, lint, typecheck, unit, integration, build, migration-validation, and Compose gates pass.
+- the persistent graph ends with a separate `EMBEDDING` job rather than indexing in HTTP;
+- normalization/chunking is deterministic and retains resolvable source offsets and hashes;
+- repeated processing and queue delivery do not duplicate one logical chunk;
+- PostgreSQL Portuguese full-text and exact pgvector queries constrain organization, confidentiality, soft deletion, file state, source type, extraction state/version, and structured filters before ranking;
+- hybrid ranking combines lexical and semantic ranks without assuming their raw scores share a scale;
+- every returned excerpt maps to a same-document completed extraction citation;
+- foreign-tenant, confidential, deleted, superseded, or malformed sources never appear in results or counts;
+- empty authorized retrieval returns `INSUFFICIENT_EVIDENCE` and no invented response;
+- search audit stores allowlisted dimensions but not the query or source content;
+- prompt injection remains untrusted data and cannot alter authorization or tenant scope;
+- synthetic `EXPLAIN (ANALYZE, BUFFERS)` evidence documents lexical GIN and exact-vector behavior;
+- the full format, lint, typecheck, unit, integration, build, migration-validation, migration-status, and Compose gates pass.
 
-After this checkpoint is accepted, the next proposed step is **Delivery 9 — Text and semantic search foundation**. It requires explicit authorization.
+After this checkpoint is accepted, the next proposed step is **Delivery 10 — Essential web vertical slice**. It requires explicit authorization.

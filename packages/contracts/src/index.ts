@@ -1,6 +1,7 @@
 export const processingQueueNames = {
   CHECKLIST_ANALYSIS: 'checklist-analysis',
   DOCUMENT_CLASSIFICATION: 'document-classification',
+  EMBEDDING: 'embedding-generation',
   ENTITY_EXTRACTION: 'entity-extraction',
   FILE_VALIDATION: 'file-validation',
   OCR: 'ocr-processing',

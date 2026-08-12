@@ -2,7 +2,7 @@
 
 LEX OS is an intelligent legal operations system for Brazilian law firms. The project receives disorganized operational material and prepares a structured, searchable, and traceable legal dossier for human analysis.
 
-This repository contains **Delivery 8 — Timeline and checklist review**. It provides the reproducible local stack, authenticated and tenant-aware legal/file platform, a six-stage persistent BullMQ pipeline, deterministic sourced timeline and checklist analysis, human event confirmation, versioned checklist snapshots, item review, traceable tasks, and safe audit provenance. Search/embeddings, real providers, and feature UI remain intentionally deferred.
+This repository contains **Delivery 9 — Text and semantic search foundation**. It provides the reproducible local stack, authenticated and tenant-aware legal/file platform, a seven-stage persistent BullMQ pipeline, deterministic sourced timeline/checklist analysis and embedding indexation, PostgreSQL Portuguese full-text search, exact pgvector retrieval, hybrid ranking, resolvable citations, explicit insufficient-evidence behavior, and safe audit provenance. Real providers, grounded answer generation, and the complete feature UI remain intentionally deferred.
 
 ## Architecture baseline
 
@@ -147,13 +147,13 @@ Use `pnpm db:migrate:dev --name <descriptive_name>` only to create a reviewed fo
 - trusted reverse-proxy/IP policy must be configured before an internet-facing production deployment;
 - ZIP intake is disabled; accepted types are PDF, JPEG, PNG, and UTF-8 text, with a default maximum of 25 MiB per file and 10 files per request;
 - the deterministic malware scanner is development/test-only and the API refuses to start with it in production; a production scanner adapter is still required;
-- processing providers are deterministic development/test mocks; worker startup fails in production until real provider adapters are configured;
+- processing and embedding providers are deterministic development/test mocks; API/worker startup fails in production until real provider adapters are configured;
 - duplicate uploads are linked within one tenant, but their second object is retained until a production retention/deduplication policy is approved;
 - reconciliation reports missing, stale-quarantine, and orphan conditions without automatically deleting legal evidence;
 - no e-mail adapter despite local Mailpit;
-- no legal workflow UI, search/embedding implementation, or real AI provider;
+- no complete legal workflow/search UI, grounded assistant response generation, or real AI provider;
 - production object retention, legal hold, backup/restore, and irreversible purge policies remain governance blockers;
 - CI runs the format, lint, typecheck, unit, build, migration-validation, Compose-config, and integration gates, but the full Playwright end-to-end matrix and dependency review remain scheduled for Delivery 11;
 - Git hooks cover commit-message policy only; a pre-commit lint/format gate is not installed yet.
 
-The next proposed checkpoint is **Delivery 9 — Text and semantic search foundation**, subject to explicit authorization.
+The next proposed checkpoint is **Delivery 10 — Essential web vertical slice**, subject to explicit authorization after review of Delivery 9.

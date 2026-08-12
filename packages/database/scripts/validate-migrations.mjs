@@ -178,6 +178,57 @@ for (const fragment of delivery8IndexFragments) {
   }
 }
 
+const delivery9Migration = migrationDirectories.find((name) =>
+  name.endsWith('_delivery_9_search_foundation'),
+);
+
+if (delivery9Migration === undefined) {
+  throw new Error('The reviewed Delivery 9 search-foundation migration is missing.');
+}
+
+const delivery9Sql = migrationSql.get(delivery9Migration);
+const delivery9Fragments = [
+  'ADD COLUMN "search_vector" tsvector',
+  "to_tsvector('portuguese', coalesce(\"content\", ''))",
+  'CREATE INDEX "knowledge_chunks_search_vector_gin_idx"',
+  'USING GIN ("search_vector")',
+  'CREATE INDEX "knowledge_chunks_tenant_source_lookup_idx"',
+  'CREATE INDEX "knowledge_chunks_tenant_embedding_scope_idx"',
+  'WHERE "embedding" IS NOT NULL;',
+];
+
+for (const fragment of delivery9Fragments) {
+  if (delivery9Sql === undefined || !delivery9Sql.includes(fragment)) {
+    throw new Error(`Delivery 9 search migration is missing: ${fragment}`);
+  }
+}
+
+const delivery9ReconciliationMigration = migrationDirectories.find((name) =>
+  name.endsWith('_delivery_9_search_schema_reconciliation'),
+);
+
+if (delivery9ReconciliationMigration === undefined) {
+  throw new Error('The Delivery 9 forward schema-reconciliation migration is missing.');
+}
+
+const delivery9ReconciliationSql = migrationSql.get(delivery9ReconciliationMigration);
+const delivery9ReconciliationFragments = [
+  'ADD COLUMN "search_vector" tsvector',
+  'CREATE INDEX "knowledge_chunks_search_vector_gin_idx"',
+  'CREATE INDEX "knowledge_chunks_tenant_source_lookup_idx"',
+  'CREATE INDEX "case_participants_organization_case_created_id_idx"',
+  'CREATE INDEX "processing_jobs_tenant_created_at_id_idx"',
+  'CREATE INDEX "document_extractions_tenant_document_created_at_id_idx"',
+  'CREATE INDEX "timeline_events_tenant_case_created_at_id_idx"',
+  'CREATE INDEX "case_checklists_tenant_case_created_at_id_idx"',
+];
+
+for (const fragment of delivery9ReconciliationFragments) {
+  if (delivery9ReconciliationSql === undefined || !delivery9ReconciliationSql.includes(fragment)) {
+    throw new Error(`Delivery 9 schema reconciliation is missing: ${fragment}`);
+  }
+}
+
 for (const [name, migration] of migrationSql) {
   const destructive = /^\s*(DROP\s+(?:TABLE|SCHEMA|DATABASE)|TRUNCATE)\b/imu.exec(migration);
 
