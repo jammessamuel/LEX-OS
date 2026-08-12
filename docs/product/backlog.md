@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-07 · ADRs 009–013 aceitos pela sociedade
+**Última atualização:** 2026-08-12 · Entrega 9 mesclada; Entrega 10 autorizada; busca liberada para o front
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -34,13 +34,14 @@ experiência central da `vision.md` e o componente 11 da proposta.
 | --- | ---------------------------- | -------------------------------------------------------------------------------------------------------- |
 | 1   | Checklist do caso            | `GET /cases/:id/checklist-templates` · `GET`/`POST /cases/:id/checklists` · `PATCH /checklist-items/:id` |
 | 2   | Tarefas do caso              | `GET /cases/:id/tasks` · `POST /checklist-items/:id/tasks`                                               |
-| 3   | Correção humana de documento | `PATCH /documents/:id`                                                                                   |
-| 4   | Download autorizado          | `GET /files/:id/download-url` — URL assinada de 60 s                                                     |
-| 5   | Reprocessar documento        | `POST /documents/:id/reprocess`                                                                          |
-| 6   | Criar e editar caso          | `POST /cases` · `PATCH /cases/:id`                                                                       |
-| 7   | Participantes do caso        | `GET`/`POST /cases/:caseId/participants`                                                                 |
-| 8   | Pessoas — CRUD               | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados                                    |
-| 9   | Excluir caso e documento     | `DELETE /cases/:id` · `DELETE /documents/:id`                                                            |
+| 3   | Busca no acervo              | `POST /search` — lexical, semântica e híbrida, com citação resolvível ou `INSUFFICIENT_EVIDENCE`         |
+| 4   | Correção humana de documento | `PATCH /documents/:id`                                                                                   |
+| 5   | Download autorizado          | `GET /files/:id/download-url` — URL assinada de 60 s                                                     |
+| 6   | Reprocessar documento        | `POST /documents/:id/reprocess`                                                                          |
+| 7   | Criar e editar caso          | `POST /cases` · `PATCH /cases/:id`                                                                       |
+| 8   | Participantes do caso        | `GET`/`POST /cases/:caseId/participants`                                                                 |
+| 9   | Pessoas — CRUD               | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados                                    |
+| 10  | Excluir caso e documento     | `DELETE /cases/:id` · `DELETE /documents/:id`                                                            |
 
 ## A fazer — qualidade de interface
 
@@ -63,7 +64,7 @@ invisível.
 | Confirmação de entidade      | A tela de procedência mostra "Aguardando revisão", mas não há rota para um humano confirmar uma entidade extraída. A confirmação humana está prevista na Delivery 8 para eventos de cronologia; entidades precisam do mesmo caminho                                                                                                     |
 | Responsável do caso com nome | Não existe rota de usuários. `responsibleUserId` só pode virar UUID na tela. Precisa de `GET /users` ou de `responsible: { id, name }` embutido no caso, como já é feito com `file` e `documentType`                                                                                                                                    |
 | Painel com números           | Nenhum endpoint devolve contagem ou agregado. Um resumo exigiria varrer páginas no cliente, o que não escala                                                                                                                                                                                                                            |
-| Busca e memória              | Delivery 9, não autorizada. `KnowledgeChunk` e pgvector já estão no lugar                                                                                                                                                                                                                                                               |
+| Resposta ancorada            | O ADR-009 decidiu resposta ancorada em fonte, mas a Entrega 9 entregou só a recuperação. `POST /search` devolve trechos com citação; não há rota que gere resposta a partir deles                                                                                                                                                       |
 | Leitura de auditoria         | Sem rota                                                                                                                                                                                                                                                                                                                                |
 | Administração de usuários    | Sem rota                                                                                                                                                                                                                                                                                                                                |
 

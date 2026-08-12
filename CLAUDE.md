@@ -56,8 +56,14 @@ Approval for one commit is not standing approval for the next.
 ### 0.3 Respect the delivery boundary
 
 The completed checkpoint is **Delivery 9 — Text and semantic search foundation**.
-Delivery 10 and later require explicit authorization. Do not implement future-delivery
-behavior opportunistically, even when it looks like a small addition.
+
+**Delivery 10 — Essential web vertical slice is authorized** (owner, 2026-08-12). Build the
+web interface over resources the API already exposes, prioritising the critical user flow.
+A screen only ships against a route that exists: no placeholder that pretends a missing
+endpoint works. Open blockers are listed in `docs/product/backlog.md`.
+
+Delivery 11 and later still require explicit authorization. Do not implement
+future-delivery behavior opportunistically, even when it looks like a small addition.
 
 ### 0.4 Never suppress a failing gate
 
