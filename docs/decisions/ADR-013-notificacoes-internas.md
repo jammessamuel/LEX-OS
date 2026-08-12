@@ -1,10 +1,14 @@
 # ADR-013: Notificações internas por e-mail
 
-- **Status:** Proposto — depende de decisão da sociedade
+- **Status:** Aceito — decidido pela sociedade em 2026-08-07
 - **Data:** 2026-08-07
 - **Decisores:** sócios da SAMUEL DEV LTDA
 - **Trava:** adapter de e-mail e qualquer aviso automático ao escritório
 - **Idioma:** pt-BR, por ser documento de decisão para a sociedade e não documentação técnica
+
+## Decisão (2026-08-07)
+
+Aceita a **recomendação integral**: conteúdo mínimo sempre (código do caso, tipo do acontecimento, link — nada além), três gatilhos da primeira fase só para o responsável/atribuído, imediato para falha e tarefa com resumo diário para conclusões, opt-out por gatilho exceto falha, envio pelo worker com auditoria sem corpo, e provedor SMTP de produção somente com termos registrados.
 
 ## Contexto
 

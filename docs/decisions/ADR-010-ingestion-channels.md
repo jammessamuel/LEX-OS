@@ -1,10 +1,14 @@
 # ADR-010: Decidir os canais de ingestão do MVP
 
-- **Status:** Proposto — depende de decisão da sociedade
+- **Status:** Aceito — decidido pela sociedade em 2026-08-07
 - **Data:** 2026-08-05
 - **Decisores:** sócios da SAMUEL DEV LTDA
 - **Trava:** componente conceitual #1, e se a Fase 1 é viável como está escrita
 - **Idioma:** pt-BR, por ser documento de decisão para a sociedade e não documentação técnica
+
+## Decisão (2026-08-07)
+
+Aceita a **Opção B — upload mais ingestão por e-mail no MVP**. WhatsApp fica registrado como conector futuro com ADR próprio quando for priorizado; pastas monitoradas são iniciativa separada. A ingestão por e-mail reusa o pipeline de entrada existente e segue as verificações de conformidade deste registro.
 
 ## Contexto
 

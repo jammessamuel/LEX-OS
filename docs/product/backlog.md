@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-07 · cronologia entregue; ADR-013 proposto; issues #2 e #3 abertas
+**Última atualização:** 2026-08-07 · ADRs 009–013 aceitos pela sociedade
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -69,19 +69,29 @@ invisível.
 
 ---
 
+## Decidido pela sociedade — 2026-08-07
+
+Os cinco registros abertos foram fechados. As decisões liberam planejamento e
+implementação futura; não autorizam, por si só, o início de uma nova entrega.
+
+| Registro | Decisão                                               | Condição inegociável                                                      |
+| -------- | ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| ADR-009  | Resposta ancorada em fonte autorizada                 | Sem fonte autorizada, o sistema recusa responder                          |
+| ADR-010  | Upload e e-mail no MVP; WhatsApp como conector futuro | Remetente não verificado nunca escreve em um tenant                       |
+| ADR-011  | Assinatura com franquia e medição de excedente        | Custo por execução e teto rígido por caso antes do primeiro provedor real |
+| ADR-012  | Preservar por padrão; sem expurgo automático          | Legal hold falha fechado e nenhum fornecedor treina com o conteúdo        |
+| ADR-013  | Notificações internas com conteúdo mínimo             | Somente código do caso, tipo do acontecimento e link                      |
+
+---
+
 ## Bloqueado por decisão da sociedade
 
 Nenhum é código. Cada um trava trabalho abaixo dele.
 
-| Cartão                                   | Registro           | Trava                                                                                                                                                                                                                                                                                                                            |
-| ---------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Escopo do Assistente Interno             | ADR-009            | Delivery 9 e o componente 10 da proposta                                                                                                                                                                                                                                                                                         |
-| Canais de ingestão e posição do WhatsApp | ADR-010            | Componente 1 e a viabilidade da Fase 1                                                                                                                                                                                                                                                                                           |
-| Custo de processamento e provedores      | ADR-011            | Sair do estado de mock; formação de preço                                                                                                                                                                                                                                                                                        |
-| Retenção, legal hold e LGPD              | ADR-012            | Dado real em produção; contrato comercial                                                                                                                                                                                                                                                                                        |
-| Notificações internas por e-mail         | ADR-013 a escrever | E-mail ao responsável quando preparo termina, documento falha ou tarefa é atribuída. Exige política de conteúdo mínimo (código do caso e link, nunca teor de documento), opt-out, e provedor SMTP de produção — que vira suboperador (acopla ao ADR-012). O `mvp-scope.md` é silencioso: adição de escopo pede aval da sociedade |
-| Aprovar a fundação de design             | —                  | Nada: já é possível construir em cima                                                                                                                                                                                                                                                                                            |
-| Família tipográfica definitiva           | —                  | Exige licença e teste em documento denso                                                                                                                                                                                                                                                                                         |
+| Cartão                         | Registro | Trava                                    |
+| ------------------------------ | -------- | ---------------------------------------- |
+| Aprovar a fundação de design   | —        | Nada: já é possível construir em cima    |
+| Família tipográfica definitiva | —        | Exige licença e teste em documento denso |
 
 ---
 

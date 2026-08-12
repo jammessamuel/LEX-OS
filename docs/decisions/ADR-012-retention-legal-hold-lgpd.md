@@ -1,10 +1,14 @@
 # ADR-012: Estabelecer retenção, legal hold e a postura de LGPD
 
-- **Status:** Proposto — depende de decisão da sociedade
+- **Status:** Aceito — decidido pela sociedade em 2026-08-07
 - **Data:** 2026-08-05
 - **Decisores:** sócios da SAMUEL DEV LTDA
 - **Trava:** entrada de dado real em produção; todo contrato comercial com escritório
 - **Idioma:** pt-BR, por ser documento de decisão para a sociedade e não documentação técnica
+
+## Decisão (2026-08-07)
+
+Aceito o **padrão conservador integral**: preservar por padrão, nenhum expurgo automático, legal hold em nível de caso falhando fechado, exclusão lógica como única exclusão do MVP, região única sem cópias fora dela, lista de suboperadores publicada antes do primeiro provedor real, e nenhum fornecedor que treine com conteúdo enviado, a qualquer preço. Nenhuma alegação de conformidade LGPD antes de os procedimentos existirem.
 
 ## Contexto
 

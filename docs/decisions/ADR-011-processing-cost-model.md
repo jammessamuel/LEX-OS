@@ -1,10 +1,14 @@
 # ADR-011: Estabelecer o modelo de custo de processamento e a escolha de provedores
 
-- **Status:** Proposto — depende de decisão da sociedade
+- **Status:** Aceito — decidido pela sociedade em 2026-08-07
 - **Data:** 2026-08-05
 - **Decisores:** sócios da SAMUEL DEV LTDA
 - **Trava:** componentes conceituais #4 e #5 saírem do estado de mock; formação de preço
 - **Idioma:** pt-BR, por ser documento de decisão para a sociedade e não documentação técnica
+
+## Decisão (2026-08-07)
+
+Aceita a **Opção C — assinatura por usuário com franquia de processamento inclusa e medição do excedente**, com **teto rígido de custo por caso aplicado no pipeline**: ao atingir o teto, o processamento para e o caso vai para revisão humana com estado visível. Nenhum provedor real entra antes de o registro de custo por execução e o teto existirem.
 
 ## Contexto
 

@@ -1,10 +1,14 @@
 # ADR-009: Definir o escopo do Assistente Interno
 
-- **Status:** Proposto — depende de decisão da sociedade
+- **Status:** Aceito — decidido pela sociedade em 2026-08-07
 - **Data:** 2026-08-05
 - **Decisores:** sócios da SAMUEL DEV LTDA
 - **Trava:** componente conceitual #10, escopo da Fase 3, desdobramentos da Delivery 9
 - **Idioma:** pt-BR, por ser documento de decisão para a sociedade e não documentação técnica
+
+## Decisão (2026-08-07)
+
+Aceita a **Opção B — resposta ancorada em fontes autorizadas**. O assistente responde perguntas sobre a base do escritório com toda afirmação carregando localizador de origem resolvível, e recusa responder quando a recuperação não devolve fonte autorizada. Não é chat aberto; histórico de conversa não é fonte.
 
 ## Contexto
 

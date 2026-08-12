@@ -55,8 +55,8 @@ Approval for one commit is not standing approval for the next.
 
 ### 0.3 Respect the delivery boundary
 
-The completed checkpoint is **Delivery 7 — Persistent mock processing pipeline**.
-Delivery 8 and later require explicit authorization. Do not implement future-delivery
+The completed checkpoint is **Delivery 8 — Timeline and checklist review**.
+Delivery 9 and later require explicit authorization. Do not implement future-delivery
 behavior opportunistically, even when it looks like a small addition.
 
 ### 0.4 Never suppress a failing gate
@@ -134,10 +134,11 @@ fits, read `AGENTS.md` section headings only, then the one section that applies.
 | "Is X in scope?"                  | `docs/product/mvp-scope.md` only                                                                                                                                  |
 | "Where are we against the pitch?" | `docs/product/roadmap-alignment.md` only — it maps the 11 conceptual components and 4 phases onto the 12 deliveries                                               |
 | Any user-facing screen or copy    | `docs/product/design-principles.md` — read before writing markup; it is the standard §0.5 enforces                                                                |
-| Assistant, chat, grounded answers | `docs/decisions/ADR-009-internal-assistant-scope.md` — **undecided**, do not build against either reading                                                         |
-| Ingestion channels, WhatsApp      | `docs/decisions/ADR-010-ingestion-channels.md` — **undecided**                                                                                                    |
-| Replacing a mock AI provider      | `docs/decisions/ADR-011-processing-cost-model.md` — **undecided**, and it gates the work                                                                          |
-| Deletion, retention, legal hold   | `docs/decisions/ADR-012-retention-legal-hold-lgpd.md` — **undecided**; default is preserve, never purge                                                           |
+| Assistant, chat, grounded answers | `docs/decisions/ADR-009-internal-assistant-scope.md` — **decided 2026-08-07**: grounded answering only; refuse without an authorized source                       |
+| Ingestion channels, WhatsApp      | `docs/decisions/ADR-010-ingestion-channels.md` — **decided 2026-08-07**: upload + e-mail in MVP; WhatsApp is a future connector                                   |
+| Replacing a mock AI provider      | `docs/decisions/ADR-011-processing-cost-model.md` — **decided 2026-08-07**: per-execution cost + hard per-case ceiling must exist first                           |
+| Deletion, retention, legal hold   | `docs/decisions/ADR-012-retention-legal-hold-lgpd.md` — **decided 2026-08-07**: preserve always; automatic purge forbidden; legal hold fails closed               |
+| Notifications, internal e-mail    | `docs/decisions/ADR-013-notificacoes-internas.md` — **decided 2026-08-07**: minimal content only; send from the worker; audited without body                      |
 | Starting a new delivery           | `docs/architecture/implementation-plan.md` — **only that delivery's section** plus §"Cross-delivery security test matrix"                                         |
 | Local env, Docker, ports          | `docs/architecture/local-development.md`; `docker-compose.yml`                                                                                                    |
 | Module boundaries, layering       | `docs/decisions/ADR-001-monolithic-modular-architecture.md`; `docs/architecture/system-overview.md`                                                               |
