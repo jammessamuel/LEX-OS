@@ -95,9 +95,8 @@ Turns disorganized office material into a structured, traceable legal dossier.
 · Vue 3.5.40 + Vite 8 + Pinia 4 + vue-router 5 · Prisma 7.9.1 with `@prisma/adapter-pg`
 · BullMQ 5.81 · PostgreSQL 18 + pgvector · Redis · MinIO (S3) · Mailpit.
 
-**Workspaces.** `apps/{api,web,worker}` · `packages/{config,contracts,database,shared,eslint-config,tsconfig}`.
-`packages/ai-prompts/`, `infra/migrations/` do not exist yet — create them only when their
-delivery begins.
+**Workspaces.** `apps/{api,web,worker}` · `packages/{ai-prompts,config,contracts,database,shared,eslint-config,tsconfig}`.
+`infra/migrations/` does not exist yet — create it only when its delivery begins.
 
 **Ports.** web 5173 · API 3000 (`/api/v1`) · PostgreSQL **5433** on the host (5432 is left
 free for an unrelated local instance) · Redis 6379 · MinIO 9000/9001 · Mailpit 8025.

@@ -251,6 +251,18 @@ ZIP extraction remains disabled unless expanded-size, recursion, file-count, pat
 - restore and reconciliation procedures are exercised with synthetic data;
 - remaining limitations and production blockers are explicitly recorded.
 
+## Governed follow-up increments
+
+ADRs 009–013 define product policy that extends beyond the numbered Delivery 0–11 plan. They do not authorize opportunistic implementation. Each capability must receive a separate vertical increment with schema, security, audit, failure-path, and documentation acceptance criteria before coding begins:
+
+- source-grounded assistant responses after Delivery 9 retrieval is accepted (ADR-009);
+- authenticated e-mail ingestion that reuses the hostile-file intake pipeline (ADR-010);
+- per-execution cost accounting and a hard recoverable case ceiling before any real provider (ADR-011);
+- fail-closed case legal hold and required governance procedures before real client data (ADR-012);
+- minimum-content worker e-mail notifications with preferences and body-free audit records (ADR-013).
+
+Governance and cost controls precede real providers. Retrieval precedes assistant responses. Inbound ingestion and outbound notification remain distinct increments. Exact ordering after Delivery 11 requires a reviewed plan update and explicit authorization.
+
 ## Cross-delivery security test matrix
 
 Every tenant-owned capability must test at least:

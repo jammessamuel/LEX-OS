@@ -251,11 +251,13 @@ The initial migrations should include:
 
 Index selection must be verified with representative synthetic query plans; tenant-first does not mean one wide index for every possible filter.
 
-## Deletion and retention
+## Deletion, retention, and legal hold
 
 Soft deletion hides user-facing master records from normal queries but does not remove objects, audit, or immutable extraction history. Authorization remains necessary to retrieve deleted data through administrative flows.
 
-Production retention, legal holds, data subject requests, backups, and cryptographic deletion are unresolved governance requirements. Until approved, the system must not implement automatic irreversible purging. Development fixtures may be reset only through explicit local commands.
+ADR-012 fixes the conservative policy: preserve by default, never purge automatically, use soft deletion as the only MVP deletion, and make case-level legal hold fail closed. No path may irreversibly remove case data when hold state is active or cannot be determined. Development fixtures may be reset only through explicit local commands.
+
+The policy decision does not by itself provide the missing production mechanism. Case hold state, authorized hold transitions, subject-request procedures, retention/legal-basis records, regional backup controls, and the eventual separately reviewed hard-purge capability remain production blockers and require their own delivery. No production or marketing material may claim LGPD compliance before those procedures exist.
 
 ## Schema proposal and migration notes
 
@@ -278,8 +280,8 @@ Before affected implementation, confirm:
 2. exact confidentiality levels and case-team membership semantics;
 3. CPF/CNPJ encryption/tokenization and authorized display policy;
 4. production embedding model/dimension and migration behavior;
-5. retention, legal hold, and hard-deletion requirements;
+5. representation and authorized transitions for the accepted case-level legal hold policy;
 6. per-file, per-request, and expanded-archive limits;
 7. whether duplicate physical bytes are retained or referenced after quarantine.
 
-None blocks documentation or monorepo bootstrap. Items 1, 3, and 4 block a production-ready authentication/case release; items 5 and 7–8 block their respective search/upload release.
+None blocks documentation or monorepo bootstrap. Items 1 and 3 block a production-ready authentication/case release; item 4 blocks a real embedding provider; item 5 blocks production data onboarding; items 6–7 block their respective upload lifecycle decisions.
