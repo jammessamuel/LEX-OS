@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-12 · Entrega 9 mesclada; Entrega 10 autorizada; busca liberada para o front
+**Última atualização:** 2026-08-12 · checklist entregue no front
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão | Detalhe                                       |
-| ------ | --------------------------------------------- |
-| —      | Nada em andamento. Próximo: checklist do caso |
+| Cartão | Detalhe                                     |
+| ------ | ------------------------------------------- |
+| —      | Nada em andamento. Próximo: tarefas do caso |
 
 ---
 
@@ -30,18 +30,17 @@ Regras do quadro:
 Em ordem de valor. Os três primeiros formam o fluxo "Preparar processo", que é a
 experiência central da `vision.md` e o componente 11 da proposta.
 
-| #   | Cartão                       | Rotas que já existem                                                                                     |
-| --- | ---------------------------- | -------------------------------------------------------------------------------------------------------- |
-| 1   | Checklist do caso            | `GET /cases/:id/checklist-templates` · `GET`/`POST /cases/:id/checklists` · `PATCH /checklist-items/:id` |
-| 2   | Tarefas do caso              | `GET /cases/:id/tasks` · `POST /checklist-items/:id/tasks`                                               |
-| 3   | Busca no acervo              | `POST /search` — lexical, semântica e híbrida, com citação resolvível ou `INSUFFICIENT_EVIDENCE`         |
-| 4   | Correção humana de documento | `PATCH /documents/:id`                                                                                   |
-| 5   | Download autorizado          | `GET /files/:id/download-url` — URL assinada de 60 s                                                     |
-| 6   | Reprocessar documento        | `POST /documents/:id/reprocess`                                                                          |
-| 7   | Criar e editar caso          | `POST /cases` · `PATCH /cases/:id`                                                                       |
-| 8   | Participantes do caso        | `GET`/`POST /cases/:caseId/participants`                                                                 |
-| 9   | Pessoas — CRUD               | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados                                    |
-| 10  | Excluir caso e documento     | `DELETE /cases/:id` · `DELETE /documents/:id`                                                            |
+| #   | Cartão                       | Rotas que já existem                                                                             |
+| --- | ---------------------------- | ------------------------------------------------------------------------------------------------ |
+| 1   | Tarefas do caso              | `GET /cases/:id/tasks` · `POST /checklist-items/:id/tasks`                                       |
+| 2   | Busca no acervo              | `POST /search` — lexical, semântica e híbrida, com citação resolvível ou `INSUFFICIENT_EVIDENCE` |
+| 3   | Correção humana de documento | `PATCH /documents/:id`                                                                           |
+| 4   | Download autorizado          | `GET /files/:id/download-url` — URL assinada de 60 s                                             |
+| 5   | Reprocessar documento        | `POST /documents/:id/reprocess`                                                                  |
+| 6   | Criar e editar caso          | `POST /cases` · `PATCH /cases/:id`                                                               |
+| 7   | Participantes do caso        | `GET`/`POST /cases/:caseId/participants`                                                         |
+| 8   | Pessoas — CRUD               | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados                            |
+| 9   | Excluir caso e documento     | `DELETE /cases/:id` · `DELETE /documents/:id`                                                    |
 
 ## A fazer — qualidade de interface
 
@@ -125,6 +124,12 @@ Ordem cronológica inversa. Serve para o quadro não perder a memória do que j�
   com Docker; `infra:up` verificado no Compose v5.3.1; build das imagens corrigido para o
   `postinstall` do Prisma e para a URL da API no bundle web; fluxo login → casos → detalhe
   exercitado em desktop e celular; verificação WCAG automatizada incorporada à revisão.
+- **Checklist documental** — a tela responde antes de tudo a pergunta que o advogado faz: o
+  veredito no topo conta só a exigência **obrigatória** em falta, porque é ela que trava o
+  protocolo; pendência não obrigatória entra na lista sem alarmar. O item que bloqueia recebe
+  faixa lateral, não só cor. Validar e marcar como não aplicável trocam o item pelo retorno do
+  servidor, que é a autoridade sobre validador e horário. O vazio explica que o checklist é
+  instantâneo versionado do modelo.
 - **Revisão de procedência** — a tela onde a promessa central vira produto: cada dado
   identificado carrega uma nota de rodapé com arquivo, página, trecho, modelo e confiança,
   revelada no cursor e no foco de teclado; quando a IA normalizou um valor, a nota preserva

@@ -328,3 +328,66 @@ export interface TimelineEvent {
   createdAt: string;
   updatedAt: string;
 }
+
+export const checklistItemStatuses = [
+  'MISSING',
+  'RECEIVED',
+  'INVALID',
+  'EXPIRED',
+  'ILLEGIBLE',
+  'AWAITING_VALIDATION',
+  'VALIDATED',
+  'NOT_APPLICABLE',
+] as const;
+
+export const caseChecklistStatuses = ['IN_PROGRESS', 'NEEDS_REVIEW', 'COMPLETED'] as const;
+
+export type ChecklistItemStatus = (typeof checklistItemStatuses)[number];
+export type CaseChecklistStatus = (typeof caseChecklistStatuses)[number];
+
+export interface ChecklistTemplateItem {
+  id: string;
+  title: string;
+  description: string | null;
+  isRequired: boolean;
+  sortOrder: number;
+  documentTypeId: string | null;
+  documentTypeCode: string | null;
+}
+
+export interface ChecklistTemplate {
+  id: string;
+  name: string;
+  legalArea: string;
+  caseType: string;
+  version: number;
+  items: ChecklistTemplateItem[];
+}
+
+export interface CaseChecklistItem {
+  id: string;
+  caseChecklistId: string;
+  templateItemId: string;
+  title: string;
+  description: string | null;
+  isRequired: boolean;
+  status: ChecklistItemStatus;
+  documentId: string | null;
+  validatedById: string | null;
+  validatedAt: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Instantâneo versionado: o checklist do caso não muda se o template for alterado depois. */
+export interface CaseChecklist {
+  id: string;
+  caseId: string;
+  templateId: string;
+  templateVersion: number;
+  status: CaseChecklistStatus;
+  items: CaseChecklistItem[];
+  createdAt: string;
+  updatedAt: string;
+}

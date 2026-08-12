@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import AppShell from '../components/AppShell.vue';
 import { useSessionStore } from '../stores/session.js';
+import CaseChecklistView from '../views/CaseChecklistView.vue';
 import CaseDetailView from '../views/CaseDetailView.vue';
 import CasesView from '../views/CasesView.vue';
 import CaseTimelineView from '../views/CaseTimelineView.vue';
@@ -35,6 +36,11 @@ export const router = createRouter({
           component: CaseTimelineView,
           name: 'case-timeline',
           path: 'casos/:id/cronologia',
+        },
+        {
+          component: CaseChecklistView,
+          name: 'case-checklist',
+          path: 'casos/:id/checklist',
         },
         {
           component: DocumentDetailView,

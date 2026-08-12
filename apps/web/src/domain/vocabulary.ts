@@ -1,5 +1,7 @@
 import type {
+  CaseChecklistStatus,
   CaseStatus,
+  ChecklistItemStatus,
   ConfidentialityLevel,
   DatePrecision,
   ExtractionType,
@@ -243,4 +245,48 @@ export function formatEventDate(iso: string | null, precision: DatePrecision): s
 /** Tipos de evento são texto livre do provedor; nunca vazam em MAIÚSCULA_COM_UNDERSCORE. */
 export function eventTypeLabel(eventType: string): string {
   return humanizeCode(eventType);
+}
+
+/**
+ * Situação de cada exigência do checklist. O vocabulário é o do escritório: "Não recebido"
+ * em vez de MISSING, porque a pergunta que o advogado faz é "o que falta para protocolar".
+ */
+export const checklistItemStatusLabels: Readonly<Record<ChecklistItemStatus, string>> = {
+  MISSING: 'Não recebido',
+  RECEIVED: 'Recebido',
+  INVALID: 'Inválido',
+  EXPIRED: 'Vencido',
+  ILLEGIBLE: 'Ilegível',
+  AWAITING_VALIDATION: 'Aguardando validação',
+  VALIDATED: 'Validado',
+  NOT_APPLICABLE: 'Não se aplica',
+};
+
+export const caseChecklistStatusLabels: Readonly<Record<CaseChecklistStatus, string>> = {
+  IN_PROGRESS: 'Em andamento',
+  NEEDS_REVIEW: 'Precisa de revisão',
+  COMPLETED: 'Concluído',
+};
+
+/**
+ * O tom separa o que impede o protocolo do que já está resolvido. Pendência obrigatória é
+ * o único caso vermelho: é ela que trava a peça.
+ */
+export function checklistItemTone(
+  status: ChecklistItemStatus,
+  isRequired: boolean,
+): 'neutro' | 'pendente' | 'confirmado' | 'rejeitado' {
+  switch (status) {
+    case 'VALIDATED':
+      return 'confirmado';
+    case 'RECEIVED':
+    case 'AWAITING_VALIDATION':
+      return 'pendente';
+    case 'NOT_APPLICABLE':
+      return 'neutro';
+    case 'MISSING':
+      return isRequired ? 'rejeitado' : 'pendente';
+    default:
+      return 'rejeitado';
+  }
 }
