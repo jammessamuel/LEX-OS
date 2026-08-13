@@ -5,6 +5,7 @@ import { useSessionStore } from '../stores/session.js';
 import CaseChecklistView from '../views/CaseChecklistView.vue';
 import CaseDetailView from '../views/CaseDetailView.vue';
 import CasesView from '../views/CasesView.vue';
+import CaseTasksView from '../views/CaseTasksView.vue';
 import CaseTimelineView from '../views/CaseTimelineView.vue';
 import DocumentDetailView from '../views/DocumentDetailView.vue';
 import LoginView from '../views/LoginView.vue';
@@ -41,6 +42,11 @@ export const router = createRouter({
           component: CaseChecklistView,
           name: 'case-checklist',
           path: 'casos/:id/checklist',
+        },
+        {
+          component: CaseTasksView,
+          name: 'case-tasks',
+          path: 'casos/:id/tarefas',
         },
         {
           component: DocumentDetailView,

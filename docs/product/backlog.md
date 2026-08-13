@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-12 · responsável do caso legível no detalhe
+**Última atualização:** 2026-08-12 · tarefas entregues; issue #5 aberta
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -21,7 +21,7 @@ Regras do quadro:
 
 | Cartão | Detalhe                                     |
 | ------ | ------------------------------------------- |
-| —      | Nada em andamento. Próximo: tarefas do caso |
+| —      | Nada em andamento. Próximo: busca no acervo |
 
 ---
 
@@ -32,15 +32,14 @@ experiência central da `vision.md` e o componente 11 da proposta.
 
 | #   | Cartão                       | Rotas que já existem                                                                             |
 | --- | ---------------------------- | ------------------------------------------------------------------------------------------------ |
-| 1   | Tarefas do caso              | `GET /cases/:id/tasks` · `POST /checklist-items/:id/tasks`                                       |
-| 2   | Busca no acervo              | `POST /search` — lexical, semântica e híbrida, com citação resolvível ou `INSUFFICIENT_EVIDENCE` |
-| 3   | Correção humana de documento | `PATCH /documents/:id`                                                                           |
-| 4   | Download autorizado          | `GET /files/:id/download-url` — URL assinada de 60 s                                             |
-| 5   | Reprocessar documento        | `POST /documents/:id/reprocess`                                                                  |
-| 6   | Criar e editar caso          | `POST /cases` · `PATCH /cases/:id`                                                               |
-| 7   | Participantes do caso        | `GET`/`POST /cases/:caseId/participants`                                                         |
-| 8   | Pessoas — CRUD               | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados                            |
-| 9   | Excluir caso e documento     | `DELETE /cases/:id` · `DELETE /documents/:id`                                                    |
+| 1   | Busca no acervo              | `POST /search` — lexical, semântica e híbrida, com citação resolvível ou `INSUFFICIENT_EVIDENCE` |
+| 2   | Correção humana de documento | `PATCH /documents/:id`                                                                           |
+| 3   | Download autorizado          | `GET /files/:id/download-url` — URL assinada de 60 s                                             |
+| 4   | Reprocessar documento        | `POST /documents/:id/reprocess`                                                                  |
+| 5   | Criar e editar caso          | `POST /cases` · `PATCH /cases/:id`                                                               |
+| 6   | Participantes do caso        | `GET`/`POST /cases/:caseId/participants`                                                         |
+| 7   | Pessoas — CRUD               | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados                            |
+| 8   | Excluir caso e documento     | `DELETE /cases/:id` · `DELETE /documents/:id`                                                    |
 
 ## A fazer — qualidade de interface
 
@@ -57,14 +56,15 @@ experiência central da `vision.md` e o componente 11 da proposta.
 Nada aqui pode virar front antes de a rota existir. Registrado para deixar de ser
 invisível.
 
-| Cartão                    | O que falta                                                                                                                                                                                                                                                                                                                             |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Casos por cliente         | Abrir uma pessoa e ver os casos dela. O vínculo existe (`CaseParticipant` com `isClient`), mas só há rota no sentido caso → partes. Precisa de `GET /persons/:id/cases` ou filtro `personId` em `GET /cases`, com os testes negativos de travessia de relação que o §3.12 exige. A coluna "responsável" depende também do cartão abaixo |
-| Confirmação de entidade   | A tela de procedência mostra "Aguardando revisão", mas não há rota para um humano confirmar uma entidade extraída. A confirmação humana está prevista na Delivery 8 para eventos de cronologia; entidades precisam do mesmo caminho                                                                                                     |
-| Painel com números        | Nenhum endpoint devolve contagem ou agregado. Um resumo exigiria varrer páginas no cliente, o que não escala                                                                                                                                                                                                                            |
-| Resposta ancorada         | O ADR-009 decidiu resposta ancorada em fonte, mas a Entrega 9 entregou só a recuperação. `POST /search` devolve trechos com citação; não há rota que gere resposta a partir deles                                                                                                                                                       |
-| Leitura de auditoria      | Sem rota                                                                                                                                                                                                                                                                                                                                |
-| Administração de usuários | Sem rota                                                                                                                                                                                                                                                                                                                                |
+| Cartão                       | O que falta                                                                                                                                                                                                                                                                                                                             |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Casos por cliente            | Abrir uma pessoa e ver os casos dela. O vínculo existe (`CaseParticipant` com `isClient`), mas só há rota no sentido caso → partes. Precisa de `GET /persons/:id/cases` ou filtro `personId` em `GET /cases`, com os testes negativos de travessia de relação que o §3.12 exige. A coluna "responsável" depende também do cartão abaixo |
+| Concluir e reatribuir tarefa | Só existem listar e criar. Sem `PATCH /tasks/:id`, uma tarefa nasce e nunca fecha; prioridade e prazo só podem ser definidos na criação, sem conserto depois. Issue #5                                                                                                                                                                  |
+| Confirmação de entidade      | A tela de procedência mostra "Aguardando revisão", mas não há rota para um humano confirmar uma entidade extraída. A confirmação humana está prevista na Delivery 8 para eventos de cronologia; entidades precisam do mesmo caminho                                                                                                     |
+| Painel com números           | Nenhum endpoint devolve contagem ou agregado. Um resumo exigiria varrer páginas no cliente, o que não escala                                                                                                                                                                                                                            |
+| Resposta ancorada            | O ADR-009 decidiu resposta ancorada em fonte, mas a Entrega 9 entregou só a recuperação. `POST /search` devolve trechos com citação; não há rota que gere resposta a partir deles                                                                                                                                                       |
+| Leitura de auditoria         | Sem rota                                                                                                                                                                                                                                                                                                                                |
+| Administração de usuários    | Sem rota                                                                                                                                                                                                                                                                                                                                |
 
 ---
 
@@ -126,6 +126,12 @@ Ordem cronológica inversa. Serve para o quadro não perder a memória do que j�
   com Docker; `infra:up` verificado no Compose v5.3.1; build das imagens corrigido para o
   `postinstall` do Prisma e para a URL da API no bundle web; fluxo login → casos → detalhe
   exercitado em desktop e celular; verificação WCAG automatizada incorporada à revisão.
+- **Tarefas do caso** — fecha o ciclo checklist → tarefa rastreável. A tela abre com o
+  atraso, contando só o que está em aberto, e o prazo é dito em linguagem de quem tem prazo:
+  "Vence hoje", "Atrasada 3 dias". A criação sai da exigência pendente no checklist, com
+  prioridade e prazo no formulário — porque sem rota de alteração, a criação é a única
+  chance de acertá-los. A tela declara que concluir tarefa ainda não existe em vez de
+  oferecer um botão morto: issue #5.
 - **Checklist documental** — a tela responde antes de tudo a pergunta que o advogado faz: o
   veredito no topo conta só a exigência **obrigatória** em falta, porque é ela que trava o
   protocolo; pendência não obrigatória entra na lista sem alarmar. O item que bloqueia recebe

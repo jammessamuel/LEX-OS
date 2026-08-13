@@ -397,3 +397,33 @@ export interface CaseChecklist {
   createdAt: string;
   updatedAt: string;
 }
+
+export const taskStatuses = ['OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] as const;
+export const taskSourceTypes = [
+  'USER',
+  'AI_CHECKLIST',
+  'AI_DOCUMENT_ANALYSIS',
+  'COURT_MOVEMENT',
+  'WORKFLOW',
+] as const;
+
+export type TaskStatus = (typeof taskStatuses)[number];
+export type TaskSourceType = (typeof taskSourceTypes)[number];
+
+export interface CaseTask {
+  id: string;
+  caseId: string | null;
+  title: string;
+  description: string | null;
+  taskType: string;
+  status: TaskStatus;
+  priority: Priority;
+  assignedToId: string | null;
+  createdById: string | null;
+  dueAt: string | null;
+  completedAt: string | null;
+  sourceType: TaskSourceType;
+  sourceId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

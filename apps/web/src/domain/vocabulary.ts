@@ -10,6 +10,8 @@ import type {
   ParticipantSide,
   ProcessingJobType,
   Priority,
+  TaskSourceType,
+  TaskStatus,
 } from '../api/types.js';
 
 /**
@@ -289,4 +291,67 @@ export function checklistItemTone(
     default:
       return 'rejeitado';
   }
+}
+
+export const taskStatusLabels: Readonly<Record<TaskStatus, string>> = {
+  OPEN: 'Aberta',
+  IN_PROGRESS: 'Em andamento',
+  COMPLETED: 'Concluída',
+  CANCELLED: 'Cancelada',
+};
+
+/**
+ * A origem da tarefa é rastreabilidade, não decoração: quem abriu a tarefa importa quando
+ * alguém pergunta por que ela existe. Tarefa vinda do checklist aponta para a exigência.
+ */
+export const taskSourceLabels: Readonly<Record<TaskSourceType, string>> = {
+  USER: 'Criada por pessoa',
+  AI_CHECKLIST: 'Origem no checklist',
+  AI_DOCUMENT_ANALYSIS: 'Origem na análise do documento',
+  COURT_MOVEMENT: 'Origem em movimentação',
+  WORKFLOW: 'Origem em fluxo automático',
+};
+
+export function taskStatusTone(
+  status: TaskStatus,
+): 'neutro' | 'pendente' | 'confirmado' | 'rejeitado' {
+  switch (status) {
+    case 'COMPLETED':
+      return 'confirmado';
+    case 'IN_PROGRESS':
+      return 'pendente';
+    case 'CANCELLED':
+      return 'neutro';
+    default:
+      return 'pendente';
+  }
+}
+
+/**
+ * Prazo em linguagem de quem tem prazo processual: o atraso é dito com todas as letras,
+ * e "hoje" e "amanhã" valem mais que a data crua.
+ */
+export function formatDueDate(iso: string | null, now: Date = new Date()): string | null {
+  if (iso === null) {
+    return null;
+  }
+  const due = new Date(iso);
+  const startOfDay = (date: Date) =>
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const days = Math.round((startOfDay(due) - startOfDay(now)) / 86_400_000);
+
+  if (days < 0) {
+    const late = Math.abs(days);
+    return `Atrasada ${late} ${late === 1 ? 'dia' : 'dias'}`;
+  }
+  if (days === 0) return 'Vence hoje';
+  if (days === 1) return 'Vence amanhã';
+  return `Vence em ${days} dias`;
+}
+
+export function isOverdue(iso: string | null, status: TaskStatus, now: Date = new Date()): boolean {
+  if (iso === null || status === 'COMPLETED' || status === 'CANCELLED') {
+    return false;
+  }
+  return new Date(iso).getTime() < now.getTime();
 }

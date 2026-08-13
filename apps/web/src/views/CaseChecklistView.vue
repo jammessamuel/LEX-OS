@@ -9,7 +9,9 @@ import type {
   CaseSummary,
   ChecklistItemStatus,
   ChecklistTemplate,
+  CaseTask,
   CursorPage,
+  Priority,
 } from '../api/types.js';
 import StatusChip from '../components/StatusChip.vue';
 import {
@@ -91,6 +93,49 @@ async function apply(templateId: string): Promise<void> {
     actionFailure.value = toApiError(error, 'Não foi possível aplicar o checklist.');
   } finally {
     applying.value = false;
+  }
+}
+
+/**
+ * Criação de tarefa a partir da exigência.
+ *
+ * Prioridade e prazo só podem ser definidos aqui: a API expõe listar e criar tarefa, mas
+ * não alterar. Oferecer os dois campos na criação é a única chance de acertá-los, então o
+ * formulário aparece inline em vez de criar com um padrão silencioso.
+ */
+const creatingFor = ref<string | null>(null);
+const creatingPriority = ref<Priority>('NORMAL');
+const creatingDueAt = ref('');
+const submittingTask = ref(false);
+const createdFor = ref<Set<string>>(new Set());
+
+function openTaskForm(itemId: string): void {
+  creatingFor.value = itemId;
+  creatingPriority.value = 'NORMAL';
+  creatingDueAt.value = '';
+  actionFailure.value = null;
+}
+
+async function createTask(itemId: string): Promise<void> {
+  submittingTask.value = true;
+  actionFailure.value = null;
+  try {
+    await request<CaseTask>(`/checklist-items/${itemId}/tasks`, {
+      method: 'POST',
+      body: {
+        priority: creatingPriority.value,
+        // A data do campo é local; o prazo trafega em ISO no fim do dia informado.
+        ...(creatingDueAt.value === ''
+          ? {}
+          : { dueAt: new Date(`${creatingDueAt.value}T23:59:59.000Z`).toISOString() }),
+      },
+    });
+    createdFor.value = new Set([...createdFor.value, itemId]);
+    creatingFor.value = null;
+  } catch (error) {
+    actionFailure.value = toApiError(error, 'Não foi possível criar a tarefa.');
+  } finally {
+    submittingTask.value = false;
   }
 }
 
@@ -270,8 +315,58 @@ onMounted(() => {
                 >
                   Não se aplica
                 </button>
+                <button
+                  v-if="item.status === 'MISSING' && creatingFor !== item.id"
+                  class="btn btn--ghost btn--sm"
+                  type="button"
+                  @click="openTaskForm(item.id)"
+                >
+                  {{ createdFor.has(item.id) ? 'Criar outra tarefa' : 'Criar tarefa' }}
+                </button>
               </div>
             </div>
+
+            <!-- Prioridade e prazo só podem ser definidos na criação: não há rota que
+                 altere uma tarefa depois. Por isso o formulário, e não um padrão mudo. -->
+            <form
+              v-if="creatingFor === item.id"
+              class="task-form"
+              @submit.prevent="createTask(item.id)"
+            >
+              <div class="task-form__field">
+                <label class="label" :for="`priority-${item.id}`">Prioridade</label>
+                <select :id="`priority-${item.id}`" v-model="creatingPriority">
+                  <option value="LOW">Baixa</option>
+                  <option value="NORMAL">Normal</option>
+                  <option value="HIGH">Alta</option>
+                  <option value="URGENT">Urgente</option>
+                </select>
+              </div>
+              <div class="task-form__field">
+                <label class="label" :for="`due-${item.id}`">Prazo</label>
+                <input :id="`due-${item.id}`" v-model="creatingDueAt" type="date" />
+              </div>
+              <div class="task-form__actions">
+                <button class="btn btn--sm" type="submit" :disabled="submittingTask">
+                  {{ submittingTask ? 'Criando…' : 'Criar tarefa' }}
+                </button>
+                <button
+                  class="btn btn--ghost btn--sm"
+                  type="button"
+                  :disabled="submittingTask"
+                  @click="creatingFor = null"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+
+            <p v-else-if="createdFor.has(item.id)" class="task-created">
+              Tarefa criada.
+              <RouterLink :to="{ name: 'case-tasks', params: { id: caseId } }">
+                Ver tarefas do caso
+              </RouterLink>
+            </p>
           </li>
         </ul>
       </section>
@@ -388,6 +483,53 @@ onMounted(() => {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.task-form {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface-sunk);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.task-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.task-form__field select,
+.task-form__field input {
+  font: inherit;
+  font-size: var(--step--1);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 0.35rem 0.5rem;
+}
+
+.task-form__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.task-created {
+  flex-basis: 100%;
+  margin-top: var(--space-2);
+  font-size: var(--step--1);
+  color: var(--confirmado);
+}
+
+.task-created a {
+  color: var(--ink);
 }
 
 .item {

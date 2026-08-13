@@ -222,6 +222,9 @@ onMounted(() => {
           >
             Checklist
           </RouterLink>
+          <RouterLink class="btn btn--ghost" :to="{ name: 'case-tasks', params: { id: caseId } }">
+            Tarefas
+          </RouterLink>
           <button class="btn btn--ghost" type="button" disabled>Editar caso</button>
         </div>
       </header>
