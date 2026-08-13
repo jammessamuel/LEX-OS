@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -12,6 +13,7 @@ import {
 import {
   ApiBearerAuth,
   ApiConflictResponse,
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -30,6 +32,8 @@ import { getRequestContext } from '../observability/request-context.js';
 import { CreateChecklistTaskRequestDto } from './dto/create-checklist-task-request.dto.js';
 import { ListTasksQueryDto } from './dto/list-tasks-query.dto.js';
 import { TaskListResponseDto, TaskResponseDto } from './dto/task-response.dto.js';
+import { TaskIdParamsDto } from './dto/task-id-params.dto.js';
+import { UpdateTaskRequestDto } from './dto/update-task-request.dto.js';
 import { TasksService } from './tasks.service.js';
 
 @ApiTags('Tarefas')
@@ -73,6 +77,23 @@ export class TasksController {
       input,
       getRequestContext() ?? {},
     );
+  }
+
+  @Patch('tasks/:id')
+  @RequirePermissions('tasks.manage')
+  @ApiOperation({ summary: 'Atualiza estado, prioridade, prazo ou responsável de uma tarefa.' })
+  @ApiOkResponse({ type: TaskResponseDto })
+  @ApiBadRequestResponse({ type: ApiErrorEnvelopeDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  @ApiForbiddenResponse({ type: ApiErrorEnvelopeDto })
+  @ApiNotFoundResponse({ type: ApiErrorEnvelopeDto })
+  @ApiConflictResponse({ type: ApiErrorEnvelopeDto })
+  update(
+    @Req() request: AuthenticatedRequest,
+    @Param() params: TaskIdParamsDto,
+    @Body() input: UpdateTaskRequestDto,
+  ) {
+    return this.tasks.update(this.#actor(request), params.id, input, getRequestContext() ?? {});
   }
 
   #actor(request: AuthenticatedRequest) {

@@ -55,12 +55,15 @@ Approval for one commit is not standing approval for the next.
 
 ### 0.3 Respect the delivery boundary
 
-The completed checkpoint is **Delivery 9 — Text and semantic search foundation**.
+The latest accepted checkpoint is **Delivery 9 — Text and semantic search foundation**.
 
-**Delivery 10 — Essential web vertical slice is authorized** (owner, 2026-08-12). Build the
-web interface over resources the API already exposes, prioritising the critical user flow.
-A screen only ships against a route that exists: no placeholder that pretends a missing
-endpoint works. Open blockers are listed in `docs/product/backlog.md`.
+**Delivery 10 — Essential web vertical slice is authorized and in progress** (owner,
+2026-08-12). Build the web interface over real API resources, prioritising the critical user
+flow. The backend contracts required by the current interface now include person-to-case
+traversal, task updates, assignable-user summaries, entity confirmation, source-grounded
+answers, and the ADR-011 processing-cost ceiling. A screen only ships against a route that
+exists: no placeholder that pretends a missing endpoint works. Remaining work is listed in
+`docs/product/backlog.md`; Delivery 10 is not accepted until its end-to-end gate passes.
 
 Delivery 11 and later still require explicit authorization. Do not implement
 future-delivery behavior opportunistically, even when it looks like a small addition.

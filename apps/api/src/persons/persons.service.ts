@@ -3,6 +3,8 @@ import { withTransaction } from '@lex-os/database';
 
 import { AuditService, type RequestAuditMetadata } from '../audit/audit.service.js';
 import type { ActorContext } from '../auth/actor-context.js';
+import { CasesService } from '../cases/cases.service.js';
+import type { PersonCaseListResponseDto } from '../cases/dto/person-case-response.dto.js';
 import { DatabaseService } from '../database/database.service.js';
 import { ApiException } from '../http/api-exception.js';
 import {
@@ -13,6 +15,7 @@ import {
 } from '../http/pagination.js';
 import type { CreatePersonRequestDto } from './dto/create-person-request.dto.js';
 import type { ListPersonsQueryDto } from './dto/list-persons-query.dto.js';
+import type { ListPersonCasesQueryDto } from './dto/list-person-cases-query.dto.js';
 import type { PersonResponseDto } from './dto/person-response.dto.js';
 import type { UpdatePersonRequestDto } from './dto/update-person-request.dto.js';
 import { maskCnpj, maskCpf, maskRg } from './identifiers.js';
@@ -59,6 +62,7 @@ export class PersonsService {
     private readonly database: DatabaseService,
     private readonly repository: PersonsRepository,
     private readonly audit: AuditService,
+    private readonly cases: CasesService,
   ) {}
 
   async list(
@@ -93,6 +97,16 @@ export class PersonsService {
       throw this.#notFound();
     }
     return mapPerson(person);
+  }
+
+  async listCases(
+    actor: ActorContext,
+    id: string,
+    query: ListPersonCasesQueryDto,
+    metadata: RequestAuditMetadata,
+  ): Promise<PersonCaseListResponseDto> {
+    await this.assertAvailable(actor, id);
+    return this.cases.listForPerson(actor, id, query, metadata);
   }
 
   async assertAvailable(actor: ActorContext, id: string): Promise<void> {

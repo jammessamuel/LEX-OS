@@ -29,6 +29,14 @@ export interface TaskCursor {
   id: string;
 }
 
+export interface UpdateTaskData {
+  status?: TaskStatus;
+  priority?: Priority;
+  assignedToId?: string | null;
+  dueAt?: Date | null;
+  completedAt?: Date | null;
+}
+
 @Injectable()
 export class TasksRepository {
   constructor(private readonly database: DatabaseService) {}
@@ -55,6 +63,13 @@ export class TasksRepository {
       },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: input.take,
+      select: taskSelect,
+    });
+  }
+
+  findById(organizationId: string, id: string): Promise<TaskRecord | null> {
+    return this.database.client.task.findFirst({
+      where: { id, organizationId, deletedAt: null },
       select: taskSelect,
     });
   }
@@ -101,6 +116,26 @@ export class TasksRepository {
         sourceType: 'AI_CHECKLIST',
         sourceId: input.sourceId,
       },
+      select: taskSelect,
+    });
+  }
+
+  async update(
+    transaction: TransactionClient,
+    organizationId: string,
+    id: string,
+    expectedUpdatedAt: Date,
+    data: UpdateTaskData,
+  ): Promise<TaskRecord | null> {
+    const result = await transaction.task.updateMany({
+      where: { id, organizationId, deletedAt: null, updatedAt: expectedUpdatedAt },
+      data,
+    });
+    if (result.count !== 1) {
+      return null;
+    }
+    return transaction.task.findFirst({
+      where: { id, organizationId, deletedAt: null },
       select: taskSelect,
     });
   }

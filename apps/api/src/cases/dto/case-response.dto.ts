@@ -3,10 +3,12 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   caseStatuses,
   confidentialityLevels,
+  processingBudgetStatuses,
   priorities,
   type CaseStatusCode,
   type ConfidentialityLevelCode,
   type PriorityCode,
+  type ProcessingBudgetStatusCode,
 } from '../case.constants.js';
 
 export class CaseResponsibleDto {
@@ -50,6 +52,24 @@ export class CaseResponseDto {
 
   @ApiProperty({ type: CaseResponsibleDto, nullable: true })
   responsible!: CaseResponsibleDto | null;
+
+  @ApiProperty({ example: '25.000000' })
+  processingCostLimitAmount!: string;
+
+  @ApiProperty({ example: '2.500000' })
+  processingCostSpentAmount!: string;
+
+  @ApiProperty({ example: '0.000000' })
+  processingCostReservedAmount!: string;
+
+  @ApiProperty({ example: 'BRL' })
+  processingCostCurrency!: string;
+
+  @ApiProperty({ enum: processingBudgetStatuses })
+  processingBudgetStatus!: ProcessingBudgetStatusCode;
+
+  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  processingLimitReachedAt!: string | null;
 
   @ApiProperty({ format: 'date-time' })
   openedAt!: string;

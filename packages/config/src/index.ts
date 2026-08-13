@@ -105,6 +105,20 @@ function integer(env: NodeJS.ProcessEnv, name: string, minimum: number, maximum:
   return value;
 }
 
+function preferredInteger(
+  env: NodeJS.ProcessEnv,
+  preferredName: string,
+  fallbackName: string,
+  minimum: number,
+  maximum: number,
+): number {
+  const preferredValue = env[preferredName]?.trim();
+  const selectedName =
+    preferredValue === undefined || preferredValue.length === 0 ? fallbackName : preferredName;
+
+  return integer(env, selectedName, minimum, maximum);
+}
+
 function boolean(env: NodeJS.ProcessEnv, name: string): boolean {
   const value = required(env, name);
 
@@ -177,7 +191,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   const config: RuntimeConfig = {
     environment: oneOf(env, 'NODE_ENV', environments),
     service: {
-      apiPort: integer(env, 'API_PORT', 1, 65_535),
+      apiPort: preferredInteger(env, 'PORT', 'API_PORT', 1, 65_535),
       dependencyTimeoutMs: integer(env, 'DEPENDENCY_TIMEOUT_MS', 100, 30_000),
       logLevel: oneOf(env, 'LOG_LEVEL', logLevels),
       webOrigin: absoluteUrl(env, 'WEB_ORIGIN'),

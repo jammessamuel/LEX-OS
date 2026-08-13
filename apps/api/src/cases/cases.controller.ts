@@ -34,6 +34,7 @@ import { CaseListResponseDto, CaseResponseDto } from './dto/case-response.dto.js
 import { CreateCaseRequestDto } from './dto/create-case-request.dto.js';
 import { ListCasesQueryDto } from './dto/list-cases-query.dto.js';
 import { UpdateCaseRequestDto } from './dto/update-case-request.dto.js';
+import { UpdateProcessingBudgetRequestDto } from './dto/update-processing-budget-request.dto.js';
 
 @ApiTags('Casos')
 @ApiBearerAuth('access-token')
@@ -88,6 +89,27 @@ export class CasesController {
     @Body() input: UpdateCaseRequestDto,
   ) {
     return this.cases.update(this.#actor(request), params.id, input, getRequestContext() ?? {});
+  }
+
+  @Patch(':id/processing-budget')
+  @RequirePermissions('cases.update')
+  @ApiOperation({ summary: 'Configura ou libera novamente o teto rígido de processamento.' })
+  @ApiOkResponse({ type: CaseResponseDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  @ApiForbiddenResponse({ type: ApiErrorEnvelopeDto })
+  @ApiNotFoundResponse({ type: ApiErrorEnvelopeDto })
+  @ApiConflictResponse({ type: ApiErrorEnvelopeDto })
+  updateProcessingBudget(
+    @Req() request: AuthenticatedRequest,
+    @Param() params: CaseIdParamsDto,
+    @Body() input: UpdateProcessingBudgetRequestDto,
+  ) {
+    return this.cases.updateProcessingBudget(
+      this.#actor(request),
+      params.id,
+      input.limitAmount,
+      getRequestContext() ?? {},
+    );
   }
 
   @Delete(':id')

@@ -11,6 +11,7 @@ import type { ProcessingJobType } from '@lex-os/contracts';
 import { DatabaseService } from '../database/database.service.js';
 import { deterministicJobId } from './deterministic-id.js';
 import { assertTransition } from './job-state-machine.js';
+import type { MeasuredProviderCost, ProviderCostQuote } from './processing-cost-policy.js';
 
 const jobTargetSelect = {
   id: true,
@@ -22,6 +23,12 @@ const jobTargetSelect = {
   status: true,
   attempts: true,
   version: true,
+  provider: true,
+  modelName: true,
+  modelVersion: true,
+  reservedCostAmount: true,
+  costAmount: true,
+  costCurrency: true,
   inputMetadata: true,
   document: {
     select: {
@@ -53,6 +60,12 @@ const jobTargetSelect = {
           organizationId: true,
           legalArea: true,
           caseType: true,
+          processingCostLimitAmount: true,
+          processingCostSpentAmount: true,
+          processingCostReservedAmount: true,
+          processingCostCurrency: true,
+          processingBudgetStatus: true,
+          processingLimitReachedAt: true,
           deletedAt: true,
         },
       },
@@ -90,11 +103,14 @@ export interface ChecklistTemplateForProcessing {
 
 export type ClaimResult =
   | { disposition: 'PROCESS'; job: ClaimedProcessingJob }
+  | { disposition: 'BUDGET_LIMIT_REACHED' }
   | { disposition: 'SKIP'; status?: JobStatus };
 
 export interface StageCompletion {
   provider: string;
   modelName: string;
+  modelVersion: string;
+  cost: MeasuredProviderCost;
   outputMetadata: Prisma.InputJsonObject;
   extraction?: {
     type:
@@ -154,6 +170,13 @@ export interface StageCompletion {
 
 function asJson(value: object): Prisma.InputJsonObject {
   return { ...value } as Prisma.InputJsonObject;
+}
+
+function costDecimal(value: string): Prisma.Decimal {
+  if (!/^(0|[1-9]\d{0,11})(\.\d{1,6})?$/u.test(value)) {
+    throw new Error('Cost policy returned an invalid non-negative six-decimal amount.');
+  }
+  return new Prisma.Decimal(value);
 }
 
 function vectorLiteral(values: readonly number[], expectedDimensions: number): string {
@@ -248,6 +271,7 @@ export class ProcessingRepository {
     processingJobId: string,
     expectedJobType: ProcessingJobType,
     correlationId: string,
+    costQuote: ProviderCostQuote,
   ): Promise<ClaimResult> {
     return withTransaction(this.database.client, async (transaction) => {
       const current = await transaction.processingJob.findFirst({
@@ -274,6 +298,107 @@ export class ProcessingRepository {
       if (current.status !== 'PROCESSING') {
         assertTransition(current.status, 'PROCESSING');
       }
+      const quotedMaximum = costDecimal(costQuote.maximumAmount);
+      let reservationToAdd = new Prisma.Decimal(0);
+      if (current.status !== 'PROCESSING') {
+        const budgets = await transaction.$queryRaw<
+          Array<{
+            limitAmount: string;
+            spentAmount: string;
+            reservedAmount: string;
+            currency: string;
+            status: 'ACTIVE' | 'LIMIT_REACHED';
+          }>
+        >(Prisma.sql`
+          SELECT
+            "processing_cost_limit_amount"::text AS "limitAmount",
+            "processing_cost_spent_amount"::text AS "spentAmount",
+            "processing_cost_reserved_amount"::text AS "reservedAmount",
+            "processing_cost_currency" AS "currency",
+            "processing_budget_status"::text AS "status"
+          FROM "cases"
+          WHERE "organization_id" = ${organizationId}::uuid
+            AND "id" = ${current.caseId}::uuid
+            AND "deleted_at" IS NULL
+          FOR UPDATE
+        `);
+        const budget = budgets[0];
+        if (budget === undefined || budget.currency !== costQuote.currency) {
+          throw new Error('Processing cost quote does not match the locked case budget.');
+        }
+        reservationToAdd = current.reservedCostAmount.isZero()
+          ? quotedMaximum
+          : new Prisma.Decimal(0);
+        const committedAfterReservation = costDecimal(budget.spentAmount)
+          .add(costDecimal(budget.reservedAmount))
+          .add(reservationToAdd);
+        const blocked =
+          (budget.status === 'LIMIT_REACHED' && current.reservedCostAmount.isZero()) ||
+          committedAfterReservation.greaterThan(costDecimal(budget.limitAmount));
+        if (blocked) {
+          assertTransition(current.status, 'CANCELLED');
+          const reachedAt = new Date();
+          const cancelled = await transaction.processingJob.updateMany({
+            where: {
+              id: current.id,
+              organizationId,
+              status: current.status,
+              version: current.version,
+            },
+            data: {
+              status: 'CANCELLED',
+              version: { increment: 1 },
+              provider: costQuote.provider,
+              modelName: costQuote.modelName,
+              modelVersion: costQuote.modelVersion,
+              costCurrency: costQuote.currency,
+              outputMetadata: {
+                stage: current.jobType,
+                reason: 'PROCESSING_COST_LIMIT_REACHED',
+              },
+              errorCode: null,
+              errorMessage: null,
+              finishedAt: reachedAt,
+            },
+          });
+          if (cancelled.count !== 1) {
+            throw new Error('Budget cancellation lost an optimistic concurrency race.');
+          }
+          await transaction.case.updateMany({
+            where: { id: current.caseId, organizationId, deletedAt: null },
+            data: {
+              processingBudgetStatus: 'LIMIT_REACHED',
+              processingLimitReachedAt: reachedAt,
+            },
+          });
+          await transaction.document.updateMany({
+            where: { id: current.documentId, organizationId, deletedAt: null },
+            data: { processingStatus: 'NEEDS_REVIEW' },
+          });
+          await this.#audit(transaction, {
+            organizationId,
+            processingJobId: current.id,
+            actorType: 'SYSTEM',
+            action: 'processing.budget.limit_reached',
+            entityType: 'case',
+            entityId: current.caseId,
+            correlationId,
+            data: {
+              jobType: current.jobType,
+              currency: costQuote.currency,
+              reason: 'QUOTE_EXCEEDS_REMAINING_BUDGET',
+            },
+          });
+          return { disposition: 'BUDGET_LIMIT_REACHED' };
+        }
+        if (!reservationToAdd.isZero()) {
+          await transaction.case.updateMany({
+            where: { id: current.caseId, organizationId, deletedAt: null },
+            data: { processingCostReservedAmount: { increment: reservationToAdd } },
+          });
+        }
+      }
+      const reservedCostAmount = current.reservedCostAmount.add(reservationToAdd);
       const updated = await transaction.processingJob.updateMany({
         where: {
           id: current.id,
@@ -286,6 +411,12 @@ export class ProcessingRepository {
           attempts: { increment: 1 },
           version: { increment: 1 },
           ...(current.status === 'QUEUED' ? { startedAt: new Date() } : {}),
+          provider: costQuote.provider,
+          modelName: costQuote.modelName,
+          modelVersion: costQuote.modelVersion,
+          reservedCostAmount,
+          costAmount: current.costAmount ?? new Prisma.Decimal(0),
+          costCurrency: costQuote.currency,
           errorCode: null,
           errorMessage: null,
         },
@@ -317,6 +448,12 @@ export class ProcessingRepository {
           status: 'PROCESSING',
           attempts: current.attempts + 1,
           version: current.version + 1,
+          provider: costQuote.provider,
+          modelName: costQuote.modelName,
+          modelVersion: costQuote.modelVersion,
+          reservedCostAmount,
+          costAmount: current.costAmount ?? new Prisma.Decimal(0),
+          costCurrency: costQuote.currency,
           jobType: expectedJobType,
         },
       };
@@ -330,6 +467,13 @@ export class ProcessingRepository {
   ): Promise<NextProcessingJob | null> {
     assertTransition('PROCESSING', 'COMPLETED');
     return withTransaction(this.database.client, async (transaction) => {
+      const actualCost = costDecimal(completion.cost.amount);
+      if (completion.cost.currency !== job.costCurrency) {
+        throw new Error('Measured provider cost currency differs from its reservation.');
+      }
+      if (actualCost.greaterThan(job.reservedCostAmount)) {
+        throw new Error('Measured provider cost exceeded its fail-closed reservation.');
+      }
       let extractionId: string | undefined;
       if (completion.extraction !== undefined) {
         const extraction = await transaction.documentExtraction.create({
@@ -339,7 +483,7 @@ export class ProcessingRepository {
             extractionType: completion.extraction.type,
             provider: completion.provider,
             modelName: completion.modelName,
-            modelVersion: '1',
+            modelVersion: completion.modelVersion,
             executionId: completion.extraction.executionId,
             status: 'COMPLETED',
             ...(completion.extraction.rawText === undefined
@@ -675,8 +819,78 @@ export class ProcessingRepository {
         });
       }
 
+      const budgets = await transaction.$queryRaw<
+        Array<{
+          limitAmount: string;
+          spentAmount: string;
+          reservedAmount: string;
+          currency: string;
+          status: 'ACTIVE' | 'LIMIT_REACHED';
+          limitReachedAt: Date | null;
+        }>
+      >(Prisma.sql`
+        SELECT
+          "processing_cost_limit_amount"::text AS "limitAmount",
+          "processing_cost_spent_amount"::text AS "spentAmount",
+          "processing_cost_reserved_amount"::text AS "reservedAmount",
+          "processing_cost_currency" AS "currency",
+          "processing_budget_status"::text AS "status",
+          "processing_limit_reached_at" AS "limitReachedAt"
+        FROM "cases"
+        WHERE "organization_id" = ${job.organizationId}::uuid
+          AND "id" = ${job.caseId}::uuid
+          AND "deleted_at" IS NULL
+        FOR UPDATE
+      `);
+      const budget = budgets[0];
+      if (budget === undefined || budget.currency !== completion.cost.currency) {
+        throw new Error('Measured provider cost does not match the locked case budget.');
+      }
+      const spentAmount = costDecimal(budget.spentAmount).add(actualCost);
+      const reservedAmount = costDecimal(budget.reservedAmount).sub(job.reservedCostAmount);
+      if (reservedAmount.isNegative()) {
+        throw new Error('Case budget reservation accounting became negative.');
+      }
+      const limitAmount = costDecimal(budget.limitAmount);
+      const budgetReached =
+        budget.status === 'LIMIT_REACHED' ||
+        (limitAmount.greaterThan(0) &&
+          spentAmount.add(reservedAmount).greaterThanOrEqualTo(limitAmount));
+      const limitReachedAt = budgetReached ? (budget.limitReachedAt ?? new Date()) : null;
+      await transaction.case.updateMany({
+        where: { id: job.caseId, organizationId: job.organizationId, deletedAt: null },
+        data: {
+          processingCostSpentAmount: spentAmount,
+          processingCostReservedAmount: reservedAmount,
+          processingBudgetStatus: budgetReached ? 'LIMIT_REACHED' : 'ACTIVE',
+          processingLimitReachedAt: limitReachedAt,
+        },
+      });
+      if (budgetReached) {
+        await transaction.document.updateMany({
+          where: { id: job.documentId, organizationId: job.organizationId, deletedAt: null },
+          data: { processingStatus: 'NEEDS_REVIEW' },
+        });
+        if (budget.status !== 'LIMIT_REACHED') {
+          await this.#audit(transaction, {
+            organizationId: job.organizationId,
+            processingJobId: job.id,
+            actorType: 'SYSTEM',
+            action: 'processing.budget.limit_reached',
+            entityType: 'case',
+            entityId: job.caseId,
+            correlationId,
+            data: {
+              jobType: job.jobType,
+              currency: completion.cost.currency,
+              reason: 'COMMITTED_COST_REACHED_LIMIT',
+            },
+          });
+        }
+      }
+
       let nextJob: NextProcessingJob | null = null;
-      if (completion.nextJobType !== undefined) {
+      if (completion.nextJobType !== undefined && !budgetReached) {
         const id = deterministicJobId(job.id, completion.nextJobType);
         const created = await transaction.processingJob.create({
           data: {
@@ -716,6 +930,10 @@ export class ProcessingRepository {
           version: { increment: 1 },
           provider: completion.provider,
           modelName: completion.modelName,
+          modelVersion: completion.modelVersion,
+          reservedCostAmount: 0,
+          costAmount: (job.costAmount ?? new Prisma.Decimal(0)).add(actualCost),
+          costCurrency: completion.cost.currency,
           outputMetadata: {
             ...completion.outputMetadata,
             ...(extractionId === undefined ? {} : { extractionId }),
@@ -739,7 +957,16 @@ export class ProcessingRepository {
         entityType: 'processing_job',
         entityId: job.id,
         correlationId,
-        data: { jobType: job.jobType, nextProcessingJobId: nextJob?.id ?? null },
+        data: {
+          jobType: job.jobType,
+          nextProcessingJobId: nextJob?.id ?? null,
+          provider: completion.provider,
+          modelName: completion.modelName,
+          modelVersion: completion.modelVersion,
+          costAmount: actualCost.toFixed(6),
+          costCurrency: completion.cost.currency,
+          budgetReached,
+        },
       });
       return nextJob;
     });
@@ -759,8 +986,16 @@ export class ProcessingRepository {
     errorCode: string,
     errorMessage: string,
     correlationId: string,
+    measuredCost: MeasuredProviderCost,
   ): Promise<void> {
-    await this.#terminalOrRetry(job, 'FAILED', errorCode, errorMessage, correlationId);
+    await this.#terminalOrRetry(
+      job,
+      'FAILED',
+      errorCode,
+      errorMessage,
+      correlationId,
+      measuredCost,
+    );
   }
 
   async cancel(
@@ -771,7 +1006,7 @@ export class ProcessingRepository {
     return withTransaction(this.database.client, async (transaction) => {
       const current = await transaction.processingJob.findFirst({
         where: { id: processingJobId, organizationId },
-        select: { status: true, version: true },
+        select: { status: true, version: true, caseId: true, reservedCostAmount: true },
       });
       if (
         current === null ||
@@ -782,6 +1017,33 @@ export class ProcessingRepository {
         return false;
       }
       assertTransition(current.status, 'CANCELLED');
+      if (!current.reservedCostAmount.isZero()) {
+        if (current.caseId === null) {
+          throw new Error('A reserved processing job must belong to a case.');
+        }
+        const budgets = await transaction.$queryRaw<Array<{ reservedAmount: string }>>(
+          Prisma.sql`
+            SELECT "processing_cost_reserved_amount"::text AS "reservedAmount"
+            FROM "cases"
+            WHERE "organization_id" = ${organizationId}::uuid
+              AND "id" = ${current.caseId}::uuid
+              AND "deleted_at" IS NULL
+            FOR UPDATE
+          `,
+        );
+        const budget = budgets[0];
+        if (budget === undefined) {
+          throw new Error('The cancelled job case budget no longer exists.');
+        }
+        const remaining = costDecimal(budget.reservedAmount).sub(current.reservedCostAmount);
+        if (remaining.isNegative()) {
+          throw new Error('Cancelled job released more budget than was reserved.');
+        }
+        await transaction.case.updateMany({
+          where: { id: current.caseId, organizationId, deletedAt: null },
+          data: { processingCostReservedAmount: remaining },
+        });
+      }
       const result = await transaction.processingJob.updateMany({
         where: {
           id: processingJobId,
@@ -794,6 +1056,7 @@ export class ProcessingRepository {
           version: { increment: 1 },
           errorCode: null,
           errorMessage: null,
+          reservedCostAmount: 0,
           finishedAt: new Date(),
         },
       });
@@ -843,9 +1106,64 @@ export class ProcessingRepository {
     errorCode: string,
     errorMessage: string,
     correlationId: string,
+    measuredCost?: MeasuredProviderCost,
   ): Promise<void> {
     assertTransition('PROCESSING', status);
     await withTransaction(this.database.client, async (transaction) => {
+      let terminalCost: Prisma.Decimal | undefined;
+      if (status === 'FAILED') {
+        if (measuredCost === undefined || measuredCost.currency !== job.costCurrency) {
+          throw new Error('A failed provider execution requires measured cost in its currency.');
+        }
+        terminalCost = costDecimal(measuredCost.amount);
+        if (terminalCost.greaterThan(job.reservedCostAmount)) {
+          throw new Error('Failed provider cost exceeded its fail-closed reservation.');
+        }
+        const budgets = await transaction.$queryRaw<
+          Array<{
+            limitAmount: string;
+            spentAmount: string;
+            reservedAmount: string;
+            status: 'ACTIVE' | 'LIMIT_REACHED';
+            limitReachedAt: Date | null;
+          }>
+        >(Prisma.sql`
+          SELECT
+            "processing_cost_limit_amount"::text AS "limitAmount",
+            "processing_cost_spent_amount"::text AS "spentAmount",
+            "processing_cost_reserved_amount"::text AS "reservedAmount",
+            "processing_budget_status"::text AS "status",
+            "processing_limit_reached_at" AS "limitReachedAt"
+          FROM "cases"
+          WHERE "organization_id" = ${job.organizationId}::uuid
+            AND "id" = ${job.caseId}::uuid
+            AND "deleted_at" IS NULL
+          FOR UPDATE
+        `);
+        const budget = budgets[0];
+        if (budget === undefined) {
+          throw new Error('The failed execution case budget no longer exists.');
+        }
+        const spentAmount = costDecimal(budget.spentAmount).add(terminalCost);
+        const reservedAmount = costDecimal(budget.reservedAmount).sub(job.reservedCostAmount);
+        const limitAmount = costDecimal(budget.limitAmount);
+        if (reservedAmount.isNegative()) {
+          throw new Error('Failed execution released more budget than was reserved.');
+        }
+        const budgetReached =
+          budget.status === 'LIMIT_REACHED' ||
+          (limitAmount.greaterThan(0) &&
+            spentAmount.add(reservedAmount).greaterThanOrEqualTo(limitAmount));
+        await transaction.case.updateMany({
+          where: { id: job.caseId, organizationId: job.organizationId, deletedAt: null },
+          data: {
+            processingCostSpentAmount: spentAmount,
+            processingCostReservedAmount: reservedAmount,
+            processingBudgetStatus: budgetReached ? 'LIMIT_REACHED' : 'ACTIVE',
+            processingLimitReachedAt: budgetReached ? (budget.limitReachedAt ?? new Date()) : null,
+          },
+        });
+      }
       const result = await transaction.processingJob.updateMany({
         where: {
           id: job.id,
@@ -859,6 +1177,14 @@ export class ProcessingRepository {
           errorCode,
           errorMessage,
           finishedAt: status === 'FAILED' ? new Date() : null,
+          ...(status === 'FAILED'
+            ? {
+                reservedCostAmount: 0,
+                costAmount: (job.costAmount ?? new Prisma.Decimal(0)).add(
+                  terminalCost ?? new Prisma.Decimal(0),
+                ),
+              }
+            : {}),
         },
       });
       if (result.count !== 1) {

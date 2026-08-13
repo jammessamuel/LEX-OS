@@ -2,7 +2,7 @@
 
 LEX OS is an intelligent legal operations system for Brazilian law firms. The project receives disorganized operational material and prepares a structured, searchable, and traceable legal dossier for human analysis.
 
-This repository contains **Delivery 9 — Text and semantic search foundation**. It provides the reproducible local stack, authenticated and tenant-aware legal/file platform, a seven-stage persistent BullMQ pipeline, deterministic sourced timeline/checklist analysis and embedding indexation, PostgreSQL Portuguese full-text search, exact pgvector retrieval, hybrid ranking, resolvable citations, explicit insufficient-evidence behavior, and safe audit provenance. Real providers, grounded answer generation, and the complete feature UI remain intentionally deferred.
+The latest accepted checkpoint is **Delivery 9 — Text and semantic search foundation**, and **Delivery 10 — Essential web vertical slice is authorized and in progress**. The repository provides the reproducible local stack, authenticated and tenant-aware legal/file platform, a seven-stage persistent BullMQ pipeline, deterministic sourced timeline/checklist analysis and embedding indexation, PostgreSQL Portuguese full-text search, exact pgvector retrieval, hybrid ranking, resolvable citations, source-grounded mock answers, per-case processing ceilings, and safe audit provenance. Real providers and the final Delivery 10 end-to-end acceptance remain intentionally deferred.
 
 ## Architecture baseline
 
@@ -32,6 +32,9 @@ This repository contains **Delivery 9 — Text and semantic search foundation**.
 - audited human timeline confirmation, versioned checklist snapshots, item review, and one traceable task per selected pending item;
 - tenant/RBAC/confidentiality-aware processing progress, extraction history, and reprocessing HTTP routes;
 - tenant/RBAC/confidentiality-aware timeline, checklist, and task HTTP routes;
+- person-to-case traversal, assignable-user summaries, task lifecycle updates, and extracted-entity confirmation;
+- source-grounded answer generation that refuses without authorized evidence and validates every claim citation;
+- exact BRL processing-cost accounting with atomic reservations and a hard recoverable ceiling per case;
 - typed environment configuration with explicit production validation;
 - structured JSON logs with request and correlation IDs;
 - API liveness, readiness, and process metrics;
@@ -85,6 +88,10 @@ Local endpoints:
 
 The Docker PostgreSQL port defaults to `5433`, so a PostgreSQL instance already using the conventional host port `5432` can remain active.
 
+The API listens on the managed-platform `PORT` environment variable when one is present and
+falls back to `API_PORT` for local and Compose execution. This keeps external routing and health
+checks on the same port without changing the local development contract.
+
 Inspect or stop the environment without deleting persistent volumes:
 
 ```bash
@@ -120,7 +127,7 @@ pnpm infra:config
 
 `db:validate` formats and validates the Prisma schema and checks that the reviewed raw SQL additions remain in the migration. Database integration tests require the Compose PostgreSQL service with the migration already applied.
 
-API authentication and tenant contract tests also require the Compose PostgreSQL on `5433`, authenticated Redis, and private MinIO. See [Authentication and HTTP contract](./docs/api/authentication.md), [People, cases, and participants API](./docs/api/people-cases-participants.md), [Files and documents API](./docs/api/files-documents.md), [Processing API](./docs/api/processing.md), and [Timeline, checklist, and tasks API](./docs/api/timeline-checklists-tasks.md).
+API authentication and tenant contract tests also require the Compose PostgreSQL on `5433`, authenticated Redis, and private MinIO. See [Authentication and HTTP contract](./docs/api/authentication.md), [People, cases, and participants API](./docs/api/people-cases-participants.md), [Files and documents API](./docs/api/files-documents.md), [Processing API](./docs/api/processing.md), [Grounded assistant API](./docs/api/assistant.md), and [Timeline, checklist, and tasks API](./docs/api/timeline-checklists-tasks.md).
 
 ## Database workflow
 
@@ -151,9 +158,9 @@ Use `pnpm db:migrate:dev --name <descriptive_name>` only to create a reviewed fo
 - duplicate uploads are linked within one tenant, but their second object is retained until a production retention/deduplication policy is approved;
 - reconciliation reports missing, stale-quarantine, and orphan conditions without automatically deleting legal evidence;
 - no e-mail adapter despite local Mailpit;
-- no complete legal workflow/search UI, grounded assistant response generation, or real AI provider;
+- no complete legal workflow/search UI or real AI provider; grounded answers currently use only the deterministic development/test adapter;
 - production object retention, legal hold, backup/restore, and irreversible purge policies remain governance blockers;
 - CI runs the format, lint, typecheck, unit, build, migration-validation, Compose-config, and integration gates, but the full Playwright end-to-end matrix and dependency review remain scheduled for Delivery 11;
 - Git hooks cover commit-message policy only; a pre-commit lint/format gate is not installed yet.
 
-The next proposed checkpoint is **Delivery 10 — Essential web vertical slice**, subject to explicit authorization after review of Delivery 9.
+The active checkpoint is **Delivery 10 — Essential web vertical slice**. Its remaining acceptance work is tracked in [`docs/product/backlog.md`](./docs/product/backlog.md); Delivery 11 still requires explicit authorization.

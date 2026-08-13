@@ -31,6 +31,15 @@ export class ExtractedEntityResponseDto {
   @ApiProperty({ type: 'object', additionalProperties: true })
   metadata!: unknown;
 
+  @ApiProperty()
+  confirmedByUser!: boolean;
+
+  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  confirmedById!: string | null;
+
+  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  confirmedAt!: string | null;
+
   @ApiProperty({ format: 'date-time' })
   createdAt!: string;
 }

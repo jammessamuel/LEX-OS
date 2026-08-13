@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-12 · tarefas entregues; issue #5 aberta
+**Última atualização:** 2026-08-13 · contratos backend da Delivery 10 fechados
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -56,15 +56,11 @@ experiência central da `vision.md` e o componente 11 da proposta.
 Nada aqui pode virar front antes de a rota existir. Registrado para deixar de ser
 invisível.
 
-| Cartão                       | O que falta                                                                                                                                                                                                                                                                                                                             |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Casos por cliente            | Abrir uma pessoa e ver os casos dela. O vínculo existe (`CaseParticipant` com `isClient`), mas só há rota no sentido caso → partes. Precisa de `GET /persons/:id/cases` ou filtro `personId` em `GET /cases`, com os testes negativos de travessia de relação que o §3.12 exige. A coluna "responsável" depende também do cartão abaixo |
-| Concluir e reatribuir tarefa | Só existem listar e criar. Sem `PATCH /tasks/:id`, uma tarefa nasce e nunca fecha; prioridade e prazo só podem ser definidos na criação, sem conserto depois. Issue #5                                                                                                                                                                  |
-| Confirmação de entidade      | A tela de procedência mostra "Aguardando revisão", mas não há rota para um humano confirmar uma entidade extraída. A confirmação humana está prevista na Delivery 8 para eventos de cronologia; entidades precisam do mesmo caminho                                                                                                     |
-| Painel com números           | Nenhum endpoint devolve contagem ou agregado. Um resumo exigiria varrer páginas no cliente, o que não escala                                                                                                                                                                                                                            |
-| Resposta ancorada            | O ADR-009 decidiu resposta ancorada em fonte, mas a Entrega 9 entregou só a recuperação. `POST /search` devolve trechos com citação; não há rota que gere resposta a partir deles                                                                                                                                                       |
-| Leitura de auditoria         | Sem rota                                                                                                                                                                                                                                                                                                                                |
-| Administração de usuários    | Sem rota                                                                                                                                                                                                                                                                                                                                |
+| Cartão                    | O que falta                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------- |
+| Painel com números        | Nenhum endpoint devolve contagem ou agregado sem varrer páginas no cliente                  |
+| Leitura de auditoria      | Não há rota de consulta autorizada dos registros append-only                                |
+| Administração de usuários | Existe somente a lista mínima de usuários atribuíveis; CRUD, convites e papéis não têm rota |
 
 ---
 
@@ -109,6 +105,18 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
 
+- **Controles de custo antes do primeiro provedor real** — cada caso nasce com teto zero em BRL;
+  o worker reserva o custo máximo antes de chamar um provedor, liquida gasto e reserva no mesmo
+  fluxo transacional e interrompe o processamento ao alcançar o limite. Jobs expõem provedor,
+  modelo, versão e valores exatos; filtros e auditoria permitem medir sem registrar conteúdo.
+- **Resposta ancorada do ADR-009** — `POST /assistant/answers` recupera apenas fontes autorizadas,
+  recusa sem evidência antes de chamar o modelo e rejeita qualquer afirmação cuja citação não
+  resolva para os trechos retornados. O adaptador ainda é mock, marcado como máquina, com aviso de
+  revisão humana e auditoria sem pergunta, resposta ou conteúdo jurídico.
+- **Lacunas de ação da interface fechadas** — pessoa agora lista seus casos acessíveis sem vazar
+  confidenciais; tarefa pode concluir, reabrir, mudar prioridade, prazo e responsável com proteção
+  contra corrida; a seleção de responsável usa apenas usuários ativos do tenant; e uma entidade
+  extraída pode receber confirmação humana única sem alterar sua extração de origem.
 - **Responsável legível no caso** — a listagem e o detalhe preservam o identificador para filtros
   e edição, mas agora trazem também somente `id` e `name` do usuário na mesma consulta tenant-scoped.
   O detalhe mostra o nome ou “Sem responsável”, sem N+1 e sem expor e-mail, status ou papéis.

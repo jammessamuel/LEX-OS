@@ -41,6 +41,9 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: 3.1103.0
         version: 3.1103.0
+      '@lex-os/ai-prompts':
+        specifier: workspace:*
+        version: link:../../packages/ai-prompts
       '@lex-os/config':
         specifier: workspace:*
         version: link:../../packages/config

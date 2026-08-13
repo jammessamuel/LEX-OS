@@ -66,6 +66,28 @@ describe('loadRuntimeConfig', () => {
     ]);
   });
 
+  it('uses the managed-platform port when PORT is provided', () => {
+    const environment = validEnvironment({ PORT: '4321' });
+    delete environment.API_PORT;
+
+    const config = loadRuntimeConfig(environment);
+
+    assert.equal(config.service.apiPort, 4321);
+  });
+
+  it('falls back to API_PORT when PORT is absent or blank', () => {
+    const config = loadRuntimeConfig(validEnvironment({ PORT: '   ' }));
+
+    assert.equal(config.service.apiPort, 3000);
+  });
+
+  it('rejects an invalid managed-platform port instead of silently falling back', () => {
+    assert.throws(
+      () => loadRuntimeConfig(validEnvironment({ PORT: 'not-a-port' })),
+      /PORT must be an integer between 1 and 65535/u,
+    );
+  });
+
   it('fails when a required value is absent', () => {
     const environment = validEnvironment();
     delete environment.DATABASE_HOST;

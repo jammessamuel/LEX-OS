@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, type ExtractionType } from '@lex-os/database';
+import { Prisma, type ExtractionType, type TransactionClient } from '@lex-os/database';
 
 import { DatabaseService } from '../database/database.service.js';
 
@@ -32,6 +32,9 @@ const extractionSelect = {
       confidenceScore: true,
       linkedPersonId: true,
       metadata: true,
+      confirmedByUser: true,
+      confirmedById: true,
+      confirmedAt: true,
       createdAt: true,
     },
   },
@@ -39,6 +42,30 @@ const extractionSelect = {
 
 export type ExtractionRecord = Prisma.DocumentExtractionGetPayload<{
   select: typeof extractionSelect;
+}>;
+
+const extractedEntitySelect = {
+  id: true,
+  organizationId: true,
+  documentId: true,
+  extractionId: true,
+  entityType: true,
+  normalizedValue: true,
+  originalValue: true,
+  pageNumber: true,
+  startOffset: true,
+  endOffset: true,
+  confidenceScore: true,
+  linkedPersonId: true,
+  metadata: true,
+  confirmedByUser: true,
+  confirmedById: true,
+  confirmedAt: true,
+  createdAt: true,
+} satisfies Prisma.ExtractedEntitySelect;
+
+export type ExtractedEntityRecord = Prisma.ExtractedEntityGetPayload<{
+  select: typeof extractedEntitySelect;
 }>;
 
 export interface ExtractionCursor {
@@ -74,6 +101,33 @@ export class ExtractionsRepository {
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: input.take,
       select: extractionSelect,
+    });
+  }
+
+  findEntityById(organizationId: string, id: string): Promise<ExtractedEntityRecord | null> {
+    return this.database.client.extractedEntity.findFirst({
+      where: { organizationId, id },
+      select: extractedEntitySelect,
+    });
+  }
+
+  async confirmEntity(
+    transaction: TransactionClient,
+    organizationId: string,
+    id: string,
+    userId: string,
+    confirmedAt: Date,
+  ): Promise<ExtractedEntityRecord | null> {
+    const updated = await transaction.extractedEntity.updateMany({
+      where: { organizationId, id, confirmedByUser: false },
+      data: { confirmedByUser: true, confirmedById: userId, confirmedAt },
+    });
+    if (updated.count !== 1) {
+      return null;
+    }
+    return transaction.extractedEntity.findFirst({
+      where: { organizationId, id },
+      select: extractedEntitySelect,
     });
   }
 }

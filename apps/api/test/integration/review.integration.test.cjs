@@ -35,6 +35,7 @@ const OTHER_EXTRACTION_ID = '80000000-0000-4000-8000-000000000014';
 const OTHER_EVENT_ID = '80000000-0000-4000-8000-000000000015';
 const OTHER_CHECKLIST_ID = '80000000-0000-4000-8000-000000000016';
 const OTHER_CHECKLIST_ITEM_ID = '80000000-0000-4000-8000-000000000017';
+const OTHER_TASK_ID = '80000000-0000-4000-8000-000000000019';
 const ADMIN_EMAIL = 'admin@lexos.invalid';
 const INTERN_EMAIL = 'd8-intern@lexos.invalid';
 const seedPassword = process.env.SEED_ADMIN_PASSWORD;
@@ -105,7 +106,7 @@ async function cleanup() {
   });
   await database.client.refreshSession.deleteMany({ where: { userId: INTERN_USER_ID } });
   await database.client.task.deleteMany({
-    where: { caseId: { in: [DEMO_CASE_ID, OTHER_CASE_ID] }, sourceType: 'AI_CHECKLIST' },
+    where: { caseId: { in: [DEMO_CASE_ID, OTHER_CASE_ID] } },
   });
   await database.client.timelineEvent.deleteMany({
     where: { id: { in: [STANDARD_EVENT_ID, OTHER_EVENT_ID] } },
@@ -261,6 +262,18 @@ before(async () => {
       caseType: 'RECLAMACAO_TRABALHISTA',
     },
   });
+  await database.client.task.create({
+    data: {
+      id: OTHER_TASK_ID,
+      organizationId: OTHER_ORGANIZATION_ID,
+      caseId: OTHER_CASE_ID,
+      title: 'Tarefa fictícia de outro tenant',
+      taskType: 'TEST',
+      status: 'OPEN',
+      sourceType: 'USER',
+      createdById: OTHER_USER_ID,
+    },
+  });
 
   await createFileAndDocument({
     fileId: STANDARD_FILE_ID,
@@ -402,6 +415,7 @@ describe('Delivery 8 timeline, checklist and task review', () => {
     assert.ok(response.body.paths['/api/v1/checklist-items/{id}']?.patch);
     assert.ok(response.body.paths['/api/v1/checklist-items/{id}/tasks']?.post);
     assert.ok(response.body.paths['/api/v1/cases/{id}/tasks']?.get);
+    assert.ok(response.body.paths['/api/v1/tasks/{id}']?.patch);
   });
 
   it('returns a sourced, unconfirmed event and confirms it without mutating its extraction', async () => {
@@ -564,6 +578,50 @@ describe('Delivery 8 timeline, checklist and task review', () => {
       .send({})
       .expect(404);
     await authorized(adminToken, 'get', `/api/v1/cases/${OTHER_CASE_ID}/tasks`).expect(404);
+    await authorized(adminToken, 'patch', `/api/v1/tasks/${OTHER_TASK_ID}`)
+      .send({ status: 'COMPLETED' })
+      .expect(404);
+  });
+
+  it('updates task lifecycle fields safely and permits only one concurrent completion', async () => {
+    await authorized(internToken, 'patch', `/api/v1/tasks/${taskId}`)
+      .send({ status: 'IN_PROGRESS' })
+      .expect(403);
+    await authorized(adminToken, 'patch', `/api/v1/tasks/${taskId}`).send({}).expect(400);
+    const invalidAssignee = await authorized(adminToken, 'patch', `/api/v1/tasks/${taskId}`)
+      .send({ assignedToId: OTHER_USER_ID })
+      .expect(400);
+    assert.equal(invalidAssignee.body.code, 'INVALID_TASK_ASSIGNEE');
+
+    const inProgress = await authorized(adminToken, 'patch', `/api/v1/tasks/${taskId}`)
+      .send({
+        status: 'IN_PROGRESS',
+        priority: 'URGENT',
+        assignedToId: INTERN_USER_ID,
+        dueAt: '2026-08-20T23:59:59.000Z',
+      })
+      .expect(200);
+    assert.equal(inProgress.body.status, 'IN_PROGRESS');
+    assert.equal(inProgress.body.priority, 'URGENT');
+    assert.equal(inProgress.body.assignedToId, INTERN_USER_ID);
+    assert.equal(inProgress.body.dueAt, '2026-08-20T23:59:59.000Z');
+    assert.equal(inProgress.body.completedAt, null);
+
+    const completionResponses = await Promise.all([
+      authorized(adminToken, 'patch', `/api/v1/tasks/${taskId}`).send({ status: 'COMPLETED' }),
+      authorized(adminToken, 'patch', `/api/v1/tasks/${taskId}`).send({ status: 'COMPLETED' }),
+    ]);
+    assert.deepEqual(completionResponses.map((response) => response.status).sort(), [200, 409]);
+    const completed = completionResponses.find((response) => response.status === 200);
+    assert.ok(completed?.body.completedAt);
+
+    const reopened = await authorized(adminToken, 'patch', `/api/v1/tasks/${taskId}`)
+      .send({ status: 'OPEN', dueAt: null, assignedToId: null })
+      .expect(200);
+    assert.equal(reopened.body.status, 'OPEN');
+    assert.equal(reopened.body.completedAt, null);
+    assert.equal(reopened.body.dueAt, null);
+    assert.equal(reopened.body.assignedToId, null);
   });
 
   it('keeps user-facing legal text out of the safe audit snapshots', async () => {
@@ -576,6 +634,7 @@ describe('Delivery 8 timeline, checklist and task review', () => {
             'checklist.applied',
             'checklist_item.updated',
             'task.created',
+            'task.updated',
           ],
         },
       },
@@ -589,5 +648,6 @@ describe('Delivery 8 timeline, checklist and task review', () => {
     const serialized = JSON.stringify(audits);
     assert.equal(serialized.includes('Celebração do contrato fictício'), false);
     assert.equal(serialized.includes('Observação sigilosa fictícia D8'), false);
+    assert.equal(serialized.includes('Providenciar:'), false);
   });
 });

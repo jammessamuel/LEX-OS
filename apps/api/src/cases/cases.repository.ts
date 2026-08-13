@@ -16,6 +16,12 @@ const caseSelect = {
   priority: true,
   confidentialityLevel: true,
   responsibleUserId: true,
+  processingCostLimitAmount: true,
+  processingCostSpentAmount: true,
+  processingCostReservedAmount: true,
+  processingCostCurrency: true,
+  processingBudgetStatus: true,
+  processingLimitReachedAt: true,
   responsibleUser: {
     select: {
       id: true,
@@ -29,6 +35,26 @@ const caseSelect = {
 } satisfies Prisma.CaseSelect;
 
 export type CaseRecord = Prisma.CaseGetPayload<{ select: typeof caseSelect }>;
+
+function personCaseSelect(organizationId: string, personId: string) {
+  return {
+    ...caseSelect,
+    participants: {
+      where: { organizationId, personId },
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      select: {
+        id: true,
+        role: true,
+        side: true,
+        isClient: true,
+      },
+    },
+  } satisfies Prisma.CaseSelect;
+}
+
+export type PersonCaseRecord = Prisma.CaseGetPayload<{
+  select: ReturnType<typeof personCaseSelect>;
+}>;
 
 export interface CaseCursor {
   updatedAt: Date;
@@ -63,6 +89,11 @@ export interface UpdateCaseData {
   openedAt?: Date;
   closedAt?: Date | null;
 }
+
+export type UpdateProcessingBudgetResult =
+  | { outcome: 'UPDATED'; record: CaseRecord }
+  | { outcome: 'BELOW_COMMITTED_COST' }
+  | { outcome: 'NOT_FOUND' };
 
 @Injectable()
 export class CasesRepository {
@@ -109,6 +140,39 @@ export class CasesRepository {
     });
   }
 
+  listForPerson(
+    organizationId: string,
+    personId: string,
+    input: {
+      allowConfidential: boolean;
+      cursor?: CaseCursor;
+      take: number;
+    },
+  ): Promise<PersonCaseRecord[]> {
+    const cursorFilter =
+      input.cursor === undefined
+        ? {}
+        : {
+            OR: [
+              { updatedAt: { lt: input.cursor.updatedAt } },
+              { updatedAt: input.cursor.updatedAt, id: { lt: input.cursor.id } },
+            ],
+          };
+
+    return this.database.client.case.findMany({
+      where: {
+        organizationId,
+        deletedAt: null,
+        ...(input.allowConfidential ? {} : { confidentialityLevel: 'STANDARD' }),
+        participants: { some: { organizationId, personId } },
+        ...cursorFilter,
+      },
+      orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+      take: input.take,
+      select: personCaseSelect(organizationId, personId),
+    });
+  }
+
   findById(organizationId: string, id: string): Promise<CaseRecord | null> {
     return this.database.client.case.findFirst({
       where: { id, organizationId, deletedAt: null },
@@ -149,6 +213,50 @@ export class CasesRepository {
       where: { id, organizationId, deletedAt: null },
       select: caseSelect,
     });
+  }
+
+  async updateProcessingBudget(
+    transaction: TransactionClient,
+    organizationId: string,
+    id: string,
+    limitAmount: Prisma.Decimal,
+  ): Promise<UpdateProcessingBudgetResult> {
+    const locked = await transaction.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+      SELECT "id"
+      FROM "cases"
+      WHERE "organization_id" = ${organizationId}::uuid
+        AND "id" = ${id}::uuid
+        AND "deleted_at" IS NULL
+      FOR UPDATE
+    `);
+    if (locked.length !== 1) {
+      return { outcome: 'NOT_FOUND' };
+    }
+    const current = await transaction.case.findFirst({
+      where: { organizationId, id, deletedAt: null },
+      select: caseSelect,
+    });
+    if (current === null) {
+      return { outcome: 'NOT_FOUND' };
+    }
+    const committed = current.processingCostSpentAmount.add(current.processingCostReservedAmount);
+    if (limitAmount.lessThan(committed)) {
+      return { outcome: 'BELOW_COMMITTED_COST' };
+    }
+    const limitReached =
+      current.processingCostReservedAmount.isZero() &&
+      limitAmount.greaterThan(0) &&
+      current.processingCostSpentAmount.greaterThanOrEqualTo(limitAmount);
+    const record = await transaction.case.update({
+      where: { id },
+      data: {
+        processingCostLimitAmount: limitAmount,
+        processingBudgetStatus: limitReached ? 'LIMIT_REACHED' : 'ACTIVE',
+        processingLimitReachedAt: limitReached ? new Date() : null,
+      },
+      select: caseSelect,
+    });
+    return { outcome: 'UPDATED', record };
   }
 
   async softDelete(

@@ -59,6 +59,11 @@ export type DomainAuditEvent =
       newData: { softDeleted: true };
     })
   | (DomainAuditBase & {
+      action: 'user.assignable.listed';
+      entityType: 'user';
+      newData: { count: number };
+    })
+  | (DomainAuditBase & {
       action: 'case.created';
       entityType: 'case';
       newData: CaseAuditSnapshot;
@@ -76,6 +81,12 @@ export type DomainAuditEvent =
       newData: CaseAuditSnapshot & { softDeleted: true };
     })
   | (DomainAuditBase & {
+      action: 'case.processing_budget.updated';
+      entityType: 'case';
+      oldData: { limitAmount: string; currency: string; status: string };
+      newData: { limitAmount: string; currency: string; status: string };
+    })
+  | (DomainAuditBase & {
       action: 'case.confidential.read';
       entityType: 'case';
       newData: {
@@ -87,6 +98,7 @@ export type DomainAuditEvent =
           | 'FILES'
           | 'LIST'
           | 'PARTICIPANTS'
+          | 'PERSON_CASES'
           | 'PROCESSING'
           | 'SEARCH'
           | 'TASKS'
@@ -159,6 +171,12 @@ export type DomainAuditEvent =
       newData: { caseId: string; fileId: string; processingJobId: string; jobType: 'OCR' };
     })
   | (DomainAuditBase & {
+      action: 'extracted_entity.confirmed';
+      entityType: 'extracted_entity';
+      oldData: { confirmedByUser: false };
+      newData: { confirmedByUser: true; confirmedById: string; confirmedAt: string };
+    })
+  | (DomainAuditBase & {
       action: 'timeline.event.confirmed';
       entityType: 'timeline_event';
       oldData: { confirmedByUser: false };
@@ -198,6 +216,25 @@ export type DomainAuditEvent =
       };
     })
   | (DomainAuditBase & {
+      action: 'task.updated';
+      entityType: 'task';
+      oldData: {
+        status: string;
+        priority: string;
+        assignedToId: string | null;
+        dueAt: string | null;
+        completedAt: string | null;
+      };
+      newData: {
+        status: string;
+        priority: string;
+        assignedToId: string | null;
+        dueAt: string | null;
+        completedAt: string | null;
+        changedFields: string[];
+      };
+    })
+  | (DomainAuditBase & {
       action: 'knowledge.search.executed';
       entityType: 'knowledge_search';
       newData: {
@@ -211,6 +248,32 @@ export type DomainAuditEvent =
           documentTypeId: string | null;
           legalArea: string | null;
         };
+      };
+    })
+  | (DomainAuditBase & {
+      action: 'assistant.answer.refused';
+      entityType: 'assistant_answer';
+      newData: {
+        caseId: string;
+        questionLength: number;
+        status: 'INSUFFICIENT_EVIDENCE';
+      };
+    })
+  | (DomainAuditBase & {
+      action: 'assistant.answer.generated';
+      entityType: 'assistant_answer';
+      newData: {
+        caseId: string;
+        questionLength: number;
+        claimCount: number;
+        sourceChunkIds: string[];
+        provider: string;
+        modelName: string;
+        modelVersion: string;
+        promptVersion: string;
+        executionId: string;
+        costAmount: string;
+        costCurrency: string;
       };
     });
 

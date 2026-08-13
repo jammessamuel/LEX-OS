@@ -15,15 +15,24 @@ import {
   encodeCursor,
   type CursorPage,
 } from '../http/pagination.js';
+import type {
+  ParticipantRoleCode,
+  ParticipantSideCode,
+} from '../participants/participant.constants.js';
 import type { ConfidentialityLevelCode } from './case.constants.js';
 import type { CaseResponseDto } from './dto/case-response.dto.js';
 import type { CreateCaseRequestDto } from './dto/create-case-request.dto.js';
 import type { ListCasesQueryDto } from './dto/list-cases-query.dto.js';
+import type {
+  PersonCaseListResponseDto,
+  PersonCaseResponseDto,
+} from './dto/person-case-response.dto.js';
 import type { UpdateCaseRequestDto } from './dto/update-case-request.dto.js';
 import {
   CasesRepository,
   type CaseCursor,
   type CaseRecord,
+  type PersonCaseRecord,
   type UpdateCaseData,
 } from './cases.repository.js';
 
@@ -43,6 +52,12 @@ function mapCase(record: CaseRecord): CaseResponseDto {
     confidentialityLevel: record.confidentialityLevel,
     responsibleUserId: record.responsibleUserId,
     responsible: record.responsibleUser,
+    processingCostLimitAmount: record.processingCostLimitAmount.toFixed(6),
+    processingCostSpentAmount: record.processingCostSpentAmount.toFixed(6),
+    processingCostReservedAmount: record.processingCostReservedAmount.toFixed(6),
+    processingCostCurrency: record.processingCostCurrency,
+    processingBudgetStatus: record.processingBudgetStatus,
+    processingLimitReachedAt: record.processingLimitReachedAt?.toISOString() ?? null,
     openedAt: record.openedAt.toISOString(),
     closedAt: record.closedAt?.toISOString() ?? null,
     createdAt: record.createdAt.toISOString(),
@@ -61,6 +76,21 @@ function auditSnapshot(record: CaseRecord): CaseAuditSnapshot {
 
 function isConfidential(level: ConfidentialityLevelCode): boolean {
   return level !== 'STANDARD';
+}
+
+function mapPersonCase(record: PersonCaseRecord): PersonCaseResponseDto {
+  return {
+    case: mapCase(record),
+    participations: record.participants.map((participation) => ({
+      id: participation.id,
+      role: participation.role as ParticipantRoleCode,
+      side:
+        participation.side === null
+          ? null
+          : (participation.side.toLowerCase() as ParticipantSideCode),
+      isClient: participation.isClient,
+    })),
+  };
 }
 
 @Injectable()
@@ -138,6 +168,49 @@ export class CasesService {
       await this.#auditConfidentialRead(actor, record.id, 'DETAIL', metadata);
     }
     return mapCase(record);
+  }
+
+  async listForPerson(
+    actor: ActorContext,
+    personId: string,
+    query: { cursor?: string; limit: number },
+    metadata: RequestAuditMetadata,
+  ): Promise<PersonCaseListResponseDto> {
+    const cursor = decodeCursor(query.cursor, parseCaseCursor);
+    const rows = await this.repository.listForPerson(actor.organizationId, personId, {
+      allowConfidential: actor.permissions.has('confidential_cases.read'),
+      ...(cursor === undefined ? {} : { cursor }),
+      take: query.limit + 1,
+    });
+    const hasNextPage = rows.length > query.limit;
+    const pageRows = hasNextPage ? rows.slice(0, query.limit) : rows;
+    const confidentialCount = pageRows.filter((record) =>
+      isConfidential(record.confidentialityLevel),
+    ).length;
+
+    if (confidentialCount > 0) {
+      await this.audit.recordDomain({
+        organizationId: actor.organizationId,
+        userId: actor.userId,
+        entityId: null,
+        entityType: 'case',
+        action: 'case.confidential.read',
+        newData: { access: 'PERSON_CASES', count: confidentialCount },
+        ...metadata,
+      });
+    }
+
+    const last = pageRows.at(-1);
+    return {
+      data: pageRows.map(mapPersonCase),
+      pageInfo: {
+        hasNextPage,
+        nextCursor:
+          hasNextPage && last !== undefined
+            ? encodeCursor({ updatedAt: last.updatedAt.toISOString(), id: last.id })
+            : null,
+      },
+    };
   }
 
   async assertAccessibleForParticipants(
@@ -275,6 +348,53 @@ export class CasesService {
     } catch (error: unknown) {
       this.#rethrowKnownWriteError(error);
     }
+  }
+
+  async updateProcessingBudget(
+    actor: ActorContext,
+    id: string,
+    limitAmount: string,
+    metadata: RequestAuditMetadata,
+  ): Promise<CaseResponseDto> {
+    const current = await this.#findAccessible(actor, id);
+    const result = await withTransaction(this.database.client, async (transaction) => {
+      const updated = await this.repository.updateProcessingBudget(
+        transaction,
+        actor.organizationId,
+        id,
+        new Prisma.Decimal(limitAmount),
+      );
+      if (updated.outcome === 'NOT_FOUND') {
+        throw this.#notFound();
+      }
+      if (updated.outcome === 'BELOW_COMMITTED_COST') {
+        throw new ApiException(
+          HttpStatus.CONFLICT,
+          'PROCESSING_BUDGET_BELOW_COMMITTED_COST',
+          'O teto não pode ser menor que o custo já consumido ou reservado.',
+        );
+      }
+      await this.audit.recordDomainInTransaction(transaction, {
+        organizationId: actor.organizationId,
+        userId: actor.userId,
+        entityId: id,
+        entityType: 'case',
+        action: 'case.processing_budget.updated',
+        oldData: {
+          limitAmount: current.processingCostLimitAmount.toFixed(6),
+          currency: current.processingCostCurrency,
+          status: current.processingBudgetStatus,
+        },
+        newData: {
+          limitAmount: updated.record.processingCostLimitAmount.toFixed(6),
+          currency: updated.record.processingCostCurrency,
+          status: updated.record.processingBudgetStatus,
+        },
+        ...metadata,
+      });
+      return updated.record;
+    });
+    return mapCase(result);
   }
 
   async remove(actor: ActorContext, id: string, metadata: RequestAuditMetadata): Promise<void> {

@@ -18,7 +18,7 @@ The repository is being built incrementally. Before implementing product code, r
 - `docs/architecture/implementation-plan.md`;
 - every relevant ADR under `docs/decisions/`.
 
-Do not implement later deliveries opportunistically. Complete and verify one vertical increment at a time. The latest completed scope is **Delivery 9 — Text and semantic search foundation** from `docs/architecture/implementation-plan.md`: the Delivery 8 review platform plus deterministic source-located chunks, mock embeddings, PostgreSQL Portuguese full-text search, exact pgvector search, hybrid ranking, database-enforced tenant/confidentiality/source filters, explicit insufficient-evidence responses, and safe search audits. Real AI/OCR/embedding providers, grounded answer generation, general audit routes, user administration, and the complete feature UI remain outside the completed boundary. Delivery 10 requires explicit authorization.
+Do not implement later deliveries opportunistically. Complete and verify one vertical increment at a time. The latest accepted checkpoint is **Delivery 9 — Text and semantic search foundation** from `docs/architecture/implementation-plan.md`. **Delivery 10 — Essential web vertical slice is authorized and in progress.** Its backend contracts now include person-to-case traversal, task lifecycle changes, assignable-user summaries, extracted-entity confirmation, source-grounded answers through a deterministic mock, and ADR-011 per-execution cost accounting with a hard per-case ceiling. Real AI/OCR/embedding/language-model providers, general audit routes, full user administration, and Delivery 11 remain outside the active boundary. Delivery 10 is not accepted until its remaining UI and end-to-end gates pass.
 
 ## Architecture rules
 

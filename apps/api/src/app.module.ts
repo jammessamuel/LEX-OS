@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { AccessControlModule } from './access-control/access-control.module.js';
+import { AssistantModule } from './assistant/assistant.module.js';
 import { PermissionsGuard } from './access-control/permissions.guard.js';
 import { AppController } from './app.controller.js';
 import { AccessTokenGuard } from './auth/access-token.guard.js';
@@ -24,6 +25,7 @@ import { ProcessingModule } from './processing/processing.module.js';
 import { SearchModule } from './search/search.module.js';
 import { TasksModule } from './tasks/tasks.module.js';
 import { TimelineModule } from './timeline/timeline.module.js';
+import { UsersModule } from './users/users.module.js';
 
 @Module({
   imports: [
@@ -33,6 +35,7 @@ import { TimelineModule } from './timeline/timeline.module.js';
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
     AuthModule,
     AccessControlModule,
+    AssistantModule,
     OrganizationsModule,
     PersonsModule,
     CasesModule,
@@ -45,6 +48,7 @@ import { TimelineModule } from './timeline/timeline.module.js';
     TimelineModule,
     ChecklistsModule,
     TasksModule,
+    UsersModule,
     HealthModule,
   ],
   controllers: [AppController],

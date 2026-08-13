@@ -1,8 +1,8 @@
 # LEX OS system overview
 
-**Status:** Architecture implemented through Delivery 9
+**Status:** Delivery 9 accepted; Delivery 10 architecture in progress
 
-**Last updated:** 2026-08-12
+**Last updated:** 2026-08-13
 
 ## Architectural goals
 
@@ -33,7 +33,7 @@ flowchart LR
 
 The API and worker are two processes of one modular backend, not independent microservices. They use the same application contracts and database. A queue keeps retryable or expensive work outside request latency.
 
-The implemented runtime topology, ports, health semantics, and local credential rules are documented in [Local development topology](./local-development.md). Executable contracts are documented in [Authentication and HTTP contract](../api/authentication.md), [People, cases, and participants API](../api/people-cases-participants.md), [Files and documents API](../api/files-documents.md), [Processing API](../api/processing.md), and [Timeline, checklist, and tasks API](../api/timeline-checklists-tasks.md).
+The implemented runtime topology, ports, health semantics, and local credential rules are documented in [Local development topology](./local-development.md). Executable contracts are documented in [Authentication and HTTP contract](../api/authentication.md), [People, cases, and participants API](../api/people-cases-participants.md), [Files and documents API](../api/files-documents.md), [Processing API](../api/processing.md), [Grounded assistant API](../api/assistant.md), and [Timeline, checklist, and tasks API](../api/timeline-checklists-tasks.md).
 
 ## Target monorepo
 
@@ -87,6 +87,7 @@ The modular monolith contains these logical modules:
 | `TasksModule`         | Manual and traceably generated pending work                                                  |
 | `KnowledgeModule`     | Source-aware text normalization, chunks, embeddings, institutional memory                    |
 | `SearchModule`        | Tenant-scoped structured, full-text, and semantic retrieval                                  |
+| `AssistantModule`     | Source-grounded, schema-validated answers with explicit refusal                              |
 | `AuditModule`         | Append-only safe audit events                                                                |
 | `HealthModule`        | Liveness, readiness, dependency health                                                       |
 
@@ -220,7 +221,7 @@ stateDiagram-v2
     CANCELLED --> [*]
 ```
 
-State transitions are centralized and conditional so two workers cannot both finalize one attempt. `attempts`, timestamps, safe error codes, provider/model, and non-sensitive input/output metadata live in PostgreSQL. BullMQ provides delivery and retry mechanics; `processing_jobs` is the product-visible source of truth.
+State transitions are centralized and conditional so two workers cannot both finalize one attempt. `attempts`, timestamps, safe error codes, provider/model/version, reserved and settled BRL cost, and non-sensitive input/output metadata live in PostgreSQL. BullMQ provides delivery and retry mechanics; `processing_jobs` is the product-visible source of truth.
 
 Processors are idempotent. A retry must either find the output already associated with its execution/idempotency key or append exactly one new immutable extraction. Queue delivery is at least once, so exactly-once behavior must never be assumed.
 
@@ -259,6 +260,21 @@ The initial search path stays inside PostgreSQL:
 Vector dimensionality is provider configuration, not a domain constant. The initial proposal stores model and dimensions alongside the vector and delays an ANN index until one compatible production embedding configuration is selected. PostgreSQL full-text search is the lexical baseline; OpenSearch is not part of the MVP.
 
 Delivery 9 implements this path with deterministic 16-dimension mock embeddings, exact cosine search, PostgreSQL Portuguese full-text search, and reciprocal-rank fusion. Both database paths join and filter authorized sources before ranking, and retrieval returns `INSUFFICIENT_EVIDENCE` rather than generated text when the source set is empty. The measured synthetic plan baseline is recorded in [`search-performance.md`](./search-performance.md).
+
+During Delivery 10, `POST /assistant/answers` composes that accepted retrieval path with a versioned
+language-model contract. Empty retrieval refuses before provider invocation; otherwise every
+generated claim must reference a chunk in the authorized set and map back to a resolvable citation.
+Provider output is rejected as a whole when its schema or grounding is invalid. The current adapter
+is deterministic and refuses production startup.
+
+## Processing cost boundary
+
+ADR-011 is enforced before a real provider can be introduced. Every case has exact-decimal BRL
+limit, spent, reserved, and status fields. A worker locks the case and reserves the configured
+maximum for one execution before provider invocation. Insufficient headroom cancels that job
+without calling the provider; success settles the reservation into spent cost, while failure or
+cancellation releases it. New cases default to zero, and the mock policy quotes and measures zero.
+Production startup fails until a governed positive-cost policy accompanies a real adapter.
 
 ## Transaction and consistency boundaries
 
