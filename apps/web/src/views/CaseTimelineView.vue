@@ -13,8 +13,10 @@ import {
   formatEventDate,
   importanceLabels,
 } from '../domain/vocabulary.js';
+import { useSessionStore } from '../stores/session.js';
 
 const route = useRoute();
+const session = useSessionStore();
 const caseId = String(route.params.id);
 
 const legalCase = ref<CaseSummary | null>(null);
@@ -209,6 +211,7 @@ onMounted(() => {
             <template v-else>
               <StatusChip label="Aguardando revisão" tone="pendente" />
               <button
+                v-if="session.can('cases.update')"
                 class="btn btn--sm"
                 type="button"
                 :disabled="confirming.has(event.id)"

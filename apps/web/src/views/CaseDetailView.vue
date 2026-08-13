@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
-import { ApiError, request } from '../api/client.js';
+import { ApiError, request, type NoContent } from '../api/client.js';
 import type { CaseDocument, CaseSummary, CursorPage, Participant } from '../api/types.js';
 import FileIntakePanel from '../components/FileIntakePanel.vue';
 import PreparationStatus from '../components/PreparationStatus.vue';
+import ParticipantForm from '../components/ParticipantForm.vue';
 import StatusChip from '../components/StatusChip.vue';
+import { useSessionStore } from '../stores/session.js';
 import {
   caseStatusLabels,
   confidentialityLabels,
@@ -20,6 +22,8 @@ import {
 } from '../domain/vocabulary.js';
 
 const route = useRoute();
+const router = useRouter();
+const session = useSessionStore();
 const caseId = String(route.params.id);
 
 const legalCase = ref<CaseSummary | null>(null);
@@ -35,6 +39,8 @@ const documentsFailure = ref<ApiError | null>(null);
 const participantsFailure = ref<ApiError | null>(null);
 const documentsMoreFailure = ref<ApiError | null>(null);
 const participantsMoreFailure = ref<ApiError | null>(null);
+const addingParticipant = ref(false);
+const removing = ref(false);
 
 function toApiError(error: unknown, fallback: string): ApiError {
   return error instanceof ApiError
@@ -64,7 +70,10 @@ async function load(): Promise<void> {
   }
 
   // Os painéis carregam em paralelo e tratam suas falhas sem esconder os dados do caso.
-  await Promise.all([loadDocuments(), loadParticipants()]);
+  await Promise.all([
+    ...(session.can('documents.read') ? [loadDocuments()] : []),
+    loadParticipants(),
+  ]);
   loading.value = false;
 }
 
@@ -151,8 +160,35 @@ function situationFor(document: CaseDocument): {
 }
 
 function onIntakeFinished(): void {
-  void refreshDocuments();
-  preparation.value?.wake();
+  if (session.can('documents.read')) {
+    void refreshDocuments();
+    preparation.value?.wake();
+  }
+}
+
+function onParticipantCreated(participant: Participant): void {
+  participants.value = [participant, ...participants.value];
+  addingParticipant.value = false;
+}
+
+async function removeCase(): Promise<void> {
+  if (
+    !window.confirm(
+      'Excluir este caso? Documentos e histórico permanecerão protegidos para auditoria.',
+    )
+  ) {
+    return;
+  }
+  removing.value = true;
+  failure.value = null;
+  try {
+    await request<NoContent>(`/cases/${caseId}`, { method: 'DELETE' });
+    await router.replace({ name: 'cases' });
+  } catch (error) {
+    failure.value = toApiError(error, 'Não foi possível excluir o caso.');
+  } finally {
+    removing.value = false;
+  }
 }
 
 onMounted(() => {
@@ -222,25 +258,49 @@ onMounted(() => {
           >
             Checklist
           </RouterLink>
-          <RouterLink class="btn btn--ghost" :to="{ name: 'case-tasks', params: { id: caseId } }">
+          <RouterLink
+            v-if="session.can('tasks.read')"
+            class="btn btn--ghost"
+            :to="{ name: 'case-tasks', params: { id: caseId } }"
+          >
             Tarefas
           </RouterLink>
-          <button class="btn btn--ghost" type="button" disabled>Editar caso</button>
+          <RouterLink
+            v-if="session.can('cases.update')"
+            class="btn btn--ghost"
+            :to="{ name: 'case-edit', params: { id: caseId } }"
+          >
+            Editar caso
+          </RouterLink>
+          <button
+            v-if="session.can('cases.delete')"
+            class="btn btn--danger"
+            type="button"
+            :disabled="removing"
+            @click="removeCase"
+          >
+            {{ removing ? 'Excluindo…' : 'Excluir caso' }}
+          </button>
         </div>
       </header>
 
       <div class="split">
         <div class="stack">
-          <FileIntakePanel :case-id="caseId" @finished="onIntakeFinished" />
+          <FileIntakePanel
+            v-if="session.can('documents.upload')"
+            :case-id="caseId"
+            @finished="onIntakeFinished"
+          />
 
           <PreparationStatus
+            v-if="session.can('documents.read')"
             ref="preparation"
             :case-id="caseId"
             @stages="onStages"
             @settled="refreshDocuments"
           />
 
-          <section class="panel">
+          <section v-if="session.can('documents.read')" class="panel">
             <div class="panel__bar">
               <span class="label">Documentos</span>
               <span class="data panel__count">{{ documents.length }} carregados</span>
@@ -342,8 +402,25 @@ onMounted(() => {
           <section class="panel">
             <div class="panel__bar">
               <span class="label">Partes</span>
-              <span class="data panel__count">{{ participants.length }} carregadas</span>
+              <div class="panel__bar-actions">
+                <span class="data panel__count">{{ participants.length }} carregadas</span>
+                <button
+                  v-if="session.can('cases.update') && session.can('persons.read')"
+                  class="text-button"
+                  type="button"
+                  @click="addingParticipant = !addingParticipant"
+                >
+                  {{ addingParticipant ? 'Fechar' : 'Adicionar parte' }}
+                </button>
+              </div>
             </div>
+
+            <ParticipantForm
+              v-if="addingParticipant"
+              :case-id="caseId"
+              @created="onParticipantCreated"
+              @cancel="addingParticipant = false"
+            />
 
             <div
               v-if="participantsFailure"
@@ -523,6 +600,23 @@ onMounted(() => {
 .panel__count {
   font-size: 0.78rem;
   color: var(--text-3);
+}
+
+.panel__bar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.text-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: 650;
+  cursor: pointer;
 }
 
 .panel__more,

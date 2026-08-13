@@ -2,9 +2,11 @@
 import { useRouter } from 'vue-router';
 
 import { useSessionStore } from '../stores/session.js';
+import { useTheme } from '../stores/theme.js';
 
 const session = useSessionStore();
 const router = useRouter();
+const theme = useTheme();
 
 async function signOut(): Promise<void> {
   await session.logout();
@@ -23,11 +25,45 @@ async function signOut(): Promise<void> {
       </div>
 
       <nav class="shell__nav" aria-label="Seções">
-        <RouterLink class="shell__link" :to="{ name: 'cases' }">Casos</RouterLink>
+        <RouterLink
+          v-if="
+            session.can('cases.read') && session.can('documents.read') && session.can('tasks.read')
+          "
+          class="shell__link"
+          :to="{ name: 'dashboard' }"
+        >
+          Painel
+        </RouterLink>
+        <RouterLink v-if="session.can('cases.read')" class="shell__link" :to="{ name: 'cases' }">
+          Casos
+        </RouterLink>
+        <RouterLink
+          v-if="session.can('cases.read') && session.can('knowledge.search')"
+          class="shell__link"
+          :to="{ name: 'search' }"
+        >
+          Busca
+        </RouterLink>
+        <RouterLink
+          v-if="session.can('audit.read') && session.can('confidential_cases.read')"
+          class="shell__link"
+          :to="{ name: 'audit' }"
+        >
+          Auditoria
+        </RouterLink>
       </nav>
 
       <div class="shell__account">
         <span v-if="session.user" class="shell__user">{{ session.user.name }}</span>
+        <button
+          class="shell__theme"
+          type="button"
+          :aria-label="theme.nextLabel.value"
+          :title="theme.nextLabel.value"
+          @click="theme.toggle"
+        >
+          <span aria-hidden="true">{{ theme.preference.value === 'dark' ? '☀' : '☾' }}</span>
+        </button>
         <button class="btn btn--ghost" type="button" @click="signOut">Sair</button>
       </div>
     </header>
@@ -41,6 +77,8 @@ async function signOut(): Promise<void> {
 <style scoped>
 .shell {
   min-height: 100%;
+  min-width: 0;
+  width: 100%;
   display: grid;
   grid-template-rows: auto 1fr;
 }
@@ -53,6 +91,7 @@ async function signOut(): Promise<void> {
   padding: var(--space-3) var(--space-6);
   background: var(--surface);
   border-bottom: 1px solid var(--line);
+  min-width: 0;
 }
 
 .shell__identity {
@@ -80,8 +119,10 @@ async function signOut(): Promise<void> {
 
 .shell__nav {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   margin-inline-start: var(--space-4);
+  min-width: 0;
 }
 
 .shell__link {
@@ -115,9 +156,39 @@ async function signOut(): Promise<void> {
   color: var(--text-2);
 }
 
+.shell__theme {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
 .shell__content {
   padding: var(--space-6) var(--space-6);
   width: min(var(--content-max), 100%);
   margin-inline: auto;
+  min-width: 0;
+}
+
+@media (max-width: 48rem) {
+  .shell__bar {
+    padding: var(--space-3);
+  }
+
+  .shell__nav {
+    order: 3;
+    width: 100%;
+    margin-inline-start: 0;
+  }
+
+  .shell__content {
+    padding: var(--space-4) var(--space-3);
+  }
 }
 </style>

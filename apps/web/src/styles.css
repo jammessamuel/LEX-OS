@@ -141,13 +141,37 @@ p {
   border-color: var(--line-strong);
 }
 
+.btn--danger {
+  background: transparent;
+  color: var(--rejeitado);
+  border-color: color-mix(in oklab, var(--rejeitado) 55%, var(--line));
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: var(--rejeitado-bg);
+  border-color: var(--rejeitado);
+}
+
+.btn--danger {
+  background: transparent;
+  color: var(--rejeitado);
+  border-color: color-mix(in oklab, var(--rejeitado) 55%, var(--line));
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: var(--rejeitado-bg);
+  border-color: var(--rejeitado);
+}
+
 .field {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
 
-.field > input {
+.field > input,
+.field > select,
+.field > textarea {
   font: inherit;
   color: var(--text);
   background: var(--surface);
@@ -155,6 +179,11 @@ p {
   border-radius: var(--radius);
   padding: 0.55rem 0.7rem;
   width: 100%;
+}
+
+.field > textarea {
+  resize: vertical;
+  min-height: 6rem;
 }
 
 .field > input::placeholder {

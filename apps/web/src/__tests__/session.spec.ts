@@ -24,6 +24,7 @@ const authentication: AuthTokenResponse = {
     id: '00000000-0000-4000-8000-000000000001',
     tradeName: 'Lex OS Demonstração',
   },
+  permissions: ['cases.read', 'documents.read'],
 };
 
 describe('sessão web', () => {
@@ -64,5 +65,22 @@ describe('sessão web', () => {
     });
     expect(session.isAuthenticated).toBe(false);
     expect(session.restoring).toBe(false);
+  });
+
+  it('expõe somente as permissões recebidas da sessão e as limpa ao sair', async () => {
+    client.request.mockResolvedValueOnce(authentication);
+    const session = useSessionStore();
+
+    await session.login({
+      organizationId: authentication.organization.id,
+      email: authentication.user.email,
+      password: 'senha-ficticia',
+    });
+
+    expect(session.can('cases.read')).toBe(true);
+    expect(session.can('audit.read')).toBe(false);
+
+    session.clear();
+    expect(session.can('cases.read')).toBe(false);
   });
 });

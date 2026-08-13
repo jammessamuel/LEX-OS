@@ -1,6 +1,6 @@
 # Incremental implementation plan
 
-**Status:** Delivery 9 accepted; Delivery 10 authorized and in progress
+**Status:** Delivery 10 accepted
 
 **Last updated:** 2026-08-12
 
@@ -297,7 +297,7 @@ At the end of each delivery, report:
 
 ## Next-step acceptance criteria
 
-The completed checkpoint is **Delivery 9 — Text and semantic search foundation**. It is complete only when:
+The Delivery 9 checkpoint is **Text and semantic search foundation**. It is complete only when:
 
 - the persistent graph ends with a separate `EMBEDDING` job rather than indexing in HTTP;
 - normalization/chunking is deterministic and retains resolvable source offsets and hashes;
@@ -312,5 +312,7 @@ The completed checkpoint is **Delivery 9 — Text and semantic search foundation
 - synthetic `EXPLAIN (ANALYZE, BUFFERS)` evidence documents lexical GIN and exact-vector behavior;
 - the full format, lint, typecheck, unit, integration, build, migration-validation, migration-status, and Compose gates pass.
 
-That checkpoint is accepted. **Delivery 10 — Essential web vertical slice** is authorized and in
-progress; its remaining interface and end-to-end acceptance work is tracked in the product backlog.
+That checkpoint is accepted. **Delivery 10 — Essential web vertical slice** is also accepted: its
+responsive, permission-aware pt-BR interface uses real API contracts, exposes recoverable states,
+and passes the component and essential desktop/mobile Playwright gates. Delivery 11 and governed
+follow-up increments still require explicit authorization.

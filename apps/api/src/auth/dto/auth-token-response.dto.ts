@@ -34,4 +34,11 @@ export class AuthTokenResponseDto {
 
   @ApiProperty({ type: AuthenticatedOrganizationDto })
   organization!: AuthenticatedOrganizationDto;
+
+  @ApiProperty({
+    type: [String],
+    example: ['cases.read', 'documents.read'],
+    description: 'Permissões efetivas da sessão, ordenadas e sem duplicatas.',
+  })
+  permissions!: string[];
 }

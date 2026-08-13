@@ -4,6 +4,7 @@ import { onMounted, ref } from 'vue';
 import { ApiError, request } from '../api/client.js';
 import type { CaseSummary, CursorPage } from '../api/types.js';
 import StatusChip from '../components/StatusChip.vue';
+import { useSessionStore } from '../stores/session.js';
 import {
   caseStatusLabels,
   confidentialityLabels,
@@ -13,6 +14,7 @@ import {
 } from '../domain/vocabulary.js';
 
 const cases = ref<CaseSummary[]>([]);
+const session = useSessionStore();
 const nextCursor = ref<string | null>(null);
 const loading = ref(true);
 const loadingMore = ref(false);
@@ -63,6 +65,9 @@ onMounted(() => {
         <h1 id="cases-title">Casos</h1>
         <p class="muted head__lede">Casos do escritório aos quais você tem acesso.</p>
       </div>
+      <RouterLink v-if="session.can('cases.create')" class="btn" :to="{ name: 'case-create' }">
+        Abrir caso
+      </RouterLink>
     </header>
 
     <!-- Carregando: forma que antecipa o conteúdo, não spinner centralizado. -->

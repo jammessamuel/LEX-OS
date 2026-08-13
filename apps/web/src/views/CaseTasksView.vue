@@ -3,7 +3,13 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { ApiError, request } from '../api/client.js';
-import type { CaseSummary, CaseTask, CursorPage } from '../api/types.js';
+import type {
+  AssignableUser,
+  CaseSummary,
+  CaseTask,
+  CursorPage,
+  TaskStatus,
+} from '../api/types.js';
 import StatusChip from '../components/StatusChip.vue';
 import {
   formatDueDate,
@@ -13,8 +19,10 @@ import {
   taskStatusLabels,
   taskStatusTone,
 } from '../domain/vocabulary.js';
+import { useSessionStore } from '../stores/session.js';
 
 const route = useRoute();
+const session = useSessionStore();
 const caseId = String(route.params.id);
 
 const legalCase = ref<CaseSummary | null>(null);
@@ -23,6 +31,9 @@ const nextCursor = ref<string | null>(null);
 const loading = ref(true);
 const loadingMore = ref(false);
 const failure = ref<ApiError | null>(null);
+const mutationFailure = ref<ApiError | null>(null);
+const assignableUsers = ref<AssignableUser[]>([]);
+const updating = ref<ReadonlySet<string>>(new Set());
 
 function toApiError(error: unknown, fallback: string): ApiError {
   return error instanceof ApiError
@@ -46,7 +57,7 @@ async function load(cursor?: string): Promise<void> {
 
   try {
     const [casePayload, page] = await Promise.all([
-      appending || legalCase.value !== null
+      appending || legalCase.value !== null || !session.can('cases.read')
         ? Promise.resolve(legalCase.value)
         : request<CaseSummary>(`/cases/${caseId}`),
       request<CursorPage<CaseTask>>(`/cases/${caseId}/tasks`, {
@@ -66,8 +77,59 @@ async function load(cursor?: string): Promise<void> {
   }
 }
 
+async function loadAssignableUsers(): Promise<void> {
+  if (!session.can('tasks.manage') || !session.can('users.read')) return;
+  try {
+    const page = await request<CursorPage<AssignableUser>>('/users/assignable', {
+      query: { limit: 100 },
+    });
+    assignableUsers.value = Array.isArray(page.data) ? page.data : [];
+  } catch {
+    // A lista exige users.read. Concluir tarefas continua disponível para quem tem tasks.manage.
+    assignableUsers.value = [];
+  }
+}
+
+function setUpdating(taskId: string, active: boolean): void {
+  const next = new Set(updating.value);
+  if (active) {
+    next.add(taskId);
+  } else {
+    next.delete(taskId);
+  }
+  updating.value = next;
+}
+
+async function updateTask(
+  task: CaseTask,
+  changes: { status?: TaskStatus; assignedToId?: string | null },
+): Promise<void> {
+  mutationFailure.value = null;
+  setUpdating(task.id, true);
+  try {
+    const updated = await request<CaseTask>(`/tasks/${task.id}`, {
+      method: 'PATCH',
+      body: changes,
+    });
+    tasks.value = tasks.value.map((current) => (current.id === updated.id ? updated : current));
+  } catch (error) {
+    mutationFailure.value = toApiError(error, 'Não foi possível atualizar a tarefa.');
+    if (mutationFailure.value.code === 'TASK_UPDATE_CONFLICT') {
+      await load();
+    }
+  } finally {
+    setUpdating(task.id, false);
+  }
+}
+
+function changeAssignee(task: CaseTask, event: Event): void {
+  const selected = (event.target as HTMLSelectElement).value;
+  void updateTask(task, { assignedToId: selected === '' ? null : selected });
+}
+
 onMounted(() => {
   void load();
+  void loadAssignableUsers();
 });
 </script>
 
@@ -76,9 +138,14 @@ onMounted(() => {
     <p class="crumb">
       <RouterLink :to="{ name: 'cases' }">Casos</RouterLink>
       <span aria-hidden="true">/</span>
-      <RouterLink :to="{ name: 'case-detail', params: { id: caseId } }" class="data">
+      <RouterLink
+        v-if="session.can('cases.read')"
+        :to="{ name: 'case-detail', params: { id: caseId } }"
+        class="data"
+      >
         {{ legalCase?.internalCode ?? 'caso' }}
       </RouterLink>
+      <span v-else class="data">caso</span>
       <span aria-hidden="true">/</span>
       <span>Tarefas</span>
     </p>
@@ -91,7 +158,11 @@ onMounted(() => {
           exigência que as originou.
         </p>
       </div>
-      <RouterLink class="btn btn--ghost" :to="{ name: 'case-checklist', params: { id: caseId } }">
+      <RouterLink
+        v-if="session.can('cases.read')"
+        class="btn btn--ghost"
+        :to="{ name: 'case-checklist', params: { id: caseId } }"
+      >
         Abrir checklist
       </RouterLink>
     </header>
@@ -119,12 +190,21 @@ onMounted(() => {
         Tarefas nascem das exigências do checklist que ainda faltam. Abra o checklist e crie uma
         tarefa a partir do item pendente — ela fica ligada à exigência de origem.
       </p>
-      <RouterLink class="btn" :to="{ name: 'case-checklist', params: { id: caseId } }">
+      <RouterLink
+        v-if="session.can('cases.read')"
+        class="btn"
+        :to="{ name: 'case-checklist', params: { id: caseId } }"
+      >
         Abrir checklist
       </RouterLink>
     </div>
 
     <template v-else>
+      <div v-if="mutationFailure" class="state state--error mutation-error" role="alert">
+        <h2 class="state__title">A tarefa não foi atualizada</h2>
+        <p class="state__body">{{ mutationFailure.message }}</p>
+      </div>
+
       <p
         class="verdict"
         :class="overdue.length > 0 ? 'verdict--late' : 'verdict--calm'"
@@ -179,6 +259,41 @@ onMounted(() => {
               >
                 {{ formatDueDate(task.dueAt) }}
               </span>
+              <label
+                v-if="session.can('tasks.manage') && assignableUsers.length > 0"
+                class="task__assignee"
+              >
+                <span class="visually-hidden">Responsável por {{ task.title }}</span>
+                <select
+                  :value="task.assignedToId ?? ''"
+                  :disabled="updating.has(task.id)"
+                  @change="changeAssignee(task, $event)"
+                >
+                  <option value="">Sem responsável</option>
+                  <option v-for="user in assignableUsers" :key="user.id" :value="user.id">
+                    {{ user.name }}
+                  </option>
+                </select>
+              </label>
+              <button
+                v-if="session.can('tasks.manage') && task.status !== 'CANCELLED'"
+                class="btn btn--ghost task__action"
+                type="button"
+                :disabled="updating.has(task.id)"
+                @click="
+                  updateTask(task, {
+                    status: task.status === 'COMPLETED' ? 'OPEN' : 'COMPLETED',
+                  })
+                "
+              >
+                {{
+                  updating.has(task.id)
+                    ? 'Salvando…'
+                    : task.status === 'COMPLETED'
+                      ? 'Reabrir'
+                      : 'Concluir'
+                }}
+              </button>
             </div>
           </li>
         </ul>
@@ -194,13 +309,6 @@ onMounted(() => {
           </button>
         </div>
       </div>
-
-      <!-- Limitação honesta: a API expõe listar e criar, não concluir nem reatribuir.
-           Dizer isso é melhor que oferecer um botão que não faria nada. -->
-      <p class="note">
-        A conclusão de tarefa ainda não está disponível nesta tela: a API expõe listagem e criação,
-        e a rota que altera o estado de uma tarefa ainda não existe.
-      </p>
     </template>
   </section>
 </template>
@@ -350,6 +458,25 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 
+.task__assignee select {
+  max-width: 13rem;
+  font: inherit;
+  font-size: var(--step--1);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 0.42rem 0.55rem;
+}
+
+.task__action {
+  padding-block: 0.4rem;
+}
+
+.mutation-error {
+  margin-bottom: var(--space-4);
+}
+
 .task__due {
   font-size: 0.82rem;
   color: var(--text-2);
@@ -359,15 +486,6 @@ onMounted(() => {
 .task__due--late {
   color: var(--rejeitado);
   font-weight: 600;
-}
-
-.note {
-  margin-top: var(--space-5);
-  border-left: 2px solid var(--line-strong);
-  padding-left: var(--space-4);
-  font-size: var(--step--1);
-  color: var(--text-3);
-  max-width: 62ch;
 }
 
 .state {

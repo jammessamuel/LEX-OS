@@ -13,6 +13,7 @@ defineProps<{
   value: string;
   index: number;
   sourceLines: readonly string[];
+  confirmed?: boolean;
   /** Identificador jurídico usa mono e números tabulares. */
   mono?: boolean;
 }>();
@@ -25,7 +26,9 @@ const tooltipId = useId();
     <span :class="{ data: mono }">{{ value }}</span>
     <sup class="prov__mark" aria-hidden="true">{{ index }}</sup>
     <span :id="tooltipId" class="prov__src" role="tooltip">
-      <strong>Extraído por IA · não confirmado</strong>
+      <strong>{{
+        confirmed ? 'Extraído por IA · confirmado por humano' : 'Extraído por IA · não confirmado'
+      }}</strong>
       <span v-for="line in sourceLines" :key="line">{{ line }}</span>
     </span>
   </button>

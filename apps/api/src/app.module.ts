@@ -12,6 +12,7 @@ import { CasesModule } from './cases/cases.module.js';
 import { ChecklistsModule } from './checklists/checklists.module.js';
 import { RuntimeConfigModule } from './config/runtime-config.module.js';
 import { DatabaseModule } from './database/database.module.js';
+import { DashboardModule } from './dashboard/dashboard.module.js';
 import { DocumentsModule } from './documents/documents.module.js';
 import { ExtractionsModule } from './extractions/extractions.module.js';
 import { FilesModule } from './files/files.module.js';
@@ -37,6 +38,7 @@ import { UsersModule } from './users/users.module.js';
     AccessControlModule,
     AssistantModule,
     OrganizationsModule,
+    DashboardModule,
     PersonsModule,
     CasesModule,
     ParticipantsModule,

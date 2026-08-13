@@ -1,7 +1,9 @@
 import { flushPromises, mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CaseTimelineView from '../views/CaseTimelineView.vue';
+import { useSessionStore } from '../stores/session.js';
 
 const request = vi.hoisted(() => vi.fn());
 
@@ -65,6 +67,8 @@ const stubs = { RouterLink: { template: '<a><slot /></a>' } };
 
 describe('CaseTimelineView', () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
+    useSessionStore().$patch({ permissions: new Set(['cases.update']) });
     request.mockReset();
   });
 
@@ -88,6 +92,16 @@ describe('CaseTimelineView', () => {
     expect(text).not.toContain('CONTRACT_SIGNED');
     expect(text).not.toContain('HIGH');
     expect(text).not.toContain('AI');
+  });
+
+  it('mantém a revisão somente informativa para quem não pode atualizar casos', async () => {
+    useSessionStore().clear();
+    mockList(evento());
+    const wrapper = mount(CaseTimelineView, { global: { stubs } });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Aguardando revisão');
+    expect(wrapper.find('.event__review button').exists()).toBe(false);
   });
 
   it('confirmar troca o evento pelo retorno do servidor: chip vira Confirmado, botão some', async () => {

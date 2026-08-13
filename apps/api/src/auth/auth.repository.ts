@@ -19,6 +19,18 @@ const loginUserSelect = {
       deletedAt: true,
     },
   },
+  userRoles: {
+    select: {
+      role: {
+        select: {
+          organizationId: true,
+          rolePermissions: {
+            select: { permission: { select: { code: true } } },
+          },
+        },
+      },
+    },
+  },
 } as const;
 
 const refreshSessionSelect = {
@@ -36,6 +48,18 @@ const refreshSessionSelect = {
       email: true,
       status: true,
       deletedAt: true,
+      userRoles: {
+        select: {
+          role: {
+            select: {
+              organizationId: true,
+              rolePermissions: {
+                select: { permission: { select: { code: true } } },
+              },
+            },
+          },
+        },
+      },
     },
   },
   organization: {

@@ -1,6 +1,6 @@
 # LEX OS system overview
 
-**Status:** Delivery 9 accepted; Delivery 10 architecture in progress
+**Status:** Delivery 10 accepted
 
 **Last updated:** 2026-08-13
 
@@ -33,7 +33,7 @@ flowchart LR
 
 The API and worker are two processes of one modular backend, not independent microservices. They use the same application contracts and database. A queue keeps retryable or expensive work outside request latency.
 
-The implemented runtime topology, ports, health semantics, and local credential rules are documented in [Local development topology](./local-development.md). Executable contracts are documented in [Authentication and HTTP contract](../api/authentication.md), [People, cases, and participants API](../api/people-cases-participants.md), [Files and documents API](../api/files-documents.md), [Processing API](../api/processing.md), [Grounded assistant API](../api/assistant.md), and [Timeline, checklist, and tasks API](../api/timeline-checklists-tasks.md).
+The implemented runtime topology, ports, health semantics, and local credential rules are documented in [Local development topology](./local-development.md). Executable contracts are documented in [Authentication and HTTP contract](../api/authentication.md), [Dashboard summary API](../api/dashboard.md), [People, cases, and participants API](../api/people-cases-participants.md), [Files and documents API](../api/files-documents.md), [Processing API](../api/processing.md), [Grounded assistant API](../api/assistant.md), [Authorized audit API](../api/audit.md), and [Timeline, checklist, and tasks API](../api/timeline-checklists-tasks.md).
 
 ## Target monorepo
 
@@ -75,6 +75,7 @@ The modular monolith contains these logical modules:
 | `AccessControlModule` | Roles, permissions, policy evaluation                                                        |
 | `PersonsModule`       | Individuals, companies, government entities, identifier normalization                        |
 | `CasesModule`         | Internal legal matters, confidentiality and responsibility                                   |
+| `DashboardModule`     | Database-aggregated, confidentiality-aware operational summary                               |
 | `ParticipantsModule`  | Person-to-case legal roles and sides                                                         |
 | `FilesModule`         | Upload, validation metadata, object storage, hash, duplicate linkage, download authorization |
 | `DocumentsModule`     | Semantic documents, versions/future version preparation, metadata and human correction       |
@@ -88,7 +89,7 @@ The modular monolith contains these logical modules:
 | `KnowledgeModule`     | Source-aware text normalization, chunks, embeddings, institutional memory                    |
 | `SearchModule`        | Tenant-scoped structured, full-text, and semantic retrieval                                  |
 | `AssistantModule`     | Source-grounded, schema-validated answers with explicit refusal                              |
-| `AuditModule`         | Append-only safe audit events                                                                |
+| `AuditModule`         | Append-only safe events and metadata-only supervised retrieval                               |
 | `HealthModule`        | Liveness, readiness, dependency health                                                       |
 
 Modules expose application services or explicit ports. Controllers do not call Prisma or vendor clients directly. A module does not import another module's internal repository.
@@ -299,11 +300,11 @@ Production startup fails until a governed positive-cost policy accompanies a rea
 
 ## Frontend architecture
 
-The Vue application uses feature-oriented modules, typed API contracts, Pinia for session and shared workflow state, and Vue Router route metadata for permission-aware navigation. Route hiding improves usability but is never an authorization control.
+The Vue application uses feature-oriented modules, typed API contracts, Pinia for session and shared workflow state, and Vue Router route metadata for permission-aware navigation. Login and refresh responses project the actor's effective permission codes to the client, which hides unavailable routes and actions. Route hiding improves usability but is never an authorization control; the API reloads current database authorization for every protected request.
 
 Processing state is server-authoritative. The first implementation may poll job/case status with backoff; realtime transport can be added later without changing the state model. Refreshing or reopening the page must reconstruct progress from the API.
 
-All visible labels are pt-BR. Internal names such as `knowledge_chunks` appear as **Memória do escritório**, and `processing_jobs` as **Processamentos**.
+All visible labels are pt-BR. Internal names such as `knowledge_chunks` appear as **Memória do escritório**, and `processing_jobs` as **Processamentos**. Delivery 10 covers the dashboard, case create/edit/detail, participant association, document intake/review/download/reprocessing/removal, processing progress, timeline confirmation, checklist and task review, search, and supervised audit views. A persisted dark/light preference stores no session or legal data.
 
 ## Observability
 

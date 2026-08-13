@@ -2,13 +2,18 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import AppShell from '../components/AppShell.vue';
 import { useSessionStore } from '../stores/session.js';
+import AccessDeniedView from '../views/AccessDeniedView.vue';
+import AuditView from '../views/AuditView.vue';
 import CaseChecklistView from '../views/CaseChecklistView.vue';
 import CaseDetailView from '../views/CaseDetailView.vue';
+import CaseFormView from '../views/CaseFormView.vue';
 import CasesView from '../views/CasesView.vue';
+import DashboardView from '../views/DashboardView.vue';
 import CaseTasksView from '../views/CaseTasksView.vue';
 import CaseTimelineView from '../views/CaseTimelineView.vue';
 import DocumentDetailView from '../views/DocumentDetailView.vue';
 import LoginView from '../views/LoginView.vue';
+import SearchView from '../views/SearchView.vue';
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,34 +29,75 @@ export const router = createRouter({
       path: '/',
       children: [
         {
+          component: DashboardView,
+          name: 'dashboard',
+          path: 'painel',
+          meta: { permissions: ['cases.read', 'documents.read', 'tasks.read'] },
+        },
+        {
           component: CasesView,
           name: 'cases',
           path: '',
+          meta: { permissions: ['cases.read'] },
         },
         {
           component: CaseDetailView,
           name: 'case-detail',
           path: 'casos/:id',
+          meta: { permissions: ['cases.read'] },
+        },
+        {
+          component: CaseFormView,
+          name: 'case-create',
+          path: 'casos/novo',
+          meta: { permissions: ['cases.create'] },
+        },
+        {
+          component: CaseFormView,
+          name: 'case-edit',
+          path: 'casos/:id/editar',
+          meta: { permissions: ['cases.read', 'cases.update'] },
         },
         {
           component: CaseTimelineView,
           name: 'case-timeline',
           path: 'casos/:id/cronologia',
+          meta: { permissions: ['cases.read'] },
         },
         {
           component: CaseChecklistView,
           name: 'case-checklist',
           path: 'casos/:id/checklist',
+          meta: { permissions: ['cases.read'] },
         },
         {
           component: CaseTasksView,
           name: 'case-tasks',
           path: 'casos/:id/tarefas',
+          meta: { permissions: ['tasks.read'] },
         },
         {
           component: DocumentDetailView,
           name: 'document-detail',
           path: 'documentos/:id',
+          meta: { permissions: ['documents.read'] },
+        },
+        {
+          component: SearchView,
+          name: 'search',
+          path: 'busca',
+          meta: { permissions: ['cases.read', 'knowledge.search'] },
+        },
+        {
+          component: AuditView,
+          name: 'audit',
+          path: 'auditoria',
+          meta: { permissions: ['audit.read', 'confidential_cases.read'] },
+        },
+        {
+          component: AccessDeniedView,
+          name: 'access-denied',
+          path: 'sem-acesso',
         },
       ],
     },
@@ -74,5 +120,12 @@ router.beforeEach(async (to) => {
     return session.isAuthenticated ? { name: 'cases' } : true;
   }
 
-  return session.isAuthenticated ? true : { name: 'login', query: { destino: to.fullPath } };
+  if (!session.isAuthenticated) {
+    return { name: 'login', query: { destino: to.fullPath } };
+  }
+
+  const required = Array.isArray(to.meta.permissions) ? to.meta.permissions : [];
+  return required.every((permission) => typeof permission === 'string' && session.can(permission))
+    ? true
+    : { name: 'access-denied' };
 });

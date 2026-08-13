@@ -1,7 +1,7 @@
 # Alinhamento de roadmap: proposta conceitual x plano de implementação
 
 **Status:** Registro de reconciliação
-**Última atualização:** 2026-08-12
+**Última atualização:** 2026-08-13
 **Idioma:** este documento e os ADR-009 a ADR-013 são escritos em pt-BR porque o público é a sociedade da SAMUEL DEV LTDA, não a equipe de engenharia. A documentação técnica do repositório permanece em inglês, conforme `AGENTS.md`.
 
 ## Objetivo
@@ -37,32 +37,32 @@ Essa é a ordem correta de construção — nenhum dos 11 componentes pode entra
 
 ## Mapeamento dos componentes
 
-| #   | Componente              | Entrega responsável      | Situação                                                                                                                                                                                                                                                                                                    |
-| --- | ----------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Central de Ingestão     | 6 (parcial)              | **Parcial.** Apenas upload HTTP multipart existe. O ADR-010 incluiu e-mail no MVP, mas esse incremento ainda não foi agendado. WhatsApp é conector futuro; pastas monitoradas são iniciativa separada                                                                                                       |
-| 2   | Pipeline Inteligente    | 7                        | **Estrutura completa, inteligência simulada.** Contratos de fila, ciclo de vida do job, retry, reconciliação e proveniência têm forma de produção. Todos os provedores são mocks determinísticos. Não existe estágio de transcrição                                                                         |
-| 3   | Organizador Inteligente | **nenhuma**              | **Sem entrega.** Existe apenas vínculo de duplicata por SHA-256 dentro do mesmo cliente. Estrutura de pastas, versionamento e renomeação inteligente não têm entrega no plano                                                                                                                               |
-| 4   | OCR Jurídico            | 7 (mock)                 | **Mock.** A extração de texto devolve fixtures determinísticos. Extração de CPF, CNPJ, OAB, datas, valores e número de processo _a partir do conteúdo do documento_ não existe. A validação de CPF/CNPJ que existe é de cadastro de pessoa, não de extração                                                 |
-| 5   | Extração Semântica      | 7 (mock)                 | **Mock.** `ExtractedEntity` carrega página, offsets, confiança e `linkedPersonId`; os valores são fabricados                                                                                                                                                                                                |
-| 6   | Timeline Engine         | 8                        | **Concluída com inteligência simulada.** Eventos carregam documento, localizador, extração, confiança e começam não confirmados; a confirmação humana preserva a extração original                                                                                                                          |
-| 7   | Checklist Inteligente   | 8                        | **Concluída com inteligência simulada.** Template versionado, snapshot por caso, revisão de itens, vínculo documental no mesmo caso e tarefa rastreável estão implementados                                                                                                                                 |
-| 8   | Workspace               | 10                       | **Iniciada como preparação, não aceita como Entrega 10.** Login, lista/detalhe de caso, envio, progresso e procedência já usam a API real. Criação/edição, participantes, download, correção humana, timeline, checklist, busca, auditoria autorizada, matriz completa de acessibilidade e E2E ainda faltam |
-| 9   | Memory Engine           | 9                        | **Concluída com embeddings simulados.** Indexação determinística, busca full-text em português, vetor exato, ranking híbrido, filtros no banco, citações e recusa sem evidência estão implementados                                                                                                         |
-| 10  | Assistente Interno      | incremento posterior à 9 | **Decidido.** Será resposta ancorada em fontes autorizadas, com recusa sem evidência. Não é chat jurídico genérico. A Entrega 9 fornece a recuperação; a superfície de resposta continua sem entrega agendada — ver ADR-009                                                                                 |
-| 11  | Agente Pré-Processo     | 6 + 7 + 10               | **Parcialmente construído e visível.** O backend mock e a interface de envio, progresso e procedência existem; correção humana, download, reprocessamento pela interface e verificação E2E ainda faltam                                                                                                     |
+| #   | Componente              | Entrega responsável | Situação                                                                                                                                                                                                                                                          |
+| --- | ----------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Central de Ingestão     | 6 (parcial)         | **Parcial.** Apenas upload HTTP multipart existe. O ADR-010 incluiu e-mail no MVP, mas esse incremento ainda não foi agendado. WhatsApp é conector futuro; pastas monitoradas são iniciativa separada                                                             |
+| 2   | Pipeline Inteligente    | 7                   | **Estrutura completa, inteligência simulada.** Contratos de fila, ciclo de vida do job, retry, reconciliação e proveniência têm forma de produção. Todos os provedores são mocks determinísticos. Não existe estágio de transcrição                               |
+| 3   | Organizador Inteligente | **nenhuma**         | **Sem entrega.** Existe apenas vínculo de duplicata por SHA-256 dentro do mesmo cliente. Estrutura de pastas, versionamento e renomeação inteligente não têm entrega no plano                                                                                     |
+| 4   | OCR Jurídico            | 7 (mock)            | **Mock.** A extração de texto devolve fixtures determinísticos. Extração de CPF, CNPJ, OAB, datas, valores e número de processo _a partir do conteúdo do documento_ não existe. A validação de CPF/CNPJ que existe é de cadastro de pessoa, não de extração       |
+| 5   | Extração Semântica      | 7 (mock)            | **Mock.** `ExtractedEntity` carrega página, offsets, confiança e `linkedPersonId`; os valores são fabricados                                                                                                                                                      |
+| 6   | Timeline Engine         | 8                   | **Concluída com inteligência simulada.** Eventos carregam documento, localizador, extração, confiança e começam não confirmados; a confirmação humana preserva a extração original                                                                                |
+| 7   | Checklist Inteligente   | 8                   | **Concluída com inteligência simulada.** Template versionado, snapshot por caso, revisão de itens, vínculo documental no mesmo caso e tarefa rastreável estão implementados                                                                                       |
+| 8   | Workspace               | 10                  | **Concluída no escopo essencial.** Login, painel, casos, participantes, envio, progresso, documentos, revisão humana, timeline, checklist, tarefas, busca e auditoria usam a API real. Navegação respeita permissões e o fluxo crítico passa em desktop e celular |
+| 9   | Memory Engine           | 9                   | **Concluída com embeddings simulados.** Indexação determinística, busca full-text em português, vetor exato, ranking híbrido, filtros no banco, citações e recusa sem evidência estão implementados                                                               |
+| 10  | Assistente Interno      | 9 + 10              | **Backend mock ancorado concluído.** Recupera somente fontes autorizadas, recusa sem evidência e valida as citações. Uma experiência conversacional completa e provedores reais continuam fora do escopo                                                          |
+| 11  | Agente Pré-Processo     | 6 + 7 + 10          | **Concluído com inteligência simulada.** A interface cobre envio, progresso, procedência, correção humana, download, reprocessamento e revisão; o fluxo essencial foi verificado em desktop e celular                                                             |
 
 ## Mapeamento das fases
 
-| Fase                                      | Componentes | Entregas                       | Cobertura                                                                                    |
-| ----------------------------------------- | ----------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
-| Fase 1 — Ingestão, Organizador, OCR       | 1, 3, 4     | 6 (parcial), nenhuma, 7 (mock) | **A mais fraca.** Um componente parcial, um sem entrega, um mockado                          |
-| Fase 2 — Timeline, Checklist, Workspace   | 6, 7, 8     | 8, 8, 10                       | Timeline e checklist mock concluídos; Workspace iniciado parcialmente                        |
-| Fase 3 — Memory Engine, Assistente        | 9, 10       | 9, posterior à 9               | Memory Engine mock concluído; política do assistente decidida, superfície ainda não agendada |
-| Fase 4 — Integrações com ERPs e tribunais | —           | fora do escopo do MVP          | Excluída de propósito pelo `mvp-scope.md`                                                    |
+| Fase                                      | Componentes | Entregas                       | Cobertura                                                                     |
+| ----------------------------------------- | ----------- | ------------------------------ | ----------------------------------------------------------------------------- |
+| Fase 1 — Ingestão, Organizador, OCR       | 1, 3, 4     | 6 (parcial), nenhuma, 7 (mock) | **A mais fraca.** Um componente parcial, um sem entrega, um mockado           |
+| Fase 2 — Timeline, Checklist, Workspace   | 6, 7, 8     | 8, 8, 10                       | Timeline, checklist e Workspace essencial concluídos com provedores simulados |
+| Fase 3 — Memory Engine, Assistente        | 9, 10       | 9, 10                          | Memory Engine e contrato backend ancorado concluídos com provedores simulados |
+| Fase 4 — Integrações com ERPs e tribunais | —           | fora do escopo do MVP          | Excluída de propósito pelo `mvp-scope.md`                                     |
 
 **A escolha registrada:** a sociedade autorizou seguir a cadeia de dependências do plano, e a Entrega 8 foi concluída mesmo pertencendo à **Fase 2** da proposta. Isso não resolve as lacunas da Fase 1; apenas evita bloquear capacidades independentes que já tinham fundação segura.
 
-O checkpoint formal agora é a Entrega 9. A Entrega 10 continua separada e só poderá ser considerada concluída quando todos os seus critérios de aceite forem verificados.
+O checkpoint formal agora é a Entrega 10. A Entrega 11 e os incrementos governados continuam separados e exigem autorização explícita.
 
 ## Reversões de stack deliberadas
 

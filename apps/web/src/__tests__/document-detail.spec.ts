@@ -1,7 +1,9 @@
 import { flushPromises, mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import DocumentDetailView from '../views/DocumentDetailView.vue';
+import { useSessionStore } from '../stores/session.js';
 
 const request = vi.hoisted(() => vi.fn());
 
@@ -12,6 +14,7 @@ vi.mock('../api/client.js', async () => {
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({ params: { id: 'doc-1' } }),
+  useRouter: () => ({ replace: vi.fn() }),
 }));
 
 const documento = {
@@ -50,6 +53,9 @@ const extracoes = {
           confidenceScore: 0.99,
           linkedPersonId: null,
           metadata: {},
+          confirmedByUser: false,
+          confirmedById: null,
+          confirmedAt: null,
           createdAt: '2026-08-06T12:05:00.000Z',
         },
         {
@@ -63,6 +69,9 @@ const extracoes = {
           confidenceScore: 0.98,
           linkedPersonId: null,
           metadata: {},
+          confirmedByUser: false,
+          confirmedById: null,
+          confirmedAt: null,
           createdAt: '2026-08-06T12:05:00.000Z',
         },
       ],
@@ -85,13 +94,27 @@ const extracoes = {
 };
 
 function mockLoads(): void {
-  request.mockImplementation(async (path: string) =>
-    path.endsWith('/extractions') ? extracoes : documento,
-  );
+  request.mockImplementation(async (path: string) => {
+    if (path.includes('/extracted-entities/')) {
+      const entity = extracoes.data.at(0)?.entities.find((item) => path.includes(item.id));
+      if (entity === undefined) {
+        throw new Error('A entidade fictícia não foi encontrada.');
+      }
+      return {
+        ...entity,
+        confirmedByUser: true,
+        confirmedById: 'user-1',
+        confirmedAt: '2026-08-13T12:00:00.000Z',
+      };
+    }
+    return path.endsWith('/extractions') ? extracoes : documento;
+  });
 }
 
 describe('DocumentDetailView', () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
+    useSessionStore().$patch({ permissions: new Set(['documents.manage']) });
     request.mockReset();
   });
 
@@ -128,16 +151,23 @@ describe('DocumentDetailView', () => {
     expect(wrapper.get(`[id="${dateTooltipId}"]`).text()).toContain('no documento: "05/08/2026"');
   });
 
-  it('não oferece botão de confirmar: a rota de confirmação ainda não existe', async () => {
+  it('confirma uma entidade sem perder a nota de procedência', async () => {
     mockLoads();
     const wrapper = mount(DocumentDetailView, {
       global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } },
     });
     await flushPromises();
 
-    const buttons = wrapper.findAll('button').map((b) => b.text());
-    expect(buttons.some((label) => /confirmar/iu.test(label))).toBe(false);
+    const confirm = wrapper.findAll('button').find((button) => button.text() === 'Confirmar');
+    expect(confirm).toBeDefined();
     expect(wrapper.text()).toContain('Aguardando revisão');
+
+    await confirm?.trigger('click');
+    await flushPromises();
+
+    expect(request).toHaveBeenCalledWith('/extracted-entities/en-1/confirm', { method: 'POST' });
+    expect(wrapper.text()).toContain('Confirmado');
+    expect(wrapper.findAll('.prov').at(0)?.attributes('aria-describedby')).toBeTruthy();
   });
 
   it('mostra o texto extraído e a trilha de execuções sem vazar rótulo técnico', async () => {

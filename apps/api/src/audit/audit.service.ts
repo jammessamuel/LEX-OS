@@ -92,6 +92,7 @@ export type DomainAuditEvent =
       newData: {
         access:
           | 'CHECKLISTS'
+          | 'DASHBOARD'
           | 'DETAIL'
           | 'DOCUMENTS'
           | 'DOWNLOAD'
@@ -274,6 +275,22 @@ export type DomainAuditEvent =
         executionId: string;
         costAmount: string;
         costCurrency: string;
+      };
+    })
+  | (DomainAuditBase & {
+      action: 'audit.log.listed';
+      entityType: 'audit_log';
+      newData: {
+        count: number;
+        filters: {
+          action: string | null;
+          entityType: string | null;
+          actorType: string | null;
+          userId: string | null;
+          entityId: string | null;
+          from: string | null;
+          to: string | null;
+        };
       };
     });
 

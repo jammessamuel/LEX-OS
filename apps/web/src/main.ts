@@ -5,10 +5,13 @@ import { setUnauthorizedHandler } from './api/client.js';
 import App from './App.vue';
 import { router } from './router';
 import { useSessionStore } from './stores/session.js';
+import { initializeTheme } from './stores/theme.js';
 import './styles.css';
 
 const app = createApp(App);
 const pinia = createPinia();
+
+initializeTheme();
 
 app.use(pinia);
 app.use(router);

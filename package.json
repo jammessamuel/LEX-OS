@@ -22,6 +22,7 @@
     "lint": "turbo run lint",
     "prepare": "node infra/scripts/setup-git-hooks.mjs",
     "test": "turbo run test",
+    "test:e2e": "corepack pnpm --filter @lex-os/web test:e2e",
     "test:integration": "turbo run test:integration",
     "typecheck": "turbo run typecheck",
     "db:format": "corepack pnpm --filter @lex-os/database db:format",

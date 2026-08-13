@@ -1,7 +1,7 @@
 # Authentication and HTTP contract
 
-**Status:** Implemented in Delivery 4  
-**Last updated:** 2026-08-05
+**Status:** Implemented in Delivery 4; web permission projection added in Delivery 10
+**Last updated:** 2026-08-13
 
 ## HTTP platform
 
@@ -42,7 +42,7 @@ Validation details contain field names and safe constraints. Authentication fail
 or password/session data. The read is audited with only the number of rows returned.
 | GET | `/api/v1/organizations/current` | Bearer JWT | `organizations.read` | Returns the tenant derived from the session |
 
-Health, metrics, and OpenAPI routes are public operational endpoints. The table above remains the Delivery 4 authentication surface. Later implemented resources are documented in [People, cases, and participants API](./people-cases-participants.md), [Files and documents API](./files-documents.md), [Processing API](./processing.md), [Timeline, checklists, and tasks API](./timeline-checklists-tasks.md), and [Search API](./search.md). General audit routes remain deferred.
+Health, metrics, and OpenAPI routes are public operational endpoints. The table above remains the Delivery 4 authentication surface. Later implemented resources are documented in [People, cases, and participants API](./people-cases-participants.md), [Files and documents API](./files-documents.md), [Processing API](./processing.md), [Timeline, checklists, and tasks API](./timeline-checklists-tasks.md), [Search API](./search.md), and [Authorized audit API](./audit.md).
 
 The login body is:
 
@@ -59,6 +59,11 @@ The organization UUID is required only before authentication because public orga
 ## Session lifecycle
 
 Successful login verifies the Argon2id hash, records `last_login_at`, creates a refresh family, appends a safe audit event, and returns a short-lived HS256 access JWT. The JWT contains only user, organization, session, and token-type identifiers and is restricted by issuer, audience, algorithm, and expiry.
+
+Login and refresh responses also contain a sorted, deduplicated `permissions` array computed from
+the same visible global and tenant-owned role assignments used by the access guard. The web client
+uses this projection only to hide unavailable navigation and actions; every request is still
+authorized again from current database state. Role names and role assignments are not exposed.
 
 The refresh secret is a random 32-byte opaque value. It is sent only in the `lex_os_refresh` cookie with `HttpOnly`, `SameSite=Strict`, and path `/api/v1/auth`; production also requires the `Secure` attribute. PostgreSQL stores only its SHA-256 hash.
 

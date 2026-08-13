@@ -1,7 +1,7 @@
 # Local development topology
 
-**Status:** Updated through Delivery 7  
-**Last updated:** 2026-08-06
+**Status:** Updated through Delivery 10
+**Last updated:** 2026-08-13
 
 ## Purpose
 
@@ -135,4 +135,10 @@ The shared logger recursively redacts password, secret, authorization, cookie, t
 
 ## Delivery boundary
 
-The formal delivery checkpoint remains Delivery 7. The stack, database layer, HTTP platform, authentication, tenant context, RBAC, people, cases, participants, private streamed intake, file/document metadata, authorized signed downloads, persistent BullMQ processing, mock extraction provenance, reprocessing, enqueue-gap recovery, soft delete, and safe audits are implemented. A preparatory subset of the Delivery 10 web experience now covers login, case list/detail, upload, processing progress, and extraction provenance; it does not complete or authorize Deliveries 8, 9, or 10. E-mail behavior, timeline/checklist workflows, search, the remaining feature UI, and real AI/OCR/scanner providers remain scheduled for later deliveries.
+The formal checkpoint is Delivery 10. The complete local stack, database and HTTP foundations,
+tenant-aware legal/file modules, persistent mock processing, timeline/checklist review, hybrid
+search, grounded mock answers, supervised audit retrieval, processing-cost ceiling, and essential
+responsive web workflow are implemented. The Playwright gate exercises login, permission-aware
+navigation, case access/edit entry, and search at desktop and mobile breakpoints. E-mail behavior,
+complete user administration, full person management, real AI/OCR/scanner providers, and Delivery
+11 verification hardening remain scheduled for separately authorized increments.
