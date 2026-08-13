@@ -99,3 +99,36 @@ describe('CasesView', () => {
     expect(wrapper.text()).toContain('DEMO-0001');
   });
 });
+
+describe('responsável na lista', () => {
+  it('mostra o nome do responsável, nunca o identificador', async () => {
+    request.mockResolvedValue({
+      data: [
+        {
+          ...demoCase,
+          responsibleUserId: 'user-1',
+          responsible: { id: 'user-1', name: 'Dra. Ana Responsável' },
+        },
+      ],
+      pageInfo: { nextCursor: null, hasNextPage: false },
+    });
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Dra. Ana Responsável');
+    expect(wrapper.text()).not.toContain('user-1');
+  });
+
+  it('diz que não há responsável em vez de deixar a célula vazia', async () => {
+    request.mockResolvedValue({
+      data: [{ ...demoCase, responsibleUserId: null, responsible: null }],
+      pageInfo: { nextCursor: null, hasNextPage: false },
+    });
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Sem responsável');
+  });
+});

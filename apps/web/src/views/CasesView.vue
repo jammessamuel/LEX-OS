@@ -104,7 +104,8 @@ onMounted(() => {
       <div class="scroll-x">
         <table class="rows">
           <caption class="visually-hidden">
-            Lista de casos com código interno, título, situação, prioridade, sigilo e abertura.
+            Lista de casos com código interno, título, situação, prioridade, sigilo, responsável e
+            abertura.
           </caption>
           <thead>
             <tr>
@@ -113,6 +114,7 @@ onMounted(() => {
               <th scope="col">Situação</th>
               <th scope="col">Prioridade</th>
               <th scope="col">Sigilo</th>
+              <th scope="col">Responsável</th>
               <th scope="col" class="right">Aberto em</th>
             </tr>
           </thead>
@@ -150,6 +152,9 @@ onMounted(() => {
                   tone="sigilo"
                 />
                 <span v-else class="muted">—</span>
+              </td>
+              <td :class="{ muted: item.responsible === null }">
+                {{ item.responsible?.name ?? 'Sem responsável' }}
               </td>
               <td class="data right nowrap">{{ formatDate(item.openedAt) }}</td>
             </tr>
