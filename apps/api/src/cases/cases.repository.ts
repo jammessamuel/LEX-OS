@@ -16,6 +16,12 @@ const caseSelect = {
   priority: true,
   confidentialityLevel: true,
   responsibleUserId: true,
+  responsibleUser: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
   openedAt: true,
   closedAt: true,
   createdAt: true,

@@ -42,6 +42,7 @@ function mapCase(record: CaseRecord): CaseResponseDto {
     priority: record.priority,
     confidentialityLevel: record.confidentialityLevel,
     responsibleUserId: record.responsibleUserId,
+    responsible: record.responsibleUser,
     openedAt: record.openedAt.toISOString(),
     closedAt: record.closedAt?.toISOString() ?? null,
     createdAt: record.createdAt.toISOString(),

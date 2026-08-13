@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-12 · checklist entregue no front
+**Última atualização:** 2026-08-12 · responsável do caso legível no detalhe
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -57,15 +57,14 @@ experiência central da `vision.md` e o componente 11 da proposta.
 Nada aqui pode virar front antes de a rota existir. Registrado para deixar de ser
 invisível.
 
-| Cartão                       | O que falta                                                                                                                                                                                                                                                                                                                             |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Casos por cliente            | Abrir uma pessoa e ver os casos dela. O vínculo existe (`CaseParticipant` com `isClient`), mas só há rota no sentido caso → partes. Precisa de `GET /persons/:id/cases` ou filtro `personId` em `GET /cases`, com os testes negativos de travessia de relação que o §3.12 exige. A coluna "responsável" depende também do cartão abaixo |
-| Confirmação de entidade      | A tela de procedência mostra "Aguardando revisão", mas não há rota para um humano confirmar uma entidade extraída. A confirmação humana está prevista na Delivery 8 para eventos de cronologia; entidades precisam do mesmo caminho                                                                                                     |
-| Responsável do caso com nome | Não existe rota de usuários. `responsibleUserId` só pode virar UUID na tela. Precisa de `GET /users` ou de `responsible: { id, name }` embutido no caso, como já é feito com `file` e `documentType`                                                                                                                                    |
-| Painel com números           | Nenhum endpoint devolve contagem ou agregado. Um resumo exigiria varrer páginas no cliente, o que não escala                                                                                                                                                                                                                            |
-| Resposta ancorada            | O ADR-009 decidiu resposta ancorada em fonte, mas a Entrega 9 entregou só a recuperação. `POST /search` devolve trechos com citação; não há rota que gere resposta a partir deles                                                                                                                                                       |
-| Leitura de auditoria         | Sem rota                                                                                                                                                                                                                                                                                                                                |
-| Administração de usuários    | Sem rota                                                                                                                                                                                                                                                                                                                                |
+| Cartão                    | O que falta                                                                                                                                                                                                                                                                                                                             |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Casos por cliente         | Abrir uma pessoa e ver os casos dela. O vínculo existe (`CaseParticipant` com `isClient`), mas só há rota no sentido caso → partes. Precisa de `GET /persons/:id/cases` ou filtro `personId` em `GET /cases`, com os testes negativos de travessia de relação que o §3.12 exige. A coluna "responsável" depende também do cartão abaixo |
+| Confirmação de entidade   | A tela de procedência mostra "Aguardando revisão", mas não há rota para um humano confirmar uma entidade extraída. A confirmação humana está prevista na Delivery 8 para eventos de cronologia; entidades precisam do mesmo caminho                                                                                                     |
+| Painel com números        | Nenhum endpoint devolve contagem ou agregado. Um resumo exigiria varrer páginas no cliente, o que não escala                                                                                                                                                                                                                            |
+| Resposta ancorada         | O ADR-009 decidiu resposta ancorada em fonte, mas a Entrega 9 entregou só a recuperação. `POST /search` devolve trechos com citação; não há rota que gere resposta a partir deles                                                                                                                                                       |
+| Leitura de auditoria      | Sem rota                                                                                                                                                                                                                                                                                                                                |
+| Administração de usuários | Sem rota                                                                                                                                                                                                                                                                                                                                |
 
 ---
 
@@ -110,6 +109,9 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
 
+- **Responsável legível no caso** — a listagem e o detalhe preservam o identificador para filtros
+  e edição, mas agora trazem também somente `id` e `name` do usuário na mesma consulta tenant-scoped.
+  O detalhe mostra o nome ou “Sem responsável”, sem N+1 e sem expor e-mail, status ou papéis.
 - **Cronologia com confirmação humana** — a primeira ação de escrita de revisão do
   produto: eventos na ordem dos fatos, data respeitando a precisão registrada (mês vira
   03/2019, nunca um dia inventado — e formatada em UTC para não derivar pelo fuso), nota

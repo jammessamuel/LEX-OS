@@ -26,7 +26,8 @@ const legalCase = {
   status: 'UNDER_ANALYSIS' as const,
   priority: 'NORMAL' as const,
   confidentialityLevel: 'STANDARD' as const,
-  responsibleUserId: null,
+  responsibleUserId: 'user-1',
+  responsible: { id: 'user-1', name: 'Dra. Ana Responsável' },
   openedAt: '2026-08-05T12:00:00.000Z',
   closedAt: null,
   createdAt: '2026-08-05T12:00:00.000Z',
@@ -98,6 +99,32 @@ function mountView() {
 describe('CaseDetailView', () => {
   beforeEach(() => {
     request.mockReset();
+  });
+
+  it('mostra o nome do responsável sem expor UUID ou rótulo genérico', async () => {
+    request.mockImplementation(async (path: string) =>
+      path === '/cases/case-1' ? legalCase : emptyPage,
+    );
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Dra. Ana Responsável');
+    expect(wrapper.text()).not.toContain('Atribuído');
+    expect(wrapper.text()).not.toContain('user-1');
+  });
+
+  it('explica quando o caso não tem responsável', async () => {
+    request.mockImplementation(async (path: string) =>
+      path === '/cases/case-1'
+        ? { ...legalCase, responsibleUserId: null, responsible: null }
+        : emptyPage,
+    );
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Sem responsável');
   });
 
   it('mantém o caso e as partes legíveis quando só o painel de documentos falha', async () => {
