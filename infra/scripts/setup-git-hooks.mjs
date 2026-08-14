@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Aponta o Git para `.githooks`, mantendo a proteção commit-msg após uma nova clonagem.
+// Aponta o Git para `.githooks`, mantendo as proteções pre-commit e commit-msg após uma clonagem.
 // Executa pelo script `prepare` da raiz durante `pnpm install`.
 //
 // Não pode interromper a instalação: imagens Docker e checkouts da CI podem não ter `.git`
@@ -22,8 +22,11 @@ if (!existsSync(join(repositoryRoot, '.git'))) {
   skip('no .git directory');
 }
 
-if (!existsSync(join(repositoryRoot, hooksPath, 'commit-msg'))) {
-  skip('no .githooks/commit-msg');
+if (
+  !existsSync(join(repositoryRoot, hooksPath, 'pre-commit')) ||
+  !existsSync(join(repositoryRoot, hooksPath, 'commit-msg'))
+) {
+  skip('required hooks are missing');
 }
 
 const result = spawnSync('git', ['config', 'core.hooksPath', hooksPath], {

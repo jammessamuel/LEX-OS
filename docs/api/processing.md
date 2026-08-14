@@ -51,4 +51,4 @@ Classification uses the global/same-tenant `OUTRO` type with deliberately low mo
 
 ## Production boundary
 
-Mock text/OCR, classification, entity, timeline, checklist, embedding, language-model, cost-policy, and scanner adapters refuse production startup. Retrieval and grounded answering use deterministic development/test adapters only. The backend does not yet implement real provider calls, cancellation HTTP, general audit browsing, full user administration, or the complete feature UI.
+Mock text/OCR, classification, entity, timeline, checklist, embedding, language-model, cost-policy, and scanner adapters refuse production startup. Retrieval and grounded answering use deterministic development/test adapters only. The backend does not yet implement real provider calls, cancellation HTTP, or full user administration. Supervised audit browsing and the Delivery 10 essential UI are implemented; Delivery 11 verifies their complete fictional path without broadening the product surface.

@@ -2,7 +2,7 @@
 
 LEX OS is an intelligent legal operations system for Brazilian law firms. The project receives disorganized operational material and prepares a structured, searchable, and traceable legal dossier for human analysis.
 
-The latest accepted checkpoint is **Delivery 10 — Essential web vertical slice**. The repository provides the reproducible local stack, authenticated and tenant-aware legal/file platform, a seven-stage persistent BullMQ pipeline, deterministic sourced timeline/checklist analysis and embedding indexation, PostgreSQL Portuguese full-text search, exact pgvector retrieval, hybrid ranking, resolvable citations, source-grounded mock answers, per-case processing ceilings, safe audit provenance, and a responsive pt-BR interface over the implemented API. Real providers and Delivery 11 verification hardening remain intentionally deferred.
+The latest accepted checkpoint is **Delivery 10 — Essential web vertical slice**. Delivery 11 verification hardening is implemented on its authorized branch and becomes accepted only after its complete GitHub CI matrix passes. The repository provides the reproducible local stack, authenticated and tenant-aware legal/file platform, a seven-stage persistent BullMQ pipeline, deterministic sourced timeline/checklist analysis and embedding indexation, PostgreSQL Portuguese full-text search, exact pgvector retrieval, hybrid ranking, resolvable citations, source-grounded mock answers, per-case processing ceilings, safe audit provenance, and a responsive pt-BR interface over the implemented API. Real providers remain intentionally blocked.
 
 ## Architecture baseline
 
@@ -61,13 +61,17 @@ cp .env.example .env
 
 Replace every `replace-with-*` value in `.env` with a local-only credential. The file is ignored by Git. Never commit it or paste its values into logs, issues, or documentation.
 
-## Start the complete stack
+## Bootstrap a clean machine
 
-One command builds the applications, starts every required service, and waits for health checks:
+After replacing the local placeholders, one command starts dependencies, applies reviewed forward
+migrations, checks their status, seeds fictional data idempotently, builds the applications, and
+waits for every health check:
 
 ```bash
-pnpm infra:up
+pnpm infra:bootstrap
 ```
+
+For later starts of an already prepared development database, use `pnpm infra:up`.
 
 Local endpoints:
 
@@ -153,12 +157,14 @@ pnpm typecheck
 pnpm test
 pnpm test:integration
 pnpm test:e2e
+pnpm deps:audit
+pnpm ops:recovery:rehearse
 pnpm build
 pnpm db:validate
 pnpm infra:config
 ```
 
-`db:validate` formats and validates the Prisma schema and checks that the reviewed raw SQL additions remain in the migration. Database integration tests require the Compose PostgreSQL service with the migration already applied. Playwright requires the complete stack, the fictional seed, and the local `SEED_ADMIN_PASSWORD`; it exercises the critical authenticated flow in desktop and mobile viewports without creating legal data.
+`db:validate` formats and validates the Prisma schema and checks that the reviewed raw SQL additions remain in the migration. Database integration tests require the Compose PostgreSQL service with the migration already applied. Playwright requires the complete stack, the fictional seed, and the local `SEED_ADMIN_PASSWORD`; it exercises the essential and full fictional product journey in desktop and mobile viewports. The recovery rehearsal is restricted to the local Compose endpoint and an exclusively fictional organization/user set; its exact behavior is documented in the [operational runbook](./docs/operations/runbook.md).
 
 API authentication and tenant contract tests also require the Compose PostgreSQL on `5433`, authenticated Redis, and private MinIO. See [Authentication and HTTP contract](./docs/api/authentication.md), [Dashboard summary API](./docs/api/dashboard.md), [People, cases, and participants API](./docs/api/people-cases-participants.md), [Files and documents API](./docs/api/files-documents.md), [Processing API](./docs/api/processing.md), [Grounded assistant API](./docs/api/assistant.md), [Authorized audit API](./docs/api/audit.md), and [Timeline, checklist, and tasks API](./docs/api/timeline-checklists-tasks.md).
 
@@ -194,7 +200,8 @@ Use `pnpm db:migrate:dev --name <descriptive_name>` only to create a reviewed fo
 - the essential review/search UI is implemented, but complete person administration and organization/user onboarding remain deferred;
 - grounded answers and processing providers still use only deterministic development/test adapters;
 - production object retention, legal hold, backup/restore, and irreversible purge policies remain governance blockers;
-- the essential Playwright matrix runs locally; broad abuse-case coverage, dependency review, backup/restore rehearsal, and CI hardening remain scheduled for Delivery 11;
-- Git hooks cover commit-message policy only; a pre-commit lint/format gate is not installed yet.
+- Delivery 11 adds broad abuse-case traceability, dependency review, a synthetic recovery rehearsal, a complete desktop/mobile Playwright journey, and CI hardening; its formal acceptance still requires the branch CI result;
+- the local recovery rehearsal proves mechanics only and is not a production backup, retention, RPO, RTO, regional-residency, or legal-hold policy;
+- Git hooks run format/lint before commits and enforce the repository commit-message policy; the remaining mandatory gates run in CI.
 
-The accepted checkpoint is **Delivery 10 — Essential web vertical slice**. Remaining governed work is tracked in [`docs/product/backlog.md`](./docs/product/backlog.md); Delivery 11 still requires explicit authorization.
+The accepted checkpoint is **Delivery 10 — Essential web vertical slice** until the authorized Delivery 11 branch passes CI. The verification matrix is in [`docs/operations/delivery-11-verification-matrix.md`](./docs/operations/delivery-11-verification-matrix.md), and remaining governed work is tracked in [`docs/product/backlog.md`](./docs/product/backlog.md).

@@ -68,6 +68,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Production dependency audit
+        run: pnpm deps:audit
+
       - name: Format check
         run: pnpm format:check
 
@@ -119,6 +122,22 @@ jobs:
             fi
           done <<< "$(git rev-list "$base".."$head")"
           exit "$failed"
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
 
   integration:
     name: Integration tests
@@ -178,5 +197,79 @@ jobs:
         run: docker compose logs --no-color --tail 200
 
       - name: Stop dependencies
+        if: always()
+        run: docker compose down --volumes
+
+  e2e-and-recovery:
+    name: Playwright full flow and recovery rehearsal
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm --filter @lex-os/web exec playwright install --with-deps chromium
+
+      - name: Create isolated E2E environment file
+        run: |
+          sed \
+            -e 's|replace-with-at-least-32-random-characters|ci-access-token-secret-000000000000|g' \
+            -e 's|replace-with-local-admin-password|ci-seed-admin-password|g' \
+            -e 's|replace-with-local-redis-password|ci-redis-password|g' \
+            -e 's|replace-with-local-access-key|ci-minio-access-key|g' \
+            -e 's|replace-with-local-secret-key|ci-minio-secret-key|g' \
+            -e 's|replace-with-local-password|ci-postgres-password|g' \
+            .env.example > .env
+          if grep -q 'replace-with' .env; then
+            echo 'A placeholder survived substitution.' >&2
+            exit 1
+          fi
+
+      - name: Start dependencies
+        run: pnpm infra:dependencies
+
+      - name: Apply migrations and seed fictional data
+        run: |
+          pnpm db:migrate:deploy
+          pnpm db:migrate:status
+          pnpm db:seed
+
+      - name: Start complete application stack
+        run: docker compose up --detach --build --wait api worker web
+
+      - name: Essential and full-story Playwright
+        run: pnpm test:e2e
+
+      - name: PostgreSQL and MinIO recovery rehearsal
+        run: pnpm ops:recovery:rehearse
+
+      - name: Compose logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail 300
+
+      - name: Upload Playwright evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-evidence
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Stop complete stack
         if: always()
         run: docker compose down --volumes

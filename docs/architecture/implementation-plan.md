@@ -252,6 +252,12 @@ ZIP extraction remains disabled unless expanded-size, recursion, file-count, pat
 - restore and reconciliation procedures are exercised with synthetic data;
 - remaining limitations and production blockers are explicitly recorded.
 
+**Implementation status (2026-08-14):** authorized and implemented on the Delivery 11 branch. The
+workflow now has every required quality/integration/Playwright/dependency/recovery gate and contains
+no deploy step. The full fictional browser journey, guarded clean-machine bootstrap, synthetic
+PostgreSQL/private-object recovery rehearsal, security coverage matrix, and operational runbook are
+present. Formal acceptance remains pending until all GitHub CI jobs pass for the branch/PR.
+
 ## Governed follow-up increments
 
 ADRs 009–013 define product policy that extends beyond the numbered Delivery 0–11 plan. They do not authorize opportunistic implementation. Each capability must receive a separate vertical increment with schema, security, audit, failure-path, and documentation acceptance criteria before coding begins:
@@ -314,5 +320,6 @@ The Delivery 9 checkpoint is **Text and semantic search foundation**. It is comp
 
 That checkpoint is accepted. **Delivery 10 — Essential web vertical slice** is also accepted: its
 responsive, permission-aware pt-BR interface uses real API contracts, exposes recoverable states,
-and passes the component and essential desktop/mobile Playwright gates. Delivery 11 and governed
-follow-up increments still require explicit authorization.
+and passes the component and essential desktop/mobile Playwright gates. Delivery 11 is authorized,
+implemented locally, and awaits its mandatory CI result; governed follow-up increments remain
+separately authorized work.

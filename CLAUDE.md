@@ -55,14 +55,15 @@ Approval for one commit is not standing approval for the next.
 
 ### 0.3 Respect the delivery boundary
 
-The latest accepted checkpoint is **Delivery 10 — Essential web vertical slice**. The responsive
-pt-BR interface is connected to real API resources for dashboard, cases, participants, uploads,
-documents, processing, timeline, checklist, tasks, search, and supervised audit access. Client
-navigation reflects effective permissions while server authorization remains authoritative. The
-essential desktop/mobile Playwright gate passes.
+The latest accepted checkpoint is **Delivery 10 — Essential web vertical slice**. Delivery 11
+verification hardening is authorized and implemented on its branch, but remains unaccepted until
+every mandatory GitHub CI job passes. Its active scope is limited to CI, unit/integration/API/E2E
+security verification, dependency review, synthetic backup/restore and reconciliation rehearsal,
+the operational runbook, and documentation alignment.
 
-Delivery 11 and later still require explicit authorization. Do not implement
-future-delivery behavior opportunistically, even when it looks like a small addition.
+Do not begin post-Delivery-11 product functionality before this verification layer is accepted.
+Real providers, production data, deployment automation, and later increments require separate
+authorization.
 
 ### 0.4 Never suppress a failing gate
 

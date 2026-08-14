@@ -1,0 +1,11 @@
+#!/bin/sh
+# Barreira local curta para impedir que formato ou lint sabidamente quebrados entrem no commit.
+# Typecheck, testes, build, migrações e Playwright permanecem gates obrigatórios da CI.
+
+set -eu
+
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+
+corepack pnpm format:check
+corepack pnpm lint

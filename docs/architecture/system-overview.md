@@ -1,8 +1,8 @@
 # LEX OS system overview
 
-**Status:** Delivery 10 accepted
+**Status:** Delivery 10 accepted; Delivery 11 verification implemented pending CI acceptance
 
-**Last updated:** 2026-08-13
+**Last updated:** 2026-08-14
 
 ## Architectural goals
 
@@ -326,6 +326,13 @@ Liveness checks only prove the process is alive. Readiness verifies required dep
 Local development uses Docker Compose for PostgreSQL with pgvector, Redis, MinIO, optional Mailpit, API, worker, and web. Production may deploy the three application processes separately while retaining the modular-monolith codebase.
 
 Service identities receive least privilege. Database migrations run as a controlled release step. Buckets remain private, TLS terminates at trusted infrastructure, secrets come from environment/secret management, and backups/restores must be tested before real customer data is accepted.
+
+Delivery 11 keeps CI verification-only and adds the complete fictional browser journey, dependency
+review, clean-machine bootstrap, and a guarded PostgreSQL/private-object recovery rehearsal. The
+rehearsal restores only into generated local resources and does not claim production durability.
+Operational commands, reconciliation response, and blockers are maintained in the
+[operational runbook](../operations/runbook.md); executable coverage is mapped in the
+[Delivery 11 verification matrix](../operations/delivery-11-verification-matrix.md).
 
 ## Evolution triggers
 
