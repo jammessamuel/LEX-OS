@@ -101,6 +101,38 @@ pnpm infra:down
 
 `infra:down` deliberately omits `--volumes`; PostgreSQL, Redis, and MinIO data survive normal container recreation.
 
+## Railway staging preview
+
+The repository keeps separate Railway configuration-as-code files for the three application
+processes:
+
+| Service | Config file                  |
+| ------- | ---------------------------- |
+| API     | `/infra/railway/api.json`    |
+| Worker  | `/infra/railway/worker.json` |
+| Web     | `/infra/railway/web.json`    |
+
+Set each service's **Railway Config File** setting to its corresponding absolute repository path.
+The API configuration runs reviewed forward migrations as a pre-deploy step; the worker never
+runs migrations. A staging deployment from an authenticated, linked CLI can then use:
+
+```bash
+railway up --service api --environment staging
+railway up --service worker --environment staging
+railway up --service web --environment staging
+```
+
+Keep staging dependencies scoped to the staging environment. In particular, configure API and
+worker Redis settings with Railway service references (`Redis.REDISHOST`, `Redis.REDISPORT`, and
+`Redis.REDISPASSWORD`) instead of copied credential values. The staging MinIO service uses image
+`minio/minio:RELEASE.2025-04-22T22-12-26Z`, a volume mounted at `/data`, and start command
+`minio server /data --console-address :9001`. Set `WEB_ORIGIN` to the generated staging web domain
+and `VITE_API_BASE_URL` to the staging API `/api/v1` URL.
+
+Use a short-lived project token when automation is required and revoke it after the deployment.
+Never commit or print the token. The current deterministic providers make this a development
+preview only: the production blockers listed below still apply.
+
 ## Run applications on the host
 
 For watch mode, start only the dependencies and then the three application processes:

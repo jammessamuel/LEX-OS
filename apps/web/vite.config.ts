@@ -6,6 +6,9 @@ export default defineConfig({
   server: {
     port: 5173,
   },
+  preview: {
+    allowedHosts: ['.railway.internal', '.railway.app'],
+  },
   test: {
     environment: 'happy-dom',
     include: ['src/**/*.spec.ts'],
