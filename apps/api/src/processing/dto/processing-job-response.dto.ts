@@ -34,6 +34,18 @@ export class ProcessingJobResponseDto {
   @ApiPropertyOptional({ nullable: true })
   modelName!: string | null;
 
+  @ApiPropertyOptional({ nullable: true })
+  modelVersion!: string | null;
+
+  @ApiProperty({ example: '0.000000' })
+  reservedCostAmount!: string;
+
+  @ApiPropertyOptional({ nullable: true, example: '0.000000' })
+  costAmount!: string | null;
+
+  @ApiProperty({ example: 'BRL' })
+  costCurrency!: string;
+
   @ApiPropertyOptional({ type: 'object', additionalProperties: true, nullable: true })
   outputMetadata!: unknown | null;
 

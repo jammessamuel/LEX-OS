@@ -16,6 +16,10 @@ const processingJobSelect = {
   version: true,
   provider: true,
   modelName: true,
+  modelVersion: true,
+  reservedCostAmount: true,
+  costAmount: true,
+  costCurrency: true,
   outputMetadata: true,
   errorCode: true,
   errorMessage: true,
@@ -48,6 +52,8 @@ export class ProcessingRepository {
       documentId?: string;
       jobType?: JobType;
       status?: JobStatus;
+      provider?: string;
+      modelName?: string;
       allowConfidential: boolean;
       take: number;
     },
@@ -73,6 +79,8 @@ export class ProcessingRepository {
         ...(input.documentId === undefined ? {} : { documentId: input.documentId }),
         ...(input.jobType === undefined ? {} : { jobType: input.jobType }),
         ...(input.status === undefined ? {} : { status: input.status }),
+        ...(input.provider === undefined ? {} : { provider: input.provider }),
+        ...(input.modelName === undefined ? {} : { modelName: input.modelName }),
         ...cursorFilter,
       },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],

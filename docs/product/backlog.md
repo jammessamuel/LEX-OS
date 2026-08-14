@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-12 · tarefas entregues; issue #5 aberta
+**Última atualização:** 2026-08-13 · Delivery 10 concluída e verificada
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,35 +19,22 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão | Detalhe                                     |
-| ------ | ------------------------------------------- |
-| —      | Nada em andamento. Próximo: busca no acervo |
+| Cartão | Detalhe                                                    |
+| ------ | ---------------------------------------------------------- |
+| —      | Nada em andamento. Próximo incremento aguarda autorização. |
 
 ---
 
-## A fazer — front, com API pronta
+## Próximos incrementos — ainda não autorizados
 
-Em ordem de valor. Os três primeiros formam o fluxo "Preparar processo", que é a
-experiência central da `vision.md` e o componente 11 da proposta.
+São capacidades úteis, mas não pertencem ao aceite da Delivery 10. Só entram em **Fazendo**
+depois de receberem escopo e autorização explícitos.
 
-| #   | Cartão                       | Rotas que já existem                                                                             |
-| --- | ---------------------------- | ------------------------------------------------------------------------------------------------ |
-| 1   | Busca no acervo              | `POST /search` — lexical, semântica e híbrida, com citação resolvível ou `INSUFFICIENT_EVIDENCE` |
-| 2   | Correção humana de documento | `PATCH /documents/:id`                                                                           |
-| 3   | Download autorizado          | `GET /files/:id/download-url` — URL assinada de 60 s                                             |
-| 4   | Reprocessar documento        | `POST /documents/:id/reprocess`                                                                  |
-| 5   | Criar e editar caso          | `POST /cases` · `PATCH /cases/:id`                                                               |
-| 6   | Participantes do caso        | `GET`/`POST /cases/:caseId/participants`                                                         |
-| 7   | Pessoas — CRUD               | `GET`/`POST`/`PATCH`/`DELETE /persons` — CPF e CNPJ chegam mascarados                            |
-| 8   | Excluir caso e documento     | `DELETE /cases/:id` · `DELETE /documents/:id`                                                    |
-
-## A fazer — qualidade de interface
-
-| Cartão                               | Detalhe                                                                  |
-| ------------------------------------ | ------------------------------------------------------------------------ |
-| Alternador de tema persistente       | Escuro é o padrão; a escolha do usuário precisa sobreviver ao recarregar |
-| Passagem de teclado no fluxo crítico | Critério de aceite da Delivery 10, não item opcional                     |
-| Sincronizar a referência visual      | A página do sistema visual ficou na escala e no raio antigos             |
+| Cartão                         | Fundação disponível                                               |
+| ------------------------------ | ----------------------------------------------------------------- |
+| Pessoas — experiência CRUD     | Rotas `GET`/`POST`/`PATCH`/`DELETE /persons` já existem           |
+| Assistente — conversa completa | A resposta ancorada simples existe; histórico de conversa não     |
+| Referência visual viva         | Tokens e dois temas existem; falta definir o artefato de catálogo |
 
 ---
 
@@ -56,15 +43,9 @@ experiência central da `vision.md` e o componente 11 da proposta.
 Nada aqui pode virar front antes de a rota existir. Registrado para deixar de ser
 invisível.
 
-| Cartão                       | O que falta                                                                                                                                                                                                                                                                                                                             |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Casos por cliente            | Abrir uma pessoa e ver os casos dela. O vínculo existe (`CaseParticipant` com `isClient`), mas só há rota no sentido caso → partes. Precisa de `GET /persons/:id/cases` ou filtro `personId` em `GET /cases`, com os testes negativos de travessia de relação que o §3.12 exige. A coluna "responsável" depende também do cartão abaixo |
-| Concluir e reatribuir tarefa | Só existem listar e criar. Sem `PATCH /tasks/:id`, uma tarefa nasce e nunca fecha; prioridade e prazo só podem ser definidos na criação, sem conserto depois. Issue #5                                                                                                                                                                  |
-| Confirmação de entidade      | A tela de procedência mostra "Aguardando revisão", mas não há rota para um humano confirmar uma entidade extraída. A confirmação humana está prevista na Delivery 8 para eventos de cronologia; entidades precisam do mesmo caminho                                                                                                     |
-| Painel com números           | Nenhum endpoint devolve contagem ou agregado. Um resumo exigiria varrer páginas no cliente, o que não escala                                                                                                                                                                                                                            |
-| Resposta ancorada            | O ADR-009 decidiu resposta ancorada em fonte, mas a Entrega 9 entregou só a recuperação. `POST /search` devolve trechos com citação; não há rota que gere resposta a partir deles                                                                                                                                                       |
-| Leitura de auditoria         | Sem rota                                                                                                                                                                                                                                                                                                                                |
-| Administração de usuários    | Sem rota                                                                                                                                                                                                                                                                                                                                |
+| Cartão                    | O que falta                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------- |
+| Administração de usuários | Existe somente a lista mínima de usuários atribuíveis; CRUD, convites e papéis não têm rota |
 
 ---
 
@@ -98,10 +79,10 @@ Nenhum é código. Cada um trava trabalho abaixo dele.
 
 Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
-| Cartão                            | Situação                               |
-| --------------------------------- | -------------------------------------- |
-| Gate de lint e formato pré-commit | Os hooks cobrem só mensagem de commit  |
-| Playwright ponta a ponta          | Obrigatório para aceitar a Delivery 10 |
+| Cartão                            | Situação                                                       |
+| --------------------------------- | -------------------------------------------------------------- |
+| Gate de lint e formato pré-commit | Os hooks cobrem só mensagem de commit                          |
+| Matriz E2E ampliada               | O fluxo essencial passa; abuso e jornada total são Delivery 11 |
 
 ---
 
@@ -109,6 +90,35 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
 
+- **Delivery 10 aceita no navegador real** — Playwright cobre o fluxo autenticado essencial em
+  desktop e celular, sem criar dados jurídicos; verifica navegação por teclado, foco visível,
+  ausência de estouro horizontal e falhas inesperadas de console ou HTTP.
+- **Workspace essencial conectado à API** — painel, criação/edição/exclusão de caso, participantes,
+  correção/download/reprocessamento/exclusão de documento, confirmação de entidade, tarefas e busca
+  com resposta ancorada são ações reais. O tema escuro é padrão e a preferência clara/escura persiste
+  sem armazenar sessão.
+- **Permissões efetivas na interface** — login e refresh recebem o conjunto deduplicado de permissões
+  calculado pelas mesmas atribuições visíveis do guard. Rotas, navegação e ações ocultam o que não está
+  disponível, mas a API continua revalidando autorização no banco em toda requisição.
+- **Resumo operacional sem varrer páginas** — o painel recebe contagens de casos, documentos,
+  tarefas e processamentos em uma única consulta. Tenant, exclusão lógica e confidencialidade são
+  aplicados antes dos agregados; quem não pode ver sigilo não recebe nem mesmo o sinal numérico.
+- **Leitura supervisionada da auditoria** — a rota pagina somente metadados do tenant e exige
+  `audit.read` junto de `confidential_cases.read`, porque a atividade pode identificar um caso
+  confidencial. Snapshots `old_data/new_data` nunca saem pela rota; a própria leitura é auditada sem
+  copiar o payload consultado.
+- **Controles de custo antes do primeiro provedor real** — cada caso nasce com teto zero em BRL;
+  o worker reserva o custo máximo antes de chamar um provedor, liquida gasto e reserva no mesmo
+  fluxo transacional e interrompe o processamento ao alcançar o limite. Jobs expõem provedor,
+  modelo, versão e valores exatos; filtros e auditoria permitem medir sem registrar conteúdo.
+- **Resposta ancorada do ADR-009** — `POST /assistant/answers` recupera apenas fontes autorizadas,
+  recusa sem evidência antes de chamar o modelo e rejeita qualquer afirmação cuja citação não
+  resolva para os trechos retornados. O adaptador ainda é mock, marcado como máquina, com aviso de
+  revisão humana e auditoria sem pergunta, resposta ou conteúdo jurídico.
+- **Lacunas de ação da interface fechadas** — pessoa agora lista seus casos acessíveis sem vazar
+  confidenciais; tarefa pode concluir, reabrir, mudar prioridade, prazo e responsável com proteção
+  contra corrida; a seleção de responsável usa apenas usuários ativos do tenant; e uma entidade
+  extraída pode receber confirmação humana única sem alterar sua extração de origem.
 - **Responsável legível no caso** — a listagem e o detalhe preservam o identificador para filtros
   e edição, mas agora trazem também somente `id` e `name` do usuário na mesma consulta tenant-scoped.
   O detalhe mostra o nome ou “Sem responsável”, sem N+1 e sem expor e-mail, status ou papéis.

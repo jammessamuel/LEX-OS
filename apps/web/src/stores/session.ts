@@ -18,6 +18,7 @@ import type {
 export const useSessionStore = defineStore('session', () => {
   const user = ref<AuthenticatedUser | null>(null);
   const organization = ref<AuthenticatedOrganization | null>(null);
+  const permissions = ref<ReadonlySet<string>>(new Set());
   const restoring = ref(true);
 
   const isAuthenticated = computed(() => user.value !== null);
@@ -26,12 +27,18 @@ export const useSessionStore = defineStore('session', () => {
     setAccessToken(response.accessToken);
     user.value = response.user;
     organization.value = response.organization;
+    permissions.value = new Set(response.permissions);
   }
 
   function clear(): void {
     setAccessToken(null);
     user.value = null;
     organization.value = null;
+    permissions.value = new Set();
+  }
+
+  function can(permission: string): boolean {
+    return permissions.value.has(permission);
   }
 
   async function login(input: {
@@ -78,5 +85,16 @@ export const useSessionStore = defineStore('session', () => {
     }
   }
 
-  return { user, organization, restoring, isAuthenticated, login, logout, restore, clear };
+  return {
+    user,
+    organization,
+    permissions,
+    restoring,
+    isAuthenticated,
+    can,
+    login,
+    logout,
+    restore,
+    clear,
+  };
 });

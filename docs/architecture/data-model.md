@@ -1,8 +1,8 @@
 # LEX OS initial data model
 
-**Status:** Schema implemented in Delivery 3; application behavior implemented through Delivery 9
+**Status:** Delivery 9 accepted; Delivery 10 schema extensions implemented
 
-**Last updated:** 2026-08-12
+**Last updated:** 2026-08-13
 
 ## Modeling principles
 
@@ -164,7 +164,7 @@ Every `document_extractions` row represents one execution. Reprocessing appends 
 
 Raw vendor payloads should not be persisted by default; validated normalized output belongs in `structured_data`, and a safe storage artifact may hold diagnostic payloads only when governance permits.
 
-`extracted_entities` links to both the document and extraction, includes normalized and original values, page and offset location, confidence, optional person link, and metadata. A composite relationship guarantees that the extraction belongs to the same document and organization.
+`extracted_entities` links to both the document and extraction, includes normalized and original values, page and offset location, confidence, optional person link, and metadata. A composite relationship guarantees that the extraction belongs to the same document and organization. Delivery 10 adds single-assignment human review fields (`confirmed_by_user`, `confirmed_by_id`, and `confirmed_at`) with a database consistency check and same-tenant user relationship. Confirmation preserves the original extraction and entity values.
 
 ## Timeline provenance and confirmation
 
@@ -217,7 +217,7 @@ Delivery 9 implements full-text search with a stored generated Portuguese `tsvec
 
 ## Processing jobs
 
-`processing_jobs` is the user-visible processing source of truth. It stores tenant/resource links, job type, state, priority, attempt count, provider/model, safe input/output metadata, error code/message, execution timestamps, and optimistic `version`.
+`processing_jobs` is the user-visible processing source of truth. It stores tenant/resource links, job type, state, priority, attempt count, provider/model/version, exact reserved and settled cost, safe input/output metadata, error code/message, execution timestamps, and optimistic `version`.
 
 The application owns allowed transitions. Redis/BullMQ data may expire without erasing the historical job record. Error messages are sanitized and must not contain document text, tokens, bucket URLs, or raw vendor responses.
 
@@ -226,6 +226,12 @@ Delivery 7 constrains lifecycle/error consistency in PostgreSQL and updates jobs
 Delivery 8 extends the graph with timeline and checklist jobs. Each stage appends its own immutable extraction; timeline events reference the timeline execution, while its structured provenance identifies the source text extraction. Checklist analysis creates or reuses the case/template-version snapshot and never resets a human-reviewed item to an AI proposal.
 
 Delivery 9 adds the terminal `EMBEDDING` job. It consumes the latest completed OCR extraction, creates deterministic source-located chunks, and inserts vectors idempotently. Search joins back to the source extraction and excludes it when a newer completed OCR extraction exists, retaining old chunks for provenance without returning stale evidence.
+
+Delivery 10 adds ADR-011 cost controls. Each case stores exact-decimal BRL limit, spent, reserved,
+budget status, and the time its limit was reached. A job stores its model version, reserved maximum,
+settled cost, and currency. Database checks keep all values non-negative and consistent with job
+state; the worker locks the case before atomically reserving, settling, or releasing an execution's
+cost. A zero default ceiling fails closed for any positive-cost provider.
 
 ## Audit logs
 

@@ -2,7 +2,7 @@
 
 LEX OS is an intelligent legal operations system for Brazilian law firms. The project receives disorganized operational material and prepares a structured, searchable, and traceable legal dossier for human analysis.
 
-This repository contains **Delivery 9 — Text and semantic search foundation**. It provides the reproducible local stack, authenticated and tenant-aware legal/file platform, a seven-stage persistent BullMQ pipeline, deterministic sourced timeline/checklist analysis and embedding indexation, PostgreSQL Portuguese full-text search, exact pgvector retrieval, hybrid ranking, resolvable citations, explicit insufficient-evidence behavior, and safe audit provenance. Real providers, grounded answer generation, and the complete feature UI remain intentionally deferred.
+The latest accepted checkpoint is **Delivery 10 — Essential web vertical slice**. The repository provides the reproducible local stack, authenticated and tenant-aware legal/file platform, a seven-stage persistent BullMQ pipeline, deterministic sourced timeline/checklist analysis and embedding indexation, PostgreSQL Portuguese full-text search, exact pgvector retrieval, hybrid ranking, resolvable citations, source-grounded mock answers, per-case processing ceilings, safe audit provenance, and a responsive pt-BR interface over the implemented API. Real providers and Delivery 11 verification hardening remain intentionally deferred.
 
 ## Architecture baseline
 
@@ -32,6 +32,9 @@ This repository contains **Delivery 9 — Text and semantic search foundation**.
 - audited human timeline confirmation, versioned checklist snapshots, item review, and one traceable task per selected pending item;
 - tenant/RBAC/confidentiality-aware processing progress, extraction history, and reprocessing HTTP routes;
 - tenant/RBAC/confidentiality-aware timeline, checklist, and task HTTP routes;
+- person-to-case traversal, assignable-user summaries, task lifecycle updates, and extracted-entity confirmation;
+- source-grounded answer generation that refuses without authorized evidence and validates every claim citation;
+- exact BRL processing-cost accounting with atomic reservations and a hard recoverable ceiling per case;
 - typed environment configuration with explicit production validation;
 - structured JSON logs with request and correlation IDs;
 - API liveness, readiness, and process metrics;
@@ -85,6 +88,10 @@ Local endpoints:
 
 The Docker PostgreSQL port defaults to `5433`, so a PostgreSQL instance already using the conventional host port `5432` can remain active.
 
+The API listens on the managed-platform `PORT` environment variable when one is present and
+falls back to `API_PORT` for local and Compose execution. This keeps external routing and health
+checks on the same port without changing the local development contract.
+
 Inspect or stop the environment without deleting persistent volumes:
 
 ```bash
@@ -93,6 +100,38 @@ pnpm infra:down
 ```
 
 `infra:down` deliberately omits `--volumes`; PostgreSQL, Redis, and MinIO data survive normal container recreation.
+
+## Railway staging preview
+
+The repository keeps separate Railway configuration-as-code files for the three application
+processes:
+
+| Service | Config file                  |
+| ------- | ---------------------------- |
+| API     | `/infra/railway/api.json`    |
+| Worker  | `/infra/railway/worker.json` |
+| Web     | `/infra/railway/web.json`    |
+
+Set each service's **Railway Config File** setting to its corresponding absolute repository path.
+The API configuration runs reviewed forward migrations as a pre-deploy step; the worker never
+runs migrations. A staging deployment from an authenticated, linked CLI can then use:
+
+```bash
+railway up --service api --environment staging
+railway up --service worker --environment staging
+railway up --service web --environment staging
+```
+
+Keep staging dependencies scoped to the staging environment. In particular, configure API and
+worker Redis settings with Railway service references (`Redis.REDISHOST`, `Redis.REDISPORT`, and
+`Redis.REDISPASSWORD`) instead of copied credential values. The staging MinIO service uses image
+`minio/minio:RELEASE.2025-04-22T22-12-26Z`, a volume mounted at `/data`, and start command
+`minio server /data --console-address :9001`. Set `WEB_ORIGIN` to the generated staging web domain
+and `VITE_API_BASE_URL` to the staging API `/api/v1` URL.
+
+Use a short-lived project token when automation is required and revoke it after the deployment.
+Never commit or print the token. The current deterministic providers make this a development
+preview only: the production blockers listed below still apply.
 
 ## Run applications on the host
 
@@ -113,14 +152,15 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm test:integration
+pnpm test:e2e
 pnpm build
 pnpm db:validate
 pnpm infra:config
 ```
 
-`db:validate` formats and validates the Prisma schema and checks that the reviewed raw SQL additions remain in the migration. Database integration tests require the Compose PostgreSQL service with the migration already applied.
+`db:validate` formats and validates the Prisma schema and checks that the reviewed raw SQL additions remain in the migration. Database integration tests require the Compose PostgreSQL service with the migration already applied. Playwright requires the complete stack, the fictional seed, and the local `SEED_ADMIN_PASSWORD`; it exercises the critical authenticated flow in desktop and mobile viewports without creating legal data.
 
-API authentication and tenant contract tests also require the Compose PostgreSQL on `5433`, authenticated Redis, and private MinIO. See [Authentication and HTTP contract](./docs/api/authentication.md), [People, cases, and participants API](./docs/api/people-cases-participants.md), [Files and documents API](./docs/api/files-documents.md), [Processing API](./docs/api/processing.md), and [Timeline, checklist, and tasks API](./docs/api/timeline-checklists-tasks.md).
+API authentication and tenant contract tests also require the Compose PostgreSQL on `5433`, authenticated Redis, and private MinIO. See [Authentication and HTTP contract](./docs/api/authentication.md), [Dashboard summary API](./docs/api/dashboard.md), [People, cases, and participants API](./docs/api/people-cases-participants.md), [Files and documents API](./docs/api/files-documents.md), [Processing API](./docs/api/processing.md), [Grounded assistant API](./docs/api/assistant.md), [Authorized audit API](./docs/api/audit.md), and [Timeline, checklist, and tasks API](./docs/api/timeline-checklists-tasks.md).
 
 ## Database workflow
 
@@ -151,9 +191,10 @@ Use `pnpm db:migrate:dev --name <descriptive_name>` only to create a reviewed fo
 - duplicate uploads are linked within one tenant, but their second object is retained until a production retention/deduplication policy is approved;
 - reconciliation reports missing, stale-quarantine, and orphan conditions without automatically deleting legal evidence;
 - no e-mail adapter despite local Mailpit;
-- no complete legal workflow/search UI, grounded assistant response generation, or real AI provider;
+- the essential review/search UI is implemented, but complete person administration and organization/user onboarding remain deferred;
+- grounded answers and processing providers still use only deterministic development/test adapters;
 - production object retention, legal hold, backup/restore, and irreversible purge policies remain governance blockers;
-- CI runs the format, lint, typecheck, unit, build, migration-validation, Compose-config, and integration gates, but the full Playwright end-to-end matrix and dependency review remain scheduled for Delivery 11;
+- the essential Playwright matrix runs locally; broad abuse-case coverage, dependency review, backup/restore rehearsal, and CI hardening remain scheduled for Delivery 11;
 - Git hooks cover commit-message policy only; a pre-commit lint/format gate is not installed yet.
 
-The next proposed checkpoint is **Delivery 10 — Essential web vertical slice**, subject to explicit authorization after review of Delivery 9.
+The accepted checkpoint is **Delivery 10 — Essential web vertical slice**. Remaining governed work is tracked in [`docs/product/backlog.md`](./docs/product/backlog.md); Delivery 11 still requires explicit authorization.

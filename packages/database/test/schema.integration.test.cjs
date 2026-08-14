@@ -649,3 +649,155 @@ describe('Delivery 8 timeline and checklist review invariants', () => {
     });
   });
 });
+
+describe('Delivery 10 human review and processing cost invariants', () => {
+  it('installs the entity-review and cost constraints and tenant-first indexes', async () => {
+    const constraints = await pool.query(
+      `SELECT conname
+       FROM pg_constraint
+       WHERE conname = ANY($1::text[])
+       ORDER BY conname`,
+      [
+        [
+          'cases_processing_budget_state_consistent',
+          'cases_processing_cost_within_limit',
+          'extracted_entities_confirmation_consistent',
+          'extracted_entities_organization_id_confirmed_by_fkey',
+          'processing_jobs_completed_cost_recorded',
+          'processing_jobs_cost_nonnegative',
+        ],
+      ],
+    );
+    assert.deepEqual(
+      constraints.rows.map((row) => row.conname),
+      [
+        'cases_processing_budget_state_consistent',
+        'cases_processing_cost_within_limit',
+        'extracted_entities_confirmation_consistent',
+        'extracted_entities_organization_id_confirmed_by_fkey',
+        'processing_jobs_completed_cost_recorded',
+        'processing_jobs_cost_nonnegative',
+      ],
+    );
+
+    const indexes = await pool.query(
+      `SELECT indexname
+       FROM pg_indexes
+       WHERE schemaname = 'public'
+         AND indexname = ANY($1::text[])
+       ORDER BY indexname`,
+      [
+        [
+          'extracted_entities_organization_id_confirmed_by_idx',
+          'processing_jobs_organization_id_case_id_provider_model_name_idx',
+        ],
+      ],
+    );
+    assert.deepEqual(
+      indexes.rows.map((row) => row.indexname),
+      [
+        'extracted_entities_organization_id_confirmed_by_idx',
+        'processing_jobs_organization_id_case_id_provider_model_name_idx',
+      ],
+    );
+  });
+
+  it('rejects inconsistent review attribution and cost state', async () => {
+    await inRolledBackTransaction(async (client) => {
+      const organizationA = id(81);
+      const organizationB = id(82);
+      const userA = id(83);
+      const userB = id(84);
+      const caseA = id(85);
+      const fileA = id(86);
+      const documentA = id(87);
+      const extractionA = id(88);
+      const entityA = id(89);
+
+      await client.query(
+        `INSERT INTO organizations
+          (id, legal_name, trade_name, document_number, subscription_plan, updated_at)
+         VALUES ($1, 'Organização D10 A', 'D10A', 'D10A', 'TEST', now()),
+                ($2, 'Organização D10 B', 'D10B', 'D10B', 'TEST', now())`,
+        [organizationA, organizationB],
+      );
+      await client.query(
+        `INSERT INTO users
+          (id, organization_id, name, email, password_hash, status, updated_at)
+         VALUES ($1, $2, 'Usuário D10 A', 'd10-a@example.invalid', 'argon2id-test-hash', 'ACTIVE', now()),
+                ($3, $4, 'Usuário D10 B', 'd10-b@example.invalid', 'argon2id-test-hash', 'ACTIVE', now())`,
+        [userA, organizationA, userB, organizationB],
+      );
+      await client.query(
+        `INSERT INTO cases
+          (id, organization_id, internal_code, title, legal_area, case_type, updated_at)
+         VALUES ($1, $2, 'D10-A', 'Caso D10', 'TEST', 'TEST', now())`,
+        [caseA, organizationA],
+      );
+      await client.query(
+        `INSERT INTO files
+          (id, organization_id, storage_provider, storage_bucket, storage_key,
+           original_filename, mime_type, extension, size_bytes, checksum_sha256,
+           uploaded_by, upload_source, updated_at)
+         VALUES ($1, $2, 'test', 'test', 'd10-source', 'd10.txt', 'text/plain',
+                 'txt', 10, $3, $4, 'TEST', now())`,
+        [fileA, organizationA, 'b'.repeat(64), userA],
+      );
+      await client.query(
+        `INSERT INTO documents
+          (id, organization_id, case_id, file_id, title, updated_at)
+         VALUES ($1, $2, $3, $4, 'Documento D10', now())`,
+        [documentA, organizationA, caseA, fileA],
+      );
+      await client.query(
+        `INSERT INTO document_extractions
+          (id, organization_id, document_id, extraction_type, provider, model_name,
+           execution_id, status)
+         VALUES ($1, $2, $3, 'ENTITY_EXTRACTION', 'fixture', 'v1', 'd10-execution', 'COMPLETED')`,
+        [extractionA, organizationA, documentA],
+      );
+      await client.query(
+        `INSERT INTO extracted_entities
+          (id, organization_id, document_id, extraction_id, entity_type,
+           normalized_value, original_value)
+         VALUES ($1, $2, $3, $4, 'DATE', '2026-08-13', '13/08/2026')`,
+        [entityA, organizationA, documentA, extractionA],
+      );
+
+      await expectDatabaseError(
+        client,
+        `UPDATE extracted_entities
+         SET confirmed_by_user = true
+         WHERE id = $1`,
+        [entityA],
+        '23514',
+      );
+      await expectDatabaseError(
+        client,
+        `UPDATE extracted_entities
+         SET confirmed_by_user = true, confirmed_by = $2, confirmed_at = now()
+         WHERE id = $1`,
+        [entityA, userB],
+        '23503',
+      );
+      await expectDatabaseError(
+        client,
+        `UPDATE cases
+         SET processing_cost_spent_amount = 0.000001
+         WHERE id = $1`,
+        [caseA],
+        '23514',
+      );
+      await expectDatabaseError(
+        client,
+        `INSERT INTO processing_jobs
+          (id, organization_id, case_id, job_type, status, provider, model_name,
+           model_version, reserved_cost_amount, cost_amount, started_at, finished_at, updated_at)
+         VALUES ($1, $2, $3, 'OCR', 'COMPLETED', 'fixture', 'v1', '1',
+                 0.000001, 0, now(), now(), now())`,
+        [id(90), organizationA, caseA],
+        '23514',
+      );
+    });
+  });
+});

@@ -1,7 +1,9 @@
 import { flushPromises, mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CaseDetailView from '../views/CaseDetailView.vue';
+import { useSessionStore } from '../stores/session.js';
 
 const request = vi.hoisted(() => vi.fn());
 
@@ -12,6 +14,7 @@ vi.mock('../api/client.js', async () => {
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({ params: { id: 'case-1' } }),
+  useRouter: () => ({ replace: vi.fn() }),
 }));
 
 const { ApiError } = await import('../api/client');
@@ -98,6 +101,8 @@ function mountView() {
 
 describe('CaseDetailView', () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
+    useSessionStore().$patch({ permissions: new Set(['documents.read']) });
     request.mockReset();
   });
 

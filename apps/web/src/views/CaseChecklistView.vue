@@ -20,8 +20,10 @@ import {
   checklistItemTone,
   formatDateTime,
 } from '../domain/vocabulary.js';
+import { useSessionStore } from '../stores/session.js';
 
 const route = useRoute();
+const session = useSessionStore();
 const caseId = String(route.params.id);
 
 const legalCase = ref<CaseSummary | null>(null);
@@ -99,9 +101,8 @@ async function apply(templateId: string): Promise<void> {
 /**
  * Criação de tarefa a partir da exigência.
  *
- * Prioridade e prazo só podem ser definidos aqui: a API expõe listar e criar tarefa, mas
- * não alterar. Oferecer os dois campos na criação é a única chance de acertá-los, então o
- * formulário aparece inline em vez de criar com um padrão silencioso.
+ * O formulário nasce junto da exigência para preservar o contexto de origem e evitar criar
+ * uma tarefa genérica que precise de correção imediata.
  */
 const creatingFor = ref<string | null>(null);
 const creatingPriority = ref<Priority>('NORMAL');
@@ -244,7 +245,7 @@ onMounted(() => {
           Aplique um modelo para acompanhar o que precisa estar reunido antes do protocolo. O
           checklist vira um instantâneo do modelo: alterações posteriores não mexem neste caso.
         </p>
-        <div v-if="templates.length > 0" class="templates">
+        <div v-if="templates.length > 0 && session.can('cases.update')" class="templates">
           <button
             v-for="template in templates"
             :key="template.id"
@@ -256,8 +257,11 @@ onMounted(() => {
             {{ applying ? 'Aplicando…' : `Aplicar ${template.name}` }}
           </button>
         </div>
-        <p v-else class="muted state__ref">
+        <p v-else-if="templates.length === 0" class="muted state__ref">
           Nenhum modelo disponível para a área e o tipo deste caso.
+        </p>
+        <p v-else class="muted state__ref">
+          Seu perfil pode consultar o checklist, mas não aplicar um modelo ao caso.
         </p>
       </div>
 
@@ -298,7 +302,7 @@ onMounted(() => {
               />
               <div class="item__actions">
                 <button
-                  v-if="item.status !== 'VALIDATED'"
+                  v-if="session.can('cases.update') && item.status !== 'VALIDATED'"
                   class="btn btn--sm"
                   type="button"
                   :disabled="updating.has(item.id)"
@@ -307,7 +311,7 @@ onMounted(() => {
                   {{ updating.has(item.id) ? '…' : 'Validar' }}
                 </button>
                 <button
-                  v-if="item.status !== 'NOT_APPLICABLE'"
+                  v-if="session.can('cases.update') && item.status !== 'NOT_APPLICABLE'"
                   class="btn btn--ghost btn--sm"
                   type="button"
                   :disabled="updating.has(item.id)"
@@ -316,7 +320,11 @@ onMounted(() => {
                   Não se aplica
                 </button>
                 <button
-                  v-if="item.status === 'MISSING' && creatingFor !== item.id"
+                  v-if="
+                    session.can('tasks.manage') &&
+                    item.status === 'MISSING' &&
+                    creatingFor !== item.id
+                  "
                   class="btn btn--ghost btn--sm"
                   type="button"
                   @click="openTaskForm(item.id)"
@@ -326,8 +334,7 @@ onMounted(() => {
               </div>
             </div>
 
-            <!-- Prioridade e prazo só podem ser definidos na criação: não há rota que
-                 altere uma tarefa depois. Por isso o formulário, e não um padrão mudo. -->
+            <!-- A tarefa nasce no contexto da exigência e já recebe prioridade e prazo. -->
             <form
               v-if="creatingFor === item.id"
               class="task-form"
@@ -361,7 +368,10 @@ onMounted(() => {
               </div>
             </form>
 
-            <p v-else-if="createdFor.has(item.id)" class="task-created">
+            <p
+              v-else-if="createdFor.has(item.id) && session.can('tasks.read')"
+              class="task-created"
+            >
               Tarefa criada.
               <RouterLink :to="{ name: 'case-tasks', params: { id: caseId } }">
                 Ver tarefas do caso

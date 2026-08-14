@@ -1,6 +1,6 @@
 # Incremental implementation plan
 
-**Status:** Implemented through Delivery 9
+**Status:** Delivery 10 accepted
 
 **Last updated:** 2026-08-12
 
@@ -256,9 +256,11 @@ ZIP extraction remains disabled unless expanded-size, recursion, file-count, pat
 
 ADRs 009–013 define product policy that extends beyond the numbered Delivery 0–11 plan. They do not authorize opportunistic implementation. Each capability must receive a separate vertical increment with schema, security, audit, failure-path, and documentation acceptance criteria before coding begins:
 
-- source-grounded assistant responses after Delivery 9 retrieval is accepted (ADR-009);
+- source-grounded assistant responses after Delivery 9 retrieval is accepted (ADR-009) — backend
+  contract implemented with a deterministic mock during Delivery 10;
 - authenticated e-mail ingestion that reuses the hostile-file intake pipeline (ADR-010);
-- per-execution cost accounting and a hard recoverable case ceiling before any real provider (ADR-011);
+- per-execution cost accounting and a hard recoverable case ceiling before any real provider
+  (ADR-011) — backend and worker controls implemented during Delivery 10;
 - fail-closed case legal hold and required governance procedures before real client data (ADR-012);
 - minimum-content worker e-mail notifications with preferences and body-free audit records (ADR-013).
 
@@ -295,7 +297,7 @@ At the end of each delivery, report:
 
 ## Next-step acceptance criteria
 
-The completed checkpoint is **Delivery 9 — Text and semantic search foundation**. It is complete only when:
+The Delivery 9 checkpoint is **Text and semantic search foundation**. It is complete only when:
 
 - the persistent graph ends with a separate `EMBEDDING` job rather than indexing in HTTP;
 - normalization/chunking is deterministic and retains resolvable source offsets and hashes;
@@ -310,4 +312,7 @@ The completed checkpoint is **Delivery 9 — Text and semantic search foundation
 - synthetic `EXPLAIN (ANALYZE, BUFFERS)` evidence documents lexical GIN and exact-vector behavior;
 - the full format, lint, typecheck, unit, integration, build, migration-validation, migration-status, and Compose gates pass.
 
-After this checkpoint is accepted, the next proposed step is **Delivery 10 — Essential web vertical slice**. It requires explicit authorization.
+That checkpoint is accepted. **Delivery 10 — Essential web vertical slice** is also accepted: its
+responsive, permission-aware pt-BR interface uses real API contracts, exposes recoverable states,
+and passes the component and essential desktop/mobile Playwright gates. Delivery 11 and governed
+follow-up increments still require explicit authorization.

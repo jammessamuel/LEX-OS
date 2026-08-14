@@ -18,5 +18,6 @@ import { SearchService } from './search.service.js';
     SearchService,
     { provide: SEARCH_EMBEDDING_PROVIDER, useClass: MockSearchEmbeddingProvider },
   ],
+  exports: [SearchService],
 })
 export class SearchModule {}

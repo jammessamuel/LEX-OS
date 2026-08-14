@@ -1,8 +1,8 @@
 # Processing API
 
-**Status:** Extended through Delivery 9
+**Status:** Extended during authorized Delivery 10
 
-**Last updated:** 2026-08-12
+**Last updated:** 2026-08-13
 
 ## Contract summary
 
@@ -12,16 +12,27 @@ All routes require an authenticated actor. Tenant identity comes from the sessio
 
 ## Routes
 
-| Method | Route                               | Permission         | Behavior                                      |
-| ------ | ----------------------------------- | ------------------ | --------------------------------------------- |
-| GET    | `/api/v1/processing-jobs`           | `documents.read`   | Keyset-paginates authorized persistent jobs   |
-| GET    | `/api/v1/processing-jobs/:id`       | `documents.read`   | Returns safe progress and failure metadata    |
-| GET    | `/api/v1/documents/:id/extractions` | `documents.read`   | Lists immutable executions and their entities |
-| POST   | `/api/v1/documents/:id/reprocess`   | `documents.manage` | Appends a new queued OCR-root execution       |
+| Method | Route                                    | Permission         | Behavior                                                         |
+| ------ | ---------------------------------------- | ------------------ | ---------------------------------------------------------------- |
+| GET    | `/api/v1/processing-jobs`                | `documents.read`   | Keyset-paginates authorized persistent jobs                      |
+| GET    | `/api/v1/processing-jobs/:id`            | `documents.read`   | Returns safe progress and failure metadata                       |
+| GET    | `/api/v1/documents/:id/extractions`      | `documents.read`   | Lists immutable executions and their entities                    |
+| POST   | `/api/v1/extracted-entities/:id/confirm` | `documents.manage` | Records one human confirmation without changing extracted values |
+| POST   | `/api/v1/documents/:id/reprocess`        | `documents.manage` | Appends a new queued OCR-root execution                          |
 
-Job lists accept `limit`, `cursor`, and optional `caseId`, `documentId`, `jobType`, and `status`. Extraction lists accept `limit`, `cursor`, and optional `extractionType`. Both use descending `(createdAt, id)` ordering and opaque cursors.
+Job lists accept `limit`, `cursor`, and optional `caseId`, `documentId`, `jobType`, `status`,
+`provider`, and `modelName`. This makes execution cost queryable under the authenticated organization
+by case, provider, and model. Extraction lists accept `limit`, `cursor`, and optional
+`extractionType`. Both use descending `(createdAt, id)` ordering and opaque cursors.
 
 Responses deliberately omit job input metadata, file names, storage keys, checksums, signed URLs, queue internals, and document content. Job output metadata is a small safe stage/progress/result-ID allowlist. Extraction responses preserve provider, model, version, prompt version, execution ID, timing, confidence, validated structured data, and source offsets.
+
+Extracted entities expose `confirmedByUser`, `confirmedById`, and `confirmedAt`. Confirmation is single-assignment and transactional: concurrent attempts yield one success and one conflict, the source extraction and extracted values remain unchanged, and the audit stores only review metadata rather than legal content.
+
+Completed provider jobs expose `provider`, `modelName`, `modelVersion`, exact six-decimal
+`costAmount`, and `costCurrency`. Pending work exposes any reserved maximum separately. Values are
+normalized to BRL by the configured cost policy; provider-native billing metadata must remain in a
+governed adapter rather than being inferred from document count.
 
 ## Processing behavior
 
@@ -40,4 +51,4 @@ Classification uses the global/same-tenant `OUTRO` type with deliberately low mo
 
 ## Production boundary
 
-Mock text/OCR, classification, entity, timeline, checklist, embedding, and scanner adapters refuse production startup. Delivery 9 implements retrieval through the deterministic mock only; it does not implement real provider calls, grounded answer generation, cancellation HTTP, general audit routes, user administration, or feature UI.
+Mock text/OCR, classification, entity, timeline, checklist, embedding, language-model, cost-policy, and scanner adapters refuse production startup. Retrieval and grounded answering use deterministic development/test adapters only. The backend does not yet implement real provider calls, cancellation HTTP, general audit browsing, full user administration, or the complete feature UI.

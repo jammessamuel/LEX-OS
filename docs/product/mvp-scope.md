@@ -138,7 +138,7 @@ Permission bundles will be seeded, but organization-specific roles may later com
 
 ## Required API surface
 
-Routes live under `/api/v1` and are exposed only when their delivery is implemented. Delivery 9 exposes authentication, current organization, people, cases, participant association/listing, secure file intake/list/download authorization, document list/detail/correction/soft delete, processing progress/detail, extraction history/reprocessing, timeline review/confirmation, checklist application/item review, traceable task creation/listing, and authorized text/semantic search. Users, grounded answer generation, and general audit endpoints remain scheduled for later deliveries.
+Routes live under `/api/v1` and are exposed only when their delivery is implemented. Delivery 10 exposes authentication, current organization, assignable users, people, cases, person-to-case traversal, participant association/listing, secure file intake/list/download authorization, document list/detail/correction/soft delete, processing progress/detail and exact-cost metadata, extraction history/reprocessing/entity confirmation, timeline review/confirmation, checklist application/item review, task lifecycle management, authorized text/semantic search, source-grounded mock answers, dashboard aggregates, and supervised audit metadata. Full user administration and invitation/onboarding remain scheduled for later deliveries.
 
 Every list route must define pagination, sorting allowlists, filters, and stable ordering. Every error uses:
 

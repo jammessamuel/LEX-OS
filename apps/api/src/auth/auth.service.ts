@@ -57,6 +57,35 @@ function optionalAuditMetadata(metadata: RequestAuditMetadata) {
   };
 }
 
+interface PermissionBearingUser {
+  organizationId: string;
+  userRoles: Array<{
+    role: {
+      organizationId: string | null;
+      rolePermissions: Array<{ permission: { code: string } }>;
+    };
+  }>;
+}
+
+/** Mantém o espelho do cliente idêntico à regra efetiva aplicada pelo guard da API. */
+function effectivePermissions(user: PermissionBearingUser): string[] {
+  const permissions = new Set<string>();
+
+  for (const userRole of user.userRoles) {
+    if (
+      userRole.role.organizationId !== null &&
+      userRole.role.organizationId !== user.organizationId
+    ) {
+      continue;
+    }
+    for (const rolePermission of userRole.role.rolePermissions) {
+      permissions.add(rolePermission.permission.code);
+    }
+  }
+
+  return [...permissions].sort((left, right) => left.localeCompare(right));
+}
+
 @Injectable()
 export class AuthService {
   readonly #dummyPasswordHash: Promise<string>;
@@ -287,6 +316,7 @@ export class AuthService {
             id: session.organization.id,
             tradeName: session.organization.tradeName,
           },
+          userRoles: session.user.userRoles,
         },
       };
     });
@@ -352,6 +382,7 @@ export class AuthService {
       email: string;
       organizationId: string;
       organization: { id: string; tradeName: string };
+      userRoles: PermissionBearingUser['userRoles'];
     },
     sessionId: string,
   ): Promise<AuthTokenResponseDto> {
@@ -378,6 +409,7 @@ export class AuthService {
       expiresIn,
       user: { id: user.id, name: user.name, email: user.email },
       organization: { id: user.organization.id, tradeName: user.organization.tradeName },
+      permissions: effectivePermissions(user),
     };
   }
 

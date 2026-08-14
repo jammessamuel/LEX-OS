@@ -28,9 +28,11 @@ import type { AuthenticatedRequest } from '../auth/authenticated-request.js';
 import { ApiErrorEnvelopeDto } from '../http/error-envelope.dto.js';
 import { getRequestContext } from '../observability/request-context.js';
 import { CreatePersonRequestDto } from './dto/create-person-request.dto.js';
+import { ListPersonCasesQueryDto } from './dto/list-person-cases-query.dto.js';
 import { ListPersonsQueryDto } from './dto/list-persons-query.dto.js';
 import { PersonIdParamsDto } from './dto/person-id-params.dto.js';
 import { PersonListResponseDto, PersonResponseDto } from './dto/person-response.dto.js';
+import { PersonCaseListResponseDto } from '../cases/dto/person-case-response.dto.js';
 import { UpdatePersonRequestDto } from './dto/update-person-request.dto.js';
 import { PersonsService } from './persons.service.js';
 
@@ -48,6 +50,26 @@ export class PersonsController {
   @ApiForbiddenResponse({ type: ApiErrorEnvelopeDto })
   list(@Req() request: AuthenticatedRequest, @Query() query: ListPersonsQueryDto) {
     return this.persons.list(this.#actor(request), query);
+  }
+
+  @Get(':id/cases')
+  @RequirePermissions('persons.read', 'cases.read')
+  @ApiOperation({ summary: 'Lista os casos acessíveis vinculados à pessoa autenticada.' })
+  @ApiOkResponse({ type: PersonCaseListResponseDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  @ApiForbiddenResponse({ type: ApiErrorEnvelopeDto })
+  @ApiNotFoundResponse({ type: ApiErrorEnvelopeDto })
+  listCases(
+    @Req() request: AuthenticatedRequest,
+    @Param() params: PersonIdParamsDto,
+    @Query() query: ListPersonCasesQueryDto,
+  ) {
+    return this.persons.listCases(
+      this.#actor(request),
+      params.id,
+      query,
+      getRequestContext() ?? {},
+    );
   }
 
   @Get(':id')

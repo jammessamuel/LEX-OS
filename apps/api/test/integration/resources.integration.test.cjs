@@ -18,6 +18,9 @@ const ADMIN_USER_ID = '00000000-0000-4000-8000-000000000002';
 const READ_ONLY_ROLE_ID = '00000000-0000-4000-8000-000000000106';
 const READ_ONLY_USER_ID = '30000000-0000-4000-8000-000000000001';
 const READ_ONLY_EMAIL = 'd5-read-only@lexos.invalid';
+const NO_PERMISSION_USER_ID = '30000000-0000-4000-8000-000000000006';
+const NO_PERMISSION_EMAIL = 'd5-no-permission@lexos.invalid';
+const BLOCKED_USER_ID = '30000000-0000-4000-8000-000000000007';
 const OTHER_ORGANIZATION_ID = '30000000-0000-4000-8000-000000000002';
 const OTHER_USER_ID = '30000000-0000-4000-8000-000000000003';
 const OTHER_PERSON_ID = '30000000-0000-4000-8000-000000000004';
@@ -38,6 +41,7 @@ let app;
 let http;
 let adminToken;
 let readOnlyToken;
+let noPermissionToken;
 let individualId;
 let companyId;
 let standardCaseId;
@@ -47,7 +51,7 @@ async function cleanup() {
   await pool.query(
     `DELETE FROM audit_logs
      WHERE organization_id = $1
-       AND (action LIKE 'auth.%' OR action LIKE 'person.%' OR action LIKE 'case.%' OR action LIKE 'case_participant.%')`,
+       AND (action LIKE 'auth.%' OR action LIKE 'person.%' OR action LIKE 'case.%' OR action LIKE 'case_participant.%' OR action LIKE 'user.%')`,
     [ORGANIZATION_ID],
   );
   await pool.query('DELETE FROM audit_logs WHERE organization_id = $1', [OTHER_ORGANIZATION_ID]);
@@ -62,16 +66,22 @@ async function cleanup() {
     "DELETE FROM persons WHERE full_name LIKE 'Pessoa Fictícia D5%' OR full_name LIKE 'Empresa Fictícia D5%' OR id = $1",
     [OTHER_PERSON_ID],
   );
-  await pool.query('DELETE FROM refresh_sessions WHERE user_id IN ($1, $2, $3)', [
+  await pool.query('DELETE FROM refresh_sessions WHERE user_id IN ($1, $2, $3, $4)', [
     ADMIN_USER_ID,
     READ_ONLY_USER_ID,
     OTHER_USER_ID,
+    NO_PERMISSION_USER_ID,
   ]);
   await pool.query('DELETE FROM user_roles WHERE user_id IN ($1, $2)', [
     READ_ONLY_USER_ID,
     OTHER_USER_ID,
   ]);
-  await pool.query('DELETE FROM users WHERE id IN ($1, $2)', [READ_ONLY_USER_ID, OTHER_USER_ID]);
+  await pool.query('DELETE FROM users WHERE id IN ($1, $2, $3, $4)', [
+    READ_ONLY_USER_ID,
+    OTHER_USER_ID,
+    NO_PERMISSION_USER_ID,
+    BLOCKED_USER_ID,
+  ]);
   await pool.query('DELETE FROM organizations WHERE id = $1', [OTHER_ORGANIZATION_ID]);
 }
 
@@ -93,6 +103,21 @@ async function setupIsolationFixtures() {
     READ_ONLY_USER_ID,
     READ_ONLY_ROLE_ID,
   ]);
+  await pool.query(
+    `INSERT INTO users
+      (id, organization_id, name, email, password_hash, status, updated_at)
+     SELECT $1, $2, 'Usuário sem Permissões Fictício', $3, password_hash, 'ACTIVE', now()
+     FROM users WHERE id = $4`,
+    [NO_PERMISSION_USER_ID, ORGANIZATION_ID, NO_PERMISSION_EMAIL, ADMIN_USER_ID],
+  );
+  await pool.query(
+    `INSERT INTO users
+      (id, organization_id, name, email, password_hash, status, updated_at)
+     SELECT $1, $2, 'Usuário Bloqueado Fictício', 'd5-blocked@lexos.invalid', password_hash,
+       'BLOCKED', now()
+     FROM users WHERE id = $3`,
+    [BLOCKED_USER_ID, ORGANIZATION_ID, ADMIN_USER_ID],
+  );
   await pool.query(
     `INSERT INTO users
       (id, organization_id, name, email, password_hash, status, updated_at)
@@ -142,6 +167,7 @@ before(async () => {
   http = app.getHttpServer();
   adminToken = await login(ADMIN_EMAIL);
   readOnlyToken = await login(READ_ONLY_EMAIL);
+  noPermissionToken = await login(NO_PERMISSION_EMAIL);
 });
 
 after(async () => {
@@ -156,12 +182,15 @@ describe('Delivery 5 people, cases, and participants', () => {
 
     assert.ok(response.body.paths['/api/v1/persons']);
     assert.ok(response.body.paths['/api/v1/persons/{id}']);
+    assert.ok(response.body.paths['/api/v1/persons/{id}/cases']?.get);
     assert.ok(response.body.paths['/api/v1/cases']);
     assert.ok(response.body.paths['/api/v1/cases/{id}']);
+    assert.ok(response.body.paths['/api/v1/cases/{id}/processing-budget']?.patch);
     assert.ok(response.body.paths['/api/v1/cases/{caseId}/participants']);
     assert.ok(response.body.paths['/api/v1/cases/{caseId}/files/upload']);
     assert.ok(response.body.paths['/api/v1/documents/{id}/reprocess']?.post);
     assert.ok(response.body.paths['/api/v1/processing-jobs/{id}']?.get);
+    assert.ok(response.body.paths['/api/v1/users/assignable']?.get);
     assert.equal(
       response.body.components.schemas.CaseResponseDto.properties.responsible.nullable,
       true,
@@ -244,6 +273,38 @@ describe('Delivery 5 people, cases, and participants', () => {
     await authorized('get', `/api/v1/persons/${individualId}`).expect(200);
   });
 
+  it('lists only minimal active tenant users for assignment and audits the read', async () => {
+    const response = await authorized('get', '/api/v1/users/assignable?limit=100').expect(200);
+    const ids = response.body.data.map((user) => user.id);
+    assert.equal(ids.includes(ADMIN_USER_ID), true);
+    assert.equal(ids.includes(READ_ONLY_USER_ID), true);
+    assert.equal(ids.includes(NO_PERMISSION_USER_ID), true);
+    assert.equal(ids.includes(BLOCKED_USER_ID), false);
+    assert.equal(ids.includes(OTHER_USER_ID), false);
+    assert.equal(
+      response.body.data.every(
+        (user) => JSON.stringify(Object.keys(user).sort()) === JSON.stringify(['id', 'name']),
+      ),
+      true,
+    );
+
+    await authorized('get', '/api/v1/users/assignable', noPermissionToken).expect(403);
+    const invalidCursor = await authorized(
+      'get',
+      '/api/v1/users/assignable?cursor=not+base64',
+    ).expect(400);
+    assert.equal(invalidCursor.body.code, 'INVALID_CURSOR');
+
+    const audits = await pool.query(
+      `SELECT count(*)::int AS count, coalesce(string_agg(new_data::text, ''), '') AS data
+       FROM audit_logs
+       WHERE organization_id = $1 AND action = 'user.assignable.listed'`,
+      [ORGANIZATION_ID],
+    );
+    assert.ok(audits.rows[0].count > 0);
+    assert.equal(audits.rows[0].data.includes('Administrador Fictício'), false);
+  });
+
   it('fails person list, direct lookup, update, and soft-deleted reads safely across tenant boundaries', async () => {
     const list = await authorized('get', '/api/v1/persons').expect(200);
     assert.equal(
@@ -285,6 +346,20 @@ describe('Delivery 5 people, cases, and participants', () => {
     });
     assert.equal('email' in created.body.responsible, false);
     assert.equal('status' in created.body.responsible, false);
+    assert.equal(created.body.processingCostLimitAmount, '0.000000');
+    assert.equal(created.body.processingCostSpentAmount, '0.000000');
+    assert.equal(created.body.processingCostReservedAmount, '0.000000');
+    assert.equal(created.body.processingCostCurrency, 'BRL');
+    assert.equal(created.body.processingBudgetStatus, 'ACTIVE');
+
+    await authorized('patch', `/api/v1/cases/${standardCaseId}/processing-budget`)
+      .send({ limitAmount: '-1' })
+      .expect(400);
+    const budget = await authorized('patch', `/api/v1/cases/${standardCaseId}/processing-budget`)
+      .send({ limitAmount: '25.5' })
+      .expect(200);
+    assert.equal(budget.body.processingCostLimitAmount, '25.500000');
+    assert.equal(budget.body.processingBudgetStatus, 'ACTIVE');
 
     const duplicate = await authorized('post', '/api/v1/cases')
       .send({
@@ -336,6 +411,9 @@ describe('Delivery 5 people, cases, and participants', () => {
     await authorized('get', `/api/v1/cases/${OTHER_CASE_ID}`).expect(404);
     await authorized('patch', `/api/v1/cases/${OTHER_CASE_ID}`)
       .send({ priority: 'URGENT' })
+      .expect(404);
+    await authorized('patch', `/api/v1/cases/${OTHER_CASE_ID}/processing-budget`)
+      .send({ limitAmount: '10' })
       .expect(404);
     await authorized('delete', `/api/v1/cases/${OTHER_CASE_ID}`).expect(404);
 
@@ -399,9 +477,21 @@ describe('Delivery 5 people, cases, and participants', () => {
       true,
     );
 
+    await authorized('post', `/api/v1/cases/${confidentialCaseId}/participants`)
+      .send({ personId: individualId, role: 'testemunha', side: 'neutro', isClient: false })
+      .expect(201);
+
     await authorized('post', `/api/v1/cases/${standardCaseId}/participants`)
       .send({ personId: individualId, role: 'reclamante', side: 'polo_ativo' })
       .expect(409);
+    await authorized('post', `/api/v1/cases/${standardCaseId}/participants`)
+      .send({
+        personId: individualId,
+        role: 'representante_legal',
+        side: 'polo_ativo',
+        isClient: false,
+      })
+      .expect(201);
     await authorized('post', `/api/v1/cases/${standardCaseId}/participants`)
       .send({ personId: OTHER_PERSON_ID, role: 'testemunha' })
       .expect(404);
@@ -409,6 +499,58 @@ describe('Delivery 5 people, cases, and participants', () => {
       .send({ personId: individualId, role: 'testemunha' })
       .expect(404);
     await authorized('get', `/api/v1/cases/${OTHER_CASE_ID}/participants`).expect(404);
+  });
+
+  it('lists person cases once with every relation while enforcing tenant, confidentiality, pagination, and RBAC', async () => {
+    const firstPage = await authorized(
+      'get',
+      `/api/v1/persons/${individualId}/cases?limit=1`,
+    ).expect(200);
+    assert.equal(firstPage.body.data.length, 1);
+    assert.equal(firstPage.body.pageInfo.hasNextPage, true);
+    assert.ok(firstPage.body.pageInfo.nextCursor);
+
+    const secondPage = await authorized(
+      'get',
+      `/api/v1/persons/${individualId}/cases?limit=1&cursor=${encodeURIComponent(firstPage.body.pageInfo.nextCursor)}`,
+    ).expect(200);
+    const allRows = [...firstPage.body.data, ...secondPage.body.data];
+    assert.deepEqual(
+      new Set(allRows.map((row) => row.case.id)),
+      new Set([standardCaseId, confidentialCaseId]),
+    );
+
+    const standard = allRows.find((row) => row.case.id === standardCaseId);
+    assert.ok(standard);
+    assert.equal(standard.participations.length, 2);
+    assert.deepEqual(
+      standard.participations.map(({ role, side, isClient }) => ({ role, side, isClient })),
+      [
+        { role: 'reclamante', side: 'polo_ativo', isClient: true },
+        { role: 'representante_legal', side: 'polo_ativo', isClient: false },
+      ],
+    );
+    assert.equal('organizationId' in standard.case, false);
+
+    const readOnly = await authorized(
+      'get',
+      `/api/v1/persons/${individualId}/cases?limit=1`,
+      readOnlyToken,
+    ).expect(200);
+    assert.deepEqual(
+      readOnly.body.data.map((row) => row.case.id),
+      [standardCaseId],
+    );
+    assert.deepEqual(readOnly.body.pageInfo, { hasNextPage: false, nextCursor: null });
+
+    await authorized('get', `/api/v1/persons/${OTHER_PERSON_ID}/cases`).expect(404);
+    await authorized('get', `/api/v1/persons/${companyId}/cases`).expect(404);
+    const invalidCursor = await authorized(
+      'get',
+      `/api/v1/persons/${individualId}/cases?cursor=not+base64`,
+    ).expect(400);
+    assert.equal(invalidCursor.body.code, 'INVALID_CURSOR');
+    await authorized('get', `/api/v1/persons/${individualId}/cases`, noPermissionToken).expect(403);
   });
 
   it('denies mutations without granular permissions', async () => {
@@ -425,6 +567,9 @@ describe('Delivery 5 people, cases, and participants', () => {
       .expect(403);
     await authorized('patch', `/api/v1/cases/${standardCaseId}`, readOnlyToken)
       .send({ priority: 'URGENT' })
+      .expect(403);
+    await authorized('patch', `/api/v1/cases/${standardCaseId}/processing-budget`, readOnlyToken)
+      .send({ limitAmount: '30' })
       .expect(403);
     await authorized('delete', `/api/v1/cases/${standardCaseId}`, readOnlyToken).expect(403);
   });

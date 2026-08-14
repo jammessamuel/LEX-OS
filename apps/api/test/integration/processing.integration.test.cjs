@@ -34,6 +34,8 @@ const CONFIDENTIAL_JOB_ID = '70000000-0000-4000-8000-000000000013';
 const OTHER_FILE_ID = '70000000-0000-4000-8000-000000000014';
 const OTHER_DOCUMENT_ID = '70000000-0000-4000-8000-000000000015';
 const OTHER_JOB_ID = '70000000-0000-4000-8000-000000000016';
+const OTHER_EXTRACTION_ID = '70000000-0000-4000-8000-000000000017';
+const OTHER_ENTITY_ID = '70000000-0000-4000-8000-000000000018';
 const ADMIN_EMAIL = 'admin@lexos.invalid';
 const READ_ONLY_EMAIL = 'd7-read-only@lexos.invalid';
 const seedPassword = process.env.SEED_ADMIN_PASSWORD;
@@ -75,7 +77,7 @@ async function cleanup() {
         { processingJob: { documentId: { in: documentIds } } },
         { userId: READ_ONLY_USER_ID },
         { organizationId: OTHER_ORGANIZATION_ID },
-        { entityId: { in: [CONFIDENTIAL_CASE_ID, OTHER_CASE_ID] } },
+        { entityId: { in: [CONFIDENTIAL_CASE_ID, OTHER_CASE_ID, ENTITY_ID, OTHER_ENTITY_ID] } },
       ],
     },
   });
@@ -149,6 +151,9 @@ async function createFileAndDocument({
       version: 2,
       provider: 'lex-os-mock-text',
       modelName: 'deterministic-v1',
+      modelVersion: '1',
+      costAmount: 0,
+      costCurrency: 'BRL',
       inputMetadata: { privateSource: 'must-not-be-returned' },
       outputMetadata: { stage: 'OCR', progress: 50 },
       startedAt: new Date(Date.now() - 1000),
@@ -287,6 +292,29 @@ before(async () => {
       metadata: { source: 'DETERMINISTIC_MOCK' },
     },
   });
+  await database.client.documentExtraction.create({
+    data: {
+      id: OTHER_EXTRACTION_ID,
+      organizationId: OTHER_ORGANIZATION_ID,
+      documentId: OTHER_DOCUMENT_ID,
+      extractionType: 'ENTITY_EXTRACTION',
+      provider: 'lex-os-mock-entities',
+      modelName: 'deterministic-v1',
+      executionId: `mock-v1:${OTHER_JOB_ID}`,
+      status: 'COMPLETED',
+    },
+  });
+  await database.client.extractedEntity.create({
+    data: {
+      id: OTHER_ENTITY_ID,
+      organizationId: OTHER_ORGANIZATION_ID,
+      documentId: OTHER_DOCUMENT_ID,
+      extractionId: OTHER_EXTRACTION_ID,
+      entityType: 'CONTRACT_NUMBER',
+      normalizedValue: 'OTHER-TENANT-VALUE',
+      originalValue: 'OTHER-TENANT-VALUE',
+    },
+  });
 
   adminToken = await login(ADMIN_EMAIL);
   readOnlyToken = await login(READ_ONLY_EMAIL);
@@ -325,6 +353,7 @@ describe('Delivery 7 processing HTTP contract', () => {
     assert.ok(response.body.paths['/api/v1/processing-jobs']?.get);
     assert.ok(response.body.paths['/api/v1/processing-jobs/{id}']?.get);
     assert.ok(response.body.paths['/api/v1/documents/{id}/extractions']?.get);
+    assert.ok(response.body.paths['/api/v1/extracted-entities/{id}/confirm']?.post);
     assert.ok(response.body.paths['/api/v1/documents/{id}/reprocess']?.post);
   });
 
@@ -343,8 +372,30 @@ describe('Delivery 7 processing HTTP contract', () => {
       `/api/v1/processing-jobs/${STANDARD_JOB_ID}`,
     ).expect(200);
     assert.equal(detail.body.status, 'COMPLETED');
+    assert.equal(detail.body.modelVersion, '1');
+    assert.equal(detail.body.reservedCostAmount, '0.000000');
+    assert.equal(detail.body.costAmount, '0.000000');
+    assert.equal(detail.body.costCurrency, 'BRL');
     assert.deepEqual(detail.body.outputMetadata, { stage: 'OCR', progress: 50 });
     assert.equal('inputMetadata' in detail.body, false);
+
+    const byProvider = await authorized(
+      adminToken,
+      'get',
+      '/api/v1/processing-jobs?provider=lex-os-mock-text&modelName=deterministic-v1',
+    ).expect(200);
+    assert.ok(byProvider.body.data.length >= 1);
+    assert.equal(
+      byProvider.body.data.some((job) => job.id === STANDARD_JOB_ID),
+      true,
+    );
+    assert.equal(
+      byProvider.body.data.every(
+        (job) => job.provider === 'lex-os-mock-text' && job.modelName === 'deterministic-v1',
+      ),
+      true,
+    );
+    await authorized(adminToken, 'get', '/api/v1/processing-jobs?provider=bad!').expect(400);
   });
 
   it('returns append-only extraction provenance and entities without storage metadata', async () => {
@@ -357,7 +408,50 @@ describe('Delivery 7 processing HTTP contract', () => {
     assert.equal(response.body.data[0].provider, 'lex-os-mock-entities');
     assert.equal(response.body.data[0].entities.length, 1);
     assert.equal(response.body.data[0].entities[0].entityType, 'CONTRACT_NUMBER');
+    assert.equal(response.body.data[0].entities[0].confirmedByUser, false);
+    assert.equal(response.body.data[0].entities[0].confirmedById, null);
+    assert.equal(response.body.data[0].entities[0].confirmedAt, null);
     assert.equal('storageKey' in response.body.data[0], false);
+  });
+
+  it('confirms an extracted entity once without changing its source values', async () => {
+    await authorized(
+      readOnlyToken,
+      'post',
+      `/api/v1/extracted-entities/${ENTITY_ID}/confirm`,
+    ).expect(403);
+    await authorized(adminToken, 'post', '/api/v1/extracted-entities/not-a-uuid/confirm').expect(
+      400,
+    );
+    await authorized(
+      adminToken,
+      'post',
+      `/api/v1/extracted-entities/${OTHER_ENTITY_ID}/confirm`,
+    ).expect(404);
+
+    const responses = await Promise.all([
+      authorized(adminToken, 'post', `/api/v1/extracted-entities/${ENTITY_ID}/confirm`),
+      authorized(adminToken, 'post', `/api/v1/extracted-entities/${ENTITY_ID}/confirm`),
+    ]);
+    assert.deepEqual(responses.map((response) => response.status).sort(), [200, 409]);
+    const confirmed = responses.find((response) => response.status === 200);
+    assert.equal(confirmed?.body.confirmedByUser, true);
+    assert.equal(confirmed?.body.confirmedById, ADMIN_USER_ID);
+    assert.ok(confirmed?.body.confirmedAt);
+    assert.equal(confirmed?.body.normalizedValue, 'LEX-2026-0001');
+    assert.equal(confirmed?.body.originalValue, 'LEX-2026-0001');
+
+    const persisted = await database.client.extractedEntity.findUniqueOrThrow({
+      where: { id: ENTITY_ID },
+    });
+    assert.equal(persisted.normalizedValue, 'LEX-2026-0001');
+    assert.equal(persisted.originalValue, 'LEX-2026-0001');
+    const audit = await database.client.auditLog.findFirst({
+      where: { entityId: ENTITY_ID, action: 'extracted_entity.confirmed' },
+      select: { oldData: true, newData: true },
+    });
+    assert.deepEqual(audit?.oldData, { confirmedByUser: false });
+    assert.equal(JSON.stringify(audit).includes('LEX-2026-0001'), false);
   });
 
   it('creates one queued reprocessing root and rejects a concurrent duplicate', async () => {

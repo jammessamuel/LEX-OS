@@ -55,12 +55,11 @@ Approval for one commit is not standing approval for the next.
 
 ### 0.3 Respect the delivery boundary
 
-The completed checkpoint is **Delivery 9 — Text and semantic search foundation**.
-
-**Delivery 10 — Essential web vertical slice is authorized** (owner, 2026-08-12). Build the
-web interface over resources the API already exposes, prioritising the critical user flow.
-A screen only ships against a route that exists: no placeholder that pretends a missing
-endpoint works. Open blockers are listed in `docs/product/backlog.md`.
+The latest accepted checkpoint is **Delivery 10 — Essential web vertical slice**. The responsive
+pt-BR interface is connected to real API resources for dashboard, cases, participants, uploads,
+documents, processing, timeline, checklist, tasks, search, and supervised audit access. Client
+navigation reflects effective permissions while server authorization remains authoritative. The
+essential desktop/mobile Playwright gate passes.
 
 Delivery 11 and later still require explicit authorization. Do not implement
 future-delivery behavior opportunistically, even when it looks like a small addition.

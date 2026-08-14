@@ -1,7 +1,7 @@
 # Timeline, checklist, and tasks API
 
-**Status:** Implemented in Delivery 8
-**Last updated:** 2026-08-06
+**Status:** Implemented in Delivery 8; task lifecycle extended in Delivery 10
+**Last updated:** 2026-08-13
 
 ## Security and authorization
 
@@ -21,6 +21,7 @@ User-facing timeline text, checklist snapshots, and reviewer notes are deliberat
 | PATCH  | `/api/v1/checklist-items/:id`           | `cases.update` | Reviews status, same-case document, notes, and validation      |
 | POST   | `/api/v1/checklist-items/:id/tasks`     | `tasks.manage` | Creates one task from a selected pending item                  |
 | GET    | `/api/v1/cases/:id/tasks`               | `tasks.read`   | Keyset-paginates non-deleted case tasks                        |
+| PATCH  | `/api/v1/tasks/:id`                     | `tasks.manage` | Changes status, priority, due date, or assignee                |
 
 ## Timeline provenance
 
@@ -36,6 +37,14 @@ AI analysis only promotes a matching missing item to `AWAITING_VALIDATION`; it d
 
 A task can be created only from a pending `MISSING`, `INVALID`, `EXPIRED`, or `ILLEGIBLE` item. Its source is `AI_CHECKLIST` with the item ID, while the title is derived from the immutable snapshot. A partial unique index rejects a second non-deleted task for the same tenant/source.
 
-## Deferred boundary
+## Task lifecycle extension
 
-Delivery 8 did not add search/embeddings; Delivery 9 implements that separate foundation. Task status/update routes, real AI/OCR/embedding providers, user administration, general audit browsing, grounded answer generation, and the complete feature UI remain assigned to later authorized deliveries.
+Delivery 10 adds `PATCH /tasks/:id` for status, priority, due date, and assignee changes. Completion
+time is set by the server; reopening clears it. The write compares the previously read `updatedAt`
+inside the tenant-scoped update, so concurrent changes fail with `409 TASK_UPDATE_CONFLICT` instead
+of silently overwriting one another. Task audits contain only lifecycle fields and identifiers, never
+the task title or description.
+
+Delivery 8 did not add search/embeddings; Delivery 9 implements that separate foundation. Real
+AI/OCR/embedding/language-model providers, full user administration, general audit browsing, and
+the complete feature UI remain assigned to later authorized work.

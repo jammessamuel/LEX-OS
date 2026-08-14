@@ -16,7 +16,13 @@ import {
 import type { CreateChecklistTaskRequestDto } from './dto/create-checklist-task-request.dto.js';
 import type { ListTasksQueryDto } from './dto/list-tasks-query.dto.js';
 import type { TaskResponseDto } from './dto/task-response.dto.js';
-import { TasksRepository, type TaskCursor, type TaskRecord } from './tasks.repository.js';
+import type { UpdateTaskRequestDto } from './dto/update-task-request.dto.js';
+import {
+  TasksRepository,
+  type TaskCursor,
+  type TaskRecord,
+  type UpdateTaskData,
+} from './tasks.repository.js';
 
 const parseCursor: (value: unknown) => TaskCursor | undefined =
   createTimestampIdCursorParser('createdAt');
@@ -38,6 +44,16 @@ function mapTask(record: TaskRecord): TaskResponseDto {
     sourceId: record.sourceId,
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
+  };
+}
+
+function auditSnapshot(record: TaskRecord) {
+  return {
+    status: record.status,
+    priority: record.priority,
+    assignedToId: record.assignedToId,
+    dueAt: record.dueAt?.toISOString() ?? null,
+    completedAt: record.completedAt?.toISOString() ?? null,
   };
 }
 
@@ -143,5 +159,97 @@ export class TasksService {
       }
       throw error;
     }
+  }
+
+  async update(
+    actor: ActorContext,
+    id: string,
+    input: UpdateTaskRequestDto,
+    metadata: RequestAuditMetadata,
+  ): Promise<TaskResponseDto> {
+    const changedFields = Object.entries(input)
+      .filter(([, value]) => value !== undefined)
+      .map(([field]) => field)
+      .sort();
+    if (changedFields.length === 0) {
+      throw new ApiException(HttpStatus.BAD_REQUEST, 'VALIDATION_ERROR', 'Dados inválidos.', [
+        { field: 'body', code: 'notEmpty', message: 'Informe ao menos um campo para atualização.' },
+      ]);
+    }
+
+    const current = await this.repository.findById(actor.organizationId, id);
+    if (current === null) {
+      throw this.#notFound();
+    }
+    if (current.caseId !== null) {
+      await this.cases.assertAccessibleForFileResources(actor, current.caseId, metadata, 'TASKS');
+    }
+    if (input.status === 'COMPLETED' && current.status === 'COMPLETED') {
+      throw new ApiException(
+        HttpStatus.CONFLICT,
+        'TASK_ALREADY_COMPLETED',
+        'A tarefa já foi concluída.',
+      );
+    }
+
+    const assignedToId = input.assignedToId;
+    const now = new Date();
+    const data: UpdateTaskData = {
+      ...(input.status === undefined ? {} : { status: input.status }),
+      ...(input.priority === undefined ? {} : { priority: input.priority }),
+      ...(assignedToId === undefined ? {} : { assignedToId }),
+      ...(input.dueAt === undefined
+        ? {}
+        : { dueAt: input.dueAt === null ? null : new Date(input.dueAt) }),
+      ...(input.status === undefined
+        ? {}
+        : { completedAt: input.status === 'COMPLETED' ? now : null }),
+    };
+
+    const updated = await withTransaction(this.database.client, async (transaction) => {
+      if (
+        assignedToId !== undefined &&
+        assignedToId !== null &&
+        !(await this.repository.assignedUserExists(transaction, actor.organizationId, assignedToId))
+      ) {
+        throw new ApiException(
+          HttpStatus.BAD_REQUEST,
+          'INVALID_TASK_ASSIGNEE',
+          'O responsável pela tarefa não pertence à organização.',
+        );
+      }
+
+      const result = await this.repository.update(
+        transaction,
+        actor.organizationId,
+        id,
+        current.updatedAt,
+        data,
+      );
+      if (result === null) {
+        throw new ApiException(
+          HttpStatus.CONFLICT,
+          'TASK_UPDATE_CONFLICT',
+          'A tarefa foi alterada por outra operação. Recarregue e tente novamente.',
+        );
+      }
+      await this.audit.recordDomainInTransaction(transaction, {
+        organizationId: actor.organizationId,
+        userId: actor.userId,
+        entityId: result.id,
+        entityType: 'task',
+        action: 'task.updated',
+        oldData: auditSnapshot(current),
+        newData: { ...auditSnapshot(result), changedFields },
+        ...metadata,
+      });
+      return result;
+    });
+
+    return mapTask(updated);
+  }
+
+  #notFound(): ApiException {
+    return new ApiException(HttpStatus.NOT_FOUND, 'NOT_FOUND', 'Recurso não encontrado.');
   }
 }

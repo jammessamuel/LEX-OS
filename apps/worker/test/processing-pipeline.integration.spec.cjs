@@ -291,6 +291,17 @@ describe('Delivery 8 persistent processing pipeline', () => {
       'EMBEDDING',
     ]);
     expect(jobs.every((job) => job.attempts === 1 && job.finishedAt !== null)).toBe(true);
+    expect(
+      jobs.every(
+        (job) =>
+          job.provider !== null &&
+          job.modelName !== null &&
+          job.modelVersion === '1' &&
+          job.costAmount?.toFixed(6) === '0.000000' &&
+          job.reservedCostAmount.toFixed(6) === '0.000000' &&
+          job.costCurrency === 'BRL',
+      ),
+    ).toBe(true);
 
     const extractions = await database.client.documentExtraction.findMany({
       where: { documentId: fixture.documentId },
@@ -494,5 +505,90 @@ describe('Delivery 8 persistent processing pipeline', () => {
     await expect(
       repository.cancel(organizationId, fixture.processingJobId, randomUUID()),
     ).resolves.toBe(false);
+  });
+
+  it('blocks a quoted execution above the case ceiling and releases valid reservations', async () => {
+    const originalBudget = await database.client.case.findUniqueOrThrow({
+      where: { id: caseId },
+      select: {
+        processingCostLimitAmount: true,
+        processingCostSpentAmount: true,
+        processingCostReservedAmount: true,
+        processingBudgetStatus: true,
+        processingLimitReachedAt: true,
+      },
+    });
+    try {
+      await database.client.case.update({
+        where: { id: caseId },
+        data: {
+          processingCostLimitAmount: 0,
+          processingCostSpentAmount: 0,
+          processingCostReservedAmount: 0,
+          processingBudgetStatus: 'ACTIVE',
+          processingLimitReachedAt: null,
+        },
+      });
+      const blockedFixture = await createFixture('OCR');
+      await expect(
+        repository.claim(organizationId, blockedFixture.processingJobId, 'OCR', randomUUID(), {
+          provider: 'provider-ficticio',
+          modelName: 'modelo-ficticio',
+          modelVersion: '1',
+          maximumAmount: '0.100000',
+          currency: 'BRL',
+        }),
+      ).resolves.toEqual({ disposition: 'BUDGET_LIMIT_REACHED' });
+      await expect(
+        database.client.processingJob.findUnique({ where: { id: blockedFixture.processingJobId } }),
+      ).resolves.toMatchObject({
+        status: 'CANCELLED',
+        errorCode: null,
+        outputMetadata: { stage: 'OCR', reason: 'PROCESSING_COST_LIMIT_REACHED' },
+        costAmount: null,
+      });
+      await expect(
+        database.client.document.findUnique({ where: { id: blockedFixture.documentId } }),
+      ).resolves.toMatchObject({ processingStatus: 'NEEDS_REVIEW' });
+      await expect(
+        database.client.case.findUnique({ where: { id: caseId } }),
+      ).resolves.toMatchObject({ processingBudgetStatus: 'LIMIT_REACHED' });
+
+      await database.client.case.update({
+        where: { id: caseId },
+        data: {
+          processingCostLimitAmount: 1,
+          processingBudgetStatus: 'ACTIVE',
+          processingLimitReachedAt: null,
+        },
+      });
+      const reservedFixture = await createFixture('OCR');
+      const claimed = await repository.claim(
+        organizationId,
+        reservedFixture.processingJobId,
+        'OCR',
+        randomUUID(),
+        {
+          provider: 'provider-ficticio',
+          modelName: 'modelo-ficticio',
+          modelVersion: '1',
+          maximumAmount: '0.500000',
+          currency: 'BRL',
+        },
+      );
+      expect(claimed.disposition).toBe('PROCESS');
+      const reservedCase = await database.client.case.findUniqueOrThrow({ where: { id: caseId } });
+      expect(reservedCase.processingCostReservedAmount.toFixed(6)).toBe('0.500000');
+      await expect(
+        repository.cancel(organizationId, reservedFixture.processingJobId, randomUUID()),
+      ).resolves.toBe(true);
+      const releasedCase = await database.client.case.findUniqueOrThrow({ where: { id: caseId } });
+      expect(releasedCase.processingCostReservedAmount.toFixed(6)).toBe('0.000000');
+    } finally {
+      await database.client.case.update({
+        where: { id: caseId },
+        data: originalBudget,
+      });
+    }
   });
 });

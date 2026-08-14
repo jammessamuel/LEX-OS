@@ -234,6 +234,13 @@ enum JobStatus {
   @@map("job_status")
 }
 
+enum ProcessingBudgetStatus {
+  ACTIVE
+  LIMIT_REACHED
+
+  @@map("processing_budget_status")
+}
+
 model Organization {
   id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   legalName        String             @map("legal_name") @db.VarChar(255)
@@ -282,17 +289,18 @@ model User {
   updatedAt      DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt      DateTime?  @map("deleted_at") @db.Timestamptz(6)
 
-  organization            Organization        @relation(fields: [organizationId], references: [id])
-  refreshSessions         RefreshSession[]
-  userRoles               UserRole[]
-  responsibleCases        Case[]              @relation("CaseResponsible")
-  uploadedFiles           StoredFile[]        @relation("FileUploadedBy")
-  classifiedDocuments     Document[]          @relation("DocumentClassifiedBy")
-  confirmedTimelineEvents TimelineEvent[]     @relation("TimelineConfirmedBy")
-  validatedChecklistItems CaseChecklistItem[] @relation("ChecklistValidatedBy")
-  assignedTasks           Task[]              @relation("TaskAssignedTo")
-  createdTasks            Task[]              @relation("TaskCreatedBy")
-  auditLogs               AuditLog[]
+  organization               Organization        @relation(fields: [organizationId], references: [id])
+  refreshSessions            RefreshSession[]
+  userRoles                  UserRole[]
+  responsibleCases           Case[]              @relation("CaseResponsible")
+  uploadedFiles              StoredFile[]        @relation("FileUploadedBy")
+  classifiedDocuments        Document[]          @relation("DocumentClassifiedBy")
+  confirmedExtractedEntities ExtractedEntity[]   @relation("EntityConfirmedBy")
+  confirmedTimelineEvents    TimelineEvent[]     @relation("TimelineConfirmedBy")
+  validatedChecklistItems    CaseChecklistItem[] @relation("ChecklistValidatedBy")
+  assignedTasks              Task[]              @relation("TaskAssignedTo")
+  createdTasks               Task[]              @relation("TaskCreatedBy")
+  auditLogs                  AuditLog[]
 
   @@unique([organizationId, email])
   @@unique([organizationId, id])
@@ -411,22 +419,28 @@ model Person {
 }
 
 model Case {
-  id                   String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId       String               @map("organization_id") @db.Uuid
-  internalCode         String               @map("internal_code") @db.VarChar(80)
-  title                String               @db.VarChar(255)
-  description          String?              @db.Text
-  legalArea            String               @map("legal_area") @db.VarChar(120)
-  caseType             String               @map("case_type") @db.VarChar(120)
-  status               CaseStatus           @default(INTAKE)
-  priority             Priority             @default(NORMAL)
-  confidentialityLevel ConfidentialityLevel @default(STANDARD) @map("confidentiality_level")
-  responsibleUserId    String?              @map("responsible_user_id") @db.Uuid
-  openedAt             DateTime             @default(now()) @map("opened_at") @db.Timestamptz(6)
-  closedAt             DateTime?            @map("closed_at") @db.Timestamptz(6)
-  createdAt            DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt            DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt            DateTime?            @map("deleted_at") @db.Timestamptz(6)
+  id                           String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId               String                 @map("organization_id") @db.Uuid
+  internalCode                 String                 @map("internal_code") @db.VarChar(80)
+  title                        String                 @db.VarChar(255)
+  description                  String?                @db.Text
+  legalArea                    String                 @map("legal_area") @db.VarChar(120)
+  caseType                     String                 @map("case_type") @db.VarChar(120)
+  status                       CaseStatus             @default(INTAKE)
+  priority                     Priority               @default(NORMAL)
+  confidentialityLevel         ConfidentialityLevel   @default(STANDARD) @map("confidentiality_level")
+  responsibleUserId            String?                @map("responsible_user_id") @db.Uuid
+  processingCostLimitAmount    Decimal                @default(0) @map("processing_cost_limit_amount") @db.Decimal(18, 6)
+  processingCostSpentAmount    Decimal                @default(0) @map("processing_cost_spent_amount") @db.Decimal(18, 6)
+  processingCostReservedAmount Decimal                @default(0) @map("processing_cost_reserved_amount") @db.Decimal(18, 6)
+  processingCostCurrency       String                 @default("BRL") @map("processing_cost_currency") @db.Char(3)
+  processingBudgetStatus       ProcessingBudgetStatus @default(ACTIVE) @map("processing_budget_status")
+  processingLimitReachedAt     DateTime?              @map("processing_limit_reached_at") @db.Timestamptz(6)
+  openedAt                     DateTime               @default(now()) @map("opened_at") @db.Timestamptz(6)
+  closedAt                     DateTime?              @map("closed_at") @db.Timestamptz(6)
+  createdAt                    DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                    DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt                    DateTime?              @map("deleted_at") @db.Timestamptz(6)
 
   organization    Organization      @relation(fields: [organizationId], references: [id])
   responsibleUser User?             @relation("CaseResponsible", fields: [organizationId, responsibleUserId], references: [organizationId, id])
@@ -606,30 +620,35 @@ model DocumentExtraction {
 }
 
 model ExtractedEntity {
-  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId  String   @map("organization_id") @db.Uuid
-  documentId      String   @map("document_id") @db.Uuid
-  extractionId    String   @map("extraction_id") @db.Uuid
-  entityType      String   @map("entity_type") @db.VarChar(80)
-  normalizedValue String   @map("normalized_value") @db.Text
-  originalValue   String   @map("original_value") @db.Text
-  pageNumber      Int?     @map("page_number")
-  startOffset     Int?     @map("start_offset")
-  endOffset       Int?     @map("end_offset")
-  confidenceScore Decimal? @map("confidence_score") @db.Decimal(5, 4)
-  linkedPersonId  String?  @map("linked_person_id") @db.Uuid
-  metadata        Json     @default("{}") @db.JsonB
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId  String    @map("organization_id") @db.Uuid
+  documentId      String    @map("document_id") @db.Uuid
+  extractionId    String    @map("extraction_id") @db.Uuid
+  entityType      String    @map("entity_type") @db.VarChar(80)
+  normalizedValue String    @map("normalized_value") @db.Text
+  originalValue   String    @map("original_value") @db.Text
+  pageNumber      Int?      @map("page_number")
+  startOffset     Int?      @map("start_offset")
+  endOffset       Int?      @map("end_offset")
+  confidenceScore Decimal?  @map("confidence_score") @db.Decimal(5, 4)
+  linkedPersonId  String?   @map("linked_person_id") @db.Uuid
+  metadata        Json      @default("{}") @db.JsonB
+  confirmedByUser Boolean   @default(false) @map("confirmed_by_user")
+  confirmedById   String?   @map("confirmed_by") @db.Uuid
+  confirmedAt     DateTime? @map("confirmed_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   organization Organization       @relation(fields: [organizationId], references: [id])
   document     Document           @relation(fields: [organizationId, documentId], references: [organizationId, id])
   extraction   DocumentExtraction @relation(fields: [organizationId, documentId, extractionId], references: [organizationId, documentId, id])
   linkedPerson Person?            @relation("EntityLinkedPerson", fields: [organizationId, linkedPersonId], references: [organizationId, id])
+  confirmedBy  User?              @relation("EntityConfirmedBy", fields: [organizationId, confirmedById], references: [organizationId, id])
 
   @@unique([organizationId, id])
   @@index([organizationId, documentId, extractionId])
   @@index([organizationId, documentId, entityType])
   @@index([organizationId, linkedPersonId])
+  @@index([organizationId, confirmedById])
   @@map("extracted_entities")
 }
 
@@ -832,26 +851,30 @@ model KnowledgeChunk {
 }
 
 model ProcessingJob {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId String    @map("organization_id") @db.Uuid
-  caseId         String?   @map("case_id") @db.Uuid
-  fileId         String?   @map("file_id") @db.Uuid
-  documentId     String?   @map("document_id") @db.Uuid
-  jobType        JobType   @map("job_type")
-  status         JobStatus @default(QUEUED)
-  priority       Int       @default(0)
-  attempts       Int       @default(0)
-  version        Int       @default(0)
-  provider       String?   @db.VarChar(120)
-  modelName      String?   @map("model_name") @db.VarChar(160)
-  inputMetadata  Json?     @map("input_metadata") @db.JsonB
-  outputMetadata Json?     @map("output_metadata") @db.JsonB
-  errorCode      String?   @map("error_code") @db.VarChar(100)
-  errorMessage   String?   @map("error_message") @db.Text
-  startedAt      DateTime? @map("started_at") @db.Timestamptz(6)
-  finishedAt     DateTime? @map("finished_at") @db.Timestamptz(6)
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId     String    @map("organization_id") @db.Uuid
+  caseId             String?   @map("case_id") @db.Uuid
+  fileId             String?   @map("file_id") @db.Uuid
+  documentId         String?   @map("document_id") @db.Uuid
+  jobType            JobType   @map("job_type")
+  status             JobStatus @default(QUEUED)
+  priority           Int       @default(0)
+  attempts           Int       @default(0)
+  version            Int       @default(0)
+  provider           String?   @db.VarChar(120)
+  modelName          String?   @map("model_name") @db.VarChar(160)
+  modelVersion       String?   @map("model_version") @db.VarChar(120)
+  reservedCostAmount Decimal   @default(0) @map("reserved_cost_amount") @db.Decimal(18, 6)
+  costAmount         Decimal?  @map("cost_amount") @db.Decimal(18, 6)
+  costCurrency       String    @default("BRL") @map("cost_currency") @db.Char(3)
+  inputMetadata      Json?     @map("input_metadata") @db.JsonB
+  outputMetadata     Json?     @map("output_metadata") @db.JsonB
+  errorCode          String?   @map("error_code") @db.VarChar(100)
+  errorMessage       String?   @map("error_message") @db.Text
+  startedAt          DateTime? @map("started_at") @db.Timestamptz(6)
+  finishedAt         DateTime? @map("finished_at") @db.Timestamptz(6)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   organization Organization @relation(fields: [organizationId], references: [id])
   case         Case?        @relation(fields: [organizationId, caseId], references: [organizationId, id])
@@ -864,6 +887,7 @@ model ProcessingJob {
   @@index([organizationId, createdAt(sort: Desc), id(sort: Desc)], map: "processing_jobs_tenant_created_at_id_idx")
   @@index([status, createdAt])
   @@index([organizationId, caseId])
+  @@index([organizationId, caseId, provider, modelName])
   @@index([organizationId, fileId])
   @@index([organizationId, documentId])
   @@map("processing_jobs")

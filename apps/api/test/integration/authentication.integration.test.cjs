@@ -158,6 +158,9 @@ describe('Delivery 4 HTTP and authentication contract', () => {
     assert.equal(response.body.tokenType, 'Bearer');
     assert.equal(response.body.user.email, ADMIN_EMAIL);
     assert.equal(response.body.organization.id, ORGANIZATION_ID);
+    assert.ok(response.body.permissions.includes('cases.read'));
+    assert.ok(response.body.permissions.includes('documents.read'));
+    assert.deepEqual(response.body.permissions, [...new Set(response.body.permissions)].sort());
     assert.equal('refreshToken' in response.body, false);
     assert.match(setCookie, /HttpOnly/u);
     assert.match(setCookie, /SameSite=Strict/u);
@@ -228,6 +231,7 @@ describe('Delivery 4 HTTP and authentication contract', () => {
     );
 
     assert.notEqual(secondCookie, firstCookie);
+    assert.deepEqual(rotated.body.permissions, authenticated.body.permissions);
     await request(http).post('/api/v1/auth/refresh').set('Cookie', firstCookie).expect(401);
     await request(http).post('/api/v1/auth/refresh').set('Cookie', secondCookie).expect(401);
 

@@ -12,6 +12,7 @@ import {
   type ClaimedProcessingJob,
   type StageCompletion,
 } from './processing.repository.js';
+import { PROCESSING_COST_POLICY, type ProcessingCostPolicy } from './processing-cost-policy.js';
 import { ProcessingQueuePublisher } from './processing-queue.publisher.js';
 import {
   CHECKLIST_ANALYSIS_PROVIDER,
@@ -29,6 +30,8 @@ function hasRetryOnceHook(value: Prisma.JsonValue | null): boolean {
   );
 }
 
+type ProviderStageCompletion = Omit<StageCompletion, 'cost' | 'modelVersion'>;
+
 @Injectable()
 export class PipelineProcessorService {
   readonly #logger = new Logger(PipelineProcessorService.name);
@@ -40,6 +43,7 @@ export class PipelineProcessorService {
     @Inject(CHECKLIST_ANALYSIS_PROVIDER)
     private readonly checklistAnalysisProvider: ChecklistAnalysisProvider,
     @Inject(EMBEDDING_PROVIDER) private readonly embeddingProvider: EmbeddingProvider,
+    @Inject(PROCESSING_COST_POLICY) private readonly costPolicy: ProcessingCostPolicy,
     private readonly publisher: ProcessingQueuePublisher,
   ) {}
 
@@ -49,16 +53,21 @@ export class PipelineProcessorService {
     deliveryAttempt: number,
     maximumAttempts: number,
   ): Promise<{ skipped: boolean; status?: string }> {
+    const costQuote = this.costPolicy.quote(expectedJobType);
     const claim = await this.repository.claim(
       message.organizationId,
       message.processingJobId,
       expectedJobType,
       message.correlationId,
+      costQuote,
     );
     if (claim.disposition === 'SKIP') {
       return claim.status === undefined
         ? { skipped: true }
         : { skipped: true, status: claim.status };
+    }
+    if (claim.disposition === 'BUDGET_LIMIT_REACHED') {
+      return { skipped: false, status: 'PROCESSING_COST_LIMIT_REACHED' };
     }
 
     try {
@@ -68,7 +77,16 @@ export class PipelineProcessorService {
           'Falha transitória simulada durante o processamento.',
         );
       }
-      const completion = await this.#executeStage(claim.job);
+      const providerCompletion = await this.#executeStage(claim.job);
+      const completion: StageCompletion = {
+        ...providerCompletion,
+        modelVersion: costQuote.modelVersion,
+        cost: this.costPolicy.measureSuccess(
+          claim.job.jobType,
+          providerCompletion.provider,
+          providerCompletion.modelName,
+        ),
+      };
       const child = await this.repository.complete(claim.job, completion, message.correlationId);
       if (child !== null) {
         try {
@@ -97,7 +115,7 @@ export class PipelineProcessorService {
     }
   }
 
-  async #executeStage(job: ClaimedProcessingJob): Promise<StageCompletion> {
+  async #executeStage(job: ClaimedProcessingJob): Promise<ProviderStageCompletion> {
     switch (job.jobType) {
       case 'FILE_VALIDATION': {
         if (
@@ -319,7 +337,13 @@ export class PipelineProcessorService {
         : 'Não foi possível concluir o processamento.';
     const finalAttempt = permanent || deliveryAttempt >= maximumAttempts;
     if (finalAttempt) {
-      await this.repository.fail(job, code, safeMessage, correlationId);
+      await this.repository.fail(
+        job,
+        code,
+        safeMessage,
+        correlationId,
+        this.costPolicy.measureFailure(job.jobType, error),
+      );
       if (permanent) {
         throw new UnrecoverableError(safeMessage);
       }

@@ -16,6 +16,7 @@
     "@aws-sdk/client-s3": "3.1103.0",
     "@aws-sdk/lib-storage": "3.1103.0",
     "@aws-sdk/s3-request-presigner": "3.1103.0",
+    "@lex-os/ai-prompts": "workspace:*",
     "@lex-os/config": "workspace:*",
     "@lex-os/contracts": "workspace:*",
     "@lex-os/database": "workspace:*",

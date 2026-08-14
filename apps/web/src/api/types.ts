@@ -43,6 +43,7 @@ export interface AuthTokenResponse {
   expiresIn: number;
   user: AuthenticatedUser;
   organization: AuthenticatedOrganization;
+  permissions: string[];
 }
 
 export interface CaseResponsible {
@@ -62,6 +63,12 @@ export interface CaseSummary {
   confidentialityLevel: ConfidentialityLevel;
   responsibleUserId: string | null;
   responsible: CaseResponsible | null;
+  processingCostLimitAmount: string;
+  processingCostSpentAmount: string;
+  processingCostReservedAmount: string;
+  processingCostCurrency: string;
+  processingBudgetStatus: 'ACTIVE' | 'LIMIT_REACHED';
+  processingLimitReachedAt: string | null;
   openedAt: string;
   closedAt: string | null;
   createdAt: string;
@@ -117,6 +124,19 @@ export interface ParticipantPerson {
   personType: PersonType;
   fullName: string;
   tradeName: string | null;
+}
+
+export interface Person extends ParticipantPerson {
+  cpf: string | null;
+  cnpj: string | null;
+  rg: string | null;
+  birthDate: string | null;
+  email: string | null;
+  phone: string | null;
+  occupation: string | null;
+  maritalStatus: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Participant {
@@ -241,6 +261,10 @@ export interface ProcessingJob {
   version: number;
   provider: string | null;
   modelName: string | null;
+  modelVersion: string | null;
+  reservedCostAmount: string;
+  costAmount: string | null;
+  costCurrency: string;
   outputMetadata: unknown;
   errorCode: string | null;
   errorMessage: string | null;
@@ -274,6 +298,9 @@ export interface ExtractedEntity {
   confidenceScore: number | null;
   linkedPersonId: string | null;
   metadata: unknown;
+  confirmedByUser: boolean;
+  confirmedById: string | null;
+  confirmedAt: string | null;
   createdAt: string;
 }
 
@@ -426,4 +453,80 @@ export interface CaseTask {
   sourceId: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AssignableUser {
+  id: string;
+  name: string;
+}
+
+export interface DashboardSummary {
+  cases: { total: number; open: number; highPriority: number; processingLimitReached: number };
+  documents: { total: number; processing: number; needsReview: number; failed: number };
+  tasks: { open: number; overdue: number };
+  processing: { active: number; failed: number };
+  asOf: string;
+}
+
+export type SearchMode = 'HYBRID' | 'LEXICAL' | 'SEMANTIC';
+
+export interface SearchCitation {
+  caseId: string;
+  documentId: string;
+  extractionId: string;
+  pageNumber: number;
+  startOffset: number;
+  endOffset: number;
+  contentHash: string;
+}
+
+export interface SearchResult {
+  chunkId: string;
+  excerpt: string;
+  matchedBy: SearchMode;
+  score: number;
+  citation: SearchCitation;
+}
+
+export interface SearchResponse {
+  status: 'RESULTS' | 'INSUFFICIENT_EVIDENCE';
+  mode: SearchMode;
+  resultCount: number;
+  results: SearchResult[];
+}
+
+export interface GroundedClaim {
+  text: string;
+  citations: SearchCitation[];
+}
+
+export interface GroundedAnswerResponse {
+  status: 'ANSWER' | 'INSUFFICIENT_EVIDENCE';
+  machineGenerated: true;
+  disclaimer: string;
+  answer: string | null;
+  claims: GroundedClaim[];
+  model: {
+    provider: string;
+    modelName: string;
+    modelVersion: string;
+    promptVersion: string;
+    executionId: string;
+    costAmount: string;
+    costCurrency: string;
+  } | null;
+}
+
+export interface AuditLog {
+  id: string;
+  actorType: 'USER' | 'SYSTEM' | 'AI' | 'INTEGRATION';
+  actorId: string | null;
+  actor: { id: string; name: string } | null;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  requestId: string | null;
+  correlationId: string | null;
+  processingJobId: string | null;
+  createdAt: string;
 }

@@ -1,7 +1,9 @@
 import { flushPromises, mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CaseTasksView from '../views/CaseTasksView.vue';
+import { useSessionStore } from '../stores/session.js';
 
 const request = vi.hoisted(() => vi.fn());
 
@@ -38,11 +40,14 @@ function task(overrides: Record<string, unknown> = {}) {
 }
 
 function mockLoad(tasks: unknown[]): void {
-  request.mockImplementation(async (path: string) =>
-    path.endsWith('/tasks')
+  request.mockImplementation(async (path: string) => {
+    if (path === '/users/assignable') {
+      return { data: [], pageInfo: { nextCursor: null, hasNextPage: false } };
+    }
+    return path.endsWith('/tasks')
       ? { data: tasks, pageInfo: { nextCursor: null, hasNextPage: false } }
-      : caso,
-  );
+      : caso;
+  });
 }
 
 const stubs = { RouterLink: { template: '<a><slot /></a>' } };
@@ -50,6 +55,10 @@ const mountView = () => mount(CaseTasksView, { global: { stubs } });
 
 describe('CaseTasksView', () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
+    useSessionStore().$patch({
+      permissions: new Set(['cases.read', 'tasks.manage', 'users.read']),
+    });
     request.mockReset();
     // Data fixa: o atraso é relativo a "hoje" e o teste não pode depender do relógio.
     vi.useFakeTimers();
@@ -119,14 +128,43 @@ describe('CaseTasksView', () => {
     expect(wrapper.text()).toContain('checklist');
   });
 
-  it('declara que concluir tarefa ainda não existe em vez de oferecer botão morto', async () => {
+  it('conclui a tarefa pela rota real e troca o estado pelo retorno do servidor', async () => {
+    const openTask = task();
+    request.mockImplementation(async (path: string, options?: { body?: { status?: string } }) => {
+      if (path === '/users/assignable') {
+        return { data: [], pageInfo: { nextCursor: null, hasNextPage: false } };
+      }
+      if (path.startsWith('/tasks/')) {
+        return task({ status: options?.body?.status, completedAt: '2026-08-12T12:30:00.000Z' });
+      }
+      return path.endsWith('/tasks')
+        ? { data: [openTask], pageInfo: { nextCursor: null, hasNextPage: false } }
+        : caso;
+    });
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    await wrapper.get('button.task__action').trigger('click');
+    await flushPromises();
+
+    expect(request).toHaveBeenCalledWith('/tasks/tk-1', {
+      method: 'PATCH',
+      body: { status: 'COMPLETED' },
+    });
+    expect(wrapper.text()).toContain('Concluída');
+    expect(wrapper.get('button.task__action').text()).toBe('Reabrir');
+  });
+
+  it('não oferece alteração para quem tem somente leitura de tarefas', async () => {
+    useSessionStore().clear();
     mockLoad([task()]);
 
     const wrapper = mountView();
     await flushPromises();
 
-    const buttons = wrapper.findAll('button').map((button) => button.text());
-    expect(buttons.some((label) => /concluir|finalizar/iu.test(label))).toBe(false);
-    expect(wrapper.text()).toContain('conclusão de tarefa ainda não está disponível');
+    expect(wrapper.text()).toContain('Reunir carteira de trabalho');
+    expect(wrapper.find('button.task__action').exists()).toBe(false);
+    expect(request).not.toHaveBeenCalledWith('/users/assignable', expect.anything());
   });
 });

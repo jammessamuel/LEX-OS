@@ -1,7 +1,9 @@
 import { flushPromises, mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CaseChecklistView from '../views/CaseChecklistView.vue';
+import { useSessionStore } from '../stores/session.js';
 
 const request = vi.hoisted(() => vi.fn());
 
@@ -63,6 +65,10 @@ const mountView = () => mount(CaseChecklistView, { global: { stubs } });
 
 describe('CaseChecklistView', () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
+    useSessionStore().$patch({
+      permissions: new Set(['cases.update', 'tasks.manage', 'tasks.read']),
+    });
     request.mockReset();
   });
 
@@ -161,5 +167,16 @@ describe('CaseChecklistView', () => {
     expect(text).toContain('Em andamento');
     expect(text).not.toContain('AWAITING_VALIDATION');
     expect(text).not.toContain('IN_PROGRESS');
+  });
+
+  it('não oferece mutações para um perfil somente leitura', async () => {
+    useSessionStore().clear();
+    mockLoad([checklist([item()])]);
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Não recebido');
+    expect(wrapper.find('.item__actions button').exists()).toBe(false);
   });
 });
