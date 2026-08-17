@@ -9,6 +9,7 @@ import type {
   SearchMode,
   SearchResponse,
 } from '../api/types.js';
+import { highlightExcerpt } from '../domain/highlight.js';
 
 const cases = ref<CaseSummary[]>([]);
 const caseId = ref('');
@@ -16,6 +17,9 @@ const query = ref('');
 const mode = ref<SearchMode>('HYBRID');
 const result = ref<SearchResponse | null>(null);
 const answer = ref<GroundedAnswerResponse | null>(null);
+// A consulta que produziu os resultados na tela: o realce segue o que foi executado, não o
+// que está sendo digitado agora no campo.
+const executedQuery = ref('');
 const loadingCases = ref(true);
 const submitting = ref<'answer' | 'search' | null>(null);
 const failure = ref<ApiError | null>(null);
@@ -70,6 +74,7 @@ async function search(): Promise<void> {
       method: 'POST',
       body: { query: query.value.trim(), caseId: caseId.value, mode: mode.value, limit: 10 },
     });
+    executedQuery.value = query.value.trim();
   } catch (error) {
     failure.value = apiError(error, 'Não foi possível pesquisar o acervo.');
   } finally {
@@ -166,7 +171,16 @@ onMounted(() => void loadCases());
       </div>
       <ol class="sources">
         <li v-for="source in result.results" :key="source.chunkId" class="source">
-          <blockquote>{{ source.excerpt }}</blockquote>
+          <blockquote>
+            <!-- Segmentos como texto, nunca v-html: o trecho é conteúdo de documento do
+                 cliente e continua sendo evidência não confiável. -->
+            <span
+              v-for="(segment, index) in highlightExcerpt(source.excerpt, executedQuery)"
+              :key="index"
+              :class="{ source__mark: segment.match }"
+              >{{ segment.text }}</span
+            >
+          </blockquote>
           <p class="source__meta data">
             página {{ source.citation.pageNumber }} · caracteres
             {{ source.citation.startOffset }}–{{ source.citation.endOffset }}
@@ -307,6 +321,12 @@ onMounted(() => void loadCases());
   color: var(--text-3);
   font-size: var(--step--1);
   margin-bottom: var(--space-2);
+}
+
+.source__mark {
+  background: color-mix(in oklab, var(--pendente) 26%, transparent);
+  border-radius: 2px;
+  padding: 0 0.1em;
 }
 
 .source a,
