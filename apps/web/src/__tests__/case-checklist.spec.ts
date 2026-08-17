@@ -50,12 +50,12 @@ function checklist(items: unknown[]) {
   };
 }
 
-const page = (data: unknown[]) => ({ data, pageInfo: { nextCursor: null, hasNextPage: false } });
-
+// As rotas de checklist devolvem o array completo, sem envelope de cursor — o mock segue o
+// contrato real da API para o teste não validar um formato que o servidor nunca envia.
 function mockLoad(checklists: unknown[], templates: unknown[] = []): void {
   request.mockImplementation(async (path: string) => {
-    if (path.endsWith('/checklists')) return page(checklists);
-    if (path.endsWith('/checklist-templates')) return page(templates);
+    if (path.endsWith('/checklists')) return checklists;
+    if (path.endsWith('/checklist-templates')) return templates;
     return caso;
   });
 }

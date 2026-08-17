@@ -10,7 +10,6 @@ import type {
   ChecklistItemStatus,
   ChecklistTemplate,
   CaseTask,
-  CursorPage,
   Priority,
 } from '../api/types.js';
 import StatusChip from '../components/StatusChip.vue';
@@ -67,15 +66,15 @@ async function load(): Promise<void> {
     return;
   }
 
+  // Estas duas rotas devolvem o array completo, sem envelope de cursor: o checklist de um
+  // caso é curto por natureza e a API não o pagina.
   const [checklistPage, templatePage] = await Promise.allSettled([
-    request<CursorPage<CaseChecklist>>(`/cases/${caseId}/checklists`, { query: { limit: 25 } }),
-    request<CursorPage<ChecklistTemplate>>(`/cases/${caseId}/checklist-templates`, {
-      query: { limit: 25 },
-    }),
+    request<CaseChecklist[]>(`/cases/${caseId}/checklists`),
+    request<ChecklistTemplate[]>(`/cases/${caseId}/checklist-templates`),
   ]);
 
-  checklists.value = checklistPage.status === 'fulfilled' ? checklistPage.value.data : [];
-  templates.value = templatePage.status === 'fulfilled' ? templatePage.value.data : [];
+  checklists.value = checklistPage.status === 'fulfilled' ? checklistPage.value : [];
+  templates.value = templatePage.status === 'fulfilled' ? templatePage.value : [];
   if (checklistPage.status === 'rejected') {
     failure.value = toApiError(checklistPage.reason, 'Não foi possível carregar o checklist.');
   }
