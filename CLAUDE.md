@@ -150,6 +150,7 @@ fits, read `AGENTS.md` section headings only, then the one section that applies.
 | Notifications, internal e-mail    | `docs/decisions/ADR-013-notificacoes-internas.md` — **decided 2026-08-07**: minimal content only; send from the worker; audited without body                      |
 | Starting a new delivery           | `docs/architecture/implementation-plan.md` — **only that delivery's section** plus §"Cross-delivery security test matrix"                                         |
 | Local env, Docker, ports          | `docs/architecture/local-development.md`; `docker-compose.yml`                                                                                                    |
+| Operations, backup, incidents     | `docs/operations/runbook.md` — backup/restore procedure, rehearsal script, and hosted-demo deploy steps                                                           |
 | Module boundaries, layering       | `docs/decisions/ADR-001-monolithic-modular-architecture.md`; `docs/architecture/system-overview.md`                                                               |
 
 **Do not open unless explicitly asked:**

@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-13 · Delivery 10 concluída e verificada
+**Última atualização:** 2026-08-18 · Entrega 11 autorizada e em andamento
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -78,10 +78,11 @@ Nenhum é código. Cada um trava trabalho abaixo dele.
 
 Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
-| Cartão                            | Situação                                                       |
-| --------------------------------- | -------------------------------------------------------------- |
-| Gate de lint e formato pré-commit | Os hooks cobrem só mensagem de commit                          |
-| Matriz E2E ampliada               | O fluxo essencial passa; abuso e jornada total são Delivery 11 |
+| Cartão                            | Situação                                                                                                                             |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Gate de lint e formato pré-commit | Instalado em 2026-08-18 dentro da Entrega 11; falha fechado sem pnpm                                                                 |
+| Matriz E2E ampliada               | Em andamento na Entrega 11: abuso e jornada total entram no cartão                                                                   |
+| Checklist em caso sem template    | Achado 2026-08-18: CHECKLIST_ANALYSIS falha quando o tipo de caso não tem template; deveria concluir sem exigências em vez de falhar |
 
 ---
 
