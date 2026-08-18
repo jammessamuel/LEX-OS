@@ -61,7 +61,12 @@ documents, processing, timeline, checklist, tasks, search, and supervised audit 
 navigation reflects effective permissions while server authorization remains authoritative. The
 essential desktop/mobile Playwright gate passes.
 
-Delivery 11 and later still require explicit authorization. Do not implement
+**Delivery 11 — Full MVP verification and CI hardening is authorized** (owner, 2026-08-18).
+Complete the required test matrix, CI gates including Playwright, the full fictional
+end-to-end flow, security abuse cases, dependency review, backup/restore rehearsal, and the
+operational runbook. CI performs no deploy.
+
+Delivery 12 and later still require explicit authorization. Do not implement
 future-delivery behavior opportunistically, even when it looks like a small addition.
 
 ### 0.4 Never suppress a failing gate

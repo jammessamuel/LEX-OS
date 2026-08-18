@@ -1,0 +1,37 @@
+#!/bin/sh
+# Gate de lint e formato sobre os arquivos em stage.
+#
+# Complementa o commit-msg: nenhum commit entra com formato ou lint quebrado, o mesmo
+# critério que o CI aplica depois. O gate falha fechado — se as ferramentas não puderem
+# rodar, o commit não passa — porque um gate que pula em silêncio não protege nada.
+# Escopo restrito ao que está em stage para o custo ficar proporcional ao commit.
+
+set -u
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+if [ -z "$staged" ]; then
+  exit 0
+fi
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo 'pre-commit: pnpm indisponivel; instale as dependencias antes de commitar.' >&2
+  exit 1
+fi
+
+# Prettier decide sozinho o que sabe formatar; --ignore-unknown pula binarios.
+# shellcheck disable=SC2086
+if ! pnpm exec prettier --check --ignore-unknown $staged; then
+  echo 'pre-commit: formato fora do padrao. Rode `pnpm format` e refaça o stage.' >&2
+  exit 1
+fi
+
+lintable=$(printf '%s\n' "$staged" | grep -E '\.(mjs|cjs|js|ts|vue)$' || true)
+if [ -n "$lintable" ]; then
+  # shellcheck disable=SC2086
+  if ! pnpm exec eslint $lintable; then
+    echo 'pre-commit: lint reprovado. Corrija os apontamentos e refaça o stage.' >&2
+    exit 1
+  fi
+fi
+
+exit 0

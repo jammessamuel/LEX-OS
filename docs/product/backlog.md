@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão | Detalhe                                                    |
-| ------ | ---------------------------------------------------------- |
-| —      | Nada em andamento. Próximo incremento aguarda autorização. |
+| Cartão                                                | Detalhe                                                                                                                                                   |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Entrega 11 — Verificação do MVP e endurecimento do CI | Autorizada pela sociedade em 2026-08-18. Matriz completa de testes, gates no CI com Playwright, fluxo E2E integral, abuso, dependências, backup e runbook |
 
 ---
 
