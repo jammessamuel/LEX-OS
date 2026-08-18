@@ -342,8 +342,16 @@ describe('Delivery 6 secure file intake and documents', () => {
     assert.notEqual(response.body.accepted[0].file.duplicateOfFileId, OTHER_FILE_ID);
 
     await authorized('get', `/api/v1/cases/${OTHER_CASE_ID}/files`).expect(404);
+    await authorized('get', `/api/v1/cases/${OTHER_CASE_ID}/documents`).expect(404);
     await authorized('get', `/api/v1/files/${OTHER_FILE_ID}/download-url`).expect(404);
     await authorized('get', `/api/v1/documents/${OTHER_DOCUMENT_ID}`).expect(404);
+    await authorized('post', `/api/v1/cases/${OTHER_CASE_ID}/files/upload`)
+      .attach('files', PDF, { filename: 'd6-foreign.pdf', contentType: 'application/pdf' })
+      .expect(404);
+    await authorized('patch', `/api/v1/documents/${OTHER_DOCUMENT_ID}`)
+      .send({ title: 'Tentativa externa fictícia' })
+      .expect(404);
+    await authorized('delete', `/api/v1/documents/${OTHER_DOCUMENT_ID}`).expect(404);
   });
 
   it('rejects mismatched MIME, path traversal, infection, and oversized content safely', async () => {

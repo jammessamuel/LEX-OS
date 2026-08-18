@@ -482,6 +482,24 @@ describe('Delivery 7 processing HTTP contract', () => {
       'get',
       `/api/v1/documents/${OTHER_DOCUMENT_ID}/extractions`,
     ).expect(404);
+    await authorized(adminToken, 'post', `/api/v1/documents/${OTHER_DOCUMENT_ID}/reprocess`).expect(
+      404,
+    );
+
+    const adminList = await authorized(
+      adminToken,
+      'get',
+      '/api/v1/processing-jobs?limit=100',
+    ).expect(200);
+    assert.equal(
+      adminList.body.data.some((job) => job.id === OTHER_JOB_ID),
+      false,
+    );
+    assert.equal(
+      adminList.body.data.some((job) => job.id === CONFIDENTIAL_JOB_ID),
+      true,
+    );
+
     const list = await authorized(readOnlyToken, 'get', '/api/v1/processing-jobs?limit=100').expect(
       200,
     );
@@ -492,5 +510,33 @@ describe('Delivery 7 processing HTTP contract', () => {
     await authorized(readOnlyToken, 'get', `/api/v1/processing-jobs/${CONFIDENTIAL_JOB_ID}`).expect(
       404,
     );
+    await authorized(
+      readOnlyToken,
+      'get',
+      `/api/v1/documents/${CONFIDENTIAL_DOCUMENT_ID}/extractions`,
+    ).expect(404);
+    await authorized(
+      adminToken,
+      'get',
+      `/api/v1/documents/${CONFIDENTIAL_DOCUMENT_ID}/extractions`,
+    ).expect(200);
+
+    await database.client.document.update({
+      where: { id: CONFIDENTIAL_DOCUMENT_ID },
+      data: { deletedAt: new Date() },
+    });
+    await authorized(
+      adminToken,
+      'get',
+      `/api/v1/documents/${CONFIDENTIAL_DOCUMENT_ID}/extractions`,
+    ).expect(404);
+    await authorized(adminToken, 'get', `/api/v1/processing-jobs/${CONFIDENTIAL_JOB_ID}`).expect(
+      404,
+    );
+    await authorized(
+      adminToken,
+      'post',
+      `/api/v1/documents/${CONFIDENTIAL_DOCUMENT_ID}/reprocess`,
+    ).expect(404);
   });
 });

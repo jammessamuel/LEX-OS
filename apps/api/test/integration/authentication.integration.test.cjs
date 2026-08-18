@@ -115,13 +115,48 @@ after(async () => {
 describe('Delivery 4 HTTP and authentication contract', () => {
   it('publishes OpenAPI for only the implemented HTTP surface', async () => {
     const response = await request(http).get('/api/v1/docs/openapi.json').expect(200);
+    const expectedPaths = [
+      '/api/v1',
+      '/api/v1/assistant/answers',
+      '/api/v1/audit-logs',
+      '/api/v1/auth/login',
+      '/api/v1/auth/logout',
+      '/api/v1/auth/refresh',
+      '/api/v1/cases',
+      '/api/v1/cases/{caseId}/documents',
+      '/api/v1/cases/{caseId}/files',
+      '/api/v1/cases/{caseId}/files/upload',
+      '/api/v1/cases/{caseId}/participants',
+      '/api/v1/cases/{id}',
+      '/api/v1/cases/{id}/checklist-templates',
+      '/api/v1/cases/{id}/checklists',
+      '/api/v1/cases/{id}/processing-budget',
+      '/api/v1/cases/{id}/tasks',
+      '/api/v1/cases/{id}/timeline-events',
+      '/api/v1/checklist-items/{id}',
+      '/api/v1/checklist-items/{id}/tasks',
+      '/api/v1/dashboard/summary',
+      '/api/v1/documents/{id}',
+      '/api/v1/documents/{id}/extractions',
+      '/api/v1/documents/{id}/reprocess',
+      '/api/v1/extracted-entities/{id}/confirm',
+      '/api/v1/files/{id}/download-url',
+      '/api/v1/health/live',
+      '/api/v1/health/ready',
+      '/api/v1/metrics',
+      '/api/v1/organizations/current',
+      '/api/v1/persons',
+      '/api/v1/persons/{id}',
+      '/api/v1/persons/{id}/cases',
+      '/api/v1/processing-jobs',
+      '/api/v1/processing-jobs/{id}',
+      '/api/v1/search',
+      '/api/v1/tasks/{id}',
+      '/api/v1/timeline-events/{id}/confirm',
+      '/api/v1/users/assignable',
+    ];
 
-    assert.ok(response.body.paths['/api/v1/auth/login']);
-    assert.ok(response.body.paths['/api/v1/auth/refresh']);
-    assert.ok(response.body.paths['/api/v1/auth/logout']);
-    assert.ok(response.body.paths['/api/v1/organizations/current']);
-    assert.ok(response.body.paths['/api/v1/cases']);
-    assert.ok(response.body.paths['/api/v1/files/{id}/download-url']);
+    assert.deepEqual(Object.keys(response.body.paths).sort(), expectedPaths);
     assert.ok(response.body.paths['/api/v1/documents/{id}/reprocess']?.post);
     assert.ok(response.body.paths['/api/v1/processing-jobs']?.get);
   });

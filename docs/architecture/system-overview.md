@@ -2,7 +2,7 @@
 
 **Status:** Delivery 10 accepted
 
-**Last updated:** 2026-08-13
+**Last updated:** 2026-08-18
 
 ## Architectural goals
 
@@ -226,7 +226,7 @@ State transitions are centralized and conditional so two workers cannot both fin
 
 Processors are idempotent. A retry must either find the output already associated with its execution/idempotency key or append exactly one new immutable extraction. Queue delivery is at least once, so exactly-once behavior must never be assumed.
 
-The implemented deterministic graph is `FILE_VALIDATION -> OCR -> DOCUMENT_CLASSIFICATION -> ENTITY_EXTRACTION -> TIMELINE_GENERATION -> CHECKLIST_ANALYSIS`. The final document state is `NEEDS_REVIEW`; timeline output is unconfirmed and checklist findings remain proposals until authorized human action. `VIRUS_SCAN` retries a scanner outage and fails terminally without changing the quarantined file to available.
+The implemented deterministic graph is `FILE_VALIDATION -> OCR -> DOCUMENT_CLASSIFICATION -> ENTITY_EXTRACTION -> TIMELINE_GENERATION -> CHECKLIST_ANALYSIS -> EMBEDDING`. The final document state is `NEEDS_REVIEW`; timeline output is unconfirmed and checklist findings remain proposals until authorized human action. A case type without an active checklist template still completes `CHECKLIST_ANALYSIS` without an extraction or snapshot and continues to `EMBEDDING`, so the document remains searchable. `VIRUS_SCAN` retries a scanner outage and fails terminally without changing the quarantined file to available.
 
 ## AI provider boundary
 

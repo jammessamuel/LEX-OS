@@ -1,8 +1,8 @@
 # Processing API
 
-**Status:** Extended during authorized Delivery 10
+**Status:** Extended during authorized Delivery 11
 
-**Last updated:** 2026-08-13
+**Last updated:** 2026-08-18
 
 ## Contract summary
 
@@ -45,7 +45,7 @@ FILE_VALIDATION -> OCR -> DOCUMENT_CLASSIFICATION -> ENTITY_EXTRACTION
 
 Each stage is a separate persistent job and BullMQ delivery. A worker claims `QUEUED` or `RETRYING` with an optimistic `status + version` update, increments attempts, writes results/next job/audits in a short transaction, and publishes the child only after commit. Completed, failed, or cancelled duplicate deliveries are acknowledged without repeating results.
 
-Classification uses the global/same-tenant `OUTRO` type with deliberately low mock confidence. Timeline and checklist stages append their own immutable executions; timeline events start unconfirmed and checklist matches start `AWAITING_VALIDATION`. `EMBEDDING` then normalizes and chunks the latest completed OCR extraction, records hashes/locators/provider metadata, and inserts exact-search vectors idempotently. The chain finishes with the document `NEEDS_REVIEW`. Reprocessing requires an `AVAILABLE/CLEAN` file, rejects another active chain with `409 DOCUMENT_PROCESSING_ACTIVE`, creates a fresh OCR root, and never overwrites earlier extractions or chunks.
+Classification uses the global/same-tenant `OUTRO` type with deliberately low mock confidence. Timeline and checklist stages append their own immutable executions; timeline events start unconfirmed and checklist matches start `AWAITING_VALIDATION`. When the case type has no active checklist template, `CHECKLIST_ANALYSIS` still completes: it records `templateAvailable: false` and `itemCount: 0`, appends no extraction or case checklist, and continues to `EMBEDDING`. A missing template is not a document failure. `EMBEDDING` then normalizes and chunks the latest completed OCR extraction, records hashes/locators/provider metadata, and inserts exact-search vectors idempotently. The chain finishes with the document `NEEDS_REVIEW`. Reprocessing requires an `AVAILABLE/CLEAN` file, rejects another active chain with `409 DOCUMENT_PROCESSING_ACTIVE`, creates a fresh OCR root, and never overwrites earlier extractions or chunks.
 
 `VIRUS_SCAN` remains fail-closed: the deterministic scanner outage retries with bounded exponential backoff and finishes as a safe failure while the object stays quarantined. A periodic reconciler republishes stale `QUEUED`/`RETRYING` rows missing from Redis.
 

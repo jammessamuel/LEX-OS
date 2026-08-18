@@ -1,7 +1,7 @@
 # Timeline, checklist, and tasks API
 
 **Status:** Implemented in Delivery 8; task lifecycle extended in Delivery 10
-**Last updated:** 2026-08-13
+**Last updated:** 2026-08-18
 
 ## Security and authorization
 
@@ -33,7 +33,7 @@ AI events start with `confirmedByUser=false`. Confirmation uses a guarded update
 
 The seed contains a global version-1 template for the fictional labor case. Application copies each item's title, description, and required flag into `case_checklist_items`; deactivating the template therefore does not erase the historical checklist. Both application checks and composite foreign keys require a linked document to belong to the checklist's tenant and case.
 
-AI analysis only promotes a matching missing item to `AWAITING_VALIDATION`; it does not overwrite human-reviewed statuses. Human review records validator/time for `VALIDATED`, `NOT_APPLICABLE`, `INVALID`, `EXPIRED`, and `ILLEGIBLE`. The checklist becomes `COMPLETED` only when every required item is `VALIDATED` or `NOT_APPLICABLE`.
+AI analysis only promotes a matching missing item to `AWAITING_VALIDATION`; it does not overwrite human-reviewed statuses. When the worker finds no active template for the case type, it does not apply a snapshot and does not fail the document. Human review records validator/time for `VALIDATED`, `NOT_APPLICABLE`, `INVALID`, `EXPIRED`, and `ILLEGIBLE`. The checklist becomes `COMPLETED` only when every required item is `VALIDATED` or `NOT_APPLICABLE`.
 
 A task can be created only from a pending `MISSING`, `INVALID`, `EXPIRED`, or `ILLEGIBLE` item. Its source is `AI_CHECKLIST` with the item ID, while the title is derived from the immutable snapshot. A partial unique index rejects a second non-deleted task for the same tenant/source.
 

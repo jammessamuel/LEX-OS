@@ -36,6 +36,8 @@ const OTHER_EVENT_ID = '80000000-0000-4000-8000-000000000015';
 const OTHER_CHECKLIST_ID = '80000000-0000-4000-8000-000000000016';
 const OTHER_CHECKLIST_ITEM_ID = '80000000-0000-4000-8000-000000000017';
 const OTHER_TASK_ID = '80000000-0000-4000-8000-000000000019';
+const CONFIDENTIAL_CASE_ID = '80000000-0000-4000-8000-000000000020';
+const DELETED_CASE_ID = '80000000-0000-4000-8000-000000000021';
 const ADMIN_EMAIL = 'admin@lexos.invalid';
 const INTERN_EMAIL = 'd8-intern@lexos.invalid';
 const seedPassword = process.env.SEED_ADMIN_PASSWORD;
@@ -95,6 +97,8 @@ async function cleanup() {
             in: [
               STANDARD_EVENT_ID,
               OTHER_EVENT_ID,
+              CONFIDENTIAL_CASE_ID,
+              DELETED_CASE_ID,
               ...fixtureChecklistIds,
               ...fixtureItemIds,
               ...fixtureTasks.map((item) => item.id),
@@ -127,7 +131,11 @@ async function cleanup() {
     where: { id: { in: [STANDARD_FILE_ID, AUXILIARY_FILE_ID, OTHER_FILE_ID] } },
   });
   await database.client.case.deleteMany({
-    where: { id: { in: [DEMO_CASE_ID, AUXILIARY_CASE_ID, OTHER_CASE_ID] } },
+    where: {
+      id: {
+        in: [DEMO_CASE_ID, AUXILIARY_CASE_ID, OTHER_CASE_ID, CONFIDENTIAL_CASE_ID, DELETED_CASE_ID],
+      },
+    },
   });
   await database.client.userRole.deleteMany({ where: { userId: INTERN_USER_ID } });
   await database.client.user.deleteMany({
@@ -221,6 +229,28 @@ before(async () => {
       title: 'Caso principal fictício D8',
       legalArea: 'TRABALHISTA',
       caseType: 'RECLAMACAO_TRABALHISTA',
+    },
+  });
+  await database.client.case.create({
+    data: {
+      id: CONFIDENTIAL_CASE_ID,
+      organizationId: ORGANIZATION_ID,
+      internalCode: 'D8-CONFIDENTIAL',
+      title: 'Caso confidencial fictício D8',
+      legalArea: 'TESTE',
+      caseType: 'TESTE',
+      confidentialityLevel: 'CONFIDENTIAL',
+    },
+  });
+  await database.client.case.create({
+    data: {
+      id: DELETED_CASE_ID,
+      organizationId: ORGANIZATION_ID,
+      internalCode: 'D8-DELETED',
+      title: 'Caso excluído fictício D8',
+      legalArea: 'TESTE',
+      caseType: 'TESTE',
+      deletedAt: new Date(),
     },
   });
   await database.client.case.create({
@@ -568,6 +598,15 @@ describe('Delivery 8 timeline, checklist and task review', () => {
     );
     await authorized(
       adminToken,
+      'get',
+      `/api/v1/cases/${OTHER_CASE_ID}/checklist-templates`,
+    ).expect(404);
+    await authorized(adminToken, 'get', `/api/v1/cases/${OTHER_CASE_ID}/checklists`).expect(404);
+    await authorized(adminToken, 'post', `/api/v1/cases/${OTHER_CASE_ID}/checklists`)
+      .send({ templateId: TEMPLATE_ID })
+      .expect(404);
+    await authorized(
+      adminToken,
       'post',
       `/api/v1/timeline-events/${OTHER_EVENT_ID}/confirm`,
     ).expect(404);
@@ -581,6 +620,27 @@ describe('Delivery 8 timeline, checklist and task review', () => {
     await authorized(adminToken, 'patch', `/api/v1/tasks/${OTHER_TASK_ID}`)
       .send({ status: 'COMPLETED' })
       .expect(404);
+
+    await authorized(
+      internToken,
+      'get',
+      `/api/v1/cases/${CONFIDENTIAL_CASE_ID}/timeline-events`,
+    ).expect(404);
+    await authorized(internToken, 'get', `/api/v1/cases/${CONFIDENTIAL_CASE_ID}/checklists`).expect(
+      404,
+    );
+    await authorized(internToken, 'get', `/api/v1/cases/${CONFIDENTIAL_CASE_ID}/tasks`).expect(404);
+    await authorized(
+      adminToken,
+      'get',
+      `/api/v1/cases/${CONFIDENTIAL_CASE_ID}/timeline-events`,
+    ).expect(200);
+
+    await authorized(adminToken, 'get', `/api/v1/cases/${DELETED_CASE_ID}/timeline-events`).expect(
+      404,
+    );
+    await authorized(adminToken, 'get', `/api/v1/cases/${DELETED_CASE_ID}/checklists`).expect(404);
+    await authorized(adminToken, 'get', `/api/v1/cases/${DELETED_CASE_ID}/tasks`).expect(404);
   });
 
   it('updates task lifecycle fields safely and permits only one concurrent completion', async () => {
