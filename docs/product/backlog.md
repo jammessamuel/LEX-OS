@@ -78,11 +78,11 @@ Nenhum é código. Cada um trava trabalho abaixo dele.
 
 Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
-| Cartão                            | Situação                                                                                                                             |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Gate de lint e formato pré-commit | Instalado em 2026-08-18 dentro da Entrega 11; falha fechado sem pnpm                                                                 |
-| Matriz E2E ampliada               | Em andamento na Entrega 11: abuso e jornada total entram no cartão                                                                   |
-| Checklist em caso sem template    | Achado 2026-08-18: CHECKLIST_ANALYSIS falha quando o tipo de caso não tem template; deveria concluir sem exigências em vez de falhar |
+| Cartão                            | Situação                                                                                                                                   |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Gate de lint e formato pré-commit | Instalado em 2026-08-18 dentro da Entrega 11; falha fechado sem pnpm                                                                       |
+| Matriz E2E ampliada               | Em andamento na Entrega 11: abuso e jornada total entram no cartão                                                                         |
+| Checklist em caso sem template    | Corrigido em 2026-08-18: a etapa conclui sem exigências, o EMBEDDING roda e o documento segue pesquisável; coberto por teste de integração |
 
 ---
 

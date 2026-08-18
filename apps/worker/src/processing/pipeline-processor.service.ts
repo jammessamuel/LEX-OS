@@ -238,10 +238,19 @@ export class PipelineProcessorService {
       case 'CHECKLIST_ANALYSIS': {
         const template = await this.repository.findChecklistTemplate(job);
         if (template === null || template.items.length === 0) {
-          throw new PermanentProcessingError(
-            'CHECKLIST_TEMPLATE_MISSING',
-            'Não há checklist ativo para o tipo deste caso.',
-          );
+          // Tipo de caso sem checklist ativo não é falha do documento: a etapa conclui sem
+          // exigências e o pipeline segue para a indexação, mantendo o documento pesquisável.
+          return {
+            provider: 'lex-os-mock-checklist',
+            modelName: 'deterministic-v1',
+            outputMetadata: {
+              stage: 'CHECKLIST_ANALYSIS',
+              progress: 100,
+              itemCount: 0,
+              templateAvailable: false,
+            },
+            nextJobType: 'EMBEDDING',
+          };
         }
         const result = this.checklistAnalysisProvider.analyze({
           documentTypeCode: job.document.documentType?.code ?? null,

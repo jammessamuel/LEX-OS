@@ -219,10 +219,11 @@ jobs:
             exit 1
           fi
 
-      # A mesma stack Compose do desenvolvimento local: web, API, worker e dependências,
-      # com health checks. O E2E exercita o produto pelo mesmo caminho do usuário.
-      - name: Start complete stack
-        run: pnpm infra:up
+      # O schema precisa existir antes das aplicações: o worker reconcilia jobs no boot e
+      # não fica saudável em um banco vazio. Dependências, migrações e seed primeiro; a
+      # stack completa (o mesmo Compose do desenvolvimento local) por último.
+      - name: Start dependencies
+        run: pnpm infra:dependencies
 
       - name: Apply migrations
         run: pnpm db:migrate:deploy
@@ -230,8 +231,8 @@ jobs:
       - name: Seed fictional data
         run: pnpm db:seed
 
-      - name: Restart applications on the migrated schema
-        run: docker compose restart api worker
+      - name: Start complete stack
+        run: pnpm infra:up
 
       - name: Install Playwright browsers
         run: pnpm --filter @lex-os/web exec playwright install --with-deps chromium

@@ -30,6 +30,7 @@ let processingQueueNames;
 let otherDocumentTypeId;
 const documentIds = [];
 const fileIds = [];
+const extraCaseIds = [];
 
 function checksum(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -58,7 +59,12 @@ async function waitFor(load, predicate, description, timeoutMs = 15_000) {
   throw new Error(`Timed out waiting for ${description}.`);
 }
 
-async function createFixture(jobType, inputMetadata = {}, quarantined = false) {
+async function createFixture(
+  jobType,
+  inputMetadata = {},
+  quarantined = false,
+  fixtureCaseId = caseId,
+) {
   const fileId = randomUUID();
   const documentId = randomUUID();
   const processingJobId = randomUUID();
@@ -87,7 +93,7 @@ async function createFixture(jobType, inputMetadata = {}, quarantined = false) {
     data: {
       id: documentId,
       organizationId,
-      caseId,
+      caseId: fixtureCaseId,
       fileId,
       title: 'Documento fictício da Entrega 8',
       processingStatus: 'QUEUED',
@@ -119,7 +125,7 @@ async function createFixture(jobType, inputMetadata = {}, quarantined = false) {
     data: {
       id: processingJobId,
       organizationId,
-      caseId,
+      caseId: fixtureCaseId,
       fileId,
       documentId,
       jobType,
@@ -201,6 +207,9 @@ afterAll(async () => {
     await database.client.processingJob.deleteMany({ where: { documentId: { in: documentIds } } });
     await database.client.document.deleteMany({ where: { id: { in: documentIds } } });
     await database.client.storedFile.deleteMany({ where: { id: { in: fileIds } } });
+    if (extraCaseIds.length > 0) {
+      await database.client.case.deleteMany({ where: { id: { in: extraCaseIds } } });
+    }
   }
   if (app !== undefined) {
     await app.close();
@@ -261,6 +270,61 @@ describe('Delivery 8 persistent processing pipeline', () => {
     await expect(
       database.client.processingJob.findUnique({ where: { id: fixture.processingJobId } }),
     ).resolves.toMatchObject({ status: 'COMPLETED', attempts: 2, version: 3 });
+  });
+
+  it('conclui a análise de checklist sem exigências quando o tipo de caso não tem template', async () => {
+    const caseWithoutTemplateId = randomUUID();
+    extraCaseIds.push(caseWithoutTemplateId);
+    await database.client.case.create({
+      data: {
+        id: caseWithoutTemplateId,
+        organizationId,
+        internalCode: `NO-TPL-${caseWithoutTemplateId.slice(0, 8)}`,
+        title: 'Caso fictício sem template de checklist',
+        description: 'Fixture da Entrega 11: tipo de caso sem checklist ativo.',
+        legalArea: 'CIVEL',
+        caseType: 'ACAO_DE_COBRANCA',
+        status: 'INTAKE',
+      },
+    });
+    const fixture = await createFixture('CHECKLIST_ANALYSIS', {}, false, caseWithoutTemplateId);
+
+    const result = await processor.process(
+      {
+        schemaVersion: 1,
+        processingJobId: fixture.processingJobId,
+        organizationId,
+        correlationId: randomUUID(),
+      },
+      'CHECKLIST_ANALYSIS',
+      1,
+      3,
+    );
+    expect(result).toEqual({ skipped: false });
+
+    const job = await database.client.processingJob.findUnique({
+      where: { id: fixture.processingJobId },
+    });
+    expect(job).toMatchObject({ status: 'COMPLETED', errorCode: null });
+    expect(job.outputMetadata).toMatchObject({ itemCount: 0, templateAvailable: false });
+
+    // Sem template não nasce checklist nem extração: a procedência permanece fiel ao que
+    // realmente aconteceu — nenhum provedor analisou exigências.
+    await expect(
+      database.client.caseChecklist.findMany({ where: { caseId: caseWithoutTemplateId } }),
+    ).resolves.toHaveLength(0);
+    await expect(
+      database.client.documentExtraction.findMany({
+        where: { documentId: fixture.documentId, extractionType: 'CHECKLIST_ANALYSIS' },
+      }),
+    ).resolves.toHaveLength(0);
+
+    // O pipeline segue adiante: a indexação nasce e o documento continua pesquisável.
+    await expect(
+      database.client.processingJob.findMany({
+        where: { documentId: fixture.documentId, jobType: 'EMBEDDING' },
+      }),
+    ).resolves.toHaveLength(1);
   });
 
   it('persists every successful stage, provenance, entities and human-review state', async () => {
