@@ -2,7 +2,7 @@
 
 O LEX OS é um sistema inteligente de operações jurídicas para escritórios de advocacia brasileiros. O projeto recebe material operacional desorganizado e prepara um dossiê jurídico estruturado, pesquisável e rastreável para análise humana.
 
-O último marco aceito é a **Entrega 10 — Fatia vertical essencial da web**. O repositório oferece a stack local reproduzível, a plataforma jurídica e de arquivos autenticada e isolada por tenant, um pipeline persistente de sete etapas em BullMQ, análise determinística de cronologia/checklist com fontes e indexação de embeddings, busca textual em português no PostgreSQL, recuperação exata com pgvector, ranqueamento híbrido, citações resolvíveis, respostas mock ancoradas em fontes, tetos de processamento por caso, procedência segura de auditoria e uma interface responsiva em pt-BR sobre a API implementada. Provedores reais e o endurecimento de verificação da Entrega 11 permanecem intencionalmente adiados.
+O último marco aceito é a **Entrega 10 — Fatia vertical essencial da web**. A **Entrega 11 — Verificação do MVP e endurecimento do CI** está autorizada e em andamento: a esteira cobre qualidade, integração com ensaio de backup/restore, Playwright, revisão de dependências e o contrato OpenAPI inventariado. Provedores reais de IA/OCR/scanner, ingestão por e-mail, legal hold e administração completa de usuários permanecem fora desta entrega.
 
 ## Base da arquitetura
 
@@ -63,11 +63,16 @@ Substitua cada valor `replace-with-*` do `.env` por uma credencial exclusivament
 
 ## Subir a stack completa
 
-Um único comando constrói as aplicações, inicia todos os serviços necessários e aguarda os health checks:
+Em um clone limpo o schema precisa existir antes das aplicações: o worker reconcilia jobs no boot e não fica saudável em um banco vazio. A ordem documentada é a mesma da CI:
 
 ```bash
+pnpm infra:dependencies
+pnpm db:migrate:deploy
+pnpm db:seed
 pnpm infra:up
 ```
+
+`pnpm infra:up` sozinho reconstrói e aguarda a stack quando o volume do PostgreSQL já tem migração. Não use isso como primeiro passo após `docker compose down --volumes`.
 
 Endpoints locais:
 
@@ -165,24 +170,21 @@ pnpm test:integration
 
 Use `pnpm db:migrate:dev --name <nome_descritivo>` apenas para criar uma migração forward revisada. O `pnpm db:reset` remove irreversivelmente todos os dados do banco configurado e só é permitido em um banco de desenvolvimento explicitamente verificado.
 
-## Limitações atuais
+## Limitações atuais e bloqueios de produção
 
-- o login exige o UUID da organização porque a descoberta pública e o onboarding de organizações estão adiados;
-- os endpoints de onboarding público de organizações e de administração de usuários seguem adiados;
-- os identificadores de pessoa são mascarados de propósito nas respostas da API até que uma permissão dedicada a identificadores sensíveis seja desenhada;
-- remoção/atualização de participantes e políticas de titularidade da equipe do caso seguem adiadas; a Entrega 5 cobre associação validada e listagem;
-- o throttle genérico de requisições do NestJS é local ao processo; o estado de força bruta do login fica no Redis e é compartilhado;
-- uma política confiável de reverse proxy/IP precisa ser configurada antes de um deploy de produção exposto à internet;
-- a recepção de ZIP está desabilitada; os tipos aceitos são PDF, JPEG, PNG e texto UTF-8, com máximo padrão de 25 MiB por arquivo e 10 arquivos por requisição;
-- o scanner determinístico de malware é apenas de desenvolvimento/teste e a API se recusa a iniciar com ele em produção; um adaptador de scanner de produção ainda é necessário;
-- os provedores de processamento e embedding são mocks determinísticos de desenvolvimento/teste; API e worker se recusam a iniciar em produção até que adaptadores de provedores reais sejam configurados;
-- uploads duplicados são vinculados dentro de um tenant, mas o segundo objeto é retido até que uma política de retenção/deduplicação de produção seja aprovada;
-- a reconciliação relata condições de ausência, quarentena estagnada e órfãos sem apagar automaticamente evidência jurídica;
-- não há adaptador de e-mail, apesar do Mailpit local;
-- a interface essencial de revisão/busca e o CRUD de pessoas estão implementados; o onboarding de organizações e a administração de usuários seguem adiados;
-- as respostas ancoradas e os provedores de processamento ainda usam apenas adaptadores determinísticos de desenvolvimento/teste;
-- as políticas de produção de retenção de objetos, legal hold, backup/restore e expurgo irreversível seguem como bloqueios de governança;
-- a matriz essencial do Playwright roda localmente; cobertura ampla de casos de abuso, revisão de dependências, ensaio de backup/restore e endurecimento do CI permanecem agendados para a Entrega 11;
-- os hooks de Git cobrem apenas a política de mensagem de commit; o gate de lint/formato no pré-commit ainda não foi instalado.
+Estes itens estão registrados de propósito. Nenhum deles autoriza a Entrega 12 nem um provedor real.
 
-O marco aceito é a **Entrega 10 — Fatia vertical essencial da web**. O trabalho governado restante é acompanhado em [`docs/product/backlog.md`](./docs/product/backlog.md); a Entrega 11 ainda exige autorização explícita.
+- o login exige o UUID da organização; descoberta pública e onboarding de organizações estão adiados;
+- administração de usuários, convites e papéis não têm rota; existe só a lista mínima de atribuíveis;
+- identificadores de pessoa saem mascarados até existir permissão específica para dado sensível;
+- remoção/atualização de participantes e titularidade da equipe do caso seguem adiadas;
+- o throttle genérico do NestJS é local ao processo; a força bruta do login vive no Redis;
+- um reverse proxy confiável (IP real, TLS, `Secure` no cookie de refresh) é obrigatório antes de exposição à internet;
+- ZIP está desabilitado; a allowlist é PDF, JPEG, PNG e texto UTF-8, 25 MiB e 10 arquivos por requisição;
+- scanner, OCR, classificação, extração, embedding e modelo de linguagem são mocks determinísticos e recusam `NODE_ENV=production`;
+- não há adaptador de e-mail de ingestão (ADR-010) nem de notificação interna (ADR-013), apesar do Mailpit local;
+- retenção, legal hold, expurgo e procedimentos de titular (ADR-012) bloqueiam dado real de cliente; o ensaio de backup/restore da CI usa só fixture fictício;
+- busca vetorial é exata, sem índice ANN, até um modelo/dimensão de produção ser escolhido;
+- o demo hospedado contém somente dados fictícios; não é ambiente de produção jurídica.
+
+O marco aceito continua a **Entrega 10**. O quadro da Entrega 11 e o trabalho ainda não autorizado estão em [`docs/product/backlog.md`](./docs/product/backlog.md). Os bloqueios operacionais estão também no [runbook](./docs/operations/runbook.md).

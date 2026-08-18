@@ -1,7 +1,7 @@
 # Local development topology
 
 **Status:** Updated through Delivery 10
-**Last updated:** 2026-08-13
+**Last updated:** 2026-08-18
 
 ## Purpose
 
@@ -40,10 +40,15 @@ Production mode adds a fail-fast check for weak or recognizable placeholder secr
 
 ```bash
 pnpm infra:config
+pnpm infra:dependencies
+pnpm db:migrate:deploy
+pnpm db:seed
 pnpm infra:up
 pnpm infra:ps
 pnpm infra:down
 ```
+
+A clean volume needs schema and seed before the application containers: the worker reconciles jobs at boot and does not become healthy against an empty database. That is the same order CI uses for Playwright. `pnpm infra:up` alone is valid afterwards, when the PostgreSQL volume already contains the migrated schema.
 
 `infra:up` builds application images and waits until all long-running services are healthy. `minio-init` is a one-shot bootstrap container and must finish successfully. It creates the configured bucket if needed and explicitly sets anonymous access to `none`.
 

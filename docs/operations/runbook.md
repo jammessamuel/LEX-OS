@@ -95,6 +95,24 @@ lives in a document is a rehearsal that fails when needed.
   never runs migrations.
 - CI performs no deploy, by design.
 
+## Production blockers and remaining limitations
+
+Recorded for Delivery 11. These block real-client production; they do not authorize a new delivery.
+
+| Blocker                                                      | Why it remains closed                                                                                                                        |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Real OCR, virus scan, embedding, and language-model adapters | Deterministic mocks refuse `NODE_ENV=production`. ADR-011 (per-execution cost and case ceiling) exists; a governed vendor adapter does not.  |
+| Case legal hold, retention, subject-request, and hard purge  | ADR-012 decided the policy. Hold state, fail-closed transitions, and LGPD procedures are not implemented. Do not claim LGPD compliance.      |
+| Authenticated e-mail ingestion                               | ADR-010. Upload is the only live intake; an unverified sender must never write to a tenant.                                                  |
+| Internal notification e-mail                                 | ADR-013. Mailpit is a local sink only.                                                                                                       |
+| Full user administration                                     | Assignable-user listing exists; CRUD, invites, and role assignment do not.                                                                   |
+| Public organization onboarding                               | Login still requires the organization UUID.                                                                                                  |
+| ANN / production embedding dimension                         | Exact pgvector search on a small corpus; no HNSW/IVFFlat until one model is selected.                                                        |
+| Internet-facing deploy                                       | Needs a trusted reverse proxy, TLS, and the refresh cookie `Secure` flag. Redis-backed brute-force is not a substitute for edge rate limits. |
+| ZIP intake                                                   | Disabled until archive-bomb limits exist.                                                                                                    |
+
+The hosted demo is fictional data on Vercel/Railway. Treat a backup of that environment as a demo restore, not a production recovery of legal evidence.
+
 ## Incident basics
 
 1. Identify the failing layer with readiness + logs (correlation ID first).

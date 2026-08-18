@@ -81,7 +81,8 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 | Cartão                            | Situação                                                                                                                                   |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Gate de lint e formato pré-commit | Instalado em 2026-08-18 dentro da Entrega 11; falha fechado sem pnpm                                                                       |
-| Matriz E2E ampliada               | Em andamento na Entrega 11: jornada total no Playwright; abuso HTTP da matriz reforçado em arquivo, processamento e revisão                |
+| Matriz E2E ampliada               | Jornada total no Playwright e abuso HTTP da matriz cobertos; CI do `08dd44d` verde                                                         |
+| Limitações de produção            | Registradas no README e no runbook em 2026-08-18: mocks, ADR-010/012/013, admin de usuários e hold jurídico bloqueiam dado real            |
 | Checklist em caso sem template    | Corrigido em 2026-08-18: a etapa conclui sem exigências, o EMBEDDING roda e o documento segue pesquisável; coberto por teste de integração |
 
 ---

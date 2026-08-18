@@ -36,8 +36,11 @@ const OTHER_DOCUMENT_ID = '70000000-0000-4000-8000-000000000015';
 const OTHER_JOB_ID = '70000000-0000-4000-8000-000000000016';
 const OTHER_EXTRACTION_ID = '70000000-0000-4000-8000-000000000017';
 const OTHER_ENTITY_ID = '70000000-0000-4000-8000-000000000018';
+const DOCUMENT_MANAGER_USER_ID = '70000000-0000-4000-8000-000000000019';
+const DOCUMENT_MANAGER_ROLE_ID = '70000000-0000-4000-8000-000000000020';
 const ADMIN_EMAIL = 'admin@lexos.invalid';
 const READ_ONLY_EMAIL = 'd7-read-only@lexos.invalid';
+const DOCUMENT_MANAGER_EMAIL = 'd7-doc-manager@lexos.invalid';
 const seedPassword = process.env.SEED_ADMIN_PASSWORD;
 
 if (seedPassword === undefined) {
@@ -49,6 +52,7 @@ let http;
 let database;
 let adminToken;
 let readOnlyToken;
+let documentManagerToken;
 
 function hash(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -75,13 +79,15 @@ async function cleanup() {
     where: {
       OR: [
         { processingJob: { documentId: { in: documentIds } } },
-        { userId: READ_ONLY_USER_ID },
+        { userId: { in: [READ_ONLY_USER_ID, DOCUMENT_MANAGER_USER_ID] } },
         { organizationId: OTHER_ORGANIZATION_ID },
         { entityId: { in: [CONFIDENTIAL_CASE_ID, OTHER_CASE_ID, ENTITY_ID, OTHER_ENTITY_ID] } },
       ],
     },
   });
-  await database.client.refreshSession.deleteMany({ where: { userId: READ_ONLY_USER_ID } });
+  await database.client.refreshSession.deleteMany({
+    where: { userId: { in: [READ_ONLY_USER_ID, DOCUMENT_MANAGER_USER_ID] } },
+  });
   await database.client.extractedEntity.deleteMany({ where: { documentId: { in: documentIds } } });
   await database.client.documentExtraction.deleteMany({
     where: { documentId: { in: documentIds } },
@@ -94,10 +100,16 @@ async function cleanup() {
   await database.client.case.deleteMany({
     where: { id: { in: [CONFIDENTIAL_CASE_ID, OTHER_CASE_ID] } },
   });
-  await database.client.userRole.deleteMany({ where: { userId: READ_ONLY_USER_ID } });
-  await database.client.user.deleteMany({
-    where: { id: { in: [READ_ONLY_USER_ID, OTHER_USER_ID] } },
+  await database.client.userRole.deleteMany({
+    where: { userId: { in: [READ_ONLY_USER_ID, DOCUMENT_MANAGER_USER_ID] } },
   });
+  await database.client.rolePermission.deleteMany({
+    where: { roleId: DOCUMENT_MANAGER_ROLE_ID },
+  });
+  await database.client.user.deleteMany({
+    where: { id: { in: [READ_ONLY_USER_ID, DOCUMENT_MANAGER_USER_ID, OTHER_USER_ID] } },
+  });
+  await database.client.role.deleteMany({ where: { id: DOCUMENT_MANAGER_ROLE_ID } });
   await database.client.organization.deleteMany({ where: { id: OTHER_ORGANIZATION_ID } });
 }
 
@@ -194,6 +206,38 @@ before(async () => {
   });
   await database.client.userRole.create({
     data: { userId: READ_ONLY_USER_ID, roleId: READ_ONLY_ROLE_ID },
+  });
+  await database.client.role.create({
+    data: {
+      id: DOCUMENT_MANAGER_ROLE_ID,
+      organizationId: ORGANIZATION_ID,
+      name: 'Gestor de documentos fictício D7',
+      code: 'D7_DOC_MANAGER',
+    },
+  });
+  const documentManagerPermissions = await database.client.permission.findMany({
+    where: { code: { in: ['documents.read', 'documents.manage'] } },
+    select: { id: true },
+  });
+  assert.equal(documentManagerPermissions.length, 2);
+  await database.client.rolePermission.createMany({
+    data: documentManagerPermissions.map((permission) => ({
+      roleId: DOCUMENT_MANAGER_ROLE_ID,
+      permissionId: permission.id,
+    })),
+  });
+  await database.client.user.create({
+    data: {
+      id: DOCUMENT_MANAGER_USER_ID,
+      organizationId: ORGANIZATION_ID,
+      name: 'Gestor de documentos fictício D7',
+      email: DOCUMENT_MANAGER_EMAIL,
+      passwordHash: admin.passwordHash,
+      status: 'ACTIVE',
+    },
+  });
+  await database.client.userRole.create({
+    data: { userId: DOCUMENT_MANAGER_USER_ID, roleId: DOCUMENT_MANAGER_ROLE_ID },
   });
   await database.client.case.create({
     data: {
@@ -318,6 +362,7 @@ before(async () => {
 
   adminToken = await login(ADMIN_EMAIL);
   readOnlyToken = await login(READ_ONLY_EMAIL);
+  documentManagerToken = await login(DOCUMENT_MANAGER_EMAIL);
 });
 
 after(async () => {
@@ -520,6 +565,17 @@ describe('Delivery 7 processing HTTP contract', () => {
       'get',
       `/api/v1/documents/${CONFIDENTIAL_DOCUMENT_ID}/extractions`,
     ).expect(200);
+
+    await authorized(
+      documentManagerToken,
+      'post',
+      `/api/v1/documents/${CONFIDENTIAL_DOCUMENT_ID}/reprocess`,
+    ).expect(404);
+    await authorized(
+      documentManagerToken,
+      'post',
+      `/api/v1/documents/${STANDARD_DOCUMENT_ID}/reprocess`,
+    ).expect(409);
 
     await database.client.document.update({
       where: { id: CONFIDENTIAL_DOCUMENT_ID },
