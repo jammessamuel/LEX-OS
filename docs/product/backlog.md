@@ -32,7 +32,6 @@ depois de receberem escopo e autorização explícitos.
 
 | Cartão                         | Fundação disponível                                               |
 | ------------------------------ | ----------------------------------------------------------------- |
-| Pessoas — experiência CRUD     | Rotas `GET`/`POST`/`PATCH`/`DELETE /persons` já existem           |
 | Assistente — conversa completa | A resposta ancorada simples existe; histórico de conversa não     |
 | Referência visual viva         | Tokens e dois temas existem; falta definir o artefato de catálogo |
 
@@ -90,6 +89,13 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
 
+- **Pessoas — experiência CRUD** (autorizado pela sociedade em 2026-08-17) — lista com filtro por
+  tipo e paginação por cursor, ficha com participações em casos (papel, polo e vínculo de cliente),
+  cadastro e edição, e exclusão lógica com confirmação. CPF, CNPJ e RG chegam mascarados da API e
+  nunca voltam no envio: na edição a máscara vira dica de campo e só documento digitado viaja no
+  PATCH — comportamento coberto por teste de componente. Entrada "Pessoas" na navegação para quem
+  tem `persons.read`; ações de escrita aparecem somente com `persons.manage`, e o servidor segue
+  revalidando tudo.
 - **Delivery 10 aceita no navegador real** — Playwright cobre o fluxo autenticado essencial em
   desktop e celular, sem criar dados jurídicos; verifica navegação por teclado, foco visível,
   ausência de estouro horizontal e falhas inesperadas de console ou HTTP.

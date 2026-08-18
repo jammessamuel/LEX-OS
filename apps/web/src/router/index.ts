@@ -13,6 +13,9 @@ import CaseTasksView from '../views/CaseTasksView.vue';
 import CaseTimelineView from '../views/CaseTimelineView.vue';
 import DocumentDetailView from '../views/DocumentDetailView.vue';
 import LoginView from '../views/LoginView.vue';
+import PersonDetailView from '../views/PersonDetailView.vue';
+import PersonFormView from '../views/PersonFormView.vue';
+import PersonsView from '../views/PersonsView.vue';
 import SearchView from '../views/SearchView.vue';
 
 export const router = createRouter({
@@ -81,6 +84,30 @@ export const router = createRouter({
           name: 'document-detail',
           path: 'documentos/:id',
           meta: { permissions: ['documents.read'] },
+        },
+        {
+          component: PersonsView,
+          name: 'persons',
+          path: 'pessoas',
+          meta: { permissions: ['persons.read'] },
+        },
+        {
+          component: PersonFormView,
+          name: 'person-create',
+          path: 'pessoas/nova',
+          meta: { permissions: ['persons.manage'] },
+        },
+        {
+          component: PersonDetailView,
+          name: 'person-detail',
+          path: 'pessoas/:id',
+          meta: { permissions: ['persons.read'] },
+        },
+        {
+          component: PersonFormView,
+          name: 'person-edit',
+          path: 'pessoas/:id/editar',
+          meta: { permissions: ['persons.read', 'persons.manage'] },
         },
         {
           component: SearchView,

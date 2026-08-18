@@ -38,6 +38,13 @@ async function signOut(): Promise<void> {
           Casos
         </RouterLink>
         <RouterLink
+          v-if="session.can('persons.read')"
+          class="shell__link"
+          :to="{ name: 'persons' }"
+        >
+          Pessoas
+        </RouterLink>
+        <RouterLink
           v-if="session.can('cases.read') && session.can('knowledge.search')"
           class="shell__link"
           :to="{ name: 'search' }"

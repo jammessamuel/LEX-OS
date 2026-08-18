@@ -139,6 +139,18 @@ export interface Person extends ParticipantPerson {
   updatedAt: string;
 }
 
+export interface PersonCaseParticipation {
+  id: string;
+  role: ParticipantRole;
+  side: ParticipantSide | null;
+  isClient: boolean;
+}
+
+export interface PersonCase {
+  case: CaseSummary;
+  participations: PersonCaseParticipation[];
+}
+
 export interface Participant {
   id: string;
   caseId: string;

@@ -8,6 +8,7 @@ import type {
   Importance,
   ParticipantRole,
   ParticipantSide,
+  PersonType,
   ProcessingJobType,
   Priority,
   TaskSourceType,
@@ -96,6 +97,12 @@ export const participantSideLabels: Readonly<Record<ParticipantSide, string>> = 
   polo_passivo: 'Polo passivo',
   terceiro: 'Terceiro',
   neutro: 'Neutro',
+};
+
+export const personTypeLabels: Readonly<Record<PersonType, string>> = {
+  INDIVIDUAL: 'Pessoa física',
+  COMPANY: 'Pessoa jurídica',
+  GOVERNMENT_ENTITY: 'Ente público',
 };
 
 /**
