@@ -55,19 +55,18 @@ Approval for one commit is not standing approval for the next.
 
 ### 0.3 Respect the delivery boundary
 
-The latest accepted checkpoint is **Delivery 10 — Essential web vertical slice**. The responsive
-pt-BR interface is connected to real API resources for dashboard, cases, participants, uploads,
-documents, processing, timeline, checklist, tasks, search, and supervised audit access. Client
-navigation reflects effective permissions while server authorization remains authoritative. The
-essential desktop/mobile Playwright gate passes.
+The latest accepted checkpoint is **Delivery 10 — Essential web vertical slice**.
 
-**Delivery 11 — Full MVP verification and CI hardening is authorized** (owner, 2026-08-18).
-Complete the required test matrix, CI gates including Playwright, the full fictional
-end-to-end flow, security abuse cases, dependency review, backup/restore rehearsal, and the
-operational runbook. CI performs no deploy.
+**Delivery 11 — Full MVP verification and CI hardening was authorized by the owner on
+2026-08-18** and is implemented, but it is not accepted until every mandatory CI job passes
+on `main`. Its scope is limited to: the required test matrix, CI gates including Playwright,
+the full fictional end-to-end flow, security abuse cases, dependency review, the synthetic
+recovery rehearsal, the operational runbook, and documentation alignment. CI performs no deploy.
 
-Delivery 12 and later still require explicit authorization. Do not implement
-future-delivery behavior opportunistically, even when it looks like a small addition.
+Do not begin post-Delivery-11 product functionality before this verification layer is accepted.
+Real providers, production data, deployment automation, and Delivery 12 onward each require
+separate authorization. Do not implement future-delivery behavior opportunistically, even when
+it looks like a small addition.
 
 ### 0.4 Never suppress a failing gate
 

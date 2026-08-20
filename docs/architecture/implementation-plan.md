@@ -241,7 +241,7 @@ ZIP extraction remains disabled unless expanded-size, recursion, file-count, pat
 - complete required unit/integration/API/E2E matrix;
 - CI format, lint, typecheck, unit, integration, migration validation, build, and Playwright gates;
 - end-to-end fictional organization → login → case → upload → worker → extraction → timeline → confirmation → audit flow;
-- security abuse cases, dependency review, backup/restore rehearsal, and operational runbook;
+- security abuse cases, dependency review, synthetic recovery rehearsal, and operational runbook;
 - OpenAPI and architecture documents synchronized with implementation.
 
 **Acceptance**
@@ -251,6 +251,12 @@ ZIP extraction remains disabled unless expanded-size, recursion, file-count, pat
 - a clean-machine run follows README without undocumented steps;
 - restore and reconciliation procedures are exercised with synthetic data;
 - remaining limitations and production blockers are explicitly recorded.
+
+**Implementation status (2026-08-20):** authorized and implemented on `main`. The
+workflow now has every required quality/integration/Playwright/dependency/recovery gate and contains
+no deploy step. The full fictional browser journey, guarded clean-machine bootstrap, synthetic
+PostgreSQL/private-object recovery rehearsal, security coverage matrix, and operational runbook are
+present. Formal acceptance remains pending until all GitHub CI jobs pass for the branch/PR.
 
 ## Governed follow-up increments
 
@@ -314,5 +320,6 @@ The Delivery 9 checkpoint is **Text and semantic search foundation**. It is comp
 
 That checkpoint is accepted. **Delivery 10 — Essential web vertical slice** is also accepted: its
 responsive, permission-aware pt-BR interface uses real API contracts, exposes recoverable states,
-and passes the component and essential desktop/mobile Playwright gates. Delivery 11 and governed
-follow-up increments still require explicit authorization.
+and passes the component and essential desktop/mobile Playwright gates. Delivery 11 is authorized,
+implemented locally, and awaits its mandatory CI result; governed follow-up increments remain
+separately authorized work.

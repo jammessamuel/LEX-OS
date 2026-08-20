@@ -140,10 +140,11 @@ The shared logger recursively redacts password, secret, authorization, cookie, t
 
 ## Delivery boundary
 
-The formal checkpoint is Delivery 10. The complete local stack, database and HTTP foundations,
+The accepted checkpoint remains Delivery 10 until the complete Delivery 11 CI matrix passes on `main`. The complete local stack, database and HTTP foundations,
 tenant-aware legal/file modules, persistent mock processing, timeline/checklist review, hybrid
 search, grounded mock answers, supervised audit retrieval, processing-cost ceiling, and essential
-responsive web workflow are implemented. The Playwright gate exercises login, permission-aware
-navigation, case access/edit entry, and search at desktop and mobile breakpoints. E-mail behavior,
-complete user administration, full person management, real AI/OCR/scanner providers, and Delivery
-11 verification hardening remain scheduled for separately authorized increments.
+responsive web workflow are implemented. Delivery 11 extends Playwright through fictional case
+creation, upload, worker processing, extraction, sourced timeline confirmation, and audit at desktop
+and mobile breakpoints; it also adds dependency, recovery, and CI gates. E-mail behavior, complete
+user administration, full person management, and real AI/OCR/scanner providers remain separately
+governed. See the [operational runbook](../operations/runbook.md).

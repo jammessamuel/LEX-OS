@@ -2,7 +2,7 @@
 
 O LEX OS é um sistema inteligente de operações jurídicas para escritórios de advocacia brasileiros. O projeto recebe material operacional desorganizado e prepara um dossiê jurídico estruturado, pesquisável e rastreável para análise humana.
 
-O último marco aceito é a **Entrega 10 — Fatia vertical essencial da web**. A **Entrega 11 — Verificação do MVP e endurecimento do CI** está autorizada e em andamento: a esteira cobre qualidade, integração com ensaio de backup/restore, Playwright, revisão de dependências e o contrato OpenAPI inventariado. Provedores reais de IA/OCR/scanner, ingestão por e-mail, legal hold e administração completa de usuários permanecem fora desta entrega.
+O último marco aceito é a **Entrega 10 — Fatia vertical essencial da web**. A **Entrega 11 — Verificação do MVP e endurecimento do CI** está autorizada e implementada, e só é aceita depois que toda a matriz de CI passar na `main`: qualidade, integração com ensaio de recuperação, Playwright, revisão de dependências e o contrato OpenAPI inventariado. Provedores reais de IA/OCR/scanner, ingestão por e-mail, legal hold e administração completa de usuários permanecem fora desta entrega.
 
 ## Base da arquitetura
 
@@ -63,11 +63,18 @@ Substitua cada valor `replace-with-*` do `.env` por uma credencial exclusivament
 
 ## Subir a stack completa
 
-Em um clone limpo o schema precisa existir antes das aplicações: o worker reconcilia jobs no boot e não fica saudável em um banco vazio. A ordem documentada é a mesma da CI:
+Em um clone limpo o schema precisa existir antes das aplicações: o worker reconcilia jobs no boot e não fica saudável em um banco vazio. Um comando cobre a ordem inteira, com guarda que recusa endpoint que não seja local:
+
+```bash
+pnpm infra:bootstrap
+```
+
+Ele executa, nesta ordem, o que a CI também executa:
 
 ```bash
 pnpm infra:dependencies
 pnpm db:migrate:deploy
+pnpm db:migrate:status
 pnpm db:seed
 pnpm infra:up
 ```
@@ -146,12 +153,14 @@ pnpm typecheck
 pnpm test
 pnpm test:integration
 pnpm test:e2e
+pnpm deps:audit
+pnpm ops:recovery:rehearse
 pnpm build
 pnpm db:validate
 pnpm infra:config
 ```
 
-O `db:validate` formata e valida o schema do Prisma e confere que as adições revisadas de SQL bruto continuam na migração. Os testes de integração de banco exigem o serviço PostgreSQL do Compose com a migração já aplicada. O Playwright exige a stack completa, o seed fictício e o `SEED_ADMIN_PASSWORD` local; ele exercita o fluxo autenticado crítico em viewports de desktop e celular sem criar dados jurídicos.
+O `db:validate` formata e valida o schema do Prisma e confere que as adições revisadas de SQL bruto continuam na migração. Os testes de integração de banco exigem o serviço PostgreSQL do Compose com a migração já aplicada. O Playwright exige a stack completa, o seed fictício e o `SEED_ADMIN_PASSWORD` local; ele exercita a jornada essencial e a jornada fictícia completa em viewports de desktop e celular, sem criar dados jurídicos. O ensaio de recuperação é restrito ao endpoint local do Compose e a um conjunto exclusivamente fictício de organização e usuários; o comportamento exato está no [runbook operacional](./docs/operations/runbook.md).
 
 Os testes de contrato de autenticação e tenant da API também exigem o PostgreSQL do Compose na `5433`, o Redis autenticado e o MinIO privado. Consulte [Autenticação e contrato HTTP](./docs/api/authentication.md), [API do resumo do painel](./docs/api/dashboard.md), [API de pessoas, casos e participantes](./docs/api/people-cases-participants.md), [API de arquivos e documentos](./docs/api/files-documents.md), [API de processamento](./docs/api/processing.md), [API do assistente ancorado](./docs/api/assistant.md), [API de auditoria autorizada](./docs/api/audit.md) e [API de cronologia, checklist e tarefas](./docs/api/timeline-checklists-tasks.md).
 
@@ -182,9 +191,13 @@ Estes itens estão registrados de propósito. Nenhum deles autoriza a Entrega 12
 - um reverse proxy confiável (IP real, TLS, `Secure` no cookie de refresh) é obrigatório antes de exposição à internet;
 - ZIP está desabilitado; a allowlist é PDF, JPEG, PNG e texto UTF-8, 25 MiB e 10 arquivos por requisição;
 - scanner, OCR, classificação, extração, embedding e modelo de linguagem são mocks determinísticos e recusam `NODE_ENV=production`;
+- upload duplicado é vinculado dentro do tenant, mas o segundo objeto continua armazenado até existir política aprovada de retenção e deduplicação;
+- a reconciliação relata objeto ausente, quarentena velha e órfão sem apagar nada: prova jurídica não se remove automaticamente;
 - não há adaptador de e-mail de ingestão (ADR-010) nem de notificação interna (ADR-013), apesar do Mailpit local;
-- retenção, legal hold, expurgo e procedimentos de titular (ADR-012) bloqueiam dado real de cliente; o ensaio de backup/restore da CI usa só fixture fictício;
+- retenção, legal hold, expurgo e procedimentos de titular (ADR-012) bloqueiam dado real de cliente;
+- o ensaio de recuperação prova mecânica, e só isso: não é política de backup de produção, nem define RPO, RTO, residência regional ou legal hold, e roda apenas sobre fixture fictício;
 - busca vetorial é exata, sem índice ANN, até um modelo/dimensão de produção ser escolhido;
+- os hooks de Git rodam formato e lint antes do commit e aplicam a política de mensagem; os demais gates obrigatórios rodam na CI;
 - o demo hospedado contém somente dados fictícios; não é ambiente de produção jurídica.
 
-O marco aceito continua a **Entrega 10**. O quadro da Entrega 11 e o trabalho ainda não autorizado estão em [`docs/product/backlog.md`](./docs/product/backlog.md). Os bloqueios operacionais estão também no [runbook](./docs/operations/runbook.md).
+O marco aceito continua a **Entrega 10** até a matriz completa da Entrega 11 passar na `main`. A matriz de verificação está em [`docs/operations/delivery-11-verification-matrix.md`](./docs/operations/delivery-11-verification-matrix.md), o quadro de trabalho em [`docs/product/backlog.md`](./docs/product/backlog.md), e os bloqueios operacionais também no [runbook](./docs/operations/runbook.md).

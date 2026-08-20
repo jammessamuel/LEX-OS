@@ -68,6 +68,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Production dependency audit
+        run: pnpm deps:audit
+
       - name: Format check
         run: pnpm format:check
 
@@ -173,9 +176,6 @@ jobs:
       - name: Integration tests
         run: pnpm test:integration
 
-      - name: Backup and restore rehearsal
-        run: node infra/scripts/backup-restore-rehearsal.mjs
-
       - name: Dependency logs on failure
         if: failure()
         run: docker compose logs --no-color --tail 200
@@ -203,25 +203,23 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # Antes de subir o Compose: um navegador que nao baixa reprova em segundos, e nao
+      # depois de tres minutos esperando a stack ficar saudavel.
+      - name: Install Chromium
+        run: pnpm --filter @lex-os/web exec playwright install --with-deps chromium
+
       - name: Create CI environment file
         run: |
-          sed \
-            -e 's|replace-with-at-least-32-random-characters|ci-access-token-secret-000000000000|g' \
-            -e 's|replace-with-local-admin-password|ci-seed-admin-password|g' \
-            -e 's|replace-with-local-redis-password|ci-redis-password|g' \
-            -e 's|replace-with-local-access-key|ci-minio-access-key|g' \
-            -e 's|replace-with-local-secret-key|ci-minio-secret-key|g' \
-            -e 's|replace-with-local-password|ci-postgres-password|g' \
-            .env.example > .env
+          sed             -e 's|replace-with-at-least-32-random-characters|ci-access-token-secret-000000000000|g'             -e 's|replace-with-local-admin-password|ci-seed-admin-password|g'             -e 's|replace-with-local-redis-password|ci-redis-password|g'             -e 's|replace-with-local-access-key|ci-minio-access-key|g'             -e 's|replace-with-local-secret-key|ci-minio-secret-key|g'             -e 's|replace-with-local-password|ci-postgres-password|g'             .env.example > .env
           if grep -q 'replace-with' .env; then
             echo 'A placeholder survived substitution.' >&2
             grep -n 'replace-with' .env >&2
             exit 1
           fi
 
-      # O schema precisa existir antes das aplicações: o worker reconcilia jobs no boot e
-      # não fica saudável em um banco vazio. Dependências, migrações e seed primeiro; a
-      # stack completa (o mesmo Compose do desenvolvimento local) por último.
+      # O schema precisa existir antes das aplicacoes: o worker reconcilia jobs no boot e
+      # nao fica saudavel em um banco vazio. Dependencias, migracoes e seed primeiro; a
+      # stack completa (o mesmo Compose do desenvolvimento local) por ultimo.
       - name: Start dependencies
         run: pnpm infra:dependencies
 
@@ -234,21 +232,26 @@ jobs:
       - name: Start complete stack
         run: pnpm infra:up
 
-      - name: Install Playwright browsers
-        run: pnpm --filter @lex-os/web exec playwright install --with-deps chromium
-
       - name: End-to-end tests
         env:
           SEED_ADMIN_PASSWORD: ci-seed-admin-password
           E2E_BASE_URL: http://localhost:5173
         run: pnpm test:e2e
 
+      # O ensaio exige a stack completa saudavel e um banco exclusivamente ficticio; este
+      # e o unico ponto da esteira onde as duas condicoes valem ao mesmo tempo.
+      - name: Recovery rehearsal
+        run: pnpm ops:recovery:rehearse
+
       - name: Playwright artifacts on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-artifacts
-          path: apps/web/test-results/
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          if-no-files-found: ignore
           retention-days: 7
 
       - name: Stack logs on failure

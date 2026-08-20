@@ -53,8 +53,23 @@ test('jornada completa termina com cronologia confirmada e trilha de auditoria',
   await confirmButtons.first().click();
   await expect(confirmButtons).toHaveCount(pendingBefore - 1);
 
+  // Procedência do documento preparado: a promessa central verificada depois de o worker
+  // ter rodado de verdade, e não sobre resposta simulada. O evento acima já prova que o
+  // pipeline terminou, então aqui não é preciso esperar de novo.
+  await page.getByRole('link', { name: internalCode }).click();
+  await page.locator('a[href^="/documentos/"]').first().click();
+  await expect(page.getByText('Texto extraído')).toBeVisible();
+  await expect(page.getByText('Dados identificados')).toBeVisible();
+  await expect(page.getByText('Histórico de preparação')).toBeVisible();
+
   // A jornada termina na supervisão: a trilha registra as ações sem expor conteúdo jurídico.
   await page.getByRole('link', { name: 'Auditoria' }).click();
   await expect(page.getByRole('heading', { name: 'Auditoria' })).toBeVisible();
   await expect(page.locator('table tbody tr').first()).toBeVisible();
+
+  // Filtrar pela ação exata prova que a confirmação humana virou registro, e não que
+  // existe alguma linha qualquer na tabela.
+  await page.getByLabel('Ação exata').fill('timeline.event.confirmed');
+  await page.getByRole('button', { name: 'Aplicar filtros' }).click();
+  await expect(page.getByRole('cell', { name: 'timeline.event.confirmed' }).first()).toBeVisible();
 });

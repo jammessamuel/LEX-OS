@@ -685,9 +685,21 @@ describe('Delivery 8 timeline, checklist and task review', () => {
   });
 
   it('keeps user-facing legal text out of the safe audit snapshots', async () => {
+    assert.ok(taskId);
+    const fixtureChecklists = await database.client.caseChecklist.findMany({
+      where: { caseId: DEMO_CASE_ID },
+      select: { id: true, items: { select: { id: true } } },
+    });
+    const fixtureEntityIds = [
+      STANDARD_EVENT_ID,
+      taskId,
+      ...fixtureChecklists.map((checklist) => checklist.id),
+      ...fixtureChecklists.flatMap((checklist) => checklist.items.map((item) => item.id)),
+    ];
     const audits = await database.client.auditLog.findMany({
       where: {
         organizationId: ORGANIZATION_ID,
+        entityId: { in: fixtureEntityIds },
         action: {
           in: [
             'timeline.event.confirmed',

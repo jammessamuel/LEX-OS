@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-18 · Entrega 11 autorizada e em andamento
+**Última atualização:** 2026-08-20 · PR #7 reconciliada com a `main`
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                                                | Detalhe                                                                                                                                                   |
-| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Entrega 11 — Verificação do MVP e endurecimento do CI | Autorizada pela sociedade em 2026-08-18. Matriz completa de testes, gates no CI com Playwright, fluxo E2E integral, abuso, dependências, backup e runbook |
+| Cartão                                                | Detalhe                                                                                                                                                                          |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Entrega 11 — Verificação do MVP e endurecimento do CI | Autorizada pela sociedade em 2026-08-18. Implementada e reconciliada com o trabalho paralelo da PR #7 em 2026-08-20. Só é aceita quando a matriz completa da CI passar na `main` |
 
 ---
 
@@ -90,6 +90,18 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 ## Feito
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
+
+- **Reconciliação da PR #7 com a `main`** — os dois lados construíram a Entrega 11 em paralelo e
+  colidiram em oito arquivos, dois deles `add/add`. A resolução escolheu por mérito, não por lado:
+  fica o `pre-commit` da `main`, que roda só sobre o que está em stage; fica o ensaio de
+  recuperação da PR, que restaura em banco descartável, compara impressão digital de onze tabelas e
+  também exercita o object storage — o da `main`, que derrubava o schema no lugar, foi removido em
+  vez de conviver duplicado. O job de `dependency-review` estava duplicado pela auto-merge e o
+  `pnpm-workspace.yaml` tinha duas chaves `overrides:`, que era o erro de parse do lockfile.
+  O ensaio ficou no job de e2e porque exige api, web e worker de pé: no job de integração, onde a
+  `main` o tinha, ele falharia. As duas asserções mais fortes da PR foram enxertadas na jornada
+  completa: a procedência do documento depois de o worker rodar de verdade, e a auditoria filtrada
+  pela ação exata `timeline.event.confirmed`.
 
 - **Pessoas — experiência CRUD** (autorizado pela sociedade em 2026-08-17) — lista com filtro por
   tipo e paginação por cursor, ficha com participações em casos (papel, polo e vínculo de cliente),
