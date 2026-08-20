@@ -80,8 +80,8 @@ async function setupFixtures() {
   ]);
   await pool.query(
     `INSERT INTO organizations
-      (id, legal_name, trade_name, document_number, subscription_plan, updated_at)
-     VALUES ($1, 'Organização Externa Auditoria', 'Externa Auditoria', 'AUDIT-OTHER', 'TEST', now())`,
+      (id, slug, legal_name, trade_name, document_number, subscription_plan, updated_at)
+     VALUES ($1, 'outra-auditoria', 'Organização Externa Auditoria', 'Externa Auditoria', 'AUDIT-OTHER', 'TEST', now())`,
     [OTHER_ORGANIZATION_ID],
   );
 

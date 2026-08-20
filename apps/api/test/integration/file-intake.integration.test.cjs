@@ -141,8 +141,8 @@ async function cleanup() {
 async function setupFixtures() {
   await pool.query(
     `INSERT INTO organizations
-      (id, legal_name, trade_name, document_number, subscription_plan, status, settings, updated_at)
-     VALUES ($1, 'Organização D6 Externa Fictícia', 'Tenant D6 Externo', '00000000000000',
+      (id, slug, legal_name, trade_name, document_number, subscription_plan, status, settings, updated_at)
+     VALUES ($1, 'outra-envio', 'Organização D6 Externa Fictícia', 'Tenant D6 Externo', '00000000000000',
        'TEST', 'ACTIVE', '{"fixture":true}', now())`,
     [OTHER_ORGANIZATION_ID],
   );

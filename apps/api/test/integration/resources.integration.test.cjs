@@ -88,8 +88,8 @@ async function cleanup() {
 async function setupIsolationFixtures() {
   await pool.query(
     `INSERT INTO organizations
-      (id, legal_name, trade_name, document_number, subscription_plan, status, settings, updated_at)
-     VALUES ($1, 'Organização Externa Fictícia Ltda.', 'Tenant Externo Fictício', '00000000000000', 'TEST', 'ACTIVE', '{"fixture":true}', now())`,
+      (id, slug, legal_name, trade_name, document_number, subscription_plan, status, settings, updated_at)
+     VALUES ($1, 'outra-recursos', 'Organização Externa Fictícia Ltda.', 'Tenant Externo Fictício', '00000000000000', 'TEST', 'ACTIVE', '{"fixture":true}', now())`,
     [OTHER_ORGANIZATION_ID],
   );
   await pool.query(

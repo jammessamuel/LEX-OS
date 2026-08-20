@@ -114,8 +114,8 @@ async function createUsersAndTenant() {
   ]);
   await pool.query(
     `INSERT INTO organizations
-      (id, legal_name, trade_name, document_number, subscription_plan, status, settings, updated_at)
-     VALUES ($1, 'Organização Externa D9 Ltda.', 'Tenant Externo D9', 'D9-OTHER', 'TEST', 'ACTIVE', '{}', now())`,
+      (id, slug, legal_name, trade_name, document_number, subscription_plan, status, settings, updated_at)
+     VALUES ($1, 'outra-busca', 'Organização Externa D9 Ltda.', 'Tenant Externo D9', 'D9-OTHER', 'TEST', 'ACTIVE', '{}', now())`,
     [OTHER_ORGANIZATION_ID],
   );
   await pool.query(

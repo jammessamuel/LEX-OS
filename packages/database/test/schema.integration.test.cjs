@@ -71,7 +71,7 @@ describe('initial database migration', () => {
       extensions.rows.map((row) => row.extname),
       ['pgcrypto', 'vector'],
     );
-    assert.equal(tables.rows[0].count, 25);
+    assert.equal(tables.rows[0].count, 26);
   });
 
   it('installs the Delivery 9 generated search vector and tenant-first indexes', async () => {
@@ -122,9 +122,9 @@ describe('initial database migration', () => {
 
       await client.query(
         `INSERT INTO organizations
-          (id, legal_name, trade_name, document_number, subscription_plan, updated_at)
-         VALUES ($1, 'Organização A', 'A', 'A', 'TEST', now()),
-                ($2, 'Organização B', 'B', 'B', 'TEST', now())`,
+          (id, slug, legal_name, trade_name, document_number, subscription_plan, updated_at)
+         VALUES ($1, 'org-a', 'Organização A', 'A', 'A', 'TEST', now()),
+                ($2, 'org-b', 'Organização B', 'B', 'B', 'TEST', now())`,
         [organizationA, organizationB],
       );
       await client.query(
@@ -174,9 +174,9 @@ describe('initial database migration', () => {
 
       await client.query(
         `INSERT INTO organizations
-          (id, legal_name, trade_name, document_number, subscription_plan, updated_at)
-         VALUES ($1, 'Organização A', 'A', 'A2', 'TEST', now()),
-                ($2, 'Organização B', 'B', 'B2', 'TEST', now())`,
+          (id, slug, legal_name, trade_name, document_number, subscription_plan, updated_at)
+         VALUES ($1, 'org-a2', 'Organização A', 'A', 'A2', 'TEST', now()),
+                ($2, 'org-b2', 'Organização B', 'B', 'B2', 'TEST', now())`,
         [organizationA, organizationB],
       );
       await client.query(
@@ -211,8 +211,8 @@ describe('initial database migration', () => {
 
       await client.query(
         `INSERT INTO organizations
-          (id, legal_name, trade_name, document_number, subscription_plan, updated_at)
-         VALUES ($1, 'Organização', 'O', 'O1', 'TEST', now())`,
+          (id, slug, legal_name, trade_name, document_number, subscription_plan, updated_at)
+         VALUES ($1, 'org-o1', 'Organização', 'O', 'O1', 'TEST', now())`,
         [organization],
       );
       await client.query(
@@ -318,8 +318,8 @@ describe('Delivery 6 secure file metadata', () => {
       const user = id(32);
       await client.query(
         `INSERT INTO organizations
-          (id, legal_name, trade_name, document_number, subscription_plan, updated_at)
-         VALUES ($1, 'Organização D6', 'D6', 'D6', 'TEST', now())`,
+          (id, slug, legal_name, trade_name, document_number, subscription_plan, updated_at)
+         VALUES ($1, 'org-d6', 'Organização D6', 'D6', 'D6', 'TEST', now())`,
         [organization],
       );
       await client.query(
@@ -399,8 +399,8 @@ describe('Delivery 7 processing pipeline metadata', () => {
       const organization = id(41);
       await client.query(
         `INSERT INTO organizations
-          (id, legal_name, trade_name, document_number, subscription_plan, updated_at)
-         VALUES ($1, 'Organização D7', 'D7', 'D7', 'TEST', now())`,
+          (id, slug, legal_name, trade_name, document_number, subscription_plan, updated_at)
+         VALUES ($1, 'org-d7', 'Organização D7', 'D7', 'D7', 'TEST', now())`,
         [organization],
       );
       await expectDatabaseError(
@@ -486,8 +486,8 @@ describe('Delivery 8 timeline and checklist review invariants', () => {
 
       await client.query(
         `INSERT INTO organizations
-          (id, legal_name, trade_name, document_number, subscription_plan, updated_at)
-         VALUES ($1, 'Organização D8', 'D8', 'D8', 'TEST', now())`,
+          (id, slug, legal_name, trade_name, document_number, subscription_plan, updated_at)
+         VALUES ($1, 'org-d8', 'Organização D8', 'D8', 'D8', 'TEST', now())`,
         [organization],
       );
       await client.query(
@@ -588,8 +588,8 @@ describe('Delivery 8 timeline and checklist review invariants', () => {
 
       await client.query(
         `INSERT INTO organizations
-          (id, legal_name, trade_name, document_number, subscription_plan, updated_at)
-         VALUES ($1, 'Organização D8 Task', 'D8T', 'D8T', 'TEST', now())`,
+          (id, slug, legal_name, trade_name, document_number, subscription_plan, updated_at)
+         VALUES ($1, 'org-d8t', 'Organização D8 Task', 'D8T', 'D8T', 'TEST', now())`,
         [organization],
       );
       await client.query(
@@ -716,9 +716,9 @@ describe('Delivery 10 human review and processing cost invariants', () => {
 
       await client.query(
         `INSERT INTO organizations
-          (id, legal_name, trade_name, document_number, subscription_plan, updated_at)
-         VALUES ($1, 'Organização D10 A', 'D10A', 'D10A', 'TEST', now()),
-                ($2, 'Organização D10 B', 'D10B', 'D10B', 'TEST', now())`,
+          (id, slug, legal_name, trade_name, document_number, subscription_plan, updated_at)
+         VALUES ($1, 'org-d10a', 'Organização D10 A', 'D10A', 'D10A', 'TEST', now()),
+                ($2, 'org-d10b', 'Organização D10 B', 'D10B', 'D10B', 'TEST', now())`,
         [organizationA, organizationB],
       );
       await client.query(

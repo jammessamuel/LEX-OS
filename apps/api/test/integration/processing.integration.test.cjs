@@ -253,6 +253,7 @@ before(async () => {
   await database.client.organization.create({
     data: {
       id: OTHER_ORGANIZATION_ID,
+      slug: 'outra-processamento',
       legalName: 'Outra organização fictícia D7',
       tradeName: 'Outra D7',
       documentNumber: '70000000000003',
