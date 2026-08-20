@@ -47,10 +47,15 @@ async function cleanup() {
      WHERE organization_id IN ($1, $2)`,
     [ORGANIZATION_ID, OTHER_ORGANIZATION_ID],
   );
+  // O escritorio vizinho e fixture inteiro deste teste, entao a limpeza dele e total: ele
+  // acumula tambem linhas de auth.%, que a chave estrangeira composta impede de orfanar.
+  await pool.query('DELETE FROM audit_logs WHERE organization_id = $1', [OTHER_ORGANIZATION_ID]);
+  // No escritorio do seed a limpeza e cirurgica: as linhas dele pertencem a outros testes.
   await pool.query(
     `DELETE FROM audit_logs
-     WHERE organization_id IN ($1, $2) AND action LIKE 'user.%'`,
-    [ORGANIZATION_ID, OTHER_ORGANIZATION_ID],
+     WHERE organization_id = $1
+       AND (action LIKE 'user.%' OR user_id IN (SELECT id FROM users WHERE email = $2))`,
+    [ORGANIZATION_ID, INVITEE_EMAIL],
   );
   await pool.query(
     `DELETE FROM user_roles
