@@ -15,6 +15,7 @@ process.env.REDIS_HOST = '127.0.0.1';
 process.env.PROCESSING_QUEUE_PREFIX = 'lex-os-dashboard-integration';
 
 const ORGANIZATION_ID = '92000000-0000-4000-8000-000000000001';
+const ORGANIZATION_SLUG = 'painel-ficticio';
 const FULL_USER_ID = '92000000-0000-4000-8000-000000000002';
 const STANDARD_USER_ID = '92000000-0000-4000-8000-000000000003';
 const FULL_EMAIL = 'd10-dashboard-full@lexos.invalid';
@@ -65,7 +66,7 @@ async function setupFixtures() {
   await pool.query(
     `INSERT INTO organizations
       (id, slug, legal_name, trade_name, document_number, subscription_plan, updated_at)
-     VALUES ($1, 'outra-painel', 'Organização Painel Fictícia', 'Painel Fictício', 'D10-DASHBOARD', 'TEST', now())`,
+     VALUES ($1, 'painel-ficticio', 'Organização Painel Fictícia', 'Painel Fictício', 'D10-DASHBOARD', 'TEST', now())`,
     [ORGANIZATION_ID],
   );
   await pool.query(
@@ -174,7 +175,7 @@ async function setupFixtures() {
 async function login(email) {
   const response = await request(http)
     .post('/api/v1/auth/login')
-    .send({ organizationSlug: 'lex-os-demonstracao', email, password: seedPassword })
+    .send({ organizationSlug: ORGANIZATION_SLUG, email, password: seedPassword })
     .expect(200);
   return response.body.accessToken;
 }
