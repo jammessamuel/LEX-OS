@@ -143,16 +143,19 @@ the response never confirms that an identifier is real somewhere else.
 
 ## User administration
 
-| Method | Path                       | Auth       | Permission     | Purpose                                   |
-| ------ | -------------------------- | ---------- | -------------- | ----------------------------------------- |
-| GET    | `/api/v1/users`            | Bearer JWT | `users.read`   | Lists tenant people with status and roles |
-| PATCH  | `/api/v1/users/:id/roles`  | Bearer JWT | `users.manage` | Replaces the whole role set               |
-| PATCH  | `/api/v1/users/:id/status` | Bearer JWT | `users.manage` | Blocks or reactivates access              |
+| Method | Path                       | Auth       | Permission     | Purpose                                      |
+| ------ | -------------------------- | ---------- | -------------- | -------------------------------------------- |
+| GET    | `/api/v1/users`            | Bearer JWT | `users.read`   | Lists tenant people with status and roles    |
+| GET    | `/api/v1/roles`            | Bearer JWT | `users.manage` | Lists assignable roles with what each allows |
+| PATCH  | `/api/v1/users/:id/roles`  | Bearer JWT | `users.manage` | Replaces the whole role set                  |
+| PATCH  | `/api/v1/users/:id/status` | Bearer JWT | `users.manage` | Blocks or reactivates access                 |
 
 Role assignment shares one rule with invitation: a role is grantable only when every permission
 it carries is already held by the person assigning it. Requiring the same _role_ would stop an
 administrator from creating an intern, which is the ordinary case; requiring the same
 _permissions_ is what actually prevents `users.manage` from becoming a path to everything.
+
+`GET /roles` requires `users.manage` rather than `roles.read`: the catalogue exists for whoever assigns a role to a person, and `roles.read` stays reserved for administering the roles themselves. Each role carries its permissions as the human-readable pt-BR descriptions already in the seed catalogue, plus `grantable`. A role the caller cannot grant is **returned anyway**, marked false — the interface can then explain the absence instead of hiding the option, which is what turns into a support call.
 
 The role set is replaced, not merged. Deleting and recreating inside the transaction avoids the
 set-difference arithmetic where an extra role survives by accident.

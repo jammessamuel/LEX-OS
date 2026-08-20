@@ -33,11 +33,27 @@ function user(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function mockLoad(users: unknown[], invitations: unknown[] = []) {
+function role(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'r-1',
+    name: 'Advogada',
+    code: 'LAWYER',
+    description: 'Acesso jurídico completo aos casos autorizados.',
+    grantable: true,
+    permissions: [
+      { code: 'cases.read', description: 'Visualizar casos autorizados.' },
+      { code: 'documents.manage', description: 'Enviar, classificar e atualizar documentos.' },
+    ],
+    ...overrides,
+  };
+}
+
+function mockLoad(users: unknown[], invitations: unknown[] = [], catalogue: unknown[] = [role()]) {
   request.mockImplementation(async (path: string) => {
     if (path === '/users')
       return { data: users, pageInfo: { nextCursor: null, hasNextPage: false } };
     if (path === '/users/invitations') return { data: invitations };
+    if (path === '/roles') return { data: catalogue };
     throw new Error(`rota inesperada: ${path}`);
   });
 }
@@ -137,8 +153,8 @@ describe('UsersView', () => {
 
     const rows = wrapper.findAll('tbody tr');
     expect(rows.at(0)?.text()).toContain('Você');
-    expect(rows.at(0)?.find('button').exists()).toBe(false);
-    expect(rows.at(1)?.find('button').text()).toBe('Bloquear');
+    expect(rows.at(0)?.find('.btn--ghost').exists()).toBe(false);
+    expect(rows.at(1)?.get('.btn--ghost').text()).toBe('Bloquear');
   });
 
   it('troca a pessoa pelo retorno do servidor ao bloquear', async () => {
@@ -147,7 +163,7 @@ describe('UsersView', () => {
     await flushPromises();
 
     request.mockImplementationOnce(async () => user({ id: 'u-2', status: 'BLOCKED' }));
-    await wrapper.get('tbody tr button').trigger('click');
+    await wrapper.get('tbody tr .btn--ghost').trigger('click');
     await flushPromises();
 
     expect(request).toHaveBeenLastCalledWith('/users/u-2/status', {
@@ -155,7 +171,7 @@ describe('UsersView', () => {
       body: { status: 'BLOCKED' },
     });
     expect(wrapper.text()).toContain('Bloqueada');
-    expect(wrapper.get('tbody tr button').text()).toBe('Reativar');
+    expect(wrapper.get('tbody tr .btn--ghost').text()).toBe('Reativar');
   });
 
   it('sem users.manage, mostra a equipe e esconde toda ação de escrita', async () => {
@@ -167,18 +183,74 @@ describe('UsersView', () => {
 
     expect(wrapper.text()).toContain('Ana Fictícia');
     expect(wrapper.find('#invite-name').exists()).toBe(false);
-    expect(wrapper.findAll('tbody button')).toHaveLength(0);
+    expect(wrapper.findAll('tbody .btn--ghost')).toHaveLength(0);
+    expect(wrapper.find('.roles__open').exists()).toBe(false);
     // Sem a permissão, a rota de convites nem é chamada.
     expect(request.mock.calls.some(([path]) => path === '/users/invitations')).toBe(false);
   });
 
-  it('declara que a troca de papéis ainda não está aqui', async () => {
-    mockLoad([user()]);
-
+  it('mostra o que cada papel permite antes de deixar escolher', async () => {
+    mockLoad([user({ id: 'u-2' })]);
     const wrapper = mountView();
     await flushPromises();
 
-    expect(wrapper.get('.note').text()).toContain('troca de papéis ainda não está nesta tela');
+    await wrapper.get('.roles__open').trigger('click');
+    const editor = wrapper.get('.roles');
+
+    expect(editor.text()).toContain('Papéis de Ana Fictícia');
+    // A promessa do seletor: a permissão aparece em português, não o código dela.
+    expect(editor.text()).toContain('Visualizar casos autorizados.');
+    expect(editor.text()).toContain('Enviar, classificar e atualizar documentos.');
+    expect(editor.text()).not.toContain('cases.read');
+  });
+
+  it('desabilita o papel que quem administra não pode conceder, e diz por quê', async () => {
+    mockLoad(
+      [user({ id: 'u-2' })],
+      [],
+      [role(), role({ id: 'r-2', name: 'Administradora', grantable: false })],
+    );
+    const wrapper = mountView();
+    await flushPromises();
+    await wrapper.get('.roles__open').trigger('click');
+
+    const items = wrapper.findAll('.roles__item');
+    expect(items.at(1)?.text()).toContain('não pode conceder este papel');
+    expect((items.at(1)?.find('input').element as HTMLInputElement).disabled).toBe(true);
+    expect((items.at(0)?.find('input').element as HTMLInputElement).disabled).toBe(false);
+  });
+
+  it('envia o conjunto inteiro de papéis, não um acréscimo', async () => {
+    mockLoad([user({ id: 'u-2' })], [], [role(), role({ id: 'r-2', name: 'Estagiária' })]);
+    const wrapper = mountView();
+    await flushPromises();
+    await wrapper.get('.roles__open').trigger('click');
+
+    // A pessoa já tem r-1; tirar r-1 e pôr r-2 tem de resultar em [r-2] apenas.
+    const boxes = wrapper.findAll('.roles__item input');
+    await boxes.at(0)?.trigger('change');
+    await boxes.at(1)?.trigger('change');
+
+    request.mockImplementationOnce(async () =>
+      user({ id: 'u-2', roles: [{ id: 'r-2', name: 'Estagiária', code: 'INTERN' }] }),
+    );
+    await wrapper.get('.roles__actions .btn').trigger('click');
+    await flushPromises();
+
+    expect(request).toHaveBeenLastCalledWith('/users/u-2/roles', {
+      method: 'PATCH',
+      body: { roleIds: ['r-2'] },
+    });
+    expect(wrapper.text()).toContain('Estagiária');
+    expect(wrapper.find('.roles').exists()).toBe(false);
+  });
+
+  it('não oferece alterar os próprios papéis', async () => {
+    mockLoad([user({ id: 'eu' })]);
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.find('.roles__open').exists()).toBe(false);
   });
 
   it('falha ao carregar vira erro recuperável, não lista vazia', async () => {

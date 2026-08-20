@@ -4,13 +4,14 @@ import { AuditModule } from '../audit/audit.module.js';
 import { InvitationsRepository } from './invitations.repository.js';
 import { InvitationsService } from './invitations.service.js';
 import { RoleGrantService } from './role-grant.service.js';
+import { RolesController } from './roles.controller.js';
 import { UsersController } from './users.controller.js';
 import { UsersRepository } from './users.repository.js';
 import { UsersService } from './users.service.js';
 
 @Module({
   imports: [AuditModule],
-  controllers: [UsersController],
+  controllers: [RolesController, UsersController],
   providers: [
     InvitationsRepository,
     InvitationsService,

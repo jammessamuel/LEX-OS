@@ -571,3 +571,18 @@ export interface PendingInvitation {
 export interface CreatedInvitation extends PendingInvitation {
   token: string;
 }
+
+export interface RolePermission {
+  code: string;
+  description: string;
+}
+
+/** `grantable` falso é devolvido de propósito: a tela explica a ausência em vez de escondê-la. */
+export interface AssignableRole {
+  id: string;
+  name: string;
+  code: string;
+  description: string | null;
+  grantable: boolean;
+  permissions: RolePermission[];
+}

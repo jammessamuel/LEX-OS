@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 
 import { ApiError, request } from '../api/client.js';
 import type {
+  AssignableRole,
   CreatedInvitation,
   CursorPage,
   ManagedUser,
@@ -37,6 +38,50 @@ const copied = ref(false);
 
 const acting = ref<string | null>(null);
 
+const roles = ref<AssignableRole[]>([]);
+/** Pessoa cujo conjunto de papéis está aberto para edição. Uma por vez, de propósito. */
+const editing = ref<ManagedUser | null>(null);
+const selected = ref<Set<string>>(new Set());
+const savingRoles = ref(false);
+const rolesFailure = ref<ApiError | null>(null);
+
+function openRoles(user: ManagedUser): void {
+  editing.value = user;
+  selected.value = new Set(user.roles.map((role) => role.id));
+  rolesFailure.value = null;
+}
+
+function toggleRole(role: AssignableRole): void {
+  const next = new Set(selected.value);
+  if (next.has(role.id)) {
+    next.delete(role.id);
+  } else {
+    next.add(role.id);
+  }
+  selected.value = next;
+}
+
+async function saveRoles(): Promise<void> {
+  const target = editing.value;
+  if (target === null) {
+    return;
+  }
+  savingRoles.value = true;
+  rolesFailure.value = null;
+  try {
+    const updated = await request<ManagedUser>(`/users/${target.id}/roles`, {
+      method: 'PATCH',
+      body: { roleIds: [...selected.value] },
+    });
+    users.value = users.value.map((row) => (row.id === updated.id ? updated : row));
+    editing.value = null;
+  } catch (error) {
+    rolesFailure.value = toApiError(error, 'Não foi possível alterar os papéis.');
+  } finally {
+    savingRoles.value = false;
+  }
+}
+
 const active = computed(() => users.value.filter((user) => user.status === 'ACTIVE'));
 const blocked = computed(() => users.value.filter((user) => user.status === 'BLOCKED'));
 
@@ -50,16 +95,20 @@ async function load(): Promise<void> {
   loading.value = true;
   failure.value = null;
   try {
-    const [people, pending] = await Promise.all([
+    const [people, pending, catalogue] = await Promise.all([
       request<CursorPage<ManagedUser>>('/users', { query: { limit: 100 } }),
       // Convites só aparecem para quem administra; sem a permissão a rota nega, e a lista
       // vazia é o resultado correto em vez de um erro de tela.
       canManage.value
         ? request<{ data: PendingInvitation[] }>('/users/invitations')
         : Promise.resolve({ data: [] }),
+      canManage.value
+        ? request<{ data: AssignableRole[] }>('/roles')
+        : Promise.resolve({ data: [] }),
     ]);
     users.value = people.data;
     invitations.value = pending.data;
+    roles.value = catalogue.data;
   } catch (error) {
     failure.value = toApiError(error, 'Não foi possível carregar a equipe do escritório.');
   } finally {
@@ -274,6 +323,46 @@ onMounted(() => {
         </ul>
       </div>
 
+      <!-- Um papel só é escolhível depois de dizer o que ele permite. Uma lista de nomes
+           soltos levaria alguém a conceder acesso ao acervo sem saber a quê. -->
+      <div v-if="editing" class="panel roles" role="group" aria-labelledby="roles-title">
+        <div class="panel__bar">
+          <span id="roles-title" class="label">Papéis de {{ editing.name }}</span>
+          <span class="data panel__count">{{ selected.size }} selecionados</span>
+        </div>
+
+        <ul class="roles__list">
+          <li v-for="role in roles" :key="role.id" class="roles__item">
+            <label class="roles__pick" :class="{ 'roles__pick--off': !role.grantable }">
+              <input
+                type="checkbox"
+                :checked="selected.has(role.id)"
+                :disabled="!role.grantable"
+                @change="toggleRole(role)"
+              />
+              <span class="roles__name">{{ role.name }}</span>
+            </label>
+            <p v-if="role.description" class="roles__lede">{{ role.description }}</p>
+            <p v-if="!role.grantable" class="roles__blocked">
+              Você não pode conceder este papel: ele inclui permissão que você mesma não tem.
+            </p>
+            <ul class="roles__perms">
+              <li v-for="permission in role.permissions" :key="permission.code">
+                {{ permission.description }}
+              </li>
+            </ul>
+          </li>
+        </ul>
+
+        <div class="panel__more roles__actions">
+          <button class="btn" type="button" :disabled="savingRoles" @click="saveRoles">
+            {{ savingRoles ? 'Salvando…' : 'Salvar papéis' }}
+          </button>
+          <button class="btn btn--ghost" type="button" @click="editing = null">Cancelar</button>
+          <p v-if="rolesFailure" class="roles__error" role="alert">{{ rolesFailure.message }}</p>
+        </div>
+      </div>
+
       <div class="panel">
         <div class="panel__bar">
           <span class="label">Equipe</span>
@@ -306,8 +395,19 @@ onMounted(() => {
                   />
                 </td>
                 <td>
-                  <span v-if="user.roles.length === 0" class="muted">Sem papel</span>
-                  <span v-else>{{ user.roles.map((role) => role.name).join(', ') }}</span>
+                  <button
+                    v-if="canManage && user.id !== session.user?.id"
+                    class="roles__open"
+                    type="button"
+                    @click="openRoles(user)"
+                  >
+                    <span v-if="user.roles.length === 0" class="muted">Sem papel</span>
+                    <span v-else>{{ user.roles.map((role) => role.name).join(', ') }}</span>
+                  </button>
+                  <template v-else>
+                    <span v-if="user.roles.length === 0" class="muted">Sem papel</span>
+                    <span v-else>{{ user.roles.map((role) => role.name).join(', ') }}</span>
+                  </template>
                 </td>
                 <td class="nowrap">{{ formatLastLogin(user.lastLoginAt) }}</td>
                 <td v-if="canManage" class="right nowrap">
@@ -339,13 +439,6 @@ onMounted(() => {
           </table>
         </div>
       </div>
-
-      <!-- Limitação honesta: papéis existem na API mas ainda não têm seletor aqui. -->
-      <p class="note">
-        A troca de papéis ainda não está nesta tela: a rota existe, mas ela precisa de um seletor
-        que mostre o que cada papel permite — oferecer uma lista de nomes soltos levaria alguém a
-        conceder acesso sem saber a quê. Convites saem sem papel e recebem o mínimo do escritório.
-      </p>
     </template>
   </section>
 </template>
@@ -418,6 +511,116 @@ onMounted(() => {
   padding: 0 var(--space-4) var(--space-4);
   font-size: var(--step--1);
   color: var(--rejeitado);
+}
+
+.roles {
+  margin-bottom: var(--space-4);
+  border-color: var(--line-strong);
+}
+
+.roles__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.roles__item {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.roles__item:last-child {
+  border-bottom: 0;
+}
+
+.roles__pick {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.roles__pick--off {
+  cursor: not-allowed;
+}
+
+.roles__pick input {
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--ink);
+  flex: none;
+}
+
+.roles__name {
+  font-size: var(--step-0);
+  font-weight: 650;
+  color: var(--text);
+}
+
+.roles__pick--off .roles__name {
+  color: var(--text-3);
+}
+
+.roles__lede {
+  font-size: var(--step--1);
+  color: var(--text-2);
+  margin-top: var(--space-1);
+  padding-inline-start: calc(1.05rem + var(--space-3));
+  max-width: 68ch;
+}
+
+.roles__blocked {
+  font-size: var(--step--1);
+  color: var(--pendente);
+  margin-top: var(--space-2);
+  padding-inline-start: calc(1.05rem + var(--space-3));
+  max-width: 68ch;
+}
+
+/* O que o papel permite, em coluna estreita: é lista para conferir, não para ler corrido. */
+.roles__perms {
+  margin: var(--space-2) 0 0;
+  padding-inline-start: calc(1.05rem + var(--space-3) + 1.1rem);
+  columns: 2 22rem;
+  column-gap: var(--space-5);
+  font-size: 0.82rem;
+  color: var(--text-3);
+}
+
+.roles__perms li {
+  break-inside: avoid;
+  margin-bottom: 0.15rem;
+}
+
+.roles__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.roles__error {
+  font-size: var(--step--1);
+  color: var(--rejeitado);
+}
+
+/* A célula de papéis vira alvo de clique sem virar botão visual: o alvo é o texto. */
+.roles__open {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 0.22em;
+  text-decoration-color: var(--line-strong);
+}
+
+.roles__open:hover {
+  text-decoration-color: var(--ink);
 }
 
 .pending {

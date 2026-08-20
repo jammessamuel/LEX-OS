@@ -152,6 +152,7 @@ describe('Delivery 4 HTTP and authentication contract', () => {
       '/api/v1/persons/{id}/cases',
       '/api/v1/processing-jobs',
       '/api/v1/processing-jobs/{id}',
+      '/api/v1/roles',
       '/api/v1/search',
       '/api/v1/tasks/{id}',
       '/api/v1/timeline-events/{id}/confirm',

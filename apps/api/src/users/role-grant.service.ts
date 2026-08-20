@@ -57,6 +57,51 @@ export class RoleGrantService {
     }
   }
 
+  /**
+   * Catálogo do que pode ser atribuído neste escritório.
+   *
+   * Papel não concedível volta na lista com `grantable: false` em vez de ser omitido. Quem
+   * administra precisa saber que o papel existe e por que não está ao alcance dele; uma
+   * opção que some sem explicação vira chamado.
+   */
+  async listAssignable(organizationId: string, granterUserId: string) {
+    const [granted, roles] = await Promise.all([
+      this.#permissionsOf(organizationId, granterUserId),
+      this.database.client.role.findMany({
+        where: { OR: [{ organizationId: null }, { organizationId }] },
+        orderBy: [{ name: 'asc' }],
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          description: true,
+          rolePermissions: {
+            select: { permission: { select: { code: true, description: true } } },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      data: roles.map((role) => {
+        const permissions = role.rolePermissions.map((entry) => entry.permission);
+        return {
+          id: role.id,
+          name: role.name,
+          code: role.code,
+          description: role.description,
+          grantable: permissions.every((permission) => granted.has(permission.code)),
+          permissions: permissions
+            .map((permission) => ({
+              code: permission.code,
+              description: permission.description,
+            }))
+            .sort((left, right) => left.description.localeCompare(right.description, 'pt-BR')),
+        };
+      }),
+    };
+  }
+
   async #permissionsOf(organizationId: string, userId: string): Promise<Set<string>> {
     const rows = await this.database.client.rolePermission.findMany({
       where: {
