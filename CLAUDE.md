@@ -129,30 +129,30 @@ uses Vitest under `apps/web/src/__tests__/`. Integration tests need the Compose 
 Start every task by locating its row. Read the listed files and nothing else. If no row
 fits, read `AGENTS.md` section headings only, then the one section that applies.
 
-| Task                              | Read exactly                                                                                                                                                      |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Any change whatsoever             | This file, §0 and §3. Nothing more by default.                                                                                                                    |
-| New/changed HTTP endpoint         | The matching `docs/api/*.md`; `AGENTS.md` §"TypeScript and API conventions" + §"Multi-tenancy and access control"; the sibling controller/DTO next to your target |
-| Auth, RBAC, sessions              | `docs/api/authentication.md`; `docs/decisions/ADR-004-multi-tenancy.md`; `apps/api/src/auth/`, `apps/api/src/access-control/`                                     |
-| People / cases / participants     | `docs/api/people-cases-participants.md`                                                                                                                           |
-| Upload, storage, download         | `docs/api/files-documents.md`; `docs/decisions/ADR-003-object-storage.md`                                                                                         |
-| Queue, worker, job state          | `docs/architecture/delivery-7-processing-design.md`; `packages/contracts/src/index.ts`; `docs/decisions/ADR-007-background-jobs.md`                               |
-| DB schema or migration            | `packages/database/prisma/schema.prisma` (canonical); `docs/architecture/database-migrations.md`; `docs/architecture/data-model.md`                               |
-| AI provider / prompt / provenance | `docs/decisions/ADR-006-provider-agnostic-ai.md`; `AGENTS.md` §"AI data and provenance"                                                                           |
-| Search, embeddings, pgvector      | `docs/api/search.md`; `docs/architecture/search-performance.md`; `docs/decisions/ADR-005-pgvector.md`; `docs/architecture/system-overview.md`                     |
-| "Is X in scope?"                  | `docs/product/mvp-scope.md` only                                                                                                                                  |
-| "Where are we against the pitch?" | `docs/product/roadmap-alignment.md` only — it maps the 11 conceptual components and 4 phases onto the 12 deliveries                                               |
-| Any user-facing screen or copy    | `docs/product/design-principles.md` — read before writing markup; it is the standard §0.5 enforces                                                                |
-| Assistant, chat, grounded answers | `docs/decisions/ADR-009-internal-assistant-scope.md` — **decided 2026-08-07**: grounded answering only; refuse without an authorized source                       |
-| Ingestion channels, WhatsApp      | `docs/decisions/ADR-010-ingestion-channels.md` — **decided 2026-08-07**: upload + e-mail in MVP; WhatsApp is a future connector                                   |
-| Replacing a mock AI provider      | `docs/decisions/ADR-011-processing-cost-model.md` — **decided 2026-08-07**: per-execution cost + hard per-case ceiling must exist first                           |
-| Deletion, retention, legal hold   | `docs/decisions/ADR-012-retention-legal-hold-lgpd.md` — **decided 2026-08-07**: preserve always; automatic purge forbidden; legal hold fails closed               |
-| Notifications, internal e-mail    | `docs/decisions/ADR-013-notificacoes-internas.md` — **decided 2026-08-07**: minimal content only; send from the worker; audited without body                      |
-| Convite, papel, bloqueio, senha   | `docs/decisions/ADR-014-fronteira-de-identidade-e-acesso.md` — **proposto**: registra as oito pendências de identidade e o que destrava cada uma                  |
-| Starting a new delivery           | `docs/architecture/implementation-plan.md` — **only that delivery's section** plus §"Cross-delivery security test matrix"                                         |
-| Local env, Docker, ports          | `docs/architecture/local-development.md`; `docker-compose.yml`                                                                                                    |
-| Operations, backup, incidents     | `docs/operations/runbook.md` — backup/restore procedure, rehearsal script, and hosted-demo deploy steps                                                           |
-| Module boundaries, layering       | `docs/decisions/ADR-001-monolithic-modular-architecture.md`; `docs/architecture/system-overview.md`                                                               |
+| Task                              | Read exactly                                                                                                                                                                  |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Any change whatsoever             | This file, §0 and §3. Nothing more by default.                                                                                                                                |
+| New/changed HTTP endpoint         | The matching `docs/api/*.md`; `AGENTS.md` §"TypeScript and API conventions" + §"Multi-tenancy and access control"; the sibling controller/DTO next to your target             |
+| Auth, RBAC, sessions              | `docs/api/authentication.md`; `docs/decisions/ADR-004-multi-tenancy.md`; `apps/api/src/auth/`, `apps/api/src/access-control/`                                                 |
+| People / cases / participants     | `docs/api/people-cases-participants.md`                                                                                                                                       |
+| Upload, storage, download         | `docs/api/files-documents.md`; `docs/decisions/ADR-003-object-storage.md`                                                                                                     |
+| Queue, worker, job state          | `docs/architecture/delivery-7-processing-design.md`; `packages/contracts/src/index.ts`; `docs/decisions/ADR-007-background-jobs.md`                                           |
+| DB schema or migration            | `packages/database/prisma/schema.prisma` (canonical); `docs/architecture/database-migrations.md`; `docs/architecture/data-model.md`                                           |
+| AI provider / prompt / provenance | `docs/decisions/ADR-006-provider-agnostic-ai.md`; `AGENTS.md` §"AI data and provenance"                                                                                       |
+| Search, embeddings, pgvector      | `docs/api/search.md`; `docs/architecture/search-performance.md`; `docs/decisions/ADR-005-pgvector.md`; `docs/architecture/system-overview.md`                                 |
+| "Is X in scope?"                  | `docs/product/mvp-scope.md` only                                                                                                                                              |
+| "Where are we against the pitch?" | `docs/product/roadmap-alignment.md` only — it maps the 11 conceptual components and 4 phases onto the 12 deliveries                                                           |
+| Any user-facing screen or copy    | `docs/product/ui-harness.md` first — tokens, shared classes, screen skeleton, review rules. `docs/product/design-principles.md` only when the aesthetic itself is in question |
+| Assistant, chat, grounded answers | `docs/decisions/ADR-009-internal-assistant-scope.md` — **decided 2026-08-07**: grounded answering only; refuse without an authorized source                                   |
+| Ingestion channels, WhatsApp      | `docs/decisions/ADR-010-ingestion-channels.md` — **decided 2026-08-07**: upload + e-mail in MVP; WhatsApp is a future connector                                               |
+| Replacing a mock AI provider      | `docs/decisions/ADR-011-processing-cost-model.md` — **decided 2026-08-07**: per-execution cost + hard per-case ceiling must exist first                                       |
+| Deletion, retention, legal hold   | `docs/decisions/ADR-012-retention-legal-hold-lgpd.md` — **decided 2026-08-07**: preserve always; automatic purge forbidden; legal hold fails closed                           |
+| Notifications, internal e-mail    | `docs/decisions/ADR-013-notificacoes-internas.md` — **decided 2026-08-07**: minimal content only; send from the worker; audited without body                                  |
+| Convite, papel, bloqueio, senha   | `docs/decisions/ADR-014-fronteira-de-identidade-e-acesso.md` — **proposto**: registra as oito pendências de identidade e o que destrava cada uma                              |
+| Starting a new delivery           | `docs/architecture/implementation-plan.md` — **only that delivery's section** plus §"Cross-delivery security test matrix"                                                     |
+| Local env, Docker, ports          | `docs/architecture/local-development.md`; `docker-compose.yml`                                                                                                                |
+| Operations, backup, incidents     | `docs/operations/runbook.md` — backup/restore procedure, rehearsal script, and hosted-demo deploy steps                                                                       |
+| Module boundaries, layering       | `docs/decisions/ADR-001-monolithic-modular-architecture.md`; `docs/architecture/system-overview.md`                                                                           |
 
 **Do not open unless explicitly asked:**
 `docs/architecture/prisma-schema-proposal.md` (937 lines, superseded by `schema.prisma` —

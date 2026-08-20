@@ -12,11 +12,13 @@ import DashboardView from '../views/DashboardView.vue';
 import CaseTasksView from '../views/CaseTasksView.vue';
 import CaseTimelineView from '../views/CaseTimelineView.vue';
 import DocumentDetailView from '../views/DocumentDetailView.vue';
+import AcceptInvitationView from '../views/AcceptInvitationView.vue';
 import LoginView from '../views/LoginView.vue';
 import PersonDetailView from '../views/PersonDetailView.vue';
 import PersonFormView from '../views/PersonFormView.vue';
 import PersonsView from '../views/PersonsView.vue';
 import SearchView from '../views/SearchView.vue';
+import UsersView from '../views/UsersView.vue';
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,6 +27,14 @@ export const router = createRouter({
       component: LoginView,
       name: 'login',
       path: '/entrar',
+      meta: { public: true },
+    },
+    {
+      // Publica por necessidade: quem aceita ainda nao tem sessao, e o token no link e a
+      // unica prova que ela apresenta.
+      component: AcceptInvitationView,
+      name: 'accept-invitation',
+      path: '/convite',
       meta: { public: true },
     },
     {
@@ -84,6 +94,12 @@ export const router = createRouter({
           name: 'document-detail',
           path: 'documentos/:id',
           meta: { permissions: ['documents.read'] },
+        },
+        {
+          component: UsersView,
+          name: 'users',
+          path: 'equipe',
+          meta: { permissions: ['users.read'] },
         },
         {
           component: PersonsView,

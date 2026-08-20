@@ -13,6 +13,7 @@ import type {
   Priority,
   TaskSourceType,
   TaskStatus,
+  UserStatus,
 } from '../api/types.js';
 
 /**
@@ -361,4 +362,42 @@ export function isOverdue(iso: string | null, status: TaskStatus, now: Date = ne
     return false;
   }
   return new Date(iso).getTime() < now.getTime();
+}
+
+/**
+ * Situação de acesso da pessoa. "Convidada" é estado real e visível: ela existe no
+ * escritório, aparece na lista, e ainda não entrou uma vez sequer.
+ */
+export const userStatusLabels: Readonly<Record<UserStatus, string>> = {
+  INVITED: 'Convidada',
+  ACTIVE: 'Ativa',
+  BLOCKED: 'Bloqueada',
+  INACTIVE: 'Desligada',
+};
+
+export function userStatusTone(
+  status: UserStatus,
+): 'neutro' | 'pendente' | 'confirmado' | 'rejeitado' {
+  switch (status) {
+    case 'ACTIVE':
+      return 'confirmado';
+    case 'INVITED':
+      return 'pendente';
+    case 'BLOCKED':
+      return 'rejeitado';
+    default:
+      return 'neutro';
+  }
+}
+
+/** Último acesso em linguagem de quem confere acesso, não em data crua. */
+export function formatLastLogin(iso: string | null): string {
+  if (iso === null) {
+    return 'Nunca entrou';
+  }
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  if (days <= 0) return 'Entrou hoje';
+  if (days === 1) return 'Entrou ontem';
+  if (days < 30) return `Há ${days} dias`;
+  return formatDate(iso);
 }

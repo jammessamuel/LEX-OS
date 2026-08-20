@@ -58,6 +58,9 @@ async function signOut(): Promise<void> {
         >
           Auditoria
         </RouterLink>
+        <RouterLink v-if="session.can('users.read')" class="shell__link" :to="{ name: 'users' }">
+          Equipe
+        </RouterLink>
       </nav>
 
       <div class="shell__account">

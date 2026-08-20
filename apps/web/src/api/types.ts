@@ -542,3 +542,32 @@ export interface AuditLog {
   processingJobId: string | null;
   createdAt: string;
 }
+
+export const userStatuses = ['INVITED', 'ACTIVE', 'BLOCKED', 'INACTIVE'] as const;
+export type UserStatus = (typeof userStatuses)[number];
+
+export interface UserRoleSummary {
+  id: string;
+  name: string;
+  code: string;
+}
+
+export interface ManagedUser {
+  id: string;
+  name: string;
+  email: string;
+  status: UserStatus;
+  lastLoginAt: string | null;
+  roles: UserRoleSummary[];
+}
+
+export interface PendingInvitation {
+  id: string;
+  user: Pick<ManagedUser, 'id' | 'name' | 'email' | 'status'>;
+  expiresAt: string;
+}
+
+/** O token vem só aqui, e só uma vez: o banco guarda apenas o hash. */
+export interface CreatedInvitation extends PendingInvitation {
+  token: string;
+}

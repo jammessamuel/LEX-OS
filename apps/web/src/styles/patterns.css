@@ -1,0 +1,289 @@
+/*
+ * Padrões de tela do LEX OS.
+ *
+ * Toda tela do produto repete a mesma gramática: uma migalha, um cabeçalho com lede, um
+ * veredito, um painel com barra e conteúdo, e os três estados — carregando, vazio, erro.
+ * Antes destes blocos, cada view redefinia tudo no seu `<style scoped>`: `.panel` aparecia
+ * em treze arquivos, `.state__title` em nove.
+ *
+ * Aqui não há decoração nem variação: é a gramática, e só. O que for específico de uma tela
+ * continua no escopo dela. Ver docs/product/ui-harness.md antes de criar uma classe nova.
+ */
+
+/* Cabeçalho da tela
+   ------------------------------------------------------------------------- */
+
+.crumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--step--1);
+  color: var(--text-3);
+  margin-bottom: var(--space-2);
+}
+
+.crumb a {
+  color: var(--text-2);
+  text-decoration: none;
+}
+
+.crumb a:hover {
+  color: var(--ink);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.head__lede {
+  font-size: var(--step--1);
+  color: var(--text-2);
+  margin-top: var(--space-2);
+  max-width: 68ch;
+}
+
+.head__actions {
+  margin-inline-start: auto;
+  display: flex;
+  gap: var(--space-2);
+  flex: none;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 46rem) {
+  .head {
+    flex-direction: column;
+  }
+
+  .head__actions {
+    margin-inline-start: 0;
+  }
+}
+
+/* Veredito: a resposta antes da lista.
+   O advogado abre a tela com uma pergunta; ela é respondida aqui, não no meio de uma tabela.
+   ------------------------------------------------------------------------- */
+
+.verdict {
+  font-size: var(--step-0);
+  color: var(--text-2);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  margin-bottom: var(--space-5);
+}
+
+.verdict strong {
+  color: var(--text);
+  font-weight: 650;
+}
+
+.verdict--alert {
+  background: var(--rejeitado-bg);
+  border-color: color-mix(in oklab, var(--rejeitado) 30%, transparent);
+}
+
+.verdict--alert strong {
+  color: var(--rejeitado);
+}
+
+/* Painel
+   ------------------------------------------------------------------------- */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.panel + .panel {
+  margin-top: var(--space-4);
+}
+
+.panel__bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-sunk);
+  border-bottom: 1px solid var(--line);
+}
+
+.panel__count {
+  font-size: 0.78rem;
+  color: var(--text-3);
+}
+
+.panel__body {
+  padding: var(--space-4);
+}
+
+.panel__more {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+/* Tabela de linhas
+   ------------------------------------------------------------------------- */
+
+.scroll-x {
+  overflow-x: auto;
+}
+
+.rows {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--step--1);
+}
+
+.rows th {
+  text-align: left;
+  font-size: 0.73rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.rows td {
+  padding: 0.62rem var(--space-4);
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.rows tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.rows tbody tr:hover td {
+  background: var(--surface-sunk);
+}
+
+.rows__link {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.rows__link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.rows__title {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.rows__meta {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-3);
+}
+
+.right {
+  text-align: right;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+/* Estados: vazio e erro.
+   O vazio explica o que apareceria ali e oferece a próxima ação; o erro diz o que houve, se é
+   recuperável, e nunca mostra detalhe interno.
+   ------------------------------------------------------------------------- */
+
+.state {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.state--error {
+  border-color: color-mix(in oklab, var(--rejeitado) 34%, var(--line));
+}
+
+.state__title {
+  font-size: var(--step-1);
+}
+
+.state__body {
+  color: var(--text-2);
+  font-size: var(--step--1);
+  max-width: 62ch;
+}
+
+.state__list {
+  margin: 0;
+  padding-inline-start: 1.1rem;
+  color: var(--text-2);
+  font-size: var(--step--1);
+  max-width: 62ch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.state__ref {
+  font-size: 0.78rem;
+  color: var(--text-3);
+}
+
+/* Nota de limitação: dizer o que a tela ainda não faz vale mais que um botão morto. */
+.note {
+  margin-top: var(--space-5);
+  border-inline-start: 2px solid var(--line-strong);
+  padding-inline-start: var(--space-4);
+  font-size: var(--step--1);
+  color: var(--text-3);
+  max-width: 62ch;
+}
+
+/* Carregando: forma que antecipa o conteúdo, nunca um giro centralizado.
+   ------------------------------------------------------------------------- */
+
+.skeleton-row {
+  display: flex;
+  gap: var(--space-4);
+  padding: 0.7rem var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.skeleton-row:last-child {
+  border-bottom: 0;
+}
+
+.skeleton {
+  height: 0.6rem;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-sunk) 0%,
+    var(--line) 50%,
+    var(--surface-sunk) 100%
+  );
+  background-size: 220% 100%;
+  animation: sweep 1.5s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  to {
+    background-position: -220% 0;
+  }
+}
