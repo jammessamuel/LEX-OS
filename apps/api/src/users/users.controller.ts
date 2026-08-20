@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -31,6 +32,10 @@ import { getRequestContext } from '../observability/request-context.js';
 import { AssignableUserListResponseDto } from './dto/assignable-user-response.dto.js';
 import { InvitationResponseDto } from './dto/invitation-response.dto.js';
 import { InviteUserRequestDto } from './dto/invite-user-request.dto.js';
+import {
+  ChangeUserStatusRequestDto,
+  ReplaceUserRolesRequestDto,
+} from './dto/manage-user-request.dto.js';
 import { InvitationsService } from './invitations.service.js';
 import { ListAssignableUsersQueryDto } from './dto/list-assignable-users-query.dto.js';
 import { UsersService } from './users.service.js';
@@ -103,5 +108,56 @@ export class UsersController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ) {
     return this.invitations.revoke(this.#actor(request), id, getRequestContext() ?? {});
+  }
+
+  @Get()
+  @RequirePermissions('users.read')
+  @ApiOperation({
+    summary: 'Lista as pessoas do escritório com situação e papéis, para administração.',
+  })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  @ApiForbiddenResponse({ type: ApiErrorEnvelopeDto })
+  list(@Req() request: AuthenticatedRequest, @Query() query: ListAssignableUsersQueryDto) {
+    return this.users.listManaged(this.#actor(request), query, getRequestContext() ?? {});
+  }
+
+  @Patch(':id/roles')
+  @RequirePermissions('users.manage')
+  @ApiOperation({ summary: 'Substitui o conjunto de papéis de uma pessoa.' })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  @ApiForbiddenResponse({ type: ApiErrorEnvelopeDto })
+  @ApiNotFoundResponse({ type: ApiErrorEnvelopeDto })
+  @ApiConflictResponse({ type: ApiErrorEnvelopeDto })
+  replaceRoles(
+    @Req() request: AuthenticatedRequest,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() input: ReplaceUserRolesRequestDto,
+  ) {
+    return this.users.replaceRoles(
+      this.#actor(request),
+      id,
+      input.roleIds,
+      getRequestContext() ?? {},
+    );
+  }
+
+  @Patch(':id/status')
+  @RequirePermissions('users.manage')
+  @ApiOperation({ summary: 'Bloqueia ou reativa o acesso de uma pessoa.' })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  @ApiForbiddenResponse({ type: ApiErrorEnvelopeDto })
+  @ApiNotFoundResponse({ type: ApiErrorEnvelopeDto })
+  @ApiConflictResponse({ type: ApiErrorEnvelopeDto })
+  changeStatus(
+    @Req() request: AuthenticatedRequest,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() input: ChangeUserStatusRequestDto,
+  ) {
+    return this.users.changeStatus(
+      this.#actor(request),
+      id,
+      input.status,
+      getRequestContext() ?? {},
+    );
   }
 }

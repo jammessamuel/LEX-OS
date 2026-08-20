@@ -141,6 +141,36 @@ is created and raising the floor cannot lock out anyone who already has access.
 An invitation from another tenant returns 404 on revocation, the same as one that does not exist:
 the response never confirms that an identifier is real somewhere else.
 
+## User administration
+
+| Method | Path                       | Auth       | Permission     | Purpose                                   |
+| ------ | -------------------------- | ---------- | -------------- | ----------------------------------------- |
+| GET    | `/api/v1/users`            | Bearer JWT | `users.read`   | Lists tenant people with status and roles |
+| PATCH  | `/api/v1/users/:id/roles`  | Bearer JWT | `users.manage` | Replaces the whole role set               |
+| PATCH  | `/api/v1/users/:id/status` | Bearer JWT | `users.manage` | Blocks or reactivates access              |
+
+Role assignment shares one rule with invitation: a role is grantable only when every permission
+it carries is already held by the person assigning it. Requiring the same _role_ would stop an
+administrator from creating an intern, which is the ordinary case; requiring the same
+_permissions_ is what actually prevents `users.manage` from becoming a path to everything.
+
+The role set is replaced, not merged. Deleting and recreating inside the transaction avoids the
+set-difference arithmetic where an extra role survives by accident.
+
+Blocking revokes every open refresh session in the same transaction, with reason `USER_BLOCKED`.
+The access token is not invalidated by construction, but it stops working on the next request
+anyway: the access-token guard re-reads status, roles, and permissions from the database on every
+call rather than trusting the token. Reactivation applies only to someone `BLOCKED` — a person
+still `INVITED` has no usable password and must go through acceptance.
+
+Nobody changes their own roles or their own status. Without that rule the last administrator can
+lock the firm out of its own account; see
+[ADR-014](../decisions/ADR-014-fronteira-de-identidade-e-acesso.md), item 8, for the case that
+remains open — the sole administrator blocked by another route.
+
+A person from another tenant returns 404 on every one of these routes, identical to a person who
+does not exist.
+
 ## Session lifecycle
 
 Successful login verifies the Argon2id hash, records `last_login_at`, creates a refresh family, appends a safe audit event, and returns a short-lived HS256 access JWT. The JWT contains only user, organization, session, and token-type identifiers and is restricted by issuer, audience, algorithm, and expiry.

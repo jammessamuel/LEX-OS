@@ -18,6 +18,7 @@ const ORGANIZATION_SLUG = 'lex-os-demonstracao';
 const ADMIN_USER_ID = '00000000-0000-4000-8000-000000000002';
 const ADMIN_EMAIL = 'admin@lexos.invalid';
 const INTERN_ROLE_ID = '00000000-0000-4000-8000-000000000105';
+const READ_ONLY_ROLE_ID = '00000000-0000-4000-8000-000000000106';
 
 // Escritorio vizinho, para provar que convite nao atravessa fronteira de tenant.
 const OTHER_ORGANIZATION_ID = '12000000-0000-4000-8000-000000000001';
@@ -455,5 +456,164 @@ describe('Delivery 12 invitation lifecycle', () => {
     ]);
 
     assert.equal(after.rows[0].count, before.rows[0].count);
+  });
+});
+
+describe('Delivery 12 user administration', () => {
+  beforeEach(async () => {
+    await removeInvitee();
+  });
+
+  /** Cria alguem administravel: convidado e ja ativo, para nao depender do fluxo de aceite. */
+  async function activeMember(roleId = INTERN_ROLE_ID) {
+    const invited = await invite(adminToken, {
+      name: 'Membro Fictício D12',
+      email: INVITEE_EMAIL,
+      roleIds: [roleId],
+    }).expect(201);
+    await request(http)
+      .post('/api/v1/auth/invitations/accept')
+      .send({ token: invited.body.token, password: INVITEE_PASSWORD })
+      .expect(204);
+    return invited.body.user.id;
+  }
+
+  it('replaces the whole role set instead of adding to it', async () => {
+    const memberId = await activeMember();
+
+    const updated = await request(http)
+      .patch(`/api/v1/users/${memberId}/roles`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ roleIds: [READ_ONLY_ROLE_ID] })
+      .expect(200);
+
+    assert.deepEqual(
+      updated.body.roles.map((role) => role.id),
+      [READ_ONLY_ROLE_ID],
+    );
+    const rows = await pool.query('SELECT role_id FROM user_roles WHERE user_id = $1', [memberId]);
+    assert.equal(rows.rows.length, 1, 'the previous role must be gone, not kept alongside');
+  });
+
+  it('blocks access and closes the renewal path in the same transaction', async () => {
+    const memberId = await activeMember();
+    const session = await login(ORGANIZATION_SLUG, INVITEE_EMAIL, INVITEE_PASSWORD).expect(200);
+    const memberToken = session.body.accessToken;
+
+    // Antes do bloqueio o acesso funciona.
+    await request(http)
+      .get('/api/v1/cases')
+      .set('Authorization', `Bearer ${memberToken}`)
+      .expect(200);
+
+    await request(http)
+      .patch(`/api/v1/users/${memberId}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'BLOCKED' })
+      .expect(200);
+
+    // O guard reconsulta o banco a cada requisicao, entao o token vivo ja nao vale.
+    await request(http)
+      .get('/api/v1/cases')
+      .set('Authorization', `Bearer ${memberToken}`)
+      .expect(401);
+
+    const sessions = await pool.query(
+      'SELECT revoked_at, revocation_reason FROM refresh_sessions WHERE user_id = $1',
+      [memberId],
+    );
+    assert.ok(sessions.rows.length >= 1);
+    assert.ok(sessions.rows.every((row) => row.revoked_at !== null));
+    assert.ok(sessions.rows.every((row) => row.revocation_reason === 'USER_BLOCKED'));
+
+    // E entrar de novo tambem nao devolve nada.
+    await login(ORGANIZATION_SLUG, INVITEE_EMAIL, INVITEE_PASSWORD).expect(401);
+  });
+
+  it('reactivates only someone blocked, and never someone still invited', async () => {
+    const invited = await invite(adminToken, {
+      name: 'Convidada Fictícia',
+      email: INVITEE_EMAIL,
+      roleIds: [],
+    }).expect(201);
+
+    const refused = await request(http)
+      .patch(`/api/v1/users/${invited.body.user.id}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'ACTIVE' })
+      .expect(409);
+    assert.equal(refused.body.code, 'USER_STATUS_UNCHANGED');
+
+    await request(http)
+      .patch(`/api/v1/users/${invited.body.user.id}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'BLOCKED' })
+      .expect(200);
+    const reactivated = await request(http)
+      .patch(`/api/v1/users/${invited.body.user.id}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'ACTIVE' })
+      .expect(200);
+    assert.equal(reactivated.body.status, 'ACTIVE');
+  });
+
+  it('refuses to let someone change their own roles or block themselves', async () => {
+    const roles = await request(http)
+      .patch(`/api/v1/users/${ADMIN_USER_ID}/roles`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ roleIds: [] })
+      .expect(409);
+    assert.equal(roles.body.code, 'CANNOT_CHANGE_OWN_ROLES');
+
+    const status = await request(http)
+      .patch(`/api/v1/users/${ADMIN_USER_ID}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'BLOCKED' })
+      .expect(409);
+    assert.equal(status.body.code, 'CANNOT_CHANGE_OWN_STATUS');
+  });
+
+  it('treats a person from another firm as nonexistent', async () => {
+    const memberId = await activeMember();
+
+    await request(http)
+      .patch(`/api/v1/users/${memberId}/roles`)
+      .set('Authorization', `Bearer ${otherAdminToken}`)
+      .send({ roleIds: [] })
+      .expect(404);
+    await request(http)
+      .patch(`/api/v1/users/${memberId}/status`)
+      .set('Authorization', `Bearer ${otherAdminToken}`)
+      .send({ status: 'BLOCKED' })
+      .expect(404);
+
+    const list = await request(http)
+      .get('/api/v1/users')
+      .set('Authorization', `Bearer ${otherAdminToken}`)
+      .expect(200);
+    assert.equal(
+      list.body.data.some((row) => row.id === memberId),
+      false,
+    );
+  });
+
+  it('audits the administrative change without the person name or e-mail', async () => {
+    const memberId = await activeMember();
+    await request(http)
+      .patch(`/api/v1/users/${memberId}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'BLOCKED' })
+      .expect(200);
+
+    const audits = await pool.query(
+      `SELECT action, new_data FROM audit_logs
+       WHERE organization_id = $1 AND entity_id = $2 AND action = 'user.blocked'`,
+      [ORGANIZATION_ID, memberId],
+    );
+    assert.equal(audits.rows.length, 1);
+    assert.equal(typeof audits.rows[0].new_data.revokedSessions, 'number');
+    const serialized = JSON.stringify(audits.rows);
+    assert.equal(serialized.includes(INVITEE_EMAIL), false);
+    assert.equal(serialized.includes('Membro Fictício'), false);
   });
 });

@@ -84,6 +84,21 @@ export type DomainAuditEvent =
       newData: { revoked: true };
     })
   | (DomainAuditBase & {
+      action: 'user.roles.replaced';
+      entityType: 'user';
+      newData: { roleCount: number };
+    })
+  | (DomainAuditBase & {
+      action: 'user.blocked';
+      entityType: 'user';
+      newData: { revokedSessions: number };
+    })
+  | (DomainAuditBase & {
+      action: 'user.reactivated';
+      entityType: 'user';
+      newData: { revokedSessions: number };
+    })
+  | (DomainAuditBase & {
       action: 'case.created';
       entityType: 'case';
       newData: CaseAuditSnapshot;

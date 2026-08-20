@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-20 · convite entregue; ADR-014 registra o que ficou na mesa
+**Última atualização:** 2026-08-20 · backend da Entrega 12 fechado; faltam as telas
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                                                            | Detalhe                                                                                             |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Entrega 12 — Onboarding do escritório e administração de usuários | Autorizada pela sociedade em 2026-08-20. Slug e convite prontos. Faltam papéis, bloqueio e as telas |
+| Cartão                                                            | Detalhe                                                                                                      |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Entrega 12 — Onboarding do escritório e administração de usuários | Autorizada pela sociedade em 2026-08-20. Backend completo: slug, convite, papéis e bloqueio. Faltam as telas |
 
 ---
 
@@ -91,6 +91,16 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 ## Feito
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
+
+- **Entrega 12, fatia 3 — papéis e bloqueio** — o backend da administração fecha. O conjunto de
+  papéis é **substituído**, não somado: apagar e recriar dentro da transação evita a aritmética
+  de diferença, que é onde sobra um papel por engano. A regra de concessão virou um serviço só,
+  usada pelo convite e pela troca — duas cópias divergiriam no dia em que uma fosse ajustada.
+  Bloquear revoga todas as sessões de atualização na mesma transação, com motivo registrado; o
+  token vivo já para de funcionar na requisição seguinte porque o guard reconsulta o banco a
+  cada chamada, e há teste provando os dois. Reativar só age sobre quem está bloqueado: quem foi
+  convidado e não aceitou ainda não tem senha. Ninguém altera os próprios papéis nem o próprio
+  acesso — sem isso o último administrador tranca o escritório para fora da própria conta.
 
 - **Entrega 12, fatia 2 — o escritório convida sozinho** — o ciclo convidar → aceitar → entrar
   existe de ponta a ponta. O token é opaco de 256 bits, guardado só em hash, devolvido **uma

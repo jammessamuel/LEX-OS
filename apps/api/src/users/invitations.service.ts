@@ -14,6 +14,7 @@ import { ApiException } from '../http/api-exception.js';
 import type { InvitationResponseDto } from './dto/invitation-response.dto.js';
 import type { InviteUserRequestDto } from './dto/invite-user-request.dto.js';
 import { InvitationsRepository, type InvitedUserRecord } from './invitations.repository.js';
+import { RoleGrantService } from './role-grant.service.js';
 
 /**
  * Sete dias. Curto o bastante para um link vazado envelhecer sozinho, longo o bastante para
@@ -31,6 +32,7 @@ export class InvitationsService {
     private readonly database: DatabaseService,
     private readonly repository: InvitationsRepository,
     private readonly audit: AuditService,
+    private readonly grants: RoleGrantService,
   ) {}
 
   async invite(
@@ -48,30 +50,9 @@ export class InvitationsService {
       );
     }
 
-    // Convidar não pode ser caminho de escalada. A regra é sobre **permissão**, não sobre
-    // papel: exigir que quem convida já tenha o mesmo papel impediria um administrador de
-    // criar um estagiário, que é o caso comum. O que ele não pode é conceder um papel que
-    // carregue permissão que ele próprio não tem.
+    // Convidar não pode ser caminho de escalada; a regra é a mesma da troca de papel.
     const roleIds = [...new Set(input.roleIds)];
-    if (roleIds.length > 0) {
-      const [granted, roles] = await Promise.all([
-        this.repository.findGranterPermissions(actor.organizationId, actor.userId),
-        this.repository.findRolesWithPermissions(actor.organizationId, roleIds),
-      ]);
-      // Papel de outro escritório não volta da consulta; a contagem detecta isso sem que a
-      // resposta precise dizer que ele existe em algum lugar.
-      const escalates = roles.some((role) =>
-        role.rolePermissions.some((entry) => !granted.has(entry.permission.code)),
-      );
-      if (roles.length !== roleIds.length || escalates) {
-        throw new ApiException(
-          HttpStatus.FORBIDDEN,
-          'ROLE_NOT_GRANTABLE',
-          'Você só pode conceder papéis cujas permissões você já possui neste escritório.',
-          [{ field: 'roleIds', code: 'NOT_GRANTABLE', message: 'Papel indisponível.' }],
-        );
-      }
-    }
+    await this.grants.assertGrantable(actor.organizationId, actor.userId, roleIds);
 
     const token = newOpaqueToken();
     const expiresAt = new Date(Date.now() + INVITATION_TTL_MS);
