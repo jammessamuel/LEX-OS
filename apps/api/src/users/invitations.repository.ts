@@ -35,19 +35,38 @@ export class InvitationsRepository {
     });
   }
 
+  /** Códigos de permissão que a pessoa possui hoje, pelos papéis atribuídos a ela. */
+  async findGranterPermissions(
+    organizationId: string,
+    granterUserId: string,
+  ): Promise<Set<string>> {
+    const rows = await this.database.client.rolePermission.findMany({
+      where: {
+        role: {
+          OR: [{ organizationId: null }, { organizationId }],
+          userRoles: { some: { userId: granterUserId } },
+        },
+      },
+      select: { permission: { select: { code: true } } },
+    });
+    return new Set(rows.map((row) => row.permission.code));
+  }
+
   /**
-   * Papéis que quem convida pode conceder: globais ou do próprio escritório, e apenas os que
-   * ele mesmo já possui. A restrição de posse é o que impede o convite de virar caminho de
-   * escalada de privilégio.
+   * Papéis pedidos, com as permissões de cada um, restritos a globais ou do próprio
+   * escritório. Papel de outro tenant simplesmente não volta, e a contagem no serviço
+   * detecta a ausência sem precisar dizer que ele existe em outro lugar.
    */
-  findGrantableRoles(organizationId: string, granterUserId: string, roleIds: readonly string[]) {
+  findRolesWithPermissions(organizationId: string, roleIds: readonly string[]) {
     return this.database.client.role.findMany({
       where: {
         id: { in: [...roleIds] },
         OR: [{ organizationId: null }, { organizationId }],
-        userRoles: { some: { userId: granterUserId } },
       },
-      select: { id: true },
+      select: {
+        id: true,
+        rolePermissions: { select: { permission: { select: { code: true } } } },
+      },
     });
   }
 

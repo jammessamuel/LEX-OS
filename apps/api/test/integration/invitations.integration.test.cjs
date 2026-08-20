@@ -87,14 +87,11 @@ async function setupFixtures() {
   ]);
 }
 
-async function login(organizationSlug, email, password = seedPassword) {
-  const response = await request(http)
-    .post('/api/v1/auth/login')
-    .send({ organizationSlug, email, password });
-  return response;
+function login(organizationSlug, email, password = seedPassword) {
+  return request(http).post('/api/v1/auth/login').send({ organizationSlug, email, password });
 }
 
-async function invite(token, body) {
+function invite(token, body) {
   return request(http)
     .post('/api/v1/users/invitations')
     .set('Authorization', `Bearer ${token}`)
@@ -102,6 +99,10 @@ async function invite(token, body) {
 }
 
 async function removeInvitee() {
+  await pool.query(
+    'DELETE FROM audit_logs WHERE user_id IN (SELECT id FROM users WHERE email = $1)',
+    [INVITEE_EMAIL],
+  );
   await pool.query(
     `DELETE FROM user_invitations
      WHERE user_id IN (SELECT id FROM users WHERE email = $1)`,
@@ -262,8 +263,79 @@ describe('Delivery 12 invitation lifecycle', () => {
     assert.ok(ownList.body.data.some((row) => row.id === invited.body.id));
   });
 
-  it('refuses a role the inviter does not hold, so inviting is not an escalation path', async () => {
-    // Papel de outro escritorio: existe, mas nao e concedivel a partir daqui.
+  it('lets an administrator grant a weaker role, because that is the ordinary case', async () => {
+    // A regra e sobre permissao, nao sobre papel. Exigir o mesmo papel impediria justamente
+    // o que um administrador faz todo dia: criar um estagiario.
+    const invited = await invite(adminToken, {
+      name: 'Estagiária Convidada Fictícia',
+      email: INVITEE_EMAIL,
+      roleIds: [INTERN_ROLE_ID],
+    }).expect(201);
+
+    const roles = await pool.query('SELECT role_id FROM user_roles WHERE user_id = $1', [
+      invited.body.user.id,
+    ]);
+    assert.deepEqual(
+      roles.rows.map((row) => row.role_id),
+      [INTERN_ROLE_ID],
+    );
+  });
+
+  it('refuses a role carrying a permission the inviter lacks', async () => {
+    // Quem gerencia pessoas mas nao administra tudo nao pode cunhar um administrador.
+    const managerId = '12000000-0000-4000-8000-000000000011';
+    const managerEmail = 'd12-gestora@lexos.invalid';
+    const managerRole = await pool.query(
+      `INSERT INTO roles (organization_id, name, code, updated_at)
+       VALUES ($1, 'Gestora de Pessoas Fictícia', 'D12_PESSOAS', now())
+       RETURNING id`,
+      [ORGANIZATION_ID],
+    );
+    const managerRoleId = managerRole.rows[0].id;
+    await pool.query(
+      `INSERT INTO role_permissions (role_id, permission_id)
+       SELECT $1, id FROM permissions WHERE code IN ('users.manage', 'organizations.read')`,
+      [managerRoleId],
+    );
+    await pool.query(
+      `INSERT INTO users
+        (id, organization_id, name, email, password_hash, status, updated_at)
+       SELECT $1, $2, 'Gestora Fictícia D12', $3, password_hash, 'ACTIVE', now()
+       FROM users WHERE id = $4`,
+      [managerId, ORGANIZATION_ID, managerEmail, ADMIN_USER_ID],
+    );
+    await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)', [
+      managerId,
+      managerRoleId,
+    ]);
+
+    try {
+      const managerToken = (await login(ORGANIZATION_SLUG, managerEmail).expect(200)).body
+        .accessToken;
+
+      const rejected = await invite(managerToken, {
+        name: 'Convidada Fictícia',
+        email: INVITEE_EMAIL,
+        roleIds: [ADMIN_ROLE_ID],
+      }).expect(403);
+      assert.equal(rejected.body.code, 'ROLE_NOT_GRANTABLE');
+
+      const created = await pool.query(
+        'SELECT count(*)::int AS count FROM users WHERE email = $1',
+        [INVITEE_EMAIL],
+      );
+      assert.equal(created.rows[0].count, 0, 'a refused invitation must not leave a user behind');
+    } finally {
+      await pool.query('DELETE FROM refresh_sessions WHERE user_id = $1', [managerId]);
+      await pool.query('DELETE FROM user_roles WHERE user_id = $1', [managerId]);
+      await pool.query('DELETE FROM audit_logs WHERE user_id = $1', [managerId]);
+      await pool.query('DELETE FROM users WHERE id = $1', [managerId]);
+      await pool.query('DELETE FROM role_permissions WHERE role_id = $1', [managerRoleId]);
+      await pool.query('DELETE FROM roles WHERE id = $1', [managerRoleId]);
+    }
+  });
+
+  it('refuses a role that belongs to another firm', async () => {
     const foreignRole = await pool.query(
       `INSERT INTO roles (organization_id, name, code, updated_at)
        VALUES ($1, 'Papel Vizinho Fictício', 'D12_OUTRO', now())
@@ -278,12 +350,6 @@ describe('Delivery 12 invitation lifecycle', () => {
         roleIds: [foreignRole.rows[0].id],
       }).expect(403);
       assert.equal(rejected.body.code, 'ROLE_NOT_GRANTABLE');
-
-      const created = await pool.query(
-        'SELECT count(*)::int AS count FROM users WHERE email = $1',
-        [INVITEE_EMAIL],
-      );
-      assert.equal(created.rows[0].count, 0, 'a refused invitation must not leave a user behind');
     } finally {
       await pool.query('DELETE FROM roles WHERE id = $1', [foreignRole.rows[0].id]);
     }

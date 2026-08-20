@@ -120,6 +120,7 @@ describe('Delivery 4 HTTP and authentication contract', () => {
       '/api/v1',
       '/api/v1/assistant/answers',
       '/api/v1/audit-logs',
+      '/api/v1/auth/invitations/accept',
       '/api/v1/auth/login',
       '/api/v1/auth/logout',
       '/api/v1/auth/refresh',
@@ -155,6 +156,8 @@ describe('Delivery 4 HTTP and authentication contract', () => {
       '/api/v1/tasks/{id}',
       '/api/v1/timeline-events/{id}/confirm',
       '/api/v1/users/assignable',
+      '/api/v1/users/invitations',
+      '/api/v1/users/invitations/{id}',
     ];
 
     assert.deepEqual(Object.keys(response.body.paths).sort(), expectedPaths);

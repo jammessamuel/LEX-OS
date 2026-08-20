@@ -48,21 +48,26 @@ export class InvitationsService {
       );
     }
 
-    // Convidar não pode ser caminho de escalada: só se concede papel que já se tem, e que
-    // seja global ou do próprio escritório. A verificação é uma consulta, não uma lista em
-    // memória, para o banco continuar sendo a autoridade.
+    // Convidar não pode ser caminho de escalada. A regra é sobre **permissão**, não sobre
+    // papel: exigir que quem convida já tenha o mesmo papel impediria um administrador de
+    // criar um estagiário, que é o caso comum. O que ele não pode é conceder um papel que
+    // carregue permissão que ele próprio não tem.
     const roleIds = [...new Set(input.roleIds)];
     if (roleIds.length > 0) {
-      const grantable = await this.repository.findGrantableRoles(
-        actor.organizationId,
-        actor.userId,
-        roleIds,
+      const [granted, roles] = await Promise.all([
+        this.repository.findGranterPermissions(actor.organizationId, actor.userId),
+        this.repository.findRolesWithPermissions(actor.organizationId, roleIds),
+      ]);
+      // Papel de outro escritório não volta da consulta; a contagem detecta isso sem que a
+      // resposta precise dizer que ele existe em algum lugar.
+      const escalates = roles.some((role) =>
+        role.rolePermissions.some((entry) => !granted.has(entry.permission.code)),
       );
-      if (grantable.length !== roleIds.length) {
+      if (roles.length !== roleIds.length || escalates) {
         throw new ApiException(
           HttpStatus.FORBIDDEN,
           'ROLE_NOT_GRANTABLE',
-          'Você só pode conceder papéis que já possui neste escritório.',
+          'Você só pode conceder papéis cujas permissões você já possui neste escritório.',
           [{ field: 'roleIds', code: 'NOT_GRANTABLE', message: 'Papel indisponível.' }],
         );
       }
