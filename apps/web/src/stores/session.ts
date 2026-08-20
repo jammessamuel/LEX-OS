@@ -42,7 +42,7 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   async function login(input: {
-    organizationId: string;
+    organizationSlug: string;
     email: string;
     password: string;
   }): Promise<void> {

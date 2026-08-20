@@ -15,6 +15,7 @@ process.env.REDIS_HOST = '127.0.0.1';
 process.env.PROCESSING_QUEUE_PREFIX = 'lex-os-auth-integration';
 
 const ORGANIZATION_ID = '00000000-0000-4000-8000-000000000001';
+const ORGANIZATION_SLUG = 'lex-os-demonstracao';
 const ADMIN_USER_ID = '00000000-0000-4000-8000-000000000002';
 const UNAUTHORIZED_USER_ID = '20000000-0000-4000-8000-000000000001';
 const ADMIN_EMAIL = 'admin@lexos.invalid';
@@ -70,7 +71,7 @@ async function login(email = ADMIN_EMAIL, password = seedPassword) {
   return request(http)
     .post('/api/v1/auth/login')
     .set('x-request-id', `test-login-${Date.now()}`)
-    .send({ organizationId: ORGANIZATION_ID, email, password });
+    .send({ organizationSlug: ORGANIZATION_SLUG, email, password });
 }
 
 async function cleanup() {
@@ -165,7 +166,7 @@ describe('Delivery 4 HTTP and authentication contract', () => {
     const response = await request(http)
       .post('/api/v1/auth/login')
       .send({
-        organizationId: ORGANIZATION_ID,
+        organizationSlug: ORGANIZATION_SLUG,
         email: 'invalid-email',
         password: seedPassword,
         tenantId: 'spoofed',
@@ -231,6 +232,53 @@ describe('Delivery 4 HTTP and authentication contract', () => {
         ADMIN_USER_ID,
       ]);
     }
+  });
+
+  it('does not distinguish an unknown firm from a wrong password', async () => {
+    // A propriedade que sustenta trocar o UUID pelo slug: um slug legivel convida a
+    // adivinhacao, entao descobrir que um escritorio existe nao pode custar uma tentativa.
+    const wrongPassword = await request(http)
+      .post('/api/v1/auth/login')
+      .send({ organizationSlug: ORGANIZATION_SLUG, email: ADMIN_EMAIL, password: 'senha-errada-0' })
+      .expect(401);
+    const unknownFirm = await request(http)
+      .post('/api/v1/auth/login')
+      .send({
+        organizationSlug: 'escritorio-inexistente',
+        email: ADMIN_EMAIL,
+        password: seedPassword,
+      })
+      .expect(401);
+
+    assert.equal(unknownFirm.body.code, wrongPassword.body.code);
+    assert.equal(unknownFirm.body.message, wrongPassword.body.message);
+    assert.equal(JSON.stringify(unknownFirm.body).includes('escritorio-inexistente'), false);
+  });
+
+  it('rejects a malformed firm identifier at the boundary without reaching the database', async () => {
+    const response = await request(http)
+      .post('/api/v1/auth/login')
+      .send({ organizationSlug: 'Escritório Inválido', email: ADMIN_EMAIL, password: seedPassword })
+      .expect(400);
+
+    assert.equal(response.body.code, 'VALIDATION_ERROR');
+    assert.ok(
+      response.body.details.some((detail) => detail.field === 'organizationSlug'),
+      'the rejected field must be named so the form can point at it',
+    );
+  });
+
+  it('accepts the firm identifier in any case, because people type it by hand', async () => {
+    const response = await request(http)
+      .post('/api/v1/auth/login')
+      .send({
+        organizationSlug: `  ${ORGANIZATION_SLUG.toUpperCase()}  `,
+        email: ADMIN_EMAIL,
+        password: seedPassword,
+      })
+      .expect(200);
+
+    assert.equal(typeof response.body.accessToken, 'string');
   });
 
   it('derives the current organization from the access token and ignores spoofed tenant input', async () => {

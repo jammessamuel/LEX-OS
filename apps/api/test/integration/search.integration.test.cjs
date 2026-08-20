@@ -238,7 +238,7 @@ async function addExtraction({
 async function login(email) {
   const response = await request(http)
     .post('/api/v1/auth/login')
-    .send({ organizationId: ORGANIZATION_ID, email, password: seedPassword })
+    .send({ organizationSlug: 'lex-os-demonstracao', email, password: seedPassword })
     .expect(200);
   return response.body.accessToken;
 }

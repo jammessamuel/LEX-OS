@@ -120,6 +120,7 @@ async function main(): Promise<void> {
         await transaction.organization.upsert({
           where: { id: IDS.organization },
           update: {
+            slug: 'lex-os-demonstracao',
             legalName: 'Lex OS Escritório Jurídico Fictício Ltda.',
             tradeName: 'Lex OS Demonstração',
             documentNumber: '00000000000000',
@@ -129,6 +130,8 @@ async function main(): Promise<void> {
           },
           create: {
             id: IDS.organization,
+            // Identidade digitavel: e ela que vai no formulario de entrada, nao o UUID.
+            slug: 'lex-os-demonstracao',
             legalName: 'Lex OS Escritório Jurídico Fictício Ltda.',
             tradeName: 'Lex OS Demonstração',
             documentNumber: '00000000000000',

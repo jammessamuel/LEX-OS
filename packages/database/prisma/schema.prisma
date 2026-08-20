@@ -243,6 +243,9 @@ enum ProcessingBudgetStatus {
 
 model Organization {
   id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  /// Identidade digitavel do escritorio, usada no lugar do UUID para entrar. Imutavel:
+  /// ela circula em link de convite e no habito de quem digita todo dia.
+  slug             String             @unique @db.VarChar(63)
   legalName        String             @map("legal_name") @db.VarChar(255)
   tradeName        String             @map("trade_name") @db.VarChar(255)
   documentNumber   String             @map("document_number") @db.VarChar(32)
@@ -273,8 +276,36 @@ model Organization {
   knowledgeChunks        KnowledgeChunk[]
   processingJobs         ProcessingJob[]
   auditLogs              AuditLog[]
+  userInvitations        UserInvitation[]
 
   @@map("organizations")
+}
+
+/// Convite de acesso ao escritorio.
+///
+/// O token nunca e guardado em claro: fica so o hash, do mesmo jeito que a sessao de
+/// refresh. Uso unico e com validade, para um link vazado depois de aceito ou expirado nao
+/// valer nada. O aceite e a unica porta que leva um usuario de INVITED para ACTIVE.
+model UserInvitation {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  tokenHash      String    @unique @map("token_hash") @db.VarChar(64)
+  expiresAt      DateTime  @map("expires_at") @db.Timestamptz(6)
+  acceptedAt     DateTime? @map("accepted_at") @db.Timestamptz(6)
+  revokedAt      DateTime? @map("revoked_at") @db.Timestamptz(6)
+  invitedById    String    @map("invited_by_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation("InvitationUser", fields: [organizationId, userId], references: [organizationId, id])
+  invitedBy    User         @relation("InvitationInvitedBy", fields: [organizationId, invitedById], references: [organizationId, id])
+
+  @@unique([organizationId, id])
+  @@index([organizationId, userId])
+  @@index([expiresAt])
+  @@map("user_invitations")
 }
 
 model User {
@@ -301,6 +332,8 @@ model User {
   assignedTasks              Task[]              @relation("TaskAssignedTo")
   createdTasks               Task[]              @relation("TaskCreatedBy")
   auditLogs                  AuditLog[]
+  invitations                UserInvitation[]    @relation("InvitationUser")
+  sentInvitations            UserInvitation[]    @relation("InvitationInvitedBy")
 
   @@unique([organizationId, email])
   @@unique([organizationId, id])

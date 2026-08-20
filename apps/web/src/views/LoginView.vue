@@ -9,7 +9,11 @@ const router = useRouter();
 const route = useRoute();
 const session = useSessionStore();
 
-const organizationId = ref('');
+// O escritorio pode chegar pelo link de convite: e identificador, nao conteudo, entao
+// pode viver na URL. Digitado a mao tambem vale, que e o caso de quem ja trabalha aqui.
+const organizationSlug = ref(
+  typeof route.query.escritorio === 'string' ? route.query.escritorio : '',
+);
 const email = ref('');
 const password = ref('');
 const submitting = ref(false);
@@ -29,7 +33,7 @@ async function submit(): Promise<void> {
   failure.value = null;
   try {
     await session.login({
-      organizationId: organizationId.value.trim(),
+      organizationSlug: organizationSlug.value.trim().toLowerCase(),
       email: email.value.trim(),
       password: password.value,
     });
@@ -59,30 +63,30 @@ async function submit(): Promise<void> {
 
       <form class="login__form" novalidate @submit.prevent="submit">
         <div class="field">
-          <label class="label" for="organizationId">Organização</label>
+          <label class="label" for="organizationSlug">Escritório</label>
           <input
-            id="organizationId"
-            v-model="organizationId"
+            id="organizationSlug"
+            v-model="organizationSlug"
             class="data"
-            autocomplete="off"
+            autocomplete="organization"
             spellcheck="false"
-            placeholder="00000000-0000-4000-8000-000000000001"
-            :aria-invalid="failure?.detailFor('organizationId') !== undefined"
+            placeholder="souza-cabral"
+            :aria-invalid="failure?.detailFor('organizationSlug') !== undefined"
             :aria-describedby="
-              failure?.detailFor('organizationId') === undefined
-                ? 'organizationId-hint'
-                : 'organizationId-error'
+              failure?.detailFor('organizationSlug') === undefined
+                ? 'organizationSlug-hint'
+                : 'organizationSlug-error'
             "
           />
           <p
-            v-if="failure?.detailFor('organizationId')"
-            id="organizationId-error"
+            v-if="failure?.detailFor('organizationSlug')"
+            id="organizationSlug-error"
             class="field__error"
           >
-            {{ failure.detailFor('organizationId') }}
+            {{ failure.detailFor('organizationSlug') }}
           </p>
-          <p v-else id="organizationId-hint" class="field__hint">
-            Identificador fornecido pela administração do escritório.
+          <p v-else id="organizationSlug-hint" class="field__hint">
+            O nome curto do escritório, o mesmo que aparece no link do convite.
           </p>
         </div>
 

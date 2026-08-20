@@ -1,8 +1,8 @@
 # Incremental implementation plan
 
-**Status:** Delivery 10 accepted
+**Status:** Delivery 11 accepted; Delivery 12 authorized
 
-**Last updated:** 2026-08-12
+**Last updated:** 2026-08-20
 
 ## Delivery strategy
 
@@ -256,7 +256,46 @@ ZIP extraction remains disabled unless expanded-size, recursion, file-count, pat
 workflow now has every required quality/integration/Playwright/dependency/recovery gate and contains
 no deploy step. The full fictional browser journey, guarded clean-machine bootstrap, synthetic
 PostgreSQL/private-object recovery rehearsal, security coverage matrix, and operational runbook are
-present. Formal acceptance remains pending until all GitHub CI jobs pass for the branch/PR.
+present. Accepted on 2026-08-20: every mandatory CI job passed on `main` at `ab9de3d`.
+
+## Delivery 12 — Organization onboarding and user administration
+
+Authorized by the owner on 2026-08-20. Until this delivery, a firm cannot add a second lawyer and
+signing in requires pasting the organization UUID. Every other governed increment depends on it:
+there is nobody to notify, assign, or address a case to.
+
+**Scope**
+
+- human-readable organization identity: a unique, immutable `slug` replaces the UUID at sign-in,
+  and the login form accepts it prefilled from a link;
+- user administration inside the tenant: list, invite, change roles, block, reactivate, and
+  soft-delete, all behind permission codes and never behind a role name;
+- invitation lifecycle: single-use hashed token with expiry, accepted by setting a password, which
+  moves the user from `INVITED` to `ACTIVE`. The token is never stored in clear text, never
+  logged, and never audited;
+- role assignment over the existing `Role`/`UserRole`/`RolePermission` tables, restricted to
+  roles that are global or belong to the acting tenant;
+- deactivation revokes every refresh session of the target user in the same transaction, so a
+  blocked lawyer loses access immediately rather than at token expiry;
+- the pt-BR administration screens, with the same premium standard as the rest of the interface.
+
+**Out of scope** — public self-service organization signup, billing, SSO, password recovery by
+e-mail, and cross-organization users. Real client data stays blocked by ADR-012.
+
+**Acceptance**
+
+- sign-in never requires a UUID, and an unknown slug is indistinguishable from a wrong password;
+- an invited user cannot authenticate before accepting, and a token is refused when reused,
+  expired, or belonging to another tenant;
+- a tenant-isolation negative test covers list, direct ID, invitation acceptance, role assignment,
+  and deactivation, per the cross-delivery matrix;
+- privilege escalation is impossible: a user cannot grant a permission they do not hold, cannot
+  assign a role of another tenant, and cannot remove their own last administrative access;
+- deactivation invalidates access within the same request, proven by an integration test that
+  replays the refresh token afterwards;
+- audit records every administrative action through the field allowlist, without password hash,
+  token, or e-mail body;
+- Playwright covers invite → accept → sign in with the slug → role change → block.
 
 ## Governed follow-up increments
 

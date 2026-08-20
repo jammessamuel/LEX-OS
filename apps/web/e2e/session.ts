@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 
-export const organizationId = '00000000-0000-4000-8000-000000000001';
+export const organizationSlug = 'lex-os-demonstracao';
 export const adminEmail = 'admin@lexos.invalid';
 
 export async function login(page: Page): Promise<void> {
@@ -10,7 +10,7 @@ export async function login(page: Page): Promise<void> {
   }
 
   await page.goto('/entrar');
-  await page.getByLabel('Organização').fill(organizationId);
+  await page.getByLabel('Escritório').fill(organizationSlug);
   await page.getByLabel('E-mail').fill(adminEmail);
   await page.getByLabel('Senha').fill(password);
   await page.getByRole('button', { name: 'Entrar' }).click();

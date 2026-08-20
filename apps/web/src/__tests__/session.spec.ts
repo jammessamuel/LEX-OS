@@ -38,7 +38,7 @@ describe('sessão web', () => {
     client.request.mockRejectedValueOnce(new Error('credenciais inválidas'));
     const session = useSessionStore();
     const input = {
-      organizationId: authentication.organization.id,
+      organizationSlug: 'lex-os-demonstracao',
       email: authentication.user.email,
       password: 'senha-ficticia',
     };
@@ -72,7 +72,7 @@ describe('sessão web', () => {
     const session = useSessionStore();
 
     await session.login({
-      organizationId: authentication.organization.id,
+      organizationSlug: 'lex-os-demonstracao',
       email: authentication.user.email,
       password: 'senha-ficticia',
     });

@@ -6,7 +6,7 @@ import LoginView from '../views/LoginView.vue';
 const mocks = vi.hoisted(() => ({
   login: vi.fn(),
   replace: vi.fn(),
-  query: {} as { destino?: string },
+  query: {} as { destino?: string; escritorio?: string },
 }));
 
 vi.mock('vue-router', () => ({
@@ -20,7 +20,7 @@ vi.mock('../stores/session.js', () => ({
 
 async function submitLogin() {
   const wrapper = mount(LoginView);
-  await wrapper.get('#organizationId').setValue(' org-1 ');
+  await wrapper.get('#organizationSlug').setValue(' Souza-Cabral ');
   await wrapper.get('#email').setValue(' pessoa@exemplo.test ');
   await wrapper.get('#password').setValue('senha-ficticia');
   await wrapper.get('form').trigger('submit');
@@ -41,7 +41,7 @@ describe('LoginView', () => {
     await submitLogin();
 
     expect(mocks.login).toHaveBeenCalledWith({
-      organizationId: 'org-1',
+      organizationSlug: 'souza-cabral',
       email: 'pessoa@exemplo.test',
       password: 'senha-ficticia',
     });
@@ -58,4 +58,23 @@ describe('LoginView', () => {
       expect(mocks.replace).toHaveBeenCalledWith({ name: 'cases' });
     },
   );
+
+  it('normaliza o escritório digitado: quem entra não precisa acertar a caixa', async () => {
+    await submitLogin();
+
+    expect(mocks.login).toHaveBeenCalledWith(
+      expect.objectContaining({ organizationSlug: 'souza-cabral' }),
+    );
+  });
+
+  it('preenche o escritório vindo do link de convite, que é identificador e não conteúdo', async () => {
+    mocks.query.escritorio = 'souza-cabral';
+
+    const wrapper = mount(LoginView);
+
+    expect((wrapper.get('#organizationSlug').element as HTMLInputElement).value).toBe(
+      'souza-cabral',
+    );
+    delete mocks.query.escritorio;
+  });
 });

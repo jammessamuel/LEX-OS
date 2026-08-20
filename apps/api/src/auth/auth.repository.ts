@@ -76,9 +76,17 @@ const refreshSessionSelect = {
 export class AuthRepository {
   constructor(private readonly database: DatabaseService) {}
 
-  findLoginUser(organizationId: string, email: string) {
-    return this.database.client.user.findUnique({
-      where: { organizationId_email: { organizationId, email } },
+  /**
+   * Resolve a pessoa a partir do slug do escritorio, em uma consulta so.
+   *
+   * Slug inexistente e senha errada precisam ser indistinguiveis para quem chama, entao
+   * aqui nao ha erro proprio para "escritorio nao encontrado": os dois casos devolvem null
+   * e o servico segue pelo mesmo caminho, inclusive verificando o hash de mentira para o
+   * tempo de resposta nao entregar a diferenca.
+   */
+  findLoginUserBySlug(organizationSlug: string, email: string) {
+    return this.database.client.user.findFirst({
+      where: { email, organization: { slug: organizationSlug } },
       select: loginUserSelect,
     });
   }

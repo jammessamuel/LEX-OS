@@ -43,8 +43,8 @@ export class LoginAttemptService implements OnModuleDestroy {
     }
   }
 
-  async assertAllowed(organizationId: string, email: string, clientIp: string): Promise<void> {
-    const key = this.#key(organizationId, email, clientIp);
+  async assertAllowed(organizationSlug: string, email: string, clientIp: string): Promise<void> {
+    const key = this.#key(organizationSlug, email, clientIp);
     const count = await this.#redisOperation(async (client) =>
       Number((await client.get(key)) ?? 0),
     );
@@ -58,8 +58,8 @@ export class LoginAttemptService implements OnModuleDestroy {
     }
   }
 
-  async recordFailure(organizationId: string, email: string, clientIp: string): Promise<void> {
-    const key = this.#key(organizationId, email, clientIp);
+  async recordFailure(organizationSlug: string, email: string, clientIp: string): Promise<void> {
+    const key = this.#key(organizationSlug, email, clientIp);
     await this.#redisOperation((client) =>
       client.eval(incrementScript, {
         keys: [key],
@@ -68,14 +68,19 @@ export class LoginAttemptService implements OnModuleDestroy {
     );
   }
 
-  async clear(organizationId: string, email: string, clientIp: string): Promise<void> {
-    const key = this.#key(organizationId, email, clientIp);
+  async clear(organizationSlug: string, email: string, clientIp: string): Promise<void> {
+    const key = this.#key(organizationSlug, email, clientIp);
     await this.#redisOperation((client) => client.del(key));
   }
 
-  #key(organizationId: string, email: string, clientIp: string): string {
+  /**
+   * A contagem e chaveada pelo slug, nao pelo identificador resolvido: o slug e o que o
+   * cliente varia, e existe antes de sabermos se ha escritorio por tras dele. Chavear pelo
+   * identificador deixaria sem freio a tentativa contra um escritorio inexistente.
+   */
+  #key(organizationSlug: string, email: string, clientIp: string): string {
     const fingerprint = createHash('sha256')
-      .update(`${organizationId}\u0000${email}\u0000${clientIp}`)
+      .update(`${organizationSlug}\u0000${email}\u0000${clientIp}`)
       .digest('hex');
     return `auth:login:${fingerprint}`;
   }

@@ -48,13 +48,65 @@ The login body is:
 
 ```json
 {
-  "organizationId": "00000000-0000-4000-8000-000000000001",
+  "organizationSlug": "lex-os-demonstracao",
   "email": "admin@lexos.invalid",
   "password": "value-from-local-environment"
 }
 ```
 
-The organization UUID is required only before authentication because public organization discovery is deferred. The fictional seed password comes from `SEED_ADMIN_PASSWORD`; it must not be copied into source, documentation, logs, or committed fixtures.
+`organizationSlug` is the firm's human-readable identity, unique and immutable, matching `^[a-z0-9]+(-[a-z0-9]+)*# Authentication and HTTP contract
+
+**Status:** Implemented in Delivery 4; web permission projection added in Delivery 10
+**Last updated:** 2026-08-13
+
+## HTTP platform
+
+All application routes use the `/api/v1` prefix. Swagger UI is served at `/api/v1/docs`, and the generated OpenAPI document is served at `/api/v1/docs/openapi.json`. OpenAPI contains only routes that exist in the running application.
+
+Global request handling applies:
+
+- Helmet response headers and one configured credentialed CORS origin;
+- JSON/cookie parsing with request and correlation identifiers;
+- DTO transformation, property allowlisting, rejection of unknown properties, and complete field validation;
+- a stable safe error envelope;
+- a bounded cursor-pagination query primitive with a default page size of 20 and maximum of 100.
+
+Errors use this shape:
+
+```json
+{
+  "statusCode": 400,
+  "code": "VALIDATION_ERROR",
+  "message": "Dados inválidos.",
+  "details": [],
+  "requestId": "request-identifier"
+}
+```
+
+Validation details contain field names and safe constraints. Authentication failures intentionally use the same `INVALID_CREDENTIALS` response for an unknown user, invalid password, blocked user, deleted user, inactive organization, or a user presented under another organization.
+
+## Implemented routes
+
+| Method | Route                  | Authentication | Permission             | Behavior                                   |
+| ------ | ---------------------- | -------------- | ---------------------- | ------------------------------------------ |
+| POST   | `/api/v1/auth/login`   | Public         | none                   | Creates an access token and refresh family |
+| POST   | `/api/v1/auth/refresh` | Refresh cookie | none                   | Atomically rotates the refresh session     |
+| POST   | `/api/v1/auth/logout`  | Bearer JWT     | authenticated identity | Revokes the complete refresh-token family  |
+
+`GET /api/v1/users/assignable` requires `users.read` and returns only active tenant users as
+`{ id, name }`, using opaque keyset pagination. It never exposes e-mail, status, roles, permissions,
+or password/session data. The read is audited with only the number of rows returned.
+| GET | `/api/v1/organizations/current` | Bearer JWT | `organizations.read` | Returns the tenant derived from the session |
+
+Health, metrics, and OpenAPI routes are public operational endpoints. The table above remains the Delivery 4 authentication surface. Later implemented resources are documented in [People, cases, and participants API](./people-cases-participants.md), [Files and documents API](./files-documents.md), [Processing API](./processing.md), [Timeline, checklists, and tasks API](./timeline-checklists-tasks.md), [Search API](./search.md), and [Authorized audit API](./audit.md).
+
+The login body is:
+
+at both the DTO and the database constraint. It replaced the organization UUID in Delivery 12: the UUID is unusable by a person and leaked an internal identifier into the first screen of the product. The value is lowercased before lookup, so the caller does not have to match case.
+
+An unknown slug and a wrong password are deliberately indistinguishable. The lookup joins organization and user in a single query, and a miss still verifies a dummy password hash, so neither the response nor the response time reveals whether the firm exists. Failed-attempt counting is keyed by the submitted slug rather than by a resolved identifier — keying by the resolved identifier would leave attempts against a non-existent firm unthrottled.
+
+Public self-service organization discovery and signup remain deferred. The fictional seed password comes from `SEED_ADMIN_PASSWORD`; it must not be copied into source, documentation, logs, or committed fixtures.
 
 ## Session lifecycle
 

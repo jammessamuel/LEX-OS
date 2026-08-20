@@ -32,7 +32,7 @@ export interface IssuedAuthentication {
   refreshExpiresAt: Date;
 }
 
-type LoginUser = NonNullable<Awaited<ReturnType<AuthRepository['findLoginUser']>>>;
+type LoginUser = NonNullable<Awaited<ReturnType<AuthRepository['findLoginUserBySlug']>>>;
 
 function hashRefreshToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
@@ -111,13 +111,13 @@ export class AuthService {
     clientIp: string,
     metadata: RequestAuditMetadata,
   ): Promise<IssuedAuthentication> {
-    await this.attempts.assertAllowed(input.organizationId, input.email, clientIp);
-    const user = await this.repository.findLoginUser(input.organizationId, input.email);
+    await this.attempts.assertAllowed(input.organizationSlug, input.email, clientIp);
+    const user = await this.repository.findLoginUserBySlug(input.organizationSlug, input.email);
     const passwordHash = user?.passwordHash ?? (await this.#dummyPasswordHash);
     const passwordMatches = await verifyPassword(passwordHash, input.password);
 
     if (user === null || !passwordMatches) {
-      await this.attempts.recordFailure(input.organizationId, input.email, clientIp);
+      await this.attempts.recordFailure(input.organizationSlug, input.email, clientIp);
 
       if (user !== null) {
         await this.audit.recordAuthentication({
@@ -135,7 +135,7 @@ export class AuthService {
     }
 
     if (!this.#isActiveLoginUser(user)) {
-      await this.attempts.recordFailure(input.organizationId, input.email, clientIp);
+      await this.attempts.recordFailure(input.organizationSlug, input.email, clientIp);
       await this.audit.recordAuthentication({
         organizationId: user.organizationId,
         userId: user.id,
@@ -148,7 +148,7 @@ export class AuthService {
       throw this.#invalidCredentials();
     }
 
-    await this.attempts.clear(input.organizationId, input.email, clientIp);
+    await this.attempts.clear(input.organizationSlug, input.email, clientIp);
     const refreshToken = newRefreshToken();
     const occurredAt = new Date();
     const refreshExpiresAt = new Date(

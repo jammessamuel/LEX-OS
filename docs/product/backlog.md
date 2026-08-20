@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-20 · PR #7 reconciliada com a `main`
+**Última atualização:** 2026-08-20 · Entrega 11 aceita; Entrega 12 iniciada
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                                                | Detalhe                                                                                                                                                                          |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Entrega 11 — Verificação do MVP e endurecimento do CI | Autorizada pela sociedade em 2026-08-18. Implementada e reconciliada com o trabalho paralelo da PR #7 em 2026-08-20. Só é aceita quando a matriz completa da CI passar na `main` |
+| Cartão                                                            | Detalhe                                                                                                                |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Entrega 12 — Onboarding do escritório e administração de usuários | Autorizada pela sociedade em 2026-08-20. Fatia 1 (slug na entrada) pronta. Faltam convite, papéis, bloqueio e as telas |
 
 ---
 
@@ -42,9 +42,9 @@ depois de receberem escopo e autorização explícitos.
 Nada aqui pode virar front antes de a rota existir. Registrado para deixar de ser
 invisível.
 
-| Cartão                    | O que falta                                                                                 |
-| ------------------------- | ------------------------------------------------------------------------------------------- |
-| Administração de usuários | Existe somente a lista mínima de usuários atribuíveis; CRUD, convites e papéis não têm rota |
+| Cartão | O que falta                                                                                          |
+| ------ | ---------------------------------------------------------------------------------------------------- |
+| —      | Nada bloqueado. A administração de usuários saiu daqui: virou a Entrega 12, autorizada em 2026-08-20 |
 
 ---
 
@@ -90,6 +90,19 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 ## Feito
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
+
+- **Entrega 12, fatia 1 — o escritório tem nome** — entrar deixou de exigir um UUID colado.
+  A organização ganhou um `slug` único e imutável, com a mesma forma validada no DTO e numa
+  constraint do banco, e o campo aceita o valor em qualquer caixa porque quem digita não tem
+  que acertar isso. Slug inexistente e senha errada continuam indistinguíveis: a consulta junta
+  escritório e pessoa numa só, o caminho de erro ainda verifica o hash de mentira, e a contagem
+  de tentativas passou a ser chaveada pelo slug enviado — chavear pelo identificador resolvido
+  deixaria sem freio a tentativa contra um escritório que não existe. O formulário aceita o
+  escritório pré-preenchido por `?escritorio=`, que é identificador e não conteúdo. A migração
+  cria também `user_invitations`, com token só em hash, uso único, validade e chave composta
+  com o tenant para o banco recusar convite que aponte para outra organização.
+- **Entrega 11 aceita** — os cinco jobs obrigatórios passaram na `main` em `ab9de3d`,
+  incluindo o ensaio de recuperação no lugar novo e a jornada completa no Playwright.
 
 - **Reconciliação da PR #7 com a `main`** — os dois lados construíram a Entrega 11 em paralelo e
   colidiram em oito arquivos, dois deles `add/add`. A resolução escolheu por mérito, não por lado:

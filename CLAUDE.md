@@ -55,17 +55,18 @@ Approval for one commit is not standing approval for the next.
 
 ### 0.3 Respect the delivery boundary
 
-The latest accepted checkpoint is **Delivery 10 — Essential web vertical slice**.
+The latest accepted checkpoint is **Delivery 11 — Full MVP verification and CI hardening**,
+accepted 2026-08-20 with every mandatory CI job green on `main` at `ab9de3d`.
 
-**Delivery 11 — Full MVP verification and CI hardening was authorized by the owner on
-2026-08-18** and is implemented, but it is not accepted until every mandatory CI job passes
-on `main`. Its scope is limited to: the required test matrix, CI gates including Playwright,
-the full fictional end-to-end flow, security abuse cases, dependency review, the synthetic
-recovery rehearsal, the operational runbook, and documentation alignment. CI performs no deploy.
+**Delivery 12 — Organization onboarding and user administration is authorized** (owner,
+2026-08-20). A unique organization `slug` replaces the UUID at sign-in; user administration
+inside the tenant covers list, invite, role change, block, reactivate, and soft-delete, all
+behind permission codes. Invitation tokens are single-use, hashed, and expiring; deactivation
+revokes refresh sessions in the same transaction.
 
-Do not begin post-Delivery-11 product functionality before this verification layer is accepted.
-Real providers, production data, deployment automation, and Delivery 12 onward each require
-separate authorization. Do not implement future-delivery behavior opportunistically, even when
+Out of scope, and still requiring separate authorization: public self-service organization
+signup, billing, SSO, password recovery by e-mail, cross-organization users, real providers,
+and production data. Do not implement future-delivery behavior opportunistically, even when
 it looks like a small addition.
 
 ### 0.4 Never suppress a failing gate
