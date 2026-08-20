@@ -386,8 +386,8 @@ describe('Delivery 12 invitation lifecycle', () => {
 
     const audits = await pool.query(
       `SELECT action, new_data FROM audit_logs
-       WHERE organization_id = $1 AND action = 'user.invited'`,
-      [ORGANIZATION_ID],
+       WHERE organization_id = $1 AND action = 'user.invited' AND entity_id = $2`,
+      [ORGANIZATION_ID, invited.body.user.id],
     );
     assert.equal(audits.rows.length, 1);
     const serialized = JSON.stringify(audits.rows);
@@ -429,6 +429,7 @@ describe('Delivery 12 invitation lifecycle', () => {
     } finally {
       await pool.query('DELETE FROM refresh_sessions WHERE user_id = $1', [internId]);
       await pool.query('DELETE FROM user_roles WHERE user_id = $1', [internId]);
+      await pool.query('DELETE FROM audit_logs WHERE user_id = $1', [internId]);
       await pool.query('DELETE FROM users WHERE id = $1', [internId]);
     }
   });
