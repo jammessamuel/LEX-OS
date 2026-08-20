@@ -64,6 +64,26 @@ export type DomainAuditEvent =
       newData: { count: number };
     })
   | (DomainAuditBase & {
+      action: 'user.listed';
+      entityType: 'user';
+      newData: { count: number };
+    })
+  | (DomainAuditBase & {
+      action: 'user.invited';
+      entityType: 'user';
+      newData: { roleCount: number };
+    })
+  | (DomainAuditBase & {
+      action: 'user.invitation.accepted';
+      entityType: 'user';
+      newData: { activated: true };
+    })
+  | (DomainAuditBase & {
+      action: 'user.invitation.revoked';
+      entityType: 'user';
+      newData: { revoked: true };
+    })
+  | (DomainAuditBase & {
       action: 'case.created';
       entityType: 'case';
       newData: CaseAuditSnapshot;

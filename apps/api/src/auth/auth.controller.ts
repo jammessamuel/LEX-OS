@@ -18,6 +18,8 @@ import { getRequestContext } from '../observability/request-context.js';
 import { REFRESH_COOKIE_NAME } from './auth.constants.js';
 import type { AuthenticatedRequest } from './authenticated-request.js';
 import { AuthService, type IssuedAuthentication } from './auth.service.js';
+import { InvitationsService } from '../users/invitations.service.js';
+import { AcceptInvitationRequestDto } from './dto/accept-invitation-request.dto.js';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto.js';
 import { LoginRequestDto } from './dto/login-request.dto.js';
 import { Public } from './public.decorator.js';
@@ -28,7 +30,24 @@ export class AuthController {
   constructor(
     @Inject(RUNTIME_CONFIG) private readonly config: RuntimeConfig,
     private readonly auth: AuthService,
+    private readonly invitations: InvitationsService,
   ) {}
+
+  /**
+   * Aceite de convite. Publico por necessidade: quem aceita ainda nao tem sessao, e o token
+   * e a unica prova que ele apresenta. O limite e mais apertado que o do login porque aqui
+   * o segredo e adivinhavel por forca bruta em tese, ainda que sejam 256 bits.
+   */
+  @Public()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('invitations/accept')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Aceita um convite definindo a senha e ativando o acesso.' })
+  @ApiNoContentResponse()
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  async acceptInvitation(@Body() input: AcceptInvitationRequestDto): Promise<void> {
+    await this.invitations.accept(input.token, input.password, getRequestContext() ?? {});
+  }
 
   @Public()
   @Throttle({ default: { limit: 20, ttl: 60_000 } })

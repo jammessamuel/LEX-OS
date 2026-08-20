@@ -108,6 +108,39 @@ An unknown slug and a wrong password are deliberately indistinguishable. The loo
 
 Public self-service organization discovery and signup remain deferred. The fictional seed password comes from `SEED_ADMIN_PASSWORD`; it must not be copied into source, documentation, logs, or committed fixtures.
 
+## Invitations
+
+| Method | Path                              | Auth       | Permission     | Purpose                                     |
+| ------ | --------------------------------- | ---------- | -------------- | ------------------------------------------- |
+| POST   | `/api/v1/users/invitations`       | Bearer JWT | `users.manage` | Invites a person and returns the token once |
+| GET    | `/api/v1/users/invitations`       | Bearer JWT | `users.manage` | Lists invitations still open                |
+| DELETE | `/api/v1/users/invitations/:id`   | Bearer JWT | `users.manage` | Revokes an invitation not yet accepted      |
+| POST   | `/api/v1/auth/invitations/accept` | Public     | —              | Sets the password and activates the access  |
+
+Inviting creates the user with status `INVITED` and a password hash of an unreachable value, so
+an attempt to sign in before accepting fails in the normal verification path rather than in a
+special case. The invitation stores only a SHA-256 hash of a 256-bit opaque token; the clear-text
+token is returned **once**, in the creation response, and never again — not in a later read, not
+in a log, not in the audit trail. Until the ADR-013 e-mail adapter exists, the administrator
+delivers it out of band; see [ADR-014](../decisions/ADR-014-fronteira-de-identidade-e-acesso.md),
+item 2.
+
+Roles supplied at invitation must be global or owned by the acting tenant **and already held by
+the inviter**. Without that second condition, inviting would be an privilege-escalation path: any
+account with `users.manage` could mint an administrator. The check is a database query, not a
+list held in memory.
+
+Accepting is public because the person has no session yet and the token is the only proof
+presented. Every refusal returns the same `INVITATION_INVALID` — unknown, expired, already used,
+and revoked are indistinguishable. Single use is enforced by the database: the acceptance updates
+the row with the expected state in the `WHERE` clause, so two concurrent requests carrying the
+same token contend on that clause and only one changes a row. The password minimum is 12
+characters here rather than the 8 accepted at sign-in, because this is the only moment a password
+is created and raising the floor cannot lock out anyone who already has access.
+
+An invitation from another tenant returns 404 on revocation, the same as one that does not exist:
+the response never confirms that an identifier is real somewhere else.
+
 ## Session lifecycle
 
 Successful login verifies the Argon2id hash, records `last_login_at`, creates a refresh family, appends a safe audit event, and returns a short-lived HS256 access JWT. The JWT contains only user, organization, session, and token-type identifiers and is restricted by issuer, audience, algorithm, and expiry.

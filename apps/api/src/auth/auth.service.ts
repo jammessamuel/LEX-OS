@@ -1,22 +1,23 @@
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import type { RuntimeConfig } from '@lex-os/config';
 import { withTransaction } from '@lex-os/database';
 import { JwtService } from '@nestjs/jwt';
-import argon2 from 'argon2';
 
 import { AuditService } from '../audit/audit.service.js';
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
 import { DatabaseService } from '../database/database.service.js';
 import { ApiException } from '../http/api-exception.js';
 import type { ActorContext } from './actor-context.js';
-import {
-  ACCESS_TOKEN_AUDIENCE,
-  ACCESS_TOKEN_ISSUER,
-  REFRESH_TOKEN_BYTES,
-} from './auth.constants.js';
+import { ACCESS_TOKEN_AUDIENCE, ACCESS_TOKEN_ISSUER } from './auth.constants.js';
 import { AuthRepository } from './auth.repository.js';
+import {
+  dummyPasswordHash,
+  hashOpaqueToken,
+  newOpaqueToken,
+  verifyPassword,
+} from './credential.js';
 import type { AuthTokenResponseDto } from './dto/auth-token-response.dto.js';
 import type { LoginRequestDto } from './dto/login-request.dto.js';
 import { LoginAttemptService } from './login-attempt.service.js';
@@ -33,22 +34,6 @@ export interface IssuedAuthentication {
 }
 
 type LoginUser = NonNullable<Awaited<ReturnType<AuthRepository['findLoginUserBySlug']>>>;
-
-function hashRefreshToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex');
-}
-
-function newRefreshToken(): string {
-  return randomBytes(REFRESH_TOKEN_BYTES).toString('base64url');
-}
-
-async function verifyPassword(passwordHash: string, password: string): Promise<boolean> {
-  try {
-    return await argon2.verify(passwordHash, password);
-  } catch {
-    return false;
-  }
-}
 
 function optionalAuditMetadata(metadata: RequestAuditMetadata) {
   return {
@@ -98,12 +83,7 @@ export class AuthService {
     private readonly attempts: LoginAttemptService,
     private readonly audit: AuditService,
   ) {
-    this.#dummyPasswordHash = argon2.hash('lex-os-invalid-credential-comparison', {
-      type: argon2.argon2id,
-      memoryCost: 19_456,
-      timeCost: 2,
-      parallelism: 1,
-    });
+    this.#dummyPasswordHash = dummyPasswordHash();
   }
 
   async login(
@@ -149,7 +129,7 @@ export class AuthService {
     }
 
     await this.attempts.clear(input.organizationSlug, input.email, clientIp);
-    const refreshToken = newRefreshToken();
+    const refreshToken = newOpaqueToken();
     const occurredAt = new Date();
     const refreshExpiresAt = new Date(
       occurredAt.getTime() + this.config.authentication.refreshTokenTtlSeconds * 1_000,
@@ -173,7 +153,7 @@ export class AuthService {
         organizationId: user.organizationId,
         userId: user.id,
         tokenFamilyId: randomUUID(),
-        tokenHash: hashRefreshToken(refreshToken),
+        tokenHash: hashOpaqueToken(refreshToken),
         expiresAt: refreshExpiresAt,
       });
       await this.audit.recordAuthenticationInTransaction(transaction, {
@@ -202,7 +182,7 @@ export class AuthService {
       throw this.#invalidSession();
     }
 
-    const nextRefreshToken = newRefreshToken();
+    const nextRefreshToken = newOpaqueToken();
     const nextSessionId = randomUUID();
     const occurredAt = new Date();
     const refreshExpiresAt = new Date(
@@ -211,7 +191,7 @@ export class AuthService {
     const rotation = await withTransaction(this.database.client, async (transaction) => {
       const session = await this.repository.findRefreshSessionByHash(
         transaction,
-        hashRefreshToken(currentRefreshToken),
+        hashOpaqueToken(currentRefreshToken),
       );
 
       if (session === null) {
@@ -292,7 +272,7 @@ export class AuthService {
         organizationId: session.organizationId,
         userId: session.userId,
         tokenFamilyId: session.tokenFamilyId,
-        tokenHash: hashRefreshToken(nextRefreshToken),
+        tokenHash: hashOpaqueToken(nextRefreshToken),
         expiresAt: refreshExpiresAt,
       });
       await this.audit.recordAuthenticationInTransaction(transaction, {

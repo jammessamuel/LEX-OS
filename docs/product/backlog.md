@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-20 · Entrega 11 aceita; Entrega 12 iniciada
+**Última atualização:** 2026-08-20 · convite entregue; ADR-014 registra o que ficou na mesa
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                                                            | Detalhe                                                                                                                |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Entrega 12 — Onboarding do escritório e administração de usuários | Autorizada pela sociedade em 2026-08-20. Fatia 1 (slug na entrada) pronta. Faltam convite, papéis, bloqueio e as telas |
+| Cartão                                                            | Detalhe                                                                                             |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Entrega 12 — Onboarding do escritório e administração de usuários | Autorizada pela sociedade em 2026-08-20. Slug e convite prontos. Faltam papéis, bloqueio e as telas |
 
 ---
 
@@ -67,10 +67,11 @@ implementação futura; não autorizam, por si só, o início de uma nova entreg
 
 Nenhum é código. Cada um trava trabalho abaixo dele.
 
-| Cartão                         | Registro | Trava                                    |
-| ------------------------------ | -------- | ---------------------------------------- |
-| Aprovar a fundação de design   | —        | Nada: já é possível construir em cima    |
-| Família tipográfica definitiva | —        | Exige licença e teste em documento denso |
+| Cartão                           | Registro | Trava                                                                        |
+| -------------------------------- | -------- | ---------------------------------------------------------------------------- |
+| Fronteira de identidade e acesso | ADR-014  | Oito pendências registradas. As duas primeiras dependem do adapter de e-mail |
+| Aprovar a fundação de design     | —        | Nada: já é possível construir em cima                                        |
+| Família tipográfica definitiva   | —        | Exige licença e teste em documento denso                                     |
 
 ---
 
@@ -90,6 +91,23 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 ## Feito
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
+
+- **Entrega 12, fatia 2 — o escritório convida sozinho** — o ciclo convidar → aceitar → entrar
+  existe de ponta a ponta. O token é opaco de 256 bits, guardado só em hash, devolvido **uma
+  única vez** na resposta e nunca em log ou auditoria. O uso único é garantido pelo banco, não
+  por checagem prévia: o aceite atualiza a linha com o estado esperado no `where`, então dois
+  pedidos com o mesmo token disputam a cláusula e só um altera. Toda recusa diz a mesma coisa —
+  inexistente, expirado, usado e revogado são indistinguíveis. Convidar não é caminho de
+  escalada: só se concede papel que quem convida já tem, verificado por consulta. A senha exige
+  doze caracteres no aceite, e não os oito da entrada, porque é o único momento em que dá para
+  subir o piso sem trancar quem já entra. Onze testes de integração, incluindo isolamento entre
+  escritórios na listagem e na revogação.
+- **ADR-014 — o que está ficando na mesa** — oito pendências de identidade registradas com o
+  que destrava cada uma: senha esquecida sem caminho, convite que viaja fora do sistema,
+  ausência de segundo fator e de entrada federada, escritório que não se cadastra sozinho, nome
+  curto imutável, pessoa presa a um escritório, e o último administrador que pode se trancar do
+  lado de fora. Duas coisas que pareciam pendência não são, e o registro diz por quê: bloqueio e
+  troca de papel valem na requisição seguinte, porque o guard reconsulta o banco a cada chamada.
 
 - **Entrega 12, fatia 1 — o escritório tem nome** — entrar deixou de exigir um UUID colado.
   A organização ganhou um `slug` único e imutável, com a mesma forma validada no DTO e numa
