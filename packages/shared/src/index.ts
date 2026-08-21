@@ -25,6 +25,19 @@ export type {
 } from './knowledge.js';
 
 export { emailTemplates, RecordingEmailProvider, renderEmail } from './email.js';
+
+export {
+  decodeBase32,
+  decryptSecret,
+  encodeBase32,
+  encryptSecret,
+  newRecoveryCodes,
+  newTotpSecret,
+  totpCodeAt,
+  totpStepAt,
+  totpUri,
+  verifyTotp,
+} from './totp.js';
 export type {
   EmailDeliveryResult,
   EmailMessage,

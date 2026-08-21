@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-20 · Entrega 13 completa
+**Última atualização:** 2026-08-20 · Entrega 14 aberta: segundo fator
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                                                | Detalhe                                                                                                                   |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Entrega 13 — Adapter de e-mail e recuperação de senha | Autorizada pela sociedade em 2026-08-20, resolvendo os itens 1 e 2 da ADR-014. Escopo completo. Aceita quando a CI fechar |
+| Cartão                              | Detalhe                                                                                                                              |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Entrega 14 — Segundo fator com TOTP | Autorizada pela sociedade em 2026-08-20, resolvendo o item 3 da ADR-014. Primitiva pronta; faltam schema, inscrição, entrada e telas |
 
 ---
 
@@ -92,6 +92,17 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 ## Feito
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
+
+- **Entrega 13 aceita** — adapter de e-mail, caixa de saída, recuperação de senha e as telas,
+  com a CI verde em `e58c6de`.
+- **Entrega 14, fatia 1 — a primitiva do segundo fator** — RFC 6238 sobre `node:crypto`, sem
+  dependência: o algoritmo inteiro cabe em algumas dezenas de linhas, e uma biblioteca aqui
+  seria superfície de cadeia de suprimento sem ganho. Conferida contra os vetores de referência
+  da própria RFC, que é o que impede um erro de deslocamento no truncamento aparecer só como
+  "meu aplicativo não funciona". A comparação é de tempo constante e sem curto-circuito — sair
+  no primeiro acerto revelaria pelo tempo qual passo casou. O segredo é cifrado com AES-256-GCM
+  antes de tocar o banco: um despejo não pode entregar o segundo fator, senão o fator adicional
+  é encenação.
 
 - **Entrega 13, fatia 3 — o e-mail sai de verdade** — em desenvolvimento a mensagem chega no
   Mailpit em `localhost:8025`, e ver isso vale mais que acreditar num teste. O adaptador SMTP

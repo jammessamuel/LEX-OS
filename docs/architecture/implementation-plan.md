@@ -1,6 +1,6 @@
 # Incremental implementation plan
 
-**Status:** Delivery 12 accepted; Delivery 13 authorized
+**Status:** Delivery 13 accepted; Delivery 14 authorized
 
 **Last updated:** 2026-08-20
 
@@ -333,6 +333,46 @@ production relay contract, and anything about deliverability. Those are separate
 - the audit record carries no body, no token, and no password;
 - the local flow is exercised end to end against Mailpit, and the tenant-isolation negative
   tests of the cross-delivery matrix cover request, reset, and resend.
+
+## Delivery 14 — Second factor with TOTP
+
+Authorized by the owner on 2026-08-20, resolving item 3 of
+[ADR-014](../decisions/ADR-014-fronteira-de-identidade-e-acesso.md). A whole legal archive
+behind one password is the first thing a security review asks about, and the decision recorded
+there is explicit: our own TOTP, never delegated to an identity provider, because a second
+factor that exists only for the clients who happen to have an IdP is not a control — it is an
+exception to explain in every sale.
+
+**Scope**
+
+- RFC 6238 TOTP in `packages/shared`: HMAC-SHA1, 30-second step, six digits, with a one-step
+  window on each side for clock drift. No dependency — the algorithm is thirty lines over
+  `node:crypto`, and a library here would be a supply-chain surface for no gain;
+- **the shared secret is encrypted at rest** with AES-256-GCM under a key from configuration.
+  A database dump must not hand over the second factor; storing it in clear text would make
+  the whole delivery theatre;
+- enrolment: generate, present as an `otpauth://` URI, and activate **only after** the person
+  proves a valid code. A secret that activates without proof locks people out;
+- recovery codes issued once at activation, single-use, stored only as hashes — the same
+  mechanics as the invitation token;
+- sign-in asks for the code as a second step, and the failed-attempt counter covers it;
+- the firm can require the second factor for everyone, and the person can enable it alone.
+
+**Out of scope** — WebAuthn, SMS, and delegation to an identity provider (item 4).
+
+**Acceptance**
+
+- a code is accepted once and refused on replay inside the same step;
+- a code from the previous or next step is accepted, and one two steps away is refused;
+- the stored secret is unreadable without the configured key, proven by a test that inspects
+  the column;
+- enrolment cannot complete without a valid code, and a second enrolment cannot silently
+  replace an active secret;
+- a recovery code works once and only once, and using one is audited;
+- brute force on the code is counted and blocked by the same Redis counter as the password;
+- audit records enrolment, activation, and each verification outcome, never the secret, the
+  code, or a recovery code;
+- the tenant-isolation negative tests cover enrolment and verification.
 
 ## Governed follow-up increments
 

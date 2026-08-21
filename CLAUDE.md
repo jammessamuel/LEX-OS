@@ -55,18 +55,18 @@ Approval for one commit is not standing approval for the next.
 
 ### 0.3 Respect the delivery boundary
 
-The latest accepted checkpoint is **Delivery 12 — Organization onboarding and user
-administration**, accepted 2026-08-20 with every mandatory CI job green on `main`.
+The latest accepted checkpoint is **Delivery 13 — E-mail adapter and password recovery**,
+accepted 2026-08-20 with every mandatory CI job green on `main`.
 
-**Delivery 13 — E-mail adapter and password recovery is authorized** (owner, 2026-08-20),
-resolving ADR-014 items 1 and 2. An `EmailProvider` contract with a deterministic mock and an
-SMTP adapter; sending happens in the worker through a queued job, never in an HTTP handler;
-password recovery reuses the invitation mechanism — single-use hashed token with expiry — and
-revokes every refresh session on reset. Audit records the send without body, token or password.
+**Delivery 14 — Second factor with TOTP is authorized** (owner, 2026-08-20), resolving ADR-014
+item 3. Our own RFC 6238 TOTP, never delegated to an identity provider. The shared secret is
+encrypted at rest with AES-256-GCM; enrolment activates only after a valid code proves it;
+recovery codes are single-use and stored hashed. Optional per person, requirable per firm.
 
-Out of scope, and still requiring separate authorization: the three ADR-013 notification
-triggers, a production relay, real providers, and production data. Do not implement
-future-delivery behavior opportunistically, even when it looks like a small addition.
+Out of scope, and still requiring separate authorization: WebAuthn, SMS, federated sign-in,
+a production mail relay, the three ADR-013 notification triggers, real providers, and
+production data. Do not implement future-delivery behavior opportunistically, even when it
+looks like a small addition.
 
 ### 0.4 Never suppress a failing gate
 
