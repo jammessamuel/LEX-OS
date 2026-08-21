@@ -18,8 +18,9 @@ const organizationSlug = ref(
   typeof route.query.escritorio === 'string' ? route.query.escritorio : saved.organizationSlug,
 );
 const keepSignedIn = ref(saved.keepSignedIn);
+const savePassword = ref(saved.savePassword);
 const email = ref(saved.email);
-const password = ref('');
+const password = ref(saved.password);
 const submitting = ref(false);
 const failure = ref<ApiError | null>(null);
 
@@ -47,7 +48,12 @@ async function submit(): Promise<void> {
     });
     // Guardado só depois de entrar: lembrar um e-mail que nem existe não ajuda ninguém.
     // A senha nunca entra aqui — quem a guarda é o gerenciador do navegador.
-    rememberSignIn({ ...credentials, keepSignedIn: keepSignedIn.value });
+    rememberSignIn({
+      ...credentials,
+      keepSignedIn: keepSignedIn.value,
+      savePassword: savePassword.value,
+      password: password.value,
+    });
     await router.replace(destinationAfterLogin());
   } catch (error) {
     failure.value =
@@ -146,6 +152,17 @@ async function submit(): Promise<void> {
             Manter conectado neste dispositivo
             <span class="keep__hint">
               Deixe desmarcado em computador compartilhado: a sessão termina ao fechar o navegador.
+            </span>
+          </span>
+        </label>
+
+        <label class="keep">
+          <input v-model="savePassword" type="checkbox" name="save-password" />
+          <span class="keep__text">
+            Guardar também a senha neste dispositivo
+            <span class="keep__hint">
+              Ela fica legível para quem tiver acesso a este computador ou ao navegador. Em máquina
+              compartilhada, prefira deixar o navegador guardar por você.
             </span>
           </span>
         </label>

@@ -12,7 +12,11 @@ export type AuthenticationAuditAction =
   | 'auth.refresh.revoked'
   | 'auth.refresh.succeeded'
   | 'auth.password.reset.requested'
-  | 'auth.password.reset.completed';
+  | 'auth.password.reset.completed'
+  | 'auth.second_factor.enrolled'
+  | 'auth.second_factor.activated'
+  | 'auth.second_factor.rejected'
+  | 'auth.second_factor.disabled';
 
 export interface AuthenticationAuditEvent {
   organizationId: string;

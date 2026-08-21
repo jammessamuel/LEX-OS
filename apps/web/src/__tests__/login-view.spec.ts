@@ -80,14 +80,61 @@ describe('LoginView', () => {
     delete mocks.query.escritorio;
   });
 
-  it('guarda escritório e e-mail no dispositivo, e nunca a senha', async () => {
+  it('guarda escritório e e-mail, e não guarda a senha sem a opção marcada', async () => {
     await submitLogin();
 
     const saved = JSON.parse(window.localStorage.getItem('lex-os.entrada') ?? '{}');
     expect(saved.organizationSlug).toBe('souza-cabral');
     expect(saved.email).toBe('pessoa@exemplo.test');
-    // A senha fica com o gerenciador do navegador, nunca no nosso armazenamento.
+    // Sem marcar, a senha continua fora: guardar por padrão seria decidir pela pessoa.
     expect(JSON.stringify(saved)).not.toContain('senha-ficticia');
+  });
+
+  it('guarda a senha quando a pessoa pede, e devolve no próximo acesso', async () => {
+    const wrapper = mount(LoginView);
+    await wrapper.get('input[name="save-password"]').setValue(true);
+    await wrapper.get('#organizationSlug').setValue('souza-cabral');
+    await wrapper.get('#email').setValue('pessoa@exemplo.test');
+    await wrapper.get('#password').setValue('senha-ficticia');
+    await wrapper.get('form').trigger('submit');
+    await flushPromises();
+
+    const saved = JSON.parse(window.localStorage.getItem('lex-os.entrada') ?? '{}');
+    expect(saved.savePassword).toBe(true);
+    expect(saved.password).toBe('senha-ficticia');
+
+    const reopened = mount(LoginView);
+    expect((reopened.get('#password').element as HTMLInputElement).value).toBe('senha-ficticia');
+  });
+
+  it('desmarcar apaga a senha guardada na hora', async () => {
+    window.localStorage.setItem(
+      'lex-os.entrada',
+      JSON.stringify({
+        organizationSlug: 'souza-cabral',
+        email: 'pessoa@exemplo.test',
+        savePassword: true,
+        password: 'senha-ficticia',
+      }),
+    );
+
+    const wrapper = mount(LoginView);
+    expect((wrapper.get('#password').element as HTMLInputElement).value).toBe('senha-ficticia');
+
+    await wrapper.get('input[name="save-password"]').setValue(false);
+    await wrapper.get('form').trigger('submit');
+    await flushPromises();
+
+    const saved = JSON.parse(window.localStorage.getItem('lex-os.entrada') ?? '{}');
+    expect(saved.savePassword).toBe(false);
+    expect(saved.password).toBe('');
+  });
+
+  it('avisa na tela o que guardar a senha custa', async () => {
+    const wrapper = mount(LoginView);
+
+    expect(wrapper.text()).toContain('Guardar também a senha neste dispositivo');
+    expect(wrapper.text()).toContain('legível para quem tiver acesso a este computador');
   });
 
   it('preenche o formulário na volta, deixando só a senha para digitar', async () => {

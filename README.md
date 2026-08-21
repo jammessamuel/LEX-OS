@@ -198,6 +198,7 @@ Estes itens estão registrados de propósito. Nenhum deles autoriza a Entrega 12
 - o ensaio de recuperação prova mecânica, e só isso: não é política de backup de produção, nem define RPO, RTO, residência regional ou legal hold, e roda apenas sobre fixture fictício;
 - busca vetorial é exata, sem índice ANN, até um modelo/dimensão de produção ser escolhido;
 - os hooks de Git rodam formato e lint antes do commit e aplicam a política de mensagem; os demais gates obrigatórios rodam na CI;
+- a tela de entrada oferece guardar a senha neste dispositivo, e ela fica em texto puro no armazenamento do navegador; antes de dado real de cliente essa opção precisa sair ou virar decisão por escritório;
 - o demo hospedado contém somente dados fictícios; não é ambiente de produção jurídica.
 
 O marco aceito continua a **Entrega 10** até a matriz completa da Entrega 11 passar na `main`. A matriz de verificação está em [`docs/operations/delivery-11-verification-matrix.md`](./docs/operations/delivery-11-verification-matrix.md), o quadro de trabalho em [`docs/product/backlog.md`](./docs/product/backlog.md), e os bloqueios operacionais também no [runbook](./docs/operations/runbook.md).

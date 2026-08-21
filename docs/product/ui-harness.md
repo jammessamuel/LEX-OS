@@ -162,9 +162,10 @@ e-mail, a escolha de continuar conectado e a última tela. Toda leitura e escrit
 janela anônima e armazenamento bloqueado por política são situações normais, e nenhuma pode
 impedir alguém de entrar.
 
-Senha nunca entra ali. Quem guarda senha é o gerenciador do navegador, e o que o habilita é o
-formulário declarar `name` e `autocomplete` (`username`, `current-password`,
-`new-password`) nos campos.
+A senha entra ali **apenas** se a pessoa marcar a opção na entrada — decisão do dono do
+produto, registrada como bloqueio de produção no README. O caminho recomendado continua sendo
+o gerenciador do navegador, habilitado pelo formulário declarar `name` e `autocomplete`
+(`username`, `current-password`, `new-password`) nos campos.
 
 ## 7. Regras que reprovam a revisão
 

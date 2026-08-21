@@ -19,7 +19,7 @@ return count
  * Escopo do contador. Separar as contagens importa: quem erra a senha e quem pede
  * redefinição são abusos diferentes, e somá-los faria um bloquear o outro.
  */
-export type AttemptScope = 'login' | 'reset';
+export type AttemptScope = 'login' | 'reset' | 'totp';
 
 /**
  * Três pedidos de redefinição por hora, por identidade — não por IP.
@@ -29,6 +29,14 @@ export type AttemptScope = 'login' | 'reset';
  * variar, e é ela que o contador enxerga.
  */
 const RESET_REQUEST_LIMIT = 3;
+
+/**
+ * Seis dígitos são um milhão de possibilidades, e a janela de trinta segundos aceita três
+ * passos: sem limite, força bruta paciente chega lá. Cinco tentativas por dez minutos, por
+ * identidade, deixa o engano de digitação passar e a varredura, não.
+ */
+const TOTP_ATTEMPT_LIMIT = 5;
+const TOTP_ATTEMPT_WINDOW_SECONDS = 600;
 const RESET_REQUEST_WINDOW_SECONDS = 3_600;
 
 @Injectable()
@@ -110,11 +118,13 @@ export class LoginAttemptService implements OnModuleDestroy {
    * identificador deixaria sem freio a tentativa contra um escritorio inexistente.
    */
   #limitFor(scope: AttemptScope): number {
-    return scope === 'login' ? this.#limit : RESET_REQUEST_LIMIT;
+    if (scope === 'login') return this.#limit;
+    return scope === 'totp' ? TOTP_ATTEMPT_LIMIT : RESET_REQUEST_LIMIT;
   }
 
   #windowFor(scope: AttemptScope): number {
-    return scope === 'login' ? this.#windowSeconds : RESET_REQUEST_WINDOW_SECONDS;
+    if (scope === 'login') return this.#windowSeconds;
+    return scope === 'totp' ? TOTP_ATTEMPT_WINDOW_SECONDS : RESET_REQUEST_WINDOW_SECONDS;
   }
 
   #key(organizationSlug: string, email: string, clientIp: string, scope: AttemptScope): string {
