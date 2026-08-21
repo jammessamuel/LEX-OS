@@ -1,8 +1,21 @@
-import { Body, Controller, HttpCode, HttpStatus, Inject, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Inject,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
 import type { RuntimeConfig } from '@lex-os/config';
 import {
   ApiBearerAuth,
   ApiCookieAuth,
+  ApiConflictResponse,
+  ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
@@ -27,6 +40,13 @@ import {
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto.js';
 import { LoginRequestDto } from './dto/login-request.dto.js';
 import { PasswordResetService } from './password-reset.service.js';
+import { SecondFactorCodeDto } from './dto/second-factor-request.dto.js';
+import {
+  SecondFactorActivatedDto,
+  SecondFactorEnrolmentDto,
+  SecondFactorStatusDto,
+} from './dto/second-factor-response.dto.js';
+import { SecondFactorService } from './second-factor.service.js';
 import { Public } from './public.decorator.js';
 
 @ApiTags('Autenticação')
@@ -37,7 +57,15 @@ export class AuthController {
     private readonly auth: AuthService,
     private readonly invitations: InvitationsService,
     private readonly passwordReset: PasswordResetService,
+    private readonly secondFactor: SecondFactorService,
   ) {}
+
+  #actor(request: AuthenticatedRequest) {
+    if (request.actor === undefined) {
+      throw new Error('Authenticated actor was not attached by the access-token guard.');
+    }
+    return request.actor;
+  }
 
   /**
    * Pedido de redefinicao. Responde 204 sempre — endereco desconhecido, bloqueado ou ainda
@@ -180,5 +208,70 @@ export class AuthController {
       sameSite: 'strict',
       path: '/api/v1/auth',
     };
+  }
+
+  @Get('second-factor')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Informa se o segundo fator está ativo e quantos códigos restam.' })
+  @ApiOkResponse({ type: SecondFactorStatusDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  secondFactorStatus(@Req() request: AuthenticatedRequest) {
+    return this.secondFactor.status(this.#actor(request));
+  }
+
+  @Post('second-factor')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Começa o cadastro do segundo fator e devolve o segredo uma única vez.',
+    description:
+      'Nada é ativado aqui: o segredo fica guardado cifrado e só passa a valer depois que ' +
+      'um código do aplicativo provar que ele chegou. Ativar sem prova trancaria do lado de ' +
+      'fora quem começa o cadastro e desiste.',
+  })
+  @ApiCreatedResponse({ type: SecondFactorEnrolmentDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  @ApiConflictResponse({ type: ApiErrorEnvelopeDto })
+  beginSecondFactor(@Req() request: AuthenticatedRequest) {
+    return this.secondFactor.begin(this.#actor(request), getRequestContext() ?? {});
+  }
+
+  @Post('second-factor/activate')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Ativa o segundo fator e devolve os códigos de recuperação.' })
+  @ApiOkResponse({ type: SecondFactorActivatedDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  @ApiConflictResponse({ type: ApiErrorEnvelopeDto })
+  activateSecondFactor(@Req() request: AuthenticatedRequest, @Body() input: SecondFactorCodeDto) {
+    return this.secondFactor.activate(
+      this.#actor(request),
+      input.code,
+      request.ip ?? 'unknown',
+      getRequestContext() ?? {},
+    );
+  }
+
+  @Delete('second-factor')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Desliga o segundo fator, exigindo um código do aparelho atual.',
+    description:
+      'Sem essa prova, quem tomasse uma sessão aberta desligaria o segundo fator e teria a ' +
+      'conta inteira — ele protegeria apenas a porta da frente.',
+  })
+  @ApiNoContentResponse()
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  @ApiConflictResponse({ type: ApiErrorEnvelopeDto })
+  async disableSecondFactor(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: SecondFactorCodeDto,
+  ): Promise<void> {
+    await this.secondFactor.disable(
+      this.#actor(request),
+      input.code,
+      request.ip ?? 'unknown',
+      getRequestContext() ?? {},
+    );
   }
 }

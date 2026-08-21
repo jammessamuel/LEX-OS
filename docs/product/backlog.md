@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-20 · Entrega 14 aberta: segundo fator
+**Última atualização:** 2026-08-20 · inscrição do segundo fator entregue
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                              | Detalhe                                                                                                                              |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Entrega 14 — Segundo fator com TOTP | Autorizada pela sociedade em 2026-08-20, resolvendo o item 3 da ADR-014. Primitiva pronta; faltam schema, inscrição, entrada e telas |
+| Cartão                              | Detalhe                                                                                                                                                   |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Entrega 14 — Segundo fator com TOTP | Autorizada pela sociedade em 2026-08-20, resolvendo o item 3 da ADR-014. Primitiva, banco e inscrição prontos. Faltam a entrada em duas etapas e as telas |
 
 ---
 
@@ -92,6 +92,17 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 ## Feito
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
+
+- **Entrega 14, fatia 3 — a inscrição** — gerar, provar, ativar. Gerar não liga o fator: um
+  segredo que valesse na hora trancaria do lado de fora quem começa e desiste. Ativar exige um
+  código do aplicativo, e só então saem os dez códigos de recuperação, guardados em hash.
+  Desligar também exige código — sem essa prova, quem tomasse uma sessão aberta removeria o
+  segundo fator e teria a conta inteira. Onze testes de integração, incluindo o segredo cifrado
+  na coluna, os códigos que nunca aparecem em claro, e a força bruta barrada em cinco tentativas.
+- **Demo republicado** — front e API na mesma versão de novo. O front tinha subido sozinho e
+  quebrado a entrada por vinte minutos: o bundle novo mandava `organizationSlug` e a API
+  publicada ainda esperava `organizationId`. A ordem certa está registrada na memória do
+  projeto, junto com o `--scope` obrigatório da Vercel e o slug que a migração gerou.
 
 - **Entrega 13 aceita** — adapter de e-mail, caixa de saída, recuperação de senha e as telas,
   com a CI verde em `e58c6de`.

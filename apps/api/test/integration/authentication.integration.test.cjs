@@ -126,6 +126,8 @@ describe('Delivery 4 HTTP and authentication contract', () => {
       '/api/v1/auth/password-reset',
       '/api/v1/auth/password-reset/complete',
       '/api/v1/auth/refresh',
+      '/api/v1/auth/second-factor',
+      '/api/v1/auth/second-factor/activate',
       '/api/v1/cases',
       '/api/v1/cases/{caseId}/documents',
       '/api/v1/cases/{caseId}/files',

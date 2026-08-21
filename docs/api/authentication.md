@@ -250,6 +250,41 @@ password itself is left to the browser's own manager — the login form declares
 in `localStorage` would put it in clear text on disk, where any future script flaw reads it
 along with access to the whole firm's dossier.
 
+## Second factor
+
+| Method | Path                                  | Auth       | Purpose                                   |
+| ------ | ------------------------------------- | ---------- | ----------------------------------------- |
+| GET    | `/api/v1/auth/second-factor`          | Bearer JWT | Reports whether it is active              |
+| POST   | `/api/v1/auth/second-factor`          | Bearer JWT | Starts enrolment, returns the secret once |
+| POST   | `/api/v1/auth/second-factor/activate` | Bearer JWT | Activates and returns recovery codes      |
+| DELETE | `/api/v1/auth/second-factor`          | Bearer JWT | Disables, requiring a code                |
+
+RFC 6238 TOTP: HMAC-SHA1, thirty-second step, six digits, one step of drift accepted on each
+side. SHA-1 is what authenticator apps implement; changing it would break every one of them,
+and the strength comes from the secret and the window, not the hash.
+
+**Enrolment does not activate.** `POST` stores an encrypted secret and returns it once, with an
+`otpauth://` address for the QR. Activation is a second call that must carry a valid code —
+a secret that activated on generation would lock out anyone who starts enrolment and abandons
+it. Calling `POST` again before activation replaces the pending secret; after activation it
+returns 409, because moving to a new phone goes through disabling with a code that proves
+possession of the current one.
+
+**The secret is encrypted at rest** with AES-256-GCM under `SECOND_FACTOR_ENCRYPTION_KEY`,
+stored as `iv:tag:ciphertext`. A database dump must not hand over the second factor; a test
+inspects the column to prove the stored value does not contain the secret.
+
+Ten recovery codes are issued once at activation and stored only as hashes. Disabling deletes
+them along with the secret — a recovery code that outlived the factor it recovers would be a
+standing bypass.
+
+Wrong codes are counted by the same Redis counter as sign-in, under its own scope: five
+attempts per ten minutes per identity. Six digits over a thirty-second window yield to patient
+brute force without a limit, and mixing the count with the password counter would let one lock
+the other.
+
+Disabling is refused while the firm sets `requireSecondFactor`. Everything else is per person.
+
 ## Session lifecycle
 
 Successful login verifies the Argon2id hash, records `last_login_at`, creates a refresh family, appends a safe audit event, and returns a short-lived HS256 access JWT. The JWT contains only user, organization, session, and token-type identifiers and is restricted by issuer, audience, algorithm, and expiry.
