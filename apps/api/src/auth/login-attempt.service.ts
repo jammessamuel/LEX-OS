@@ -15,6 +15,22 @@ end
 return count
 `;
 
+/**
+ * Escopo do contador. Separar as contagens importa: quem erra a senha e quem pede
+ * redefinição são abusos diferentes, e somá-los faria um bloquear o outro.
+ */
+export type AttemptScope = 'login' | 'reset';
+
+/**
+ * Três pedidos de redefinição por hora, por identidade — não por IP.
+ *
+ * Contar por IP pareceria mais protetor e é pior: um escritório atrás de um único NAT teria
+ * uma pessoa esquecida bloqueando a banca inteira. A identidade é o que o atacante precisa
+ * variar, e é ela que o contador enxerga.
+ */
+const RESET_REQUEST_LIMIT = 3;
+const RESET_REQUEST_WINDOW_SECONDS = 3_600;
+
 @Injectable()
 export class LoginAttemptService implements OnModuleDestroy {
   readonly #client: RedisClientType;
@@ -43,13 +59,18 @@ export class LoginAttemptService implements OnModuleDestroy {
     }
   }
 
-  async assertAllowed(organizationSlug: string, email: string, clientIp: string): Promise<void> {
-    const key = this.#key(organizationSlug, email, clientIp);
+  async assertAllowed(
+    organizationSlug: string,
+    email: string,
+    clientIp: string,
+    scope: AttemptScope = 'login',
+  ): Promise<void> {
+    const key = this.#key(organizationSlug, email, clientIp, scope);
     const count = await this.#redisOperation(async (client) =>
       Number((await client.get(key)) ?? 0),
     );
 
-    if (count >= this.#limit) {
+    if (count >= this.#limitFor(scope)) {
       throw new ApiException(
         HttpStatus.TOO_MANY_REQUESTS,
         'AUTH_RATE_LIMITED',
@@ -58,18 +79,28 @@ export class LoginAttemptService implements OnModuleDestroy {
     }
   }
 
-  async recordFailure(organizationSlug: string, email: string, clientIp: string): Promise<void> {
-    const key = this.#key(organizationSlug, email, clientIp);
+  async recordFailure(
+    organizationSlug: string,
+    email: string,
+    clientIp: string,
+    scope: AttemptScope = 'login',
+  ): Promise<void> {
+    const key = this.#key(organizationSlug, email, clientIp, scope);
     await this.#redisOperation((client) =>
       client.eval(incrementScript, {
         keys: [key],
-        arguments: [String(this.#windowSeconds)],
+        arguments: [String(this.#windowFor(scope))],
       }),
     );
   }
 
-  async clear(organizationSlug: string, email: string, clientIp: string): Promise<void> {
-    const key = this.#key(organizationSlug, email, clientIp);
+  async clear(
+    organizationSlug: string,
+    email: string,
+    clientIp: string,
+    scope: AttemptScope = 'login',
+  ): Promise<void> {
+    const key = this.#key(organizationSlug, email, clientIp, scope);
     await this.#redisOperation((client) => client.del(key));
   }
 
@@ -78,11 +109,19 @@ export class LoginAttemptService implements OnModuleDestroy {
    * cliente varia, e existe antes de sabermos se ha escritorio por tras dele. Chavear pelo
    * identificador deixaria sem freio a tentativa contra um escritorio inexistente.
    */
-  #key(organizationSlug: string, email: string, clientIp: string): string {
+  #limitFor(scope: AttemptScope): number {
+    return scope === 'login' ? this.#limit : RESET_REQUEST_LIMIT;
+  }
+
+  #windowFor(scope: AttemptScope): number {
+    return scope === 'login' ? this.#windowSeconds : RESET_REQUEST_WINDOW_SECONDS;
+  }
+
+  #key(organizationSlug: string, email: string, clientIp: string, scope: AttemptScope): string {
     const fingerprint = createHash('sha256')
       .update(`${organizationSlug}\u0000${email}\u0000${clientIp}`)
       .digest('hex');
-    return `auth:login:${fingerprint}`;
+    return `auth:${scope}:${fingerprint}`;
   }
 
   async #connectedClient(): Promise<RedisClientType> {

@@ -45,15 +45,23 @@ export class AuthController {
    * quem trabalha no escritorio, e o slug ja torna o escritorio adivinhavel.
    */
   @Public()
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('password-reset')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Pede a redefinição de senha, sem revelar se a conta existe.' })
+  @ApiOperation({
+    summary: 'Pede a redefinição de senha, sem revelar se a conta existe.',
+    description:
+      'Limitado a três pedidos por hora por identidade, em contador compartilhado no Redis. ' +
+      'Contar por IP bloquearia um escritório inteiro atrás de um único NAT.',
+  })
   @ApiNoContentResponse()
-  async requestPasswordReset(@Body() input: RequestPasswordResetDto): Promise<void> {
+  async requestPasswordReset(
+    @Body() input: RequestPasswordResetDto,
+    @Req() request: AuthenticatedRequest,
+  ): Promise<void> {
     await this.passwordReset.request(
       input.organizationSlug,
       input.email,
+      request.ip ?? 'unknown',
       getRequestContext() ?? {},
     );
   }

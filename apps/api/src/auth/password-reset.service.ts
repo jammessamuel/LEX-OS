@@ -8,6 +8,7 @@ import { DatabaseService } from '../database/database.service.js';
 import { ApiException } from '../http/api-exception.js';
 import { EmailOutboxRepository } from '../users/email-outbox.repository.js';
 import { hashOpaqueToken, hashPassword, newOpaqueToken } from './credential.js';
+import { LoginAttemptService } from './login-attempt.service.js';
 import { PasswordResetRepository } from './password-reset.repository.js';
 
 /**
@@ -26,6 +27,7 @@ export class PasswordResetService {
     private readonly repository: PasswordResetRepository,
     private readonly outbox: EmailOutboxRepository,
     private readonly audit: AuditService,
+    private readonly attempts: LoginAttemptService,
   ) {}
 
   /**
@@ -39,8 +41,14 @@ export class PasswordResetService {
   async request(
     organizationSlug: string,
     email: string,
+    clientIp: string,
     metadata: RequestAuditMetadata,
   ): Promise<void> {
+    // O contador vem antes da busca e conta todo pedido, não só o que encontra alguém:
+    // contar apenas os que acham transformaria o limite em oráculo de contas existentes.
+    await this.attempts.assertAllowed(organizationSlug, email, clientIp, 'reset');
+    await this.attempts.recordFailure(organizationSlug, email, clientIp, 'reset');
+
     const user = await this.repository.findResettableUser(organizationSlug, email);
     if (user === null) {
       return;

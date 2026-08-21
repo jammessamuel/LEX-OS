@@ -4,6 +4,7 @@ const { after, before, beforeEach, describe, it } = require('node:test');
 
 const { NestFactory } = require('@nestjs/core');
 const { Pool } = require('pg');
+const { createClient } = require('redis');
 const request = require('supertest');
 
 process.loadEnvFile(path.resolve(__dirname, '../../../../.env'));
@@ -29,6 +30,28 @@ if (databaseUrl === undefined || seedPassword === undefined) {
 }
 
 const pool = new Pool({ connectionString: databaseUrl });
+const redis = createClient({
+  password: process.env.REDIS_PASSWORD,
+  socket: { host: '127.0.0.1', port: Number(process.env.REDIS_PORT ?? 6379) },
+});
+redis.on('error', () => undefined);
+
+/**
+ * O contador de pedidos vive no Redis e e proposital: tres por hora por identidade. A suite
+ * excede isso de longe, entao ela limpa entre os casos — do mesmo jeito que o teste de
+ * autenticacao ja faz com o contador de login — e um caso proprio cobre o limite.
+ */
+async function clearResetCounters() {
+  let cursor = '0';
+  do {
+    const result = await redis.scan(cursor, { MATCH: 'auth:reset:*', COUNT: 100 });
+    cursor = result.cursor;
+    if (result.keys.length > 0) {
+      await redis.del(result.keys);
+    }
+  } while (cursor !== '0');
+}
+
 let app;
 let http;
 
@@ -94,11 +117,14 @@ before(async () => {
   configureHttpPlatform(app, loadRuntimeConfig());
   await app.init();
   http = app.getHttpServer();
+  await redis.connect();
 });
 
 after(async () => {
   await app?.close();
   await cleanup();
+  await clearResetCounters();
+  await redis.destroy();
   await pool.end();
 });
 
@@ -109,6 +135,7 @@ describe('Delivery 13 password recovery', () => {
       BLOCKED_ID,
     ]);
     await pool.query('DELETE FROM email_outbox WHERE user_id IN ($1, $2)', [MEMBER_ID, BLOCKED_ID]);
+    await clearResetCounters();
   });
 
   it('answers the same for an unknown, a blocked, and a real address', async () => {
@@ -223,6 +250,18 @@ describe('Delivery 13 password recovery', () => {
 
     assert.equal(expired.body.code, unknown.body.code);
     assert.equal(expired.body.message, unknown.body.message);
+  });
+
+  it('throttles by identity, not by address, so one forgetful person cannot lock the firm', async () => {
+    await requestReset(MEMBER_EMAIL).expect(204);
+    await requestReset(MEMBER_EMAIL).expect(204);
+    await requestReset(MEMBER_EMAIL).expect(204);
+    const blocked = await requestReset(MEMBER_EMAIL).expect(429);
+    assert.equal(blocked.body.code, 'AUTH_RATE_LIMITED');
+
+    // Outra identidade, do mesmo endereço de rede, continua passando: contar por IP
+    // bloquearia um escritório inteiro atrás de um único NAT.
+    await requestReset('outra-pessoa@lexos.invalid').expect(204);
   });
 
   it('audits the recovery without the token, the password, or the address', async () => {
