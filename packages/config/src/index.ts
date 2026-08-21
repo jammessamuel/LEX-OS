@@ -56,6 +56,13 @@ export interface RuntimeConfig {
     maxFilesPerRequest: number;
     allowedMimeTypes: readonly string[];
   };
+  mail: {
+    /** Servidor SMTP de saída. Em desenvolvimento, o Mailpit do Compose. */
+    host: string;
+    port: number;
+    /** Remetente das mensagens de identidade. Nenhum e-mail sai sem um remetente declarado. */
+    from: string;
+  };
 }
 
 const environments: readonly RuntimeEnvironment[] = ['development', 'production', 'test'];
@@ -245,6 +252,11 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
       maxFileBytes: integer(env, 'FILE_INTAKE_MAX_FILE_BYTES', 1_024, 1_073_741_824),
       maxFilesPerRequest: integer(env, 'FILE_INTAKE_MAX_FILES_PER_REQUEST', 1, 100),
       allowedMimeTypes: commaSeparatedAllowlist(env, 'FILE_INTAKE_ALLOWED_MIME_TYPES'),
+    },
+    mail: {
+      host: required(env, 'MAIL_HOST'),
+      port: integer(env, 'MAIL_PORT', 1, 65_535),
+      from: required(env, 'MAIL_FROM'),
     },
   };
 

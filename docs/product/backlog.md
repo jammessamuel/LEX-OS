@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-20 · Entrega 13 com as telas de recuperação
+**Última atualização:** 2026-08-20 · Entrega 13 completa
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                                                | Detalhe                                                                                                                                         |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Entrega 13 — Adapter de e-mail e recuperação de senha | Autorizada pela sociedade em 2026-08-20, resolvendo os itens 1 e 2 da ADR-014. Backend e telas prontos. Falta o adaptador SMTP contra o Mailpit |
+| Cartão                                                | Detalhe                                                                                                                   |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Entrega 13 — Adapter de e-mail e recuperação de senha | Autorizada pela sociedade em 2026-08-20, resolvendo os itens 1 e 2 da ADR-014. Escopo completo. Aceita quando a CI fechar |
 
 ---
 
@@ -92,6 +92,15 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 ## Feito
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
+
+- **Entrega 13, fatia 3 — o e-mail sai de verdade** — em desenvolvimento a mensagem chega no
+  Mailpit em `localhost:8025`, e ver isso vale mais que acreditar num teste. O adaptador SMTP
+  não trouxe dependência nova: fala o subconjunto que o Mailpit aceita, com assunto em palavra
+  codificada e corpo em base64 — o que resolve de uma vez acento, escape de ponto e limite de
+  linha. Ele recusa produção e recusa host que não seja local, as duas de forma estrutural, e
+  o comentário diz por quê: sem TLS e sem autenticação, apontá-lo a um relay externo por engano
+  de configuração vazaria mensagem em claro pela rede. O adaptador de produção entra junto com
+  a escolha do relay, que segue em aberto na ADR-014.
 
 - **Entrega 13, fatia 2 — as telas de recuperação** — "esqueci a senha" e "criar nova senha",
   as duas públicas. A confirmação do pedido é deliberadamente condicional — "se houver uma

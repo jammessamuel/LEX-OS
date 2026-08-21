@@ -19,6 +19,9 @@ function validEnvironment(overrides = {}) {
     DATABASE_USER: 'postgres',
     DEPENDENCY_TIMEOUT_MS: '2000',
     FILE_INTAKE_ALLOWED_MIME_TYPES: 'application/pdf,image/jpeg,image/png,text/plain',
+    MAIL_HOST: '127.0.0.1',
+    MAIL_PORT: '1025',
+    MAIL_FROM: 'nao-responda@lexos.invalid',
     FILE_INTAKE_MAX_FILE_BYTES: '26214400',
     FILE_INTAKE_MAX_FILES_PER_REQUEST: '10',
     LOG_LEVEL: 'info',
@@ -64,6 +67,17 @@ describe('loadRuntimeConfig', () => {
       'image/png',
       'text/plain',
     ]);
+  });
+
+  it('requires an outgoing mail server and a declared sender', () => {
+    // Nenhum e-mail sai sem remetente declarado, e a ausência aparece na inicialização em
+    // vez de virar uma mensagem recusada pelo servidor depois.
+    for (const missing of ['MAIL_HOST', 'MAIL_PORT', 'MAIL_FROM']) {
+      // Sobrescrever com vazio equivale a ausente para o leitor de configuração, e evita
+      // apagar chave calculada, que o lint recusa com razão.
+      const env = validEnvironment({ [missing]: '' });
+      assert.throws(() => loadRuntimeConfig(env), new RegExp(missing, 'u'));
+    }
   });
 
   it('uses the managed-platform port when PORT is provided', () => {

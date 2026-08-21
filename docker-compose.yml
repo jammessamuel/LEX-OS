@@ -19,6 +19,10 @@ x-runtime-environment: &runtime-environment
   DATABASE_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}
   DATABASE_SSL: 'false'
   REDIS_HOST: redis
+  # Dentro da rede do Compose o Mailpit atende pelo nome do servico, nao por 127.0.0.1.
+  MAIL_HOST: mailpit
+  MAIL_PORT: '1025'
+  MAIL_FROM: ${MAIL_FROM:-nao-responda@lexos.invalid}
   REDIS_PORT: 6379
   REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
   PROCESSING_QUEUE_PREFIX: ${PROCESSING_QUEUE_PREFIX:?PROCESSING_QUEUE_PREFIX is required}
@@ -194,6 +198,8 @@ services:
         condition: service_healthy
       minio-init:
         condition: service_completed_successfully
+      mailpit:
+        condition: service_healthy
     healthcheck:
       test: ['CMD', 'test', '-f', '/tmp/lex-os-worker-ready']
       interval: 5s

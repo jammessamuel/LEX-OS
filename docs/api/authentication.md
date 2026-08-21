@@ -213,6 +213,15 @@ table is not. The worker claims each row with the expected state in the `WHERE` 
 workers cannot deliver the same invitation twice. A row that exhausts its attempts becomes
 `FAILED` and stays: the record is the evidence that someone did not receive what they should.
 
+Two adapters exist and neither is production-ready. In `test` the recording adapter keeps
+messages in memory so the suite does not depend on an external service. In `development` a
+plain SMTP adapter delivers to the Compose Mailpit, so the flow can be **seen** at
+`localhost:8025` rather than believed from a test. That adapter speaks no STARTTLS and no
+authentication, and it refuses two things structurally: `NODE_ENV=production`, and any host
+that is not local — pointing it at an external relay by a configuration slip fails at startup
+instead of leaking a message in clear text over the network. The production adapter arrives
+with the relay decision, still open in ADR-014.
+
 Templates are a closed catalogue in `@lex-os/shared`, rendered as plain text. Plain text is the
 choice, not a limitation — a legal-operations e-mail needs no layout, and HTML would open the
 door to interpolating content without escaping. The development and test adapter records
