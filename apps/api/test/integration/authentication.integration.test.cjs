@@ -244,13 +244,20 @@ describe('Delivery 4 HTTP and authentication contract', () => {
   });
 
   it('keeps the session cookie window-scoped unless the person asks to stay signed in', async () => {
-    // Padrão adequado a máquina compartilhada: a próxima pessoa a abrir o navegador não
-    // encontra a sessão da anterior.
+    // Cada cookie e inspecionado por si: juntar tudo em uma string faria o Expires que o
+    // clearCookie do marcador emite ser lido como se fosse do cookie de atualizacao.
+    const refreshCookie = (response) =>
+      response.headers['set-cookie'].find((value) => value.startsWith('lex_os_refresh='));
+    const persistCookie = (response) =>
+      response.headers['set-cookie'].find((value) => value.startsWith('lex_os_persistir='));
+
+    // Padrao adequado a maquina compartilhada: sem Expires nem Max-Age, o navegador descarta
+    // ao fechar, e a proxima pessoa nao encontra a sessao da anterior.
     const transient = await login();
     assert.equal(transient.status, 200);
-    const transientCookies = transient.headers['set-cookie'].join(' ');
-    assert.equal(/lex_os_refresh=[^;]+;[^,]*Expires=/iu.test(transientCookies), false);
-    assert.equal(transientCookies.includes('lex_os_persistir=1'), false);
+    assert.doesNotMatch(refreshCookie(transient), /Expires=|Max-Age=/iu);
+    // O marcador so e limpo, nunca definido com valor.
+    assert.equal(persistCookie(transient)?.startsWith('lex_os_persistir=;') ?? true, true);
 
     const persistent = await request(http)
       .post('/api/v1/auth/login')
@@ -261,9 +268,8 @@ describe('Delivery 4 HTTP and authentication contract', () => {
         keepSignedIn: true,
       })
       .expect(200);
-    const persistentCookies = persistent.headers['set-cookie'].join(' ');
-    assert.match(persistentCookies, /lex_os_refresh=[^;]+;[^,]*Expires=/iu);
-    assert.match(persistentCookies, /lex_os_persistir=1/u);
+    assert.match(refreshCookie(persistent), /Expires=/iu);
+    assert.match(persistCookie(persistent), /^lex_os_persistir=1;/u);
   });
 
   it('does not distinguish an unknown firm from a wrong password', async () => {
