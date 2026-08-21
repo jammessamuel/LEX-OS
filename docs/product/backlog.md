@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-20 · Entrega 12 com telas; harness de interface criado
+**Última atualização:** 2026-08-20 · Entrega 13 com as telas de recuperação
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                                                | Detalhe                                                                                                                                                     |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Entrega 13 — Adapter de e-mail e recuperação de senha | Autorizada pela sociedade em 2026-08-20, resolvendo os itens 1 e 2 da ADR-014. Backend pronto; faltam as telas de "esqueci a senha" e o envio real por SMTP |
+| Cartão                                                | Detalhe                                                                                                                                         |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Entrega 13 — Adapter de e-mail e recuperação de senha | Autorizada pela sociedade em 2026-08-20, resolvendo os itens 1 e 2 da ADR-014. Backend e telas prontos. Falta o adaptador SMTP contra o Mailpit |
 
 ---
 
@@ -92,6 +92,18 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 ## Feito
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
+
+- **Entrega 13, fatia 2 — as telas de recuperação** — "esqueci a senha" e "criar nova senha",
+  as duas públicas. A confirmação do pedido é deliberadamente condicional — "se houver uma
+  conta ativa" —, porque a tela não sabe e não pode fingir que sabe; a única resposta que se
+  distingue é o limite de tentativas, e essa é informação para o próprio usuário. Concluir avisa
+  que as sessões de outros dispositivos caíram, e esquece a identidade guardada aqui, cuja
+  sessão não existe mais. As quatro telas de porta passaram a dividir `styles/gate.css`.
+- **Entrar sem redigitar** — escritório e e-mail guardados no dispositivo, "manter conectado"
+  como escolha explícita, e a última tela retomada ao reabrir. A senha fica com o gerenciador do
+  navegador: o formulário passou a declarar `name` e `autocomplete` para ele se oferecer.
+  De quebra, o cookie de sessão deixou de ser sempre persistente — o padrão agora termina ao
+  fechar o navegador, adequado a máquina compartilhada de escritório.
 
 - **Entrega 12 aceita** — escopo completo em `59c046c`, com os cinco jobs da CI verdes.
 - **Entrega 13, fatia 1 — caixa de saída e recuperação de senha** — o e-mail deixou de ser

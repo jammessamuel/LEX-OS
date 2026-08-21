@@ -14,6 +14,8 @@ import CaseTasksView from '../views/CaseTasksView.vue';
 import CaseTimelineView from '../views/CaseTimelineView.vue';
 import DocumentDetailView from '../views/DocumentDetailView.vue';
 import AcceptInvitationView from '../views/AcceptInvitationView.vue';
+import ForgotPasswordView from '../views/ForgotPasswordView.vue';
+import NewPasswordView from '../views/NewPasswordView.vue';
 import LoginView from '../views/LoginView.vue';
 import PersonDetailView from '../views/PersonDetailView.vue';
 import PersonFormView from '../views/PersonFormView.vue';
@@ -36,6 +38,19 @@ export const router = createRouter({
       component: AcceptInvitationView,
       name: 'accept-invitation',
       path: '/convite',
+      meta: { public: true },
+    },
+    {
+      // Publicas: quem esqueceu a senha nao tem sessao, e o token do link e a unica prova.
+      component: ForgotPasswordView,
+      name: 'forgot-password',
+      path: '/esqueci-a-senha',
+      meta: { public: true },
+    },
+    {
+      component: NewPasswordView,
+      name: 'new-password',
+      path: '/nova-senha',
       meta: { public: true },
     },
     {
@@ -185,7 +200,13 @@ router.beforeEach(async (to) => {
  * Depois da navegação, e só o caminho — nada de conteúdo. Telas de erro e de entrada ficam
  * de fora: retomar em "sem acesso" seria um beco, e retomar na entrada não retoma nada.
  */
-const notWorthResuming = new Set(['login', 'accept-invitation', 'access-denied']);
+const notWorthResuming = new Set([
+  'login',
+  'accept-invitation',
+  'forgot-password',
+  'new-password',
+  'access-denied',
+]);
 
 router.afterEach((to) => {
   if (typeof to.name === 'string' && !notWorthResuming.has(to.name)) {

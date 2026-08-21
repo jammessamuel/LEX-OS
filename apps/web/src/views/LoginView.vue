@@ -154,6 +154,10 @@ async function submit(): Promise<void> {
           {{ submitting ? 'Entrando…' : 'Entrar' }}
         </button>
       </form>
+
+      <RouterLink class="login__forgot" :to="{ name: 'forgot-password' }">
+        Esqueci minha senha
+      </RouterLink>
     </section>
 
     <p class="login__note">
@@ -164,6 +168,19 @@ async function submit(): Promise<void> {
 </template>
 
 <style scoped>
+.login__forgot {
+  font-size: var(--step--1);
+  color: var(--ink);
+  text-decoration: none;
+  margin-top: var(--space-4);
+  align-self: flex-start;
+}
+
+.login__forgot:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 .keep {
   display: flex;
   align-items: flex-start;

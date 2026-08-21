@@ -1,0 +1,94 @@
+/*
+ * Telas de porta: entrada, convite, esqueci a senha, nova senha.
+ *
+ * São as únicas telas do produto sem a moldura autenticada, e as únicas que alguém de fora
+ * vê. Um painel centrado, medida curta e nada além do necessário para a próxima ação.
+ */
+
+.gate {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+}
+
+.gate__panel {
+  width: min(34rem, 100%);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-7);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  box-shadow: var(--shadow);
+}
+
+.gate__brand {
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  letter-spacing: 0.16em;
+  color: var(--ink);
+}
+
+.gate__title {
+  font-size: var(--step-2);
+}
+
+.gate__lede {
+  font-size: var(--step--1);
+  color: var(--text-2);
+  max-width: 46ch;
+}
+
+.gate__form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.gate__error,
+.gate__notice {
+  font-size: var(--step--1);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.gate__error {
+  color: var(--rejeitado);
+  background: var(--rejeitado-bg);
+}
+
+/* Limite de tentativas não é falha: é um aviso de que o pedido anterior pode estar valendo. */
+.gate__notice {
+  color: var(--pendente);
+  background: var(--pendente-bg);
+}
+
+.gate__ref {
+  font-size: 0.78rem;
+  color: var(--text-3);
+}
+
+.gate__go {
+  align-self: flex-start;
+  margin-top: var(--space-2);
+}
+
+.gate__back {
+  font-size: var(--step--1);
+  color: var(--ink);
+  text-decoration: none;
+  margin-top: var(--space-2);
+}
+
+.gate__back:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
