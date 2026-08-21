@@ -318,6 +318,10 @@ describe('Delivery 14 second factor at sign-in', () => {
       'UPDATE users SET totp_secret = NULL, totp_activated_at = NULL, totp_last_step = NULL WHERE id = $1',
       [MEMBER_ID],
     );
+    await pool.query(
+      "DELETE FROM audit_logs WHERE user_id = $1 AND action LIKE 'auth.second_factor.%'",
+      [MEMBER_ID],
+    );
     await clearTotpCounters();
     // Contador de login limpo também: a suíte erra a senha de propósito em um dos casos.
     let cursor = '0';
