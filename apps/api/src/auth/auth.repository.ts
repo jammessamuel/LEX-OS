@@ -11,6 +11,9 @@ const loginUserSelect = {
   passwordHash: true,
   status: true,
   deletedAt: true,
+  totpSecret: true,
+  totpActivatedAt: true,
+  totpLastStep: true,
   organization: {
     select: {
       id: true,

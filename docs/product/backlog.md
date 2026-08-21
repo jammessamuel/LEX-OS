@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-20 · inscrição do segundo fator entregue
+**Última atualização:** 2026-08-20 · segundo fator vale na entrada
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                              | Detalhe                                                                                                                                                   |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Entrega 14 — Segundo fator com TOTP | Autorizada pela sociedade em 2026-08-20, resolvendo o item 3 da ADR-014. Primitiva, banco e inscrição prontos. Faltam a entrada em duas etapas e as telas |
+| Cartão                              | Detalhe                                                                                                                          |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Entrega 14 — Segundo fator com TOTP | Autorizada pela sociedade em 2026-08-20. Backend completo: primitiva, banco, inscrição e entrada em duas etapas. Faltam as telas |
 
 ---
 
@@ -92,6 +92,14 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 ## Feito
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
+
+- **Entrega 14, fatia 4 — o segundo fator vale na entrada** — a senha sozinha deixou de bastar
+  para quem o ativou: ela devolve 401 sem token e sem cookie, pedindo o código. O desafio roda
+  **depois** de a senha ser conferida, porque responder "informe o código" a quem errou a senha
+  confirmaria a conta e entregaria que ela tem segundo fator. O campo aceita os seis dígitos ou
+  um código de recuperação, que é o que se procura justamente quando o telefone sumiu. O código
+  do aplicativo é gasto dentro do passo de trinta segundos — interceptá-lo não compra uma
+  segunda entrada — e o de recuperação é gasto para sempre, com auditoria própria.
 
 - **Entrega 14, fatia 3 — a inscrição** — gerar, provar, ativar. Gerar não liga o fator: um
   segredo que valesse na hora trancaria do lado de fora quem começa e desiste. Ativar exige um

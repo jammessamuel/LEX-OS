@@ -16,7 +16,8 @@ export type AuthenticationAuditAction =
   | 'auth.second_factor.enrolled'
   | 'auth.second_factor.activated'
   | 'auth.second_factor.rejected'
-  | 'auth.second_factor.disabled';
+  | 'auth.second_factor.disabled'
+  | 'auth.second_factor.recovery_used';
 
 export interface AuthenticationAuditEvent {
   organizationId: string;

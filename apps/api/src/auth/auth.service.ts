@@ -21,6 +21,7 @@ import {
 import type { AuthTokenResponseDto } from './dto/auth-token-response.dto.js';
 import type { LoginRequestDto } from './dto/login-request.dto.js';
 import { LoginAttemptService } from './login-attempt.service.js';
+import { SecondFactorService } from './second-factor.service.js';
 
 interface RequestAuditMetadata {
   requestId?: string;
@@ -82,6 +83,7 @@ export class AuthService {
     private readonly repository: AuthRepository,
     private readonly attempts: LoginAttemptService,
     private readonly audit: AuditService,
+    private readonly secondFactor: SecondFactorService,
   ) {
     this.#dummyPasswordHash = dummyPasswordHash();
   }
@@ -127,6 +129,10 @@ export class AuthService {
       });
       throw this.#invalidCredentials();
     }
+
+    // Só agora: a existência do segundo fator não pode ser revelada a quem errou a senha,
+    // senão a resposta vira um oráculo de quem já o ativou.
+    await this.secondFactor.assertLoginChallenge(user, input.secondFactorCode, clientIp);
 
     await this.attempts.clear(input.organizationSlug, input.email, clientIp);
     const refreshToken = newOpaqueToken();

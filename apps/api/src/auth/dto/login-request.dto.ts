@@ -49,4 +49,17 @@ export class LoginRequestDto {
   @IsOptional()
   @IsBoolean({ message: 'Informe uma escolha válida.' })
   keepSignedIn?: boolean;
+
+  @ApiPropertyOptional({
+    example: '123456',
+    description:
+      'Segundo fator: os seis dígitos do aplicativo, ou um código de recuperação. Obrigatório ' +
+      'apenas para quem tem o segundo fator ativo, e pedido em uma segunda tentativa depois ' +
+      'de a senha ser aceita.',
+  })
+  @Transform(({ value }) => (typeof value === 'string' ? value.replace(/s/gu, '') : value))
+  @IsOptional()
+  @IsString({ message: 'Informe o código do segundo fator.' })
+  @MaxLength(32, { message: 'O código excede o limite permitido.' })
+  secondFactorCode?: string;
 }

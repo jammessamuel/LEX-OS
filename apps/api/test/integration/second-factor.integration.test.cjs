@@ -297,3 +297,107 @@ describe('Delivery 14 second-factor enrolment', () => {
     }
   });
 });
+
+describe('Delivery 14 second factor at sign-in', () => {
+  let secret;
+  let recoveryCodes;
+
+  const signIn = (body) =>
+    request(http)
+      .post('/api/v1/auth/login')
+      .send({
+        organizationSlug: ORGANIZATION_SLUG,
+        email: MEMBER_EMAIL,
+        password: seedPassword,
+        ...body,
+      });
+
+  beforeEach(async () => {
+    await pool.query('DELETE FROM totp_recovery_codes WHERE user_id = $1', [MEMBER_ID]);
+    await pool.query(
+      'UPDATE users SET totp_secret = NULL, totp_activated_at = NULL, totp_last_step = NULL WHERE id = $1',
+      [MEMBER_ID],
+    );
+    await clearTotpCounters();
+    // Contador de login limpo também: a suíte erra a senha de propósito em um dos casos.
+    let cursor = '0';
+    do {
+      const found = await redis.scan(cursor, { MATCH: 'auth:login:*', COUNT: 100 });
+      cursor = found.cursor;
+      if (found.keys.length > 0) await redis.del(found.keys);
+    } while (cursor !== '0');
+
+    const started = await authed('post', '/api/v1/auth/second-factor').expect(201);
+    secret = started.body.secret;
+    const activated = await authed('post', '/api/v1/auth/second-factor/activate')
+      .send({ code: codeFor(secret) })
+      .expect(200);
+    recoveryCodes = activated.body.recoveryCodes;
+    await clearTotpCounters();
+  });
+
+  it('refuses the password alone once the factor is active', async () => {
+    const withoutCode = await signIn({}).expect(401);
+
+    assert.equal(withoutCode.body.code, 'SECOND_FACTOR_REQUIRED');
+    // Nenhum token sai daqui: a senha sozinha deixou de bastar.
+    assert.equal(withoutCode.body.accessToken, undefined);
+    assert.equal(withoutCode.headers['set-cookie'], undefined);
+  });
+
+  it('completes the sign-in with the code from the app', async () => {
+    const signedIn = await signIn({ secondFactorCode: codeFor(secret) }).expect(200);
+
+    assert.equal(typeof signedIn.body.accessToken, 'string');
+  });
+
+  it('never reveals the second factor to someone who got the password wrong', async () => {
+    // A resposta precisa ser a mesma de sempre: dizer "informe o código" a quem errou a senha
+    // confirmaria a conta e entregaria que ela já tem segundo fator ativo.
+    const wrongPassword = await signIn({ password: 'senha-errada-14' }).expect(401);
+
+    assert.equal(wrongPassword.body.code, 'INVALID_CREDENTIALS');
+  });
+
+  it('spends the code within its step, so interception does not buy a second entry', async () => {
+    const code = codeFor(secret);
+    await signIn({ secondFactorCode: code }).expect(200);
+
+    const replay = await signIn({ secondFactorCode: code }).expect(401);
+    assert.equal(replay.body.code, 'SECOND_FACTOR_CODE_INVALID');
+  });
+
+  it('accepts a recovery code, and only once', async () => {
+    const code = recoveryCodes[0];
+
+    await signIn({ secondFactorCode: code }).expect(200);
+    const replay = await signIn({ secondFactorCode: code }).expect(401);
+    assert.equal(replay.body.code, 'SECOND_FACTOR_CODE_INVALID');
+
+    const remaining = await pool.query(
+      'SELECT count(*)::int AS count FROM totp_recovery_codes WHERE user_id = $1 AND used_at IS NULL',
+      [MEMBER_ID],
+    );
+    assert.equal(remaining.rows[0].count, 9);
+  });
+
+  it('audits the use of a recovery code, because it is worth noticing', async () => {
+    await signIn({ secondFactorCode: recoveryCodes[1] }).expect(200);
+
+    const audits = await pool.query(
+      `SELECT action FROM audit_logs
+       WHERE user_id = $1 AND action = 'auth.second_factor.recovery_used'`,
+      [MEMBER_ID],
+    );
+    assert.equal(audits.rows.length, 1);
+  });
+
+  it('counts wrong codes at sign-in and blocks brute force', async () => {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await signIn({ secondFactorCode: '000000' }).expect(401);
+    }
+    const blocked = await signIn({ secondFactorCode: '000000' }).expect(429);
+
+    assert.equal(blocked.body.code, 'AUTH_RATE_LIMITED');
+  });
+});

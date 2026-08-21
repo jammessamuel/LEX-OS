@@ -285,6 +285,24 @@ the other.
 
 Disabling is refused while the firm sets `requireSecondFactor`. Everything else is per person.
 
+### At sign-in
+
+`POST /auth/login` accepts an optional `secondFactorCode`. Once the factor is active, the
+password alone returns 401 with code `SECOND_FACTOR_REQUIRED` and **no token and no cookie**;
+the client asks for the code and submits again.
+
+The challenge runs **after** the password is verified. Answering "give me your code" to someone
+who got the password wrong would confirm the account exists and reveal that it already has a
+second factor — the ordinary `INVALID_CREDENTIALS` is returned in that case, unchanged.
+
+The field accepts either the six digits from the app or a recovery code, because losing the
+phone is discovered precisely at sign-in. An app code is spent within its thirty-second step,
+so intercepting one does not buy a second entry; a recovery code is spent permanently, and its
+use is audited — someone reaching for one is worth noticing.
+
+A firm that sets `requireSecondFactor` still lets an unenrolled person sign in, because they
+have to get in to enrol. Forcing enrolment before anything else is the interface's job.
+
 ## Session lifecycle
 
 Successful login verifies the Argon2id hash, records `last_login_at`, creates a refresh family, appends a safe audit event, and returns a short-lived HS256 access JWT. The JWT contains only user, organization, session, and token-type identifiers and is restricted by issuer, audience, algorithm, and expiry.
