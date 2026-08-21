@@ -57,7 +57,7 @@ export class LoginRequestDto {
       'apenas para quem tem o segundo fator ativo, e pedido em uma segunda tentativa depois ' +
       'de a senha ser aceita.',
   })
-  @Transform(({ value }) => (typeof value === 'string' ? value.replace(/s/gu, '') : value))
+  @Transform(({ value }) => (typeof value === 'string' ? value.replace(/\s/gu, '') : value))
   @IsOptional()
   @IsString({ message: 'Informe o código do segundo fator.' })
   @MaxLength(32, { message: 'O código excede o limite permitido.' })

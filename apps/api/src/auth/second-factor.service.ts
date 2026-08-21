@@ -253,7 +253,7 @@ export class SecondFactorService {
 
     await this.attempts.assertAllowed(user.organizationId, user.email, clientIp, 'totp');
 
-    const accepted = /^d{6}$/u.test(code)
+    const accepted = /^\d{6}$/u.test(code)
       ? await this.#acceptAppCode(user, code)
       : await this.#acceptRecoveryCode(user, code);
 
