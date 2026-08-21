@@ -219,6 +219,28 @@ door to interpolating content without escaping. The development and test adapter
 instead of delivering and refuses production startup; the production relay is still an open
 item in [ADR-014](../decisions/ADR-014-fronteira-de-identidade-e-acesso.md).
 
+## Staying signed in
+
+`POST /auth/login` accepts `keepSignedIn`. It defaults to false, and false means the refresh
+cookie is set **without `Expires`** — the browser drops it when the window closes, and the
+server session stays valid but unreachable from that machine. That is the right default for a
+shared office computer, where the next person to open the browser must not find the previous
+one's session.
+
+When true, the cookie carries the configured refresh TTL, and a companion `lex_os_persistir`
+cookie is set alongside it. The marker carries no secret; it exists so rotation knows to keep
+persisting. Without it, the first refresh would silently downgrade a persistent session back to
+a window session, and the person who asked to stay signed in would be signed out anyway.
+
+Signing out clears both.
+
+**The web client never stores a password.** It remembers the firm slug, the e-mail and the
+"stay signed in" choice in `localStorage`, so only the password has to be typed, and the
+password itself is left to the browser's own manager — the login form declares `name` and
+`autocomplete` on all three fields so the manager offers to save and fill. Keeping a password
+in `localStorage` would put it in clear text on disk, where any future script flaw reads it
+along with access to the whole firm's dossier.
+
 ## Session lifecycle
 
 Successful login verifies the Argon2id hash, records `last_login_at`, creates a refresh family, appends a safe audit event, and returns a short-lived HS256 access JWT. The JWT contains only user, organization, session, and token-type identifiers and is restricted by issuer, audience, algorithm, and expiry.

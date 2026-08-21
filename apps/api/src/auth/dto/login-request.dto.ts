@@ -1,6 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 /** Mesma forma aceita pela constraint `organizations_slug_format` no banco. */
 export const organizationSlugPattern = /^[a-z0-9]+(-[a-z0-9]+)*$/u;
@@ -30,4 +38,15 @@ export class LoginRequestDto {
   @MinLength(8, { message: 'A senha deve ter pelo menos 8 caracteres.' })
   @MaxLength(128, { message: 'A senha excede o limite permitido.' })
   password!: string;
+
+  @ApiPropertyOptional({
+    default: false,
+    description:
+      'Quando verdadeiro, o cookie de atualização sobrevive ao fechar o navegador. Falso ' +
+      'mantém a sessão apenas enquanto a janela estiver aberta, que é o padrão adequado a ' +
+      'uma máquina compartilhada de escritório.',
+  })
+  @IsOptional()
+  @IsBoolean({ message: 'Informe uma escolha válida.' })
+  keepSignedIn?: boolean;
 }

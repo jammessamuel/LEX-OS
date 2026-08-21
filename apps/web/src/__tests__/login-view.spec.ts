@@ -33,6 +33,7 @@ describe('LoginView', () => {
     mocks.login.mockReset().mockResolvedValue(undefined);
     mocks.replace.mockReset().mockResolvedValue(undefined);
     delete mocks.query.destino;
+    window.localStorage.clear();
   });
 
   it('retorna à rota interna que o usuário tentou abrir antes da autenticação', async () => {
@@ -44,6 +45,7 @@ describe('LoginView', () => {
       organizationSlug: 'souza-cabral',
       email: 'pessoa@exemplo.test',
       password: 'senha-ficticia',
+      keepSignedIn: false,
     });
     expect(mocks.replace).toHaveBeenCalledWith('/casos/case-1?aba=documentos');
   });
@@ -76,5 +78,64 @@ describe('LoginView', () => {
       'souza-cabral',
     );
     delete mocks.query.escritorio;
+  });
+
+  it('guarda escritório e e-mail no dispositivo, e nunca a senha', async () => {
+    await submitLogin();
+
+    const saved = JSON.parse(window.localStorage.getItem('lex-os.entrada') ?? '{}');
+    expect(saved.organizationSlug).toBe('souza-cabral');
+    expect(saved.email).toBe('pessoa@exemplo.test');
+    // A senha fica com o gerenciador do navegador, nunca no nosso armazenamento.
+    expect(JSON.stringify(saved)).not.toContain('senha-ficticia');
+  });
+
+  it('preenche o formulário na volta, deixando só a senha para digitar', async () => {
+    window.localStorage.setItem(
+      'lex-os.entrada',
+      JSON.stringify({
+        organizationSlug: 'souza-cabral',
+        email: 'pessoa@exemplo.test',
+        keepSignedIn: true,
+      }),
+    );
+
+    const wrapper = mount(LoginView);
+
+    expect((wrapper.get('#organizationSlug').element as HTMLInputElement).value).toBe(
+      'souza-cabral',
+    );
+    expect((wrapper.get('#email').element as HTMLInputElement).value).toBe('pessoa@exemplo.test');
+    expect((wrapper.get('#password').element as HTMLInputElement).value).toBe('');
+    expect((wrapper.get('input[type="checkbox"]').element as HTMLInputElement).checked).toBe(true);
+  });
+
+  it('não guarda nada quando a entrada falha', async () => {
+    mocks.login.mockRejectedValueOnce(new Error('credenciais inválidas'));
+
+    await submitLogin();
+
+    expect(window.localStorage.getItem('lex-os.entrada')).toBeNull();
+  });
+
+  it('declara os atributos que o gerenciador de senhas do navegador precisa', async () => {
+    const wrapper = mount(LoginView);
+
+    expect(wrapper.get('#email').attributes('autocomplete')).toBe('username');
+    expect(wrapper.get('#email').attributes('name')).toBe('username');
+    expect(wrapper.get('#password').attributes('autocomplete')).toBe('current-password');
+    expect(wrapper.get('#password').attributes('type')).toBe('password');
+  });
+
+  it('envia a escolha de continuar conectado ao servidor', async () => {
+    const wrapper = mount(LoginView);
+    await wrapper.get('input[type="checkbox"]').setValue(true);
+    await wrapper.get('#organizationSlug').setValue('souza-cabral');
+    await wrapper.get('#email').setValue('pessoa@exemplo.test');
+    await wrapper.get('#password').setValue('senha-ficticia');
+    await wrapper.get('form').trigger('submit');
+    await flushPromises();
+
+    expect(mocks.login).toHaveBeenCalledWith(expect.objectContaining({ keepSignedIn: true }));
   });
 });

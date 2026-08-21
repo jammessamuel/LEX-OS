@@ -243,6 +243,28 @@ describe('Delivery 4 HTTP and authentication contract', () => {
     }
   });
 
+  it('keeps the session cookie window-scoped unless the person asks to stay signed in', async () => {
+    // Padrão adequado a máquina compartilhada: a próxima pessoa a abrir o navegador não
+    // encontra a sessão da anterior.
+    const transient = await login().expect(200);
+    const transientCookies = transient.headers['set-cookie'].join(' ');
+    assert.equal(/lex_os_refresh=[^;]+;[^,]*Expires=/iu.test(transientCookies), false);
+    assert.equal(transientCookies.includes('lex_os_persistir=1'), false);
+
+    const persistent = await request(http)
+      .post('/api/v1/auth/login')
+      .send({
+        organizationSlug: ORGANIZATION_SLUG,
+        email: ADMIN_EMAIL,
+        password: seedPassword,
+        keepSignedIn: true,
+      })
+      .expect(200);
+    const persistentCookies = persistent.headers['set-cookie'].join(' ');
+    assert.match(persistentCookies, /lex_os_refresh=[^;]+;[^,]*Expires=/iu);
+    assert.match(persistentCookies, /lex_os_persistir=1/u);
+  });
+
   it('does not distinguish an unknown firm from a wrong password', async () => {
     // A propriedade que sustenta trocar o UUID pelo slug: um slug legivel convida a
     // adivinhacao, entao descobrir que um escritorio existe nao pode custar uma tentativa.

@@ -45,6 +45,7 @@ export const useSessionStore = defineStore('session', () => {
     organizationSlug: string;
     email: string;
     password: string;
+    keepSignedIn?: boolean;
   }): Promise<void> {
     apply(
       await request<AuthTokenResponse>('/auth/login', {

@@ -15,7 +15,7 @@ import type { CookieOptions, Response } from 'express';
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
 import { ApiErrorEnvelopeDto } from '../http/error-envelope.dto.js';
 import { getRequestContext } from '../observability/request-context.js';
-import { REFRESH_COOKIE_NAME } from './auth.constants.js';
+import { REFRESH_COOKIE_NAME, REFRESH_PERSIST_COOKIE_NAME } from './auth.constants.js';
 import type { AuthenticatedRequest } from './authenticated-request.js';
 import { AuthService, type IssuedAuthentication } from './auth.service.js';
 import { InvitationsService } from '../users/invitations.service.js';
@@ -106,7 +106,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthTokenResponseDto> {
     const issued = await this.auth.login(input, request.ip ?? 'unknown', getRequestContext() ?? {});
-    this.#setRefreshCookie(response, issued);
+    this.#setRefreshCookie(response, issued, input.keepSignedIn === true);
     return issued.response;
   }
 
@@ -126,7 +126,7 @@ export class AuthController {
       request.cookies[REFRESH_COOKIE_NAME],
       getRequestContext() ?? {},
     );
-    this.#setRefreshCookie(response, issued);
+    this.#setRefreshCookie(response, issued, request.cookies[REFRESH_PERSIST_COOKIE_NAME] === '1');
     return issued.response;
   }
 
@@ -146,13 +146,31 @@ export class AuthController {
 
     await this.auth.logout(request.actor, getRequestContext() ?? {});
     response.clearCookie(REFRESH_COOKIE_NAME, this.#baseCookieOptions());
+    response.clearCookie(REFRESH_PERSIST_COOKIE_NAME, this.#baseCookieOptions());
   }
 
-  #setRefreshCookie(response: Response, issued: IssuedAuthentication): void {
+  /**
+   * Persistente só a pedido.
+   *
+   * Sem `expires`, o navegador descarta o cookie ao fechar — e a sessão do servidor continua
+   * válida, apenas inalcançável dali. É o padrão adequado a uma máquina compartilhada de
+   * escritório, onde a próxima pessoa a abrir o navegador não deve encontrar a sessão da
+   * anterior. Quem marca "manter conectado" troca isso conscientemente.
+   */
+  #setRefreshCookie(response: Response, issued: IssuedAuthentication, keepSignedIn: boolean): void {
+    const persistence = keepSignedIn ? { expires: issued.refreshExpiresAt } : {};
     response.cookie(REFRESH_COOKIE_NAME, issued.refreshToken, {
       ...this.#baseCookieOptions(),
-      expires: issued.refreshExpiresAt,
+      ...persistence,
     });
+    if (keepSignedIn) {
+      response.cookie(REFRESH_PERSIST_COOKIE_NAME, '1', {
+        ...this.#baseCookieOptions(),
+        ...persistence,
+      });
+    } else {
+      response.clearCookie(REFRESH_PERSIST_COOKIE_NAME, this.#baseCookieOptions());
+    }
   }
 
   #baseCookieOptions(): CookieOptions {

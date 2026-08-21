@@ -155,6 +155,17 @@ no contrato quebra o typecheck em vez de vazar na tela.
 
 ---
 
+## 6.1 Preferências do dispositivo
+
+`stores/preferences.ts` guarda o que é conveniência e **nunca credencial**: escritório,
+e-mail, a escolha de continuar conectado e a última tela. Toda leitura e escrita é protegida —
+janela anônima e armazenamento bloqueado por política são situações normais, e nenhuma pode
+impedir alguém de entrar.
+
+Senha nunca entra ali. Quem guarda senha é o gerenciador do navegador, e o que o habilita é o
+formulário declarar `name` e `autocomplete` (`username`, `current-password`,
+`new-password`) nos campos.
+
 ## 7. Regras que reprovam a revisão
 
 1. **Rótulo técnico na tela.** `READY_TO_FILE` nunca; "Pronto para protocolo".

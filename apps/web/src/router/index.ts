@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import AppShell from '../components/AppShell.vue';
+import { readPreferences, rememberRoute } from '../stores/preferences.js';
 import { useSessionStore } from '../stores/session.js';
 import AccessDeniedView from '../views/AccessDeniedView.vue';
 import AuditView from '../views/AuditView.vue';
@@ -160,7 +161,12 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.public === true) {
-    return session.isAuthenticated ? { name: 'cases' } : true;
+    if (!session.isAuthenticated) {
+      return true;
+    }
+    // Já autenticado abrindo a entrada: volta para onde parou, se houver.
+    const resumed = readPreferences().lastRoute;
+    return resumed === null ? { name: 'cases' } : resumed;
   }
 
   if (!session.isAuthenticated) {
@@ -171,4 +177,18 @@ router.beforeEach(async (to) => {
   return required.every((permission) => typeof permission === 'string' && session.can(permission))
     ? true
     : { name: 'access-denied' };
+});
+
+/**
+ * Guarda a última tela para retomar na próxima abertura.
+ *
+ * Depois da navegação, e só o caminho — nada de conteúdo. Telas de erro e de entrada ficam
+ * de fora: retomar em "sem acesso" seria um beco, e retomar na entrada não retoma nada.
+ */
+const notWorthResuming = new Set(['login', 'accept-invitation', 'access-denied']);
+
+router.afterEach((to) => {
+  if (typeof to.name === 'string' && !notWorthResuming.has(to.name)) {
+    rememberRoute(to.fullPath);
+  }
 });

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 
+import { forgetIdentity } from '../stores/preferences.js';
 import { useSessionStore } from '../stores/session.js';
 import { useTheme } from '../stores/theme.js';
 
@@ -10,6 +11,9 @@ const theme = useTheme();
 
 async function signOut(): Promise<void> {
   await session.logout();
+  // Sair é um gesto deliberado: o e-mail e a última tela vão junto. O escritório fica, que
+  // é do dispositivo e não da pessoa.
+  forgetIdentity();
   await router.replace({ name: 'login' });
 }
 </script>

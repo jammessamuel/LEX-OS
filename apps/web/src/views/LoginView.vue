@@ -3,18 +3,22 @@ import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { ApiError } from '../api/client.js';
+import { readPreferences, rememberSignIn } from '../stores/preferences.js';
 import { useSessionStore } from '../stores/session.js';
 
 const router = useRouter();
 const route = useRoute();
 const session = useSessionStore();
 
-// O escritorio pode chegar pelo link de convite: e identificador, nao conteudo, entao
-// pode viver na URL. Digitado a mao tambem vale, que e o caso de quem ja trabalha aqui.
+const saved = readPreferences();
+
+// O escritório pode chegar pelo link de convite, que tem prioridade sobre o lembrado: quem
+// abre um convite está entrando em um escritório específico, talvez outro.
 const organizationSlug = ref(
-  typeof route.query.escritorio === 'string' ? route.query.escritorio : '',
+  typeof route.query.escritorio === 'string' ? route.query.escritorio : saved.organizationSlug,
 );
-const email = ref('');
+const keepSignedIn = ref(saved.keepSignedIn);
+const email = ref(saved.email);
 const password = ref('');
 const submitting = ref(false);
 const failure = ref<ApiError | null>(null);
@@ -32,11 +36,18 @@ async function submit(): Promise<void> {
   submitting.value = true;
   failure.value = null;
   try {
-    await session.login({
+    const credentials = {
       organizationSlug: organizationSlug.value.trim().toLowerCase(),
       email: email.value.trim(),
+    };
+    await session.login({
+      ...credentials,
       password: password.value,
+      keepSignedIn: keepSignedIn.value,
     });
+    // Guardado só depois de entrar: lembrar um e-mail que nem existe não ajuda ninguém.
+    // A senha nunca entra aqui — quem a guarda é o gerenciador do navegador.
+    rememberSignIn({ ...credentials, keepSignedIn: keepSignedIn.value });
     await router.replace(destinationAfterLogin());
   } catch (error) {
     failure.value =
@@ -67,6 +78,7 @@ async function submit(): Promise<void> {
           <input
             id="organizationSlug"
             v-model="organizationSlug"
+            name="organization"
             class="data"
             autocomplete="organization"
             spellcheck="false"
@@ -95,6 +107,7 @@ async function submit(): Promise<void> {
           <input
             id="email"
             v-model="email"
+            name="username"
             type="email"
             autocomplete="username"
             :aria-invalid="failure?.detailFor('email') !== undefined"
@@ -110,6 +123,7 @@ async function submit(): Promise<void> {
           <input
             id="password"
             v-model="password"
+            name="current-password"
             type="password"
             autocomplete="current-password"
             :aria-invalid="failure?.detailFor('password') !== undefined"
@@ -126,6 +140,16 @@ async function submit(): Promise<void> {
           {{ failure.message }}
         </p>
 
+        <label class="keep">
+          <input v-model="keepSignedIn" type="checkbox" name="keep-signed-in" />
+          <span class="keep__text">
+            Manter conectado neste dispositivo
+            <span class="keep__hint">
+              Deixe desmarcado em computador compartilhado: a sessão termina ao fechar o navegador.
+            </span>
+          </span>
+        </label>
+
         <button class="btn login__submit" type="submit" :disabled="submitting">
           {{ submitting ? 'Entrando…' : 'Entrar' }}
         </button>
@@ -140,6 +164,34 @@ async function submit(): Promise<void> {
 </template>
 
 <style scoped>
+.keep {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.keep input {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-top: 0.15rem;
+  accent-color: var(--ink);
+  flex: none;
+}
+
+.keep__text {
+  font-size: var(--step--1);
+  color: var(--text);
+}
+
+.keep__hint {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-3);
+  margin-top: var(--space-1);
+  max-width: 44ch;
+}
+
 .login {
   min-height: 100%;
   display: grid;
