@@ -297,7 +297,8 @@ second factor — the ordinary `INVALID_CREDENTIALS` is returned in that case, u
 
 The field accepts either the six digits from the app or a recovery code, because losing the
 phone is discovered precisely at sign-in. An app code is spent within its thirty-second step,
-so intercepting one does not buy a second entry; a recovery code is spent permanently, and its
+so intercepting one does not buy a second entry — including the code that activated the factor,
+which cannot then be used to sign in during the same window; a recovery code is spent permanently, and its
 use is audited — someone reaching for one is worth noticing.
 
 A firm that sets `requireSecondFactor` still lets an unenrolled person sign in, because they

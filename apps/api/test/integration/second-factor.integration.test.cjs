@@ -333,6 +333,10 @@ describe('Delivery 14 second factor at sign-in', () => {
       .send({ code: codeFor(secret) })
       .expect(200);
     recoveryCodes = activated.body.recoveryCodes;
+    // A ativação gasta o passo corrente, e é para gastar mesmo: o código usado para ativar
+    // não pode servir de entrada logo em seguida. Aqui o passo guardado volta a nulo para
+    // simular o tempo que separa a inscrição da primeira entrada de verdade.
+    await pool.query('UPDATE users SET totp_last_step = NULL WHERE id = $1', [MEMBER_ID]);
     await clearTotpCounters();
   });
 
@@ -343,6 +347,18 @@ describe('Delivery 14 second factor at sign-in', () => {
     // Nenhum token sai daqui: a senha sozinha deixou de bastar.
     assert.equal(withoutCode.body.accessToken, undefined);
     assert.equal(withoutCode.headers['set-cookie'], undefined);
+  });
+
+  it('refuses the very code that activated the factor', async () => {
+    // Descoberto pela CI: a ativação consome o passo, então o mesmo código não entra em
+    // seguida. É o comportamento correto — um código vale uma vez, inclusive esse.
+    await pool.query('UPDATE users SET totp_last_step = $2 WHERE id = $1', [
+      MEMBER_ID,
+      Math.floor(Date.now() / 1000 / 30),
+    ]);
+
+    const refused = await signIn({ secondFactorCode: codeFor(secret) }).expect(401);
+    assert.equal(refused.body.code, 'SECOND_FACTOR_CODE_INVALID');
   });
 
   it('completes the sign-in with the code from the app', async () => {
