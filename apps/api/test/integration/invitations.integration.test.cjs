@@ -59,6 +59,11 @@ async function cleanup() {
     [ORGANIZATION_ID, INVITEE_EMAIL],
   );
   await pool.query(
+    `DELETE FROM email_outbox
+     WHERE user_id IN (SELECT id FROM users WHERE email = $1 OR organization_id = $2)`,
+    [INVITEE_EMAIL, OTHER_ORGANIZATION_ID],
+  );
+  await pool.query(
     `DELETE FROM user_roles
      WHERE user_id IN (SELECT id FROM users WHERE email = $1 OR organization_id = $2)`,
     [INVITEE_EMAIL, OTHER_ORGANIZATION_ID],
@@ -105,6 +110,10 @@ function invite(token, body) {
 }
 
 async function removeInvitee() {
+  await pool.query(
+    'DELETE FROM email_outbox WHERE user_id IN (SELECT id FROM users WHERE email = $1)',
+    [INVITEE_EMAIL],
+  );
   await pool.query(
     'DELETE FROM audit_logs WHERE user_id IN (SELECT id FROM users WHERE email = $1)',
     [INVITEE_EMAIL],
