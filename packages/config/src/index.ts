@@ -56,6 +56,15 @@ export interface RuntimeConfig {
     maxFilesPerRequest: number;
     allowedMimeTypes: readonly string[];
   };
+  secondFactor: {
+    /**
+     * Chave de 32 bytes que cifra o segredo do segundo fator em repouso.
+     *
+     * Vive fora do banco de propósito: guardá-la junto do que ela protege não protegeria
+     * nada. Rotacioná-la exige reinscrever todo mundo, então ela não muda por acaso.
+     */
+    encryptionKey: Buffer;
+  };
   mail: {
     /** Servidor SMTP de saída. Em desenvolvimento, o Mailpit do Compose. */
     host: string;
@@ -140,6 +149,22 @@ function boolean(env: NodeJS.ProcessEnv, name: string): boolean {
   throw new Error(`${name} must be either true or false.`);
 }
 
+/**
+ * Chave simétrica em base64, conferida no arranque.
+ *
+ * Trinta e dois bytes exatos: AES-256 não aceita outro tamanho, e descobrir isso na primeira
+ * inscrição de segundo fator seria descobrir tarde demais.
+ */
+function encryptionKey(env: NodeJS.ProcessEnv, name: string): Buffer {
+  const decoded = Buffer.from(required(env, name), 'base64');
+
+  if (decoded.length !== 32) {
+    throw new Error(`${name} must decode to exactly 32 bytes from base64.`);
+  }
+
+  return decoded;
+}
+
 function absoluteUrl(env: NodeJS.ProcessEnv, name: string): string {
   const value = required(env, name);
 
@@ -188,6 +213,12 @@ function validateProduction(config: RuntimeConfig): void {
   }
 
   assertProductionSecret('DATABASE_PASSWORD', config.database.password);
+  // A chave do segundo fator chega em base64, entao o texto do espaço reservado só aparece
+  // depois de decodificar — é ali que ela precisa ser conferida.
+  assertProductionSecret(
+    'SECOND_FACTOR_ENCRYPTION_KEY',
+    config.secondFactor.encryptionKey.toString('utf8'),
+  );
   assertProductionSecret('AUTH_ACCESS_TOKEN_SECRET', config.authentication.accessTokenSecret, 32);
   assertProductionSecret('REDIS_PASSWORD', config.redis.password);
   assertProductionSecret('OBJECT_STORAGE_ACCESS_KEY', config.objectStorage.accessKey);
@@ -252,6 +283,9 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
       maxFileBytes: integer(env, 'FILE_INTAKE_MAX_FILE_BYTES', 1_024, 1_073_741_824),
       maxFilesPerRequest: integer(env, 'FILE_INTAKE_MAX_FILES_PER_REQUEST', 1, 100),
       allowedMimeTypes: commaSeparatedAllowlist(env, 'FILE_INTAKE_ALLOWED_MIME_TYPES'),
+    },
+    secondFactor: {
+      encryptionKey: encryptionKey(env, 'SECOND_FACTOR_ENCRYPTION_KEY'),
     },
     mail: {
       host: required(env, 'MAIL_HOST'),

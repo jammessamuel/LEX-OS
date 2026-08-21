@@ -20,6 +20,7 @@ function validEnvironment(overrides = {}) {
     DEPENDENCY_TIMEOUT_MS: '2000',
     FILE_INTAKE_ALLOWED_MIME_TYPES: 'application/pdf,image/jpeg,image/png,text/plain',
     MAIL_HOST: '127.0.0.1',
+    SECOND_FACTOR_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64'),
     MAIL_PORT: '1025',
     MAIL_FROM: 'nao-responda@lexos.invalid',
     FILE_INTAKE_MAX_FILE_BYTES: '26214400',
@@ -67,6 +68,36 @@ describe('loadRuntimeConfig', () => {
       'image/png',
       'text/plain',
     ]);
+  });
+
+  it('refuses the sample second-factor key in production', () => {
+    // A chave chega em base64: o espaço reservado só aparece depois de decodificar, e um
+    // guarda que olhasse apenas a string crua deixaria a chave de exemplo ir para produção.
+    const environment = validEnvironment({
+      NODE_ENV: 'production',
+      // O restante precisa estar apto a produção para a falha ser a da chave, e não a do
+      // primeiro segredo que o guarda encontrar.
+      DATABASE_PASSWORD: 'uma-senha-de-producao-suficientemente-longa',
+      AUTH_ACCESS_TOKEN_SECRET: 'um-segredo-de-producao-com-mais-de-32-caracteres',
+      REDIS_PASSWORD: 'uma-senha-de-redis-de-producao',
+      OBJECT_STORAGE_ACCESS_KEY: 'uma-chave-de-acesso-de-producao',
+      OBJECT_STORAGE_SECRET_KEY: 'uma-chave-secreta-de-producao',
+      SEED_ADMIN_PASSWORD: 'uma-senha-de-seed-de-producao',
+      WORKER_READY_FILE: '/var/run/lex-os/worker-ready',
+      SECOND_FACTOR_ENCRYPTION_KEY: Buffer.from('replace-with-a-local-32-byte-key').toString(
+        'base64',
+      ),
+    });
+
+    assert.throws(() => loadRuntimeConfig(environment), /SECOND_FACTOR_ENCRYPTION_KEY/u);
+  });
+
+  it('requires a 32-byte second-factor key, because AES-256 accepts no other size', () => {
+    const environment = validEnvironment({
+      SECOND_FACTOR_ENCRYPTION_KEY: Buffer.alloc(16, 1).toString('base64'),
+    });
+
+    assert.throws(() => loadRuntimeConfig(environment), /exactly 32 bytes/u);
   });
 
   it('requires an outgoing mail server and a declared sender', () => {

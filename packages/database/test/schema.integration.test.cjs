@@ -71,7 +71,7 @@ describe('initial database migration', () => {
       extensions.rows.map((row) => row.extname),
       ['pgcrypto', 'vector'],
     );
-    assert.equal(tables.rows[0].count, 28);
+    assert.equal(tables.rows[0].count, 29);
   });
 
   it('installs the Delivery 9 generated search vector and tenant-first indexes', async () => {
