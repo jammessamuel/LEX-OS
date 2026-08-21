@@ -135,6 +135,10 @@ describe('Delivery 13 password recovery', () => {
       BLOCKED_ID,
     ]);
     await pool.query('DELETE FROM email_outbox WHERE user_id IN ($1, $2)', [MEMBER_ID, BLOCKED_ID]);
+    await pool.query(
+      "DELETE FROM audit_logs WHERE user_id IN ($1, $2) AND action LIKE 'auth.password.%'",
+      [MEMBER_ID, BLOCKED_ID],
+    );
     await clearResetCounters();
   });
 
