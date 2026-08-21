@@ -48,18 +48,19 @@ invisível.
 
 ---
 
-## Decidido pela sociedade — 2026-08-07
+## Decidido pela sociedade — 2026-08-07 e 2026-08-20
 
 Os cinco registros abertos foram fechados. As decisões liberam planejamento e
 implementação futura; não autorizam, por si só, o início de uma nova entrega.
 
-| Registro | Decisão                                               | Condição inegociável                                                      |
-| -------- | ----------------------------------------------------- | ------------------------------------------------------------------------- |
-| ADR-009  | Resposta ancorada em fonte autorizada                 | Sem fonte autorizada, o sistema recusa responder                          |
-| ADR-010  | Upload e e-mail no MVP; WhatsApp como conector futuro | Remetente não verificado nunca escreve em um tenant                       |
-| ADR-011  | Assinatura com franquia e medição de excedente        | Custo por execução e teto rígido por caso antes do primeiro provedor real |
-| ADR-012  | Preservar por padrão; sem expurgo automático          | Legal hold falha fechado e nenhum fornecedor treina com o conteúdo        |
-| ADR-013  | Notificações internas com conteúdo mínimo             | Somente código do caso, tipo do acontecimento e link                      |
+| Registro | Decisão                                                   | Condição inegociável                                                      |
+| -------- | --------------------------------------------------------- | ------------------------------------------------------------------------- |
+| ADR-009  | Resposta ancorada em fonte autorizada                     | Sem fonte autorizada, o sistema recusa responder                          |
+| ADR-010  | Upload e e-mail no MVP; WhatsApp como conector futuro     | Remetente não verificado nunca escreve em um tenant                       |
+| ADR-011  | Assinatura com franquia e medição de excedente            | Custo por execução e teto rígido por caso antes do primeiro provedor real |
+| ADR-012  | Preservar por padrão; sem expurgo automático              | Legal hold falha fechado e nenhum fornecedor treina com o conteúdo        |
+| ADR-013  | Notificações internas com conteúdo mínimo                 | Somente código do caso, tipo do acontecimento e link                      |
+| ADR-014  | Fronteira de identidade: as oito resolvidas em 2026-08-20 | Adapter de e-mail primeiro; TOTP próprio; papel nunca vem de grupo do IdP |
 
 ---
 

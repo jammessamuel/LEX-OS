@@ -1,10 +1,61 @@
 # ADR-014: Fronteira de identidade e acesso
 
-- **Status:** Proposto — aguarda decisão da sociedade
+- **Status:** Aceito — decidido pela sociedade em 2026-08-20
 - **Data:** 2026-08-20
 - **Decisores:** sócios da SAMUEL DEV LTDA
 - **Trava:** o que um escritório consegue fazer sozinho com as próprias pessoas
 - **Idioma:** pt-BR, por ser documento de decisão para a sociedade e não documentação técnica
+
+## Decisão (2026-08-20)
+
+Aceita a **recomendação integral**, com uma resolução para cada uma das oito pendências. A
+ordem abaixo é a ordem de execução, e ela importa: os dois primeiros itens são os únicos que
+hoje transferem risco para fora do sistema.
+
+| #   | Decisão                                                           | Condição inegociável                                                           |
+| --- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| 1   | Recuperação de senha pelo adapter de e-mail do ADR-013            | Mesmo mecanismo do convite: token de uso único, guardado em hash, com validade |
+| 2   | Entrega do convite pelo mesmo adapter                             | Até existir, a tela declara que o link viaja fora do sistema                   |
+| 3   | Segundo fator com TOTP próprio                                    | Opcional por pessoa, exigível por escritório; nunca dependente de fornecedor   |
+| 4   | Entrada federada por OIDC, quando houver a primeira banca com IdP | O papel continua vindo do nosso `UserRole`, nunca de grupo do provedor         |
+| 5   | Autocadastro de escritório recusado no horizonte atual            | Reavaliar apenas se houver teste gratuito ou autoatendimento                   |
+| 6   | O nome curto muda, com o antigo redirecionando                    | O nome antigo **nunca** é reatribuído a outro escritório                       |
+| 7   | Pessoa em dois escritórios recusada conscientemente               | São dois acessos distintos; reavaliar só com demanda real de cliente           |
+| 8   | O sistema recusa remover o último acesso administrativo ativo     | Sem procedimento manual de socorro: desbloqueio por fora é onde vaza acesso    |
+
+**Prioridade de execução.** O item 1 e o item 2 são o mesmo trabalho — o adapter de e-mail —
+e vêm primeiro. O item 3 vem em seguida, por ser o primeiro que aparece em due diligence de
+segurança. O item 4 espera a primeira banca grande no funil. Os itens 5, 6 e 7 não têm custo
+em esperar. O item 8 **não precisou de código** — ver abaixo.
+
+**Sobre o item 3.** Delegar o segundo fator ao provedor de identidade foi descartado como
+alternativa, não adiado: nem todo escritório terá IdP, e um segundo fator que só existe para
+parte dos clientes não é um controle de segurança, é uma exceção a explicar em cada venda.
+
+**Sobre o item 6.** A opção de trocar o nome quebrando os links antigos foi recusada: um
+link de convite morto vira chamado, e um endereço de entrada que deixou de funcionar parece
+falha do produto. A opção de liberar o nome antigo depois de um prazo também foi recusada —
+reatribuir a outro escritório um nome que já circulou é sequestro de identidade servido de
+bandeja.
+
+**Sobre o item 8.** A alternativa de exigir sempre dois administrativos ativos foi recusada
+por ser incompatível com escritório pequeno, que é boa parte do funil. A alternativa de
+socorro manual pelo suporte foi recusada por criar um caminho de concessão de acesso fora do
+sistema, sem auditoria e sem permissão — exatamente o que o produto promete não ter.
+
+Ao implementar a guarda, ela se revelou **inalcançável**, e a regra que já existe basta. A
+prova é curta: para chamar as rotas que removem acesso é preciso `users.manage`, e o guard só
+deixa passar quem está ativo — logo quem chama já é um administrador ativo. Alterar o próprio
+acesso é recusado antes de tudo. Então, sempre que alguém remove o acesso de outra pessoa,
+quem removeu continua administrando. O invariante se sustenta na regra de não mexer no
+próprio acesso, não em uma contagem.
+
+Escrever a contagem e descobrir que ela nunca dispara valeu mais que escrevê-la: código morto
+com teste ao lado dá a impressão de proteção onde só há repetição.
+
+**Condição para quem mexer nisto depois.** Duas mudanças quebrariam o invariante e precisam
+recriá-lo explicitamente: exclusão lógica de pessoa, e qualquer processo automático que
+bloqueie usuário sem um ator humano por trás. Nenhum dos dois existe hoje.
 
 ## Por que este registro existe
 
@@ -109,7 +160,7 @@ bloqueado ou desligado por outra via.
 **Destrava com:** decisão sobre quem socorre. As opções são exigir sempre dois administrativos
 ativos, ou aceitar que o desbloqueio seja procedimento nosso de suporte, com registro.
 
-## Recomendação
+## O que sustentava a recomendação
 
 Em ordem, e a ordem importa:
 
@@ -121,7 +172,7 @@ Em ordem, e a ordem importa:
 Os itens 5, 6 e 7 podem esperar sem custo. O item 8 precisa de uma frase de decisão, não de
 código.
 
-## Consequências de não decidir
+## Consequências de não ter decidido, registradas para memória
 
 Os itens 1 e 2 seguem operando: convite por link entregue à mão e senha esquecida resolvida por
 administrador. Funciona em escritório pequeno e degrada com o tamanho do cliente — exatamente ao
