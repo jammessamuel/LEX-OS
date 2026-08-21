@@ -246,7 +246,8 @@ describe('Delivery 4 HTTP and authentication contract', () => {
   it('keeps the session cookie window-scoped unless the person asks to stay signed in', async () => {
     // Padrão adequado a máquina compartilhada: a próxima pessoa a abrir o navegador não
     // encontra a sessão da anterior.
-    const transient = await login().expect(200);
+    const transient = await login();
+    assert.equal(transient.status, 200);
     const transientCookies = transient.headers['set-cookie'].join(' ');
     assert.equal(/lex_os_refresh=[^;]+;[^,]*Expires=/iu.test(transientCookies), false);
     assert.equal(transientCookies.includes('lex_os_persistir=1'), false);
