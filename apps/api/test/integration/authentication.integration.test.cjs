@@ -123,6 +123,8 @@ describe('Delivery 4 HTTP and authentication contract', () => {
       '/api/v1/auth/invitations/accept',
       '/api/v1/auth/login',
       '/api/v1/auth/logout',
+      '/api/v1/auth/password-reset',
+      '/api/v1/auth/password-reset/complete',
       '/api/v1/auth/refresh',
       '/api/v1/cases',
       '/api/v1/cases/{caseId}/documents',

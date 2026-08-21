@@ -20,8 +20,13 @@ import type { AuthenticatedRequest } from './authenticated-request.js';
 import { AuthService, type IssuedAuthentication } from './auth.service.js';
 import { InvitationsService } from '../users/invitations.service.js';
 import { AcceptInvitationRequestDto } from './dto/accept-invitation-request.dto.js';
+import {
+  CompletePasswordResetDto,
+  RequestPasswordResetDto,
+} from './dto/password-reset-request.dto.js';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto.js';
 import { LoginRequestDto } from './dto/login-request.dto.js';
+import { PasswordResetService } from './password-reset.service.js';
 import { Public } from './public.decorator.js';
 
 @ApiTags('Autenticação')
@@ -31,7 +36,38 @@ export class AuthController {
     @Inject(RUNTIME_CONFIG) private readonly config: RuntimeConfig,
     private readonly auth: AuthService,
     private readonly invitations: InvitationsService,
+    private readonly passwordReset: PasswordResetService,
   ) {}
+
+  /**
+   * Pedido de redefinicao. Responde 204 sempre — endereco desconhecido, bloqueado ou ainda
+   * convidado recebem o mesmo silencio. Diferenciar transformaria a rota em um oraculo de
+   * quem trabalha no escritorio, e o slug ja torna o escritorio adivinhavel.
+   */
+  @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Post('password-reset')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Pede a redefinição de senha, sem revelar se a conta existe.' })
+  @ApiNoContentResponse()
+  async requestPasswordReset(@Body() input: RequestPasswordResetDto): Promise<void> {
+    await this.passwordReset.request(
+      input.organizationSlug,
+      input.email,
+      getRequestContext() ?? {},
+    );
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('password-reset/complete')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Conclui a redefinição e derruba as sessões abertas da pessoa.' })
+  @ApiNoContentResponse()
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  async completePasswordReset(@Body() input: CompletePasswordResetDto): Promise<void> {
+    await this.passwordReset.reset(input.token, input.password, getRequestContext() ?? {});
+  }
 
   /**
    * Aceite de convite. Publico por necessidade: quem aceita ainda nao tem sessao, e o token

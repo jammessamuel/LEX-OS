@@ -10,7 +10,9 @@ export type AuthenticationAuditAction =
   | 'auth.logout.succeeded'
   | 'auth.refresh.replayed'
   | 'auth.refresh.revoked'
-  | 'auth.refresh.succeeded';
+  | 'auth.refresh.succeeded'
+  | 'auth.password.reset.requested'
+  | 'auth.password.reset.completed';
 
 export interface AuthenticationAuditEvent {
   organizationId: string;
@@ -22,6 +24,8 @@ export interface AuthenticationAuditEvent {
   requestId?: string;
   correlationId?: string;
   authenticatedActor: boolean;
+  /** Sessões derrubadas junto com a ação. Contagem, nunca identificador de sessão. */
+  revokedSessions?: number;
 }
 
 export interface RequestAuditMetadata {
@@ -342,6 +346,7 @@ function auditData(event: AuthenticationAuditEvent) {
     newData: {
       outcome: event.outcome,
       ...(event.reason === undefined ? {} : { reason: event.reason }),
+      ...(event.revokedSessions === undefined ? {} : { revokedSessions: event.revokedSessions }),
     },
     requestId: event.requestId ?? null,
     correlationId: event.correlationId ?? null,

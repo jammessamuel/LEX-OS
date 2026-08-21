@@ -28,6 +28,13 @@ export type PendingInvitationRecord = Prisma.UserInvitationGetPayload<{
 export class InvitationsRepository {
   constructor(private readonly database: DatabaseService) {}
 
+  findOrganizationName(organizationId: string): Promise<{ tradeName: string } | null> {
+    return this.database.client.organization.findUnique({
+      where: { id: organizationId },
+      select: { tradeName: true },
+    });
+  }
+
   findActiveUserByEmail(organizationId: string, email: string) {
     return this.database.client.user.findUnique({
       where: { organizationId_email: { organizationId, email } },

@@ -9,11 +9,20 @@ import { AuthController } from './auth.controller.js';
 import { AuthRepository } from './auth.repository.js';
 import { AuthService } from './auth.service.js';
 import { LoginAttemptService } from './login-attempt.service.js';
+import { PasswordResetRepository } from './password-reset.repository.js';
+import { PasswordResetService } from './password-reset.service.js';
 
 @Module({
   imports: [RuntimeConfigModule, AuditModule, UsersModule, JwtModule.register({})],
   controllers: [AuthController],
-  providers: [AuthRepository, AuthService, LoginAttemptService, AccessTokenGuard],
+  providers: [
+    AuthRepository,
+    AuthService,
+    LoginAttemptService,
+    PasswordResetRepository,
+    PasswordResetService,
+    AccessTokenGuard,
+  ],
   exports: [AuthRepository, AccessTokenGuard],
 })
 export class AuthModule {}

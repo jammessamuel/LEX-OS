@@ -174,6 +174,51 @@ remains open — the sole administrator blocked by another route.
 A person from another tenant returns 404 on every one of these routes, identical to a person who
 does not exist.
 
+## Password recovery
+
+| Method | Path                                   | Auth   | Purpose                                       |
+| ------ | -------------------------------------- | ------ | --------------------------------------------- |
+| POST   | `/api/v1/auth/password-reset`          | Public | Requests a reset without revealing anything   |
+| POST   | `/api/v1/auth/password-reset/complete` | Public | Sets the new password and drops open sessions |
+
+The request **always answers 204**. An unknown address, a blocked person, someone still
+`INVITED`, and an unknown firm slug all receive the same silence as a real active account.
+Differentiating would turn the route into an oracle for who works at a firm, and the slug
+already makes the firm itself guessable.
+
+The token lives one hour rather than the invitation's seven days: the person is at the screen
+now, and a reset link alive for a week is an open window with no purpose. Issuing a new request
+invalidates any previous open one — two live links for one account double the surface without
+doubling the usefulness.
+
+Completing the reset revokes every open refresh session with reason `PASSWORD_RESET`, in the
+same transaction as the password change. People reset passwords precisely when they suspect
+someone else got in; leaving the sessions alive would hand the account back. The password
+minimum is 12 characters, the same floor as invitation acceptance, because both create a
+password.
+
+Refusals are indistinguishable: unknown, expired, already used, and belonging to another tenant
+all return `PASSWORD_RESET_INVALID` with one message.
+
+## E-mail delivery
+
+Messages are never sent from an HTTP handler. The API writes the intent into `email_outbox` in
+the **same transaction** as the fact that causes it — there is no invitation without a queued
+message, and no message without an invitation — and the worker drains the table on its periodic
+loop. An SMTP connection is a network call that can hang a request.
+
+The outbox stores the template identifier and the named data that feeds it, never the rendered
+body. Reconstructing what was sent is possible; leaking document or client content through the
+table is not. The worker claims each row with the expected state in the `WHERE` clause, so two
+workers cannot deliver the same invitation twice. A row that exhausts its attempts becomes
+`FAILED` and stays: the record is the evidence that someone did not receive what they should.
+
+Templates are a closed catalogue in `@lex-os/shared`, rendered as plain text. Plain text is the
+choice, not a limitation — a legal-operations e-mail needs no layout, and HTML would open the
+door to interpolating content without escaping. The development and test adapter records
+instead of delivering and refuses production startup; the production relay is still an open
+item in [ADR-014](../decisions/ADR-014-fronteira-de-identidade-e-acesso.md).
+
 ## Session lifecycle
 
 Successful login verifies the Argon2id hash, records `last_login_at`, creates a refresh family, appends a safe audit event, and returns a short-lived HS256 access JWT. The JWT contains only user, organization, session, and token-type identifiers and is restricted by issuer, audience, algorithm, and expiry.

@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { withTransaction } from '@lex-os/database';
 
 import { AuditService, type RequestAuditMetadata } from '../audit/audit.service.js';
@@ -9,10 +9,14 @@ import {
   hashPassword,
   newOpaqueToken,
 } from '../auth/credential.js';
+import type { RuntimeConfig } from '@lex-os/config';
+
+import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
 import { DatabaseService } from '../database/database.service.js';
 import { ApiException } from '../http/api-exception.js';
 import type { InvitationResponseDto } from './dto/invitation-response.dto.js';
 import type { InviteUserRequestDto } from './dto/invite-user-request.dto.js';
+import { EmailOutboxRepository } from './email-outbox.repository.js';
 import { InvitationsRepository, type InvitedUserRecord } from './invitations.repository.js';
 import { RoleGrantService } from './role-grant.service.js';
 
@@ -29,10 +33,12 @@ function mapUser(record: InvitedUserRecord) {
 @Injectable()
 export class InvitationsService {
   constructor(
+    @Inject(RUNTIME_CONFIG) private readonly config: RuntimeConfig,
     private readonly database: DatabaseService,
     private readonly repository: InvitationsRepository,
     private readonly audit: AuditService,
     private readonly grants: RoleGrantService,
+    private readonly outbox: EmailOutboxRepository,
   ) {}
 
   async invite(
@@ -54,6 +60,7 @@ export class InvitationsService {
     const roleIds = [...new Set(input.roleIds)];
     await this.grants.assertGrantable(actor.organizationId, actor.userId, roleIds);
 
+    const organization = await this.repository.findOrganizationName(actor.organizationId);
     const token = newOpaqueToken();
     const expiresAt = new Date(Date.now() + INVITATION_TTL_MS);
     const placeholderPasswordHash = await dummyPasswordHash();
@@ -73,6 +80,21 @@ export class InvitationsService {
         expiresAt,
         invitedById: actor.userId,
       });
+      // O e-mail entra na mesma transação: um convite que existe sem mensagem enfileirada
+      // seria um acesso pendente que ninguém sabe que existe.
+      await this.outbox.enqueue(transaction, {
+        organizationId: actor.organizationId,
+        userId: user.id,
+        templateId: 'invitation',
+        recipient: user.email,
+        payload: {
+          organizationName: organization?.tradeName ?? 'seu escritório',
+          recipientName: user.name,
+          link: `${this.config.service.webOrigin}/convite?token=${encodeURIComponent(token)}`,
+          expiresAt: expiresAt.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+        },
+      });
+
       // Auditoria sem nome, e-mail ou token: registra que houve convite e o tamanho da
       // concessão, que é o que permite reconstituir a decisão depois.
       await this.audit.recordDomainInTransaction(transaction, {

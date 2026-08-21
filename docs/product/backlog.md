@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                                                            | Detalhe                                                                                                               |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Entrega 12 — Onboarding do escritório e administração de usuários | Autorizada pela sociedade em 2026-08-20. Backend e telas prontos. Falta o seletor de papéis com o que cada um permite |
+| Cartão                                                | Detalhe                                                                                                                                                     |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Entrega 13 — Adapter de e-mail e recuperação de senha | Autorizada pela sociedade em 2026-08-20, resolvendo os itens 1 e 2 da ADR-014. Backend pronto; faltam as telas de "esqueci a senha" e o envio real por SMTP |
 
 ---
 
@@ -92,6 +92,16 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 ## Feito
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
+
+- **Entrega 12 aceita** — escopo completo em `59c046c`, com os cinco jobs da CI verdes.
+- **Entrega 13, fatia 1 — caixa de saída e recuperação de senha** — o e-mail deixou de ser
+  promessa. O contrato `EmailProvider` vive em `@lex-os/shared` com modelos em catálogo
+  fechado e texto puro; nenhum código de domínio conhece SMTP. A API grava a intenção em
+  `email_outbox` **na mesma transação** do fato que a origina, e o worker drena no laço que já
+  existia — handler HTTP não abre conexão de rede. O pedido de redefinição responde 204 sempre:
+  endereço desconhecido, pessoa bloqueada e escritório inexistente recebem o mesmo silêncio de
+  uma conta real. Concluir derruba todas as sessões abertas, porque quem redefine senha
+  costuma fazê-lo suspeitando de acesso indevido. Oito testes de integração.
 
 - **Harness de interface** — criar uma tela deixou de exigir abrir `tokens.css`, `styles.css`
   e uma view de exemplo. `docs/product/ui-harness.md` cataloga tokens, classes prontas,

@@ -55,19 +55,18 @@ Approval for one commit is not standing approval for the next.
 
 ### 0.3 Respect the delivery boundary
 
-The latest accepted checkpoint is **Delivery 11 — Full MVP verification and CI hardening**,
-accepted 2026-08-20 with every mandatory CI job green on `main` at `ab9de3d`.
+The latest accepted checkpoint is **Delivery 12 — Organization onboarding and user
+administration**, accepted 2026-08-20 with every mandatory CI job green on `main`.
 
-**Delivery 12 — Organization onboarding and user administration is authorized** (owner,
-2026-08-20). A unique organization `slug` replaces the UUID at sign-in; user administration
-inside the tenant covers list, invite, role change, block, reactivate, and soft-delete, all
-behind permission codes. Invitation tokens are single-use, hashed, and expiring; deactivation
-revokes refresh sessions in the same transaction.
+**Delivery 13 — E-mail adapter and password recovery is authorized** (owner, 2026-08-20),
+resolving ADR-014 items 1 and 2. An `EmailProvider` contract with a deterministic mock and an
+SMTP adapter; sending happens in the worker through a queued job, never in an HTTP handler;
+password recovery reuses the invitation mechanism — single-use hashed token with expiry — and
+revokes every refresh session on reset. Audit records the send without body, token or password.
 
-Out of scope, and still requiring separate authorization: public self-service organization
-signup, billing, SSO, password recovery by e-mail, cross-organization users, real providers,
-and production data. Do not implement future-delivery behavior opportunistically, even when
-it looks like a small addition.
+Out of scope, and still requiring separate authorization: the three ADR-013 notification
+triggers, a production relay, real providers, and production data. Do not implement
+future-delivery behavior opportunistically, even when it looks like a small addition.
 
 ### 0.4 Never suppress a failing gate
 

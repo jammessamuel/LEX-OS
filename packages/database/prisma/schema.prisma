@@ -277,6 +277,8 @@ model Organization {
   processingJobs         ProcessingJob[]
   auditLogs              AuditLog[]
   userInvitations        UserInvitation[]
+  passwordResetRequests  PasswordResetRequest[]
+  emailOutbox            EmailOutbox[]
 
   @@map("organizations")
 }
@@ -308,6 +310,69 @@ model UserInvitation {
   @@map("user_invitations")
 }
 
+enum EmailOutboxStatus {
+  PENDING
+  SENT
+  FAILED
+
+  @@map("email_outbox_status")
+}
+
+/// Caixa de saida de e-mail.
+///
+/// A API grava a intencao na mesma transacao do fato que a origina — nao existe convite sem
+/// e-mail enfileirado, nem e-mail sem convite. O worker drena; handler HTTP nunca abre
+/// conexao SMTP, que e chamada de rede capaz de pendurar a requisicao.
+///
+/// O corpo nao e guardado: so o modelo e os dados que o alimentam, que sao nome, link e
+/// prazo. Reconstituir o que foi enviado e possivel; vazar conteudo pela tabela, nao.
+model EmailOutbox {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId    String            @map("organization_id") @db.Uuid
+  userId            String            @map("user_id") @db.Uuid
+  templateId        String            @map("template_id") @db.VarChar(64)
+  recipient         String            @db.VarChar(320)
+  payload           Json              @default("{}") @db.JsonB
+  status            EmailOutboxStatus @default(PENDING)
+  attempts          Int               @default(0)
+  lastError         String?           @map("last_error") @db.VarChar(500)
+  sentAt            DateTime?         @map("sent_at") @db.Timestamptz(6)
+  providerMessageId String?           @map("provider_message_id") @db.VarChar(255)
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [organizationId, userId], references: [organizationId, id])
+
+  @@unique([organizationId, id])
+  @@index([status, createdAt])
+  @@map("email_outbox")
+}
+
+/// Pedido de redefinicao de senha.
+///
+/// Mesma mecanica do convite, e de proposito: token opaco guardado so em hash, uso unico,
+/// com validade. A diferenca e o destinatario — aqui a pessoa ja esta ativa, e concluir
+/// revoga todas as sessoes dela.
+model PasswordResetRequest {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  tokenHash      String    @unique @map("token_hash") @db.VarChar(64)
+  expiresAt      DateTime  @map("expires_at") @db.Timestamptz(6)
+  usedAt         DateTime? @map("used_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [organizationId, userId], references: [organizationId, id])
+
+  @@unique([organizationId, id])
+  @@index([organizationId, userId])
+  @@index([expiresAt])
+  @@map("password_reset_requests")
+}
+
 model User {
   id             String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   organizationId String     @map("organization_id") @db.Uuid
@@ -320,20 +385,22 @@ model User {
   updatedAt      DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt      DateTime?  @map("deleted_at") @db.Timestamptz(6)
 
-  organization               Organization        @relation(fields: [organizationId], references: [id])
+  organization               Organization           @relation(fields: [organizationId], references: [id])
   refreshSessions            RefreshSession[]
   userRoles                  UserRole[]
-  responsibleCases           Case[]              @relation("CaseResponsible")
-  uploadedFiles              StoredFile[]        @relation("FileUploadedBy")
-  classifiedDocuments        Document[]          @relation("DocumentClassifiedBy")
-  confirmedExtractedEntities ExtractedEntity[]   @relation("EntityConfirmedBy")
-  confirmedTimelineEvents    TimelineEvent[]     @relation("TimelineConfirmedBy")
-  validatedChecklistItems    CaseChecklistItem[] @relation("ChecklistValidatedBy")
-  assignedTasks              Task[]              @relation("TaskAssignedTo")
-  createdTasks               Task[]              @relation("TaskCreatedBy")
+  responsibleCases           Case[]                 @relation("CaseResponsible")
+  uploadedFiles              StoredFile[]           @relation("FileUploadedBy")
+  classifiedDocuments        Document[]             @relation("DocumentClassifiedBy")
+  confirmedExtractedEntities ExtractedEntity[]      @relation("EntityConfirmedBy")
+  confirmedTimelineEvents    TimelineEvent[]        @relation("TimelineConfirmedBy")
+  validatedChecklistItems    CaseChecklistItem[]    @relation("ChecklistValidatedBy")
+  assignedTasks              Task[]                 @relation("TaskAssignedTo")
+  createdTasks               Task[]                 @relation("TaskCreatedBy")
   auditLogs                  AuditLog[]
-  invitations                UserInvitation[]    @relation("InvitationUser")
-  sentInvitations            UserInvitation[]    @relation("InvitationInvitedBy")
+  invitations                UserInvitation[]       @relation("InvitationUser")
+  sentInvitations            UserInvitation[]       @relation("InvitationInvitedBy")
+  passwordResetRequests      PasswordResetRequest[]
+  emailOutbox                EmailOutbox[]
 
   @@unique([organizationId, email])
   @@unique([organizationId, id])

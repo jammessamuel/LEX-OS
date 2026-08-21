@@ -1,6 +1,6 @@
 # Incremental implementation plan
 
-**Status:** Delivery 11 accepted; Delivery 12 authorized
+**Status:** Delivery 12 accepted; Delivery 13 authorized
 
 **Last updated:** 2026-08-20
 
@@ -296,6 +296,43 @@ e-mail, and cross-organization users. Real client data stays blocked by ADR-012.
 - audit records every administrative action through the field allowlist, without password hash,
   token, or e-mail body;
 - Playwright covers invite → accept → sign in with the slug → role change → block.
+
+## Delivery 13 — E-mail adapter and password recovery
+
+Authorized by the owner on 2026-08-20, resolving items 1 and 2 of
+[ADR-014](../decisions/ADR-014-fronteira-de-identidade-e-acesso.md). It is the only remaining
+item that pushes risk outside the system: today an invitation link is handed over by whatever
+channel the administrator picks, and a forgotten password has no path but an administrator.
+
+**Scope**
+
+- an `EmailProvider` contract in `packages/shared`, with a deterministic development/test
+  adapter that records instead of sending and an SMTP adapter for the local Mailpit and for a
+  future production relay. The adapter is infrastructure: no domain code imports a mail SDK;
+- **sending happens in the worker**, never in an HTTP handler, through a queued job. The API
+  persists the intent and returns; the worker delivers and retries;
+- password recovery: request and reset, reusing the invitation mechanism — single-use token,
+  stored only as a hash, with expiry — pointing at an already active person;
+- invitation delivery by e-mail, with the copyable link kept as the fallback for as long as no
+  relay is configured;
+- audit of every send with recipient identifier, template and outcome, **never the body, never
+  the token, never the address in clear text beyond the allowlisted field**.
+
+**Out of scope** — the three ADR-013 notification triggers with their opt-out preferences, a
+production relay contract, and anything about deliverability. Those are separate increments.
+
+**Acceptance**
+
+- no mail SDK outside the infrastructure adapter, and the mock refuses production startup;
+- a recovery request for an unknown, blocked, or invited address is indistinguishable from one
+  that will arrive: the response never reveals whether an account exists;
+- a reset token is refused when reused, expired, revoked, or belonging to another tenant, with
+  the same message in every case;
+- resetting a password revokes every open refresh session of that person in the same
+  transaction, so a stolen session does not survive the recovery;
+- the audit record carries no body, no token, and no password;
+- the local flow is exercised end to end against Mailpit, and the tenant-isolation negative
+  tests of the cross-delivery matrix cover request, reset, and resend.
 
 ## Governed follow-up increments
 

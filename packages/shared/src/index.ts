@@ -24,6 +24,16 @@ export type {
   KnowledgeSourceLocator,
 } from './knowledge.js';
 
+export { emailTemplates, RecordingEmailProvider, renderEmail } from './email.js';
+export type {
+  EmailDeliveryResult,
+  EmailMessage,
+  EmailProvider,
+  EmailRecipient,
+  EmailTemplateId,
+  RenderedEmail,
+} from './email.js';
+
 export type StructuredLogLevel = 'debug' | 'error' | 'info' | 'warn';
 
 export interface StructuredLogEntry {
