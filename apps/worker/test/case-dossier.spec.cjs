@@ -71,6 +71,11 @@ const { inflateSync } = require('node:zlib');
 
 const HEX_STRING = new RegExp(String.raw`<([0-9a-fA-F\s]+)>`, 'gu');
 const WHITESPACE = new RegExp(String.raw`\s`, 'gu');
+const FOOTER = new RegExp(String.raw`\d+ de \d+`, 'gu');
+const IDENTIFIER = new RegExp(
+  String.raw`0001234-27\.2026\.5\.02\.0001( · documento sigiloso)?`,
+  'gu',
+);
 
 /**
  * Texto do PDF.
@@ -106,7 +111,81 @@ function pdfText(buffer) {
   return text;
 }
 
+/** Uma entrada por página do documento, para poder olhar cada uma em separado. */
+function pdfPages(buffer) {
+  const raw = buffer.toString('latin1');
+  const pages = [];
+  let cursor = 0;
+  for (;;) {
+    const start = raw.indexOf('stream', cursor);
+    if (start === -1) break;
+    const end = raw.indexOf('endstream', start);
+    if (end === -1) break;
+    const begin = raw.charCodeAt(start + 6) === 13 ? start + 8 : start + 7;
+    try {
+      const content = inflateSync(Buffer.from(raw.slice(begin, end), 'latin1')).toString('latin1');
+      let text = '';
+      for (const match of content.matchAll(HEX_STRING)) {
+        text += Buffer.from(match[1].replace(WHITESPACE, ''), 'hex').toString('latin1');
+      }
+      pages.push(text);
+    } catch {
+      // Fluxo binário: fonte ou imagem, não é página.
+    }
+    cursor = end + 9;
+  }
+  return pages;
+}
+
 describe('dossiê do caso', () => {
+  it('não inventa página: um caso vazio cabe em uma folha', async () => {
+    const empty = dossier({
+      participants: [],
+      events: [],
+      unconfirmedEventCount: 0,
+      checklists: [],
+      documentCount: 0,
+    });
+    empty.legalCase.description = null;
+
+    const pages = pdfPages(await renderCaseDossier(empty));
+
+    // O rodapé mora na margem inferior. Escrito sem cuidado, o pdfkit abre uma página nova
+    // para cada escrita e o documento triplica de tamanho, cheio de folhas só com rodapé.
+    expect(pages).toHaveLength(1);
+  });
+
+  it('põe conteúdo em toda página, não só o rodapé', async () => {
+    const pages = pdfPages(await renderCaseDossier(dossier()));
+
+    for (const [index, text] of pages.entries()) {
+      const withoutFooter = text.replace(FOOTER, '').replace(IDENTIFIER, '').trim();
+      expect({ pagina: index + 1, conteudo: withoutFooter.length > 40 }).toEqual({
+        pagina: index + 1,
+        conteudo: true,
+      });
+    }
+  });
+
+  it('numera as páginas com o total real do documento', async () => {
+    const many = dossier({
+      events: Array.from({ length: 40 }, (_unused, index) => ({
+        occurredAt: '2026-07-15T12:00:00.000Z',
+        precision: 'DAY',
+        title: `Fato fictício ${index + 1}`,
+        description: 'Descrição repetida para forçar a quebra de página.',
+        provenance: null,
+      })),
+    });
+
+    const pages = pdfPages(await renderCaseDossier(many));
+    expect(pages.length).toBeGreaterThan(1);
+
+    for (const [index, text] of pages.entries()) {
+      expect(text).toMatch(new RegExp(`${index + 1} de ${pages.length}`, 'u'));
+    }
+  });
+
   it('produz um PDF válido, com páginas e metadados', async () => {
     const pdf = await renderCaseDossier(dossier());
 

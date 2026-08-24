@@ -410,10 +410,19 @@ function footers(doc: Doc, input: DossierInput): void {
   const pages = doc.bufferedPageRange();
   const identifier = input.legalCase.cnjNumber ?? input.legalCase.internalCode;
   const restricted = input.legalCase.confidentialityLevel !== 'STANDARD';
+  const y = A4[1] - MARGIN + 16;
 
   for (let index = 0; index < pages.count; index += 1) {
     doc.switchToPage(pages.start + index);
-    const y = A4[1] - MARGIN + 16;
+
+    // O rodapé mora dentro da margem inferior, que é área proibida para o fluxo normal: ao
+    // receber texto abaixo de `maxY`, o pdfkit conclui que a página acabou e abre outra para
+    // acomodá-lo. Como são duas escritas por página, cada página real virava três — e o
+    // rodapé nunca chegava na página a que pertencia. Zerar a margem enquanto se desenha, e
+    // devolvê-la em seguida, mantém a escrita na página certa sem afetar o resto.
+    const bottom = doc.page.margins.bottom;
+    doc.page.margins.bottom = 0;
+
     doc
       .save()
       .lineWidth(0.5)
@@ -439,6 +448,8 @@ function footers(doc: Doc, input: DossierInput): void {
         align: 'right',
         lineBreak: false,
       });
+
+    doc.page.margins.bottom = bottom;
   }
 }
 
