@@ -138,16 +138,25 @@ describe('SecurityView', () => {
     expect(wrapper.get('.warn').text()).toContain('Restam poucos códigos');
   });
 
-  it('declara que a leitura por QR ainda não está aqui', async () => {
+  it('desenha o QR do endereço, com rótulo para quem não o enxerga', async () => {
     request.mockResolvedValueOnce(status());
     const wrapper = mountView();
     await flushPromises();
 
-    request.mockResolvedValueOnce({ secret: 'ABCDEFGH', uri: 'otpauth://x' });
+    request.mockResolvedValueOnce({
+      secret: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
+      uri: 'otpauth://totp/LEX%20OS:ana@escritorio.invalid?secret=ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
+    });
     await wrapper.get('.actions .btn').trigger('click');
     await flushPromises();
 
-    expect(wrapper.get('.note').text()).toContain('leitura por QR ainda não está aqui');
+    const qr = wrapper.get('svg.qr');
+    expect(qr.attributes('role')).toBe('img');
+    expect(qr.attributes('aria-label')).toContain('aplicativo autenticador');
+    // Sem caminho não há código: um SVG vazio passaria despercebido na revisão visual.
+    expect((qr.get('path').attributes('d') ?? '').length).toBeGreaterThan(100);
+    // A chave continua à vista para quem não consegue escanear.
+    expect(wrapper.get('.secret').text()).toContain('ABCD EFGH');
   });
 
   it('mostra a recusa do servidor e limpa o código digitado', async () => {

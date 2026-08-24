@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-24 · Entrega 14 completa
+**Última atualização:** 2026-08-24 · Entrega 14 completa, com QR
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -92,6 +92,17 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 ## Feito
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
+
+- **QR na inscrição do segundo fator** — a codificação veio de biblioteca, e a decisão é o
+  oposto da do TOTP de propósito. O TOTP foi escrito à mão porque cabe em dezenas de linhas e
+  os vetores da RFC provam que está certo; o QR não tem esse luxo — Reed-Solomon, escolha de
+  máscara e informação de formato erram **em silêncio**, e um código sutilmente errado só
+  aparece quando alguém tenta ler. `qrcode-generator` tem zero dependências e tipos
+  empacotados. Renderiza em SVG, preto no branco inclusive no tema escuro, porque nem toda
+  câmera aceita polaridade invertida. A chave em grupos de quatro continua à vista para quem
+  não consegue escanear.
+- **Demo com tudo** — API de 38 para 49 rotas, worker atualizado, conferido pelo front e não
+  direto na API. E-mail não chega por falta de relay, o que é decisão em aberto e não falha.
 
 - **Entrega 14, fatia 5 — as telas do segundo fator** — a entrada virou dois passos, e o
   segundo não é tratado como erro: a senha foi aceita, então a tela avança em vez de acusar
@@ -324,9 +335,8 @@ Ordem cronológica inversa. Serve para o quadro não perder a memória do que j�
 Mover o cartão na hora em que o estado muda, não no fim do dia. Ao concluir, escrever em
 **Feito** o que mudou para quem não acompanhou — não o nome do cartão.## A fazer — qualidade de interface
 
-| Cartão                           | Detalhe                                                                                                                                                                        |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| QR na inscrição do segundo fator | Hoje o cadastro é pela chave ou pelo link. Um codificador escrito à mão erra em silêncio — um QR sutilmente errado só aparece quando alguém tenta ler. Uma dependência resolve |
+| Cartão | Detalhe |
+| ------ | ------- |
 
 | Cartão                                   | Detalhe                                                                                                         |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------- |

@@ -7,6 +7,7 @@ import type {
   SecondFactorEnrolment,
   SecondFactorStatus,
 } from '../api/types.js';
+import QrCode from '../components/QrCode.vue';
 import { useSessionStore } from '../stores/session.js';
 
 /**
@@ -181,10 +182,16 @@ onMounted(() => {
           <!-- Cadastro em andamento -->
           <template v-if="enrolment">
             <p class="lede">
-              Abra o aplicativo autenticador e cadastre a chave abaixo. Depois confirme com o código
-              que ele mostrar — só assim o segundo fator passa a valer.
+              Abra o aplicativo autenticador e leia o código abaixo. Depois confirme com os seis
+              dígitos que ele mostrar — só assim o segundo fator passa a valer.
             </p>
-            <p class="secret data">{{ readableSecret }}</p>
+            <div class="enrol">
+              <QrCode :value="enrolment.uri" label="Código para o aplicativo autenticador" />
+              <div class="enrol__manual">
+                <p class="label">Ou cadastre a chave à mão</p>
+                <p class="secret data">{{ readableSecret }}</p>
+              </div>
+            </div>
             <p class="lede">
               <a class="link" :href="enrolment.uri">Abrir direto no aplicativo</a>
               — funciona quando esta página está no próprio telefone.
@@ -218,13 +225,6 @@ onMounted(() => {
                 Cancelar
               </button>
             </div>
-
-            <!-- Limitação declarada: sem QR ainda. -->
-            <p class="note">
-              A leitura por QR ainda não está aqui. Gerar o código de barras exige um codificador, e
-              um QR sutilmente errado só aparece quando alguém tenta ler — por enquanto o cadastro é
-              pela chave ou pelo link acima.
-            </p>
           </template>
 
           <!-- Desligamento em andamento -->
@@ -310,8 +310,21 @@ onMounted(() => {
 }
 
 /* A chave é para ser lida em voz alta e digitada em outro aparelho. */
-.secret {
+.enrol {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  flex-wrap: wrap;
   margin-top: var(--space-4);
+}
+
+.enrol__manual {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.secret {
+  margin-top: var(--space-2);
   font-size: var(--step-1);
   letter-spacing: 0.08em;
   background: var(--surface-sunk);
