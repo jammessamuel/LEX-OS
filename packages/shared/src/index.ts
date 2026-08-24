@@ -24,6 +24,9 @@ export type {
   KnowledgeSourceLocator,
 } from './knowledge.js';
 
+export { cnjSegmentName, isValidCnj, normalizeCnj, parseCnj } from './cnj.js';
+export type { CnjParts } from './cnj.js';
+
 export { emailTemplates, RecordingEmailProvider, renderEmail } from './email.js';
 
 export {

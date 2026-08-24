@@ -133,9 +133,10 @@ async function setupIsolationFixtures() {
   );
   await pool.query(
     `INSERT INTO cases
-      (id, organization_id, internal_code, title, legal_area, case_type, status, priority,
-       confidentiality_level, responsible_user_id, updated_at)
-     VALUES ($1, $2, 'D5-OTHER-001', 'Caso Fictício de Outro Tenant', 'TESTE', 'TESTE',
+      (id, organization_id, internal_code, cnj_number, title, legal_area, case_type, status,
+       priority, confidentiality_level, responsible_user_id, updated_at)
+     VALUES ($1, $2, 'D5-OTHER-001', '0007777-22.2026.8.26.0100',
+       'Caso Fictício de Outro Tenant', 'TESTE', 'TESTE',
        'INTAKE', 'NORMAL', 'STANDARD', $3, now())`,
     [OTHER_CASE_ID, OTHER_ORGANIZATION_ID, OTHER_USER_ID],
   );
@@ -434,6 +435,130 @@ describe('Delivery 5 people, cases, and participants', () => {
     );
   });
 
+  it('accepts the CNJ number only when the check digit holds, and keeps it unique per firm', async () => {
+    // Digito verificador trocado: a forma esta certa, o numero nao existe. Uma expressao
+    // regular deixaria passar, e o erro so apareceria no dia da consulta ao tribunal.
+    const wrongDigit = await authorized('post', '/api/v1/cases')
+      .send({
+        internalCode: 'D5-CNJ-INVALIDO',
+        cnjNumber: '0001234-28.2026.5.02.0001',
+        title: 'Caso Fictício com Número Inválido',
+        legalArea: 'TESTE',
+        caseType: 'TESTE',
+      })
+      .expect(400);
+    assert.equal(wrongDigit.body.code, 'VALIDATION_ERROR');
+
+    const transposed = await authorized('post', '/api/v1/cases')
+      .send({
+        internalCode: 'D5-CNJ-TRANSPOSTO',
+        cnjNumber: '0001243-27.2026.5.02.0001',
+        title: 'Caso Fictício com Dígitos Trocados',
+        legalArea: 'TESTE',
+        caseType: 'TESTE',
+      })
+      .expect(400);
+    assert.equal(transposed.body.code, 'VALIDATION_ERROR');
+
+    // Colado dos autos sem pontuação: entra do mesmo jeito e é guardado na forma do CNJ.
+    const created = await authorized('post', '/api/v1/cases')
+      .send({
+        internalCode: 'D5-CNJ-001',
+        cnjNumber: '00099998420265020001',
+        court: 'TRT da 2ª Região',
+        courtDivision: '1ª Vara do Trabalho de São Paulo',
+        title: 'Caso Fictício com Número do Processo',
+        legalArea: 'TESTE',
+        caseType: 'TESTE',
+      })
+      .expect(201);
+    assert.equal(created.body.cnjNumber, '0009999-84.2026.5.02.0001');
+    assert.equal(created.body.cnjSegment, 'Justiça do Trabalho');
+    assert.equal(created.body.court, 'TRT da 2ª Região');
+    assert.equal(created.body.courtDivision, '1ª Vara do Trabalho de São Paulo');
+
+    // Dois casos com o mesmo processo é erro de cadastro, e o recado tem de apontar o campo
+    // certo — dizer "código interno" manda a pessoa corrigir o lugar errado.
+    const duplicate = await authorized('post', '/api/v1/cases')
+      .send({
+        internalCode: 'D5-CNJ-002',
+        cnjNumber: '0009999-84.2026.5.02.0001',
+        title: 'Outro Caso Fictício com o Mesmo Processo',
+        legalArea: 'TESTE',
+        caseType: 'TESTE',
+      })
+      .expect(409);
+    assert.equal(duplicate.body.code, 'CASE_CNJ_NUMBER_CONFLICT');
+
+    // Caso sem número é o normal antes do protocolo: o índice parcial não pode reclamar.
+    await authorized('post', '/api/v1/cases')
+      .send({
+        internalCode: 'D5-CNJ-SEM-NUMERO-1',
+        title: 'Caso Fictício Ainda Não Protocolado',
+        legalArea: 'TESTE',
+        caseType: 'TESTE',
+      })
+      .expect(201);
+    await authorized('post', '/api/v1/cases')
+      .send({
+        internalCode: 'D5-CNJ-SEM-NUMERO-2',
+        title: 'Outro Caso Fictício Ainda Não Protocolado',
+        legalArea: 'TESTE',
+        caseType: 'TESTE',
+      })
+      .expect(201);
+
+    const cleared = await authorized('patch', `/api/v1/cases/${created.body.id}`)
+      .send({ cnjNumber: null, courtDivision: null })
+      .expect(200);
+    assert.equal(cleared.body.cnjNumber, null);
+    assert.equal(cleared.body.cnjSegment, null);
+    assert.equal(cleared.body.courtDivision, null);
+    assert.equal(cleared.body.court, 'TRT da 2ª Região');
+
+    const restored = await authorized('patch', `/api/v1/cases/${created.body.id}`)
+      .send({ cnjNumber: '0009999-84.2026.5.02.0001' })
+      .expect(200);
+    assert.equal(restored.body.cnjNumber, '0009999-84.2026.5.02.0001');
+  });
+
+  it('finds a case by its process number and never crosses the firm boundary', async () => {
+    const byNumber = await authorized('get', '/api/v1/cases')
+      .query({ search: '0009999-84.2026.5.02.0001' })
+      .expect(200);
+    assert.equal(byNumber.body.data.length, 1);
+    assert.equal(byNumber.body.data[0].internalCode, 'D5-CNJ-001');
+
+    // Sem pontuação encontra o mesmo caso: é assim que o número chega colado do e-mail.
+    const unpunctuated = await authorized('get', '/api/v1/cases')
+      .query({ search: '00099998420265020001' })
+      .expect(200);
+    assert.equal(unpunctuated.body.data.length, 1);
+    assert.equal(unpunctuated.body.data[0].internalCode, 'D5-CNJ-001');
+
+    const byInternalCode = await authorized('get', '/api/v1/cases')
+      .query({ search: 'd5-cnj-001' })
+      .expect(200);
+    assert.equal(byInternalCode.body.data.length, 1);
+    assert.equal(byInternalCode.body.data[0].internalCode, 'D5-CNJ-001');
+
+    const byTitle = await authorized('get', '/api/v1/cases')
+      .query({ search: 'Número do Processo' })
+      .expect(200);
+    assert.equal(byTitle.body.data.length, 1);
+
+    // Isolamento: o número existe, mas pertence a outro escritório.
+    const otherTenant = await authorized('get', '/api/v1/cases')
+      .query({ search: '0007777-22.2026.8.26.0100' })
+      .expect(200);
+    assert.equal(otherTenant.body.data.length, 0);
+
+    const otherTenantCode = await authorized('get', '/api/v1/cases')
+      .query({ search: 'D5-OTHER-001' })
+      .expect(200);
+    assert.equal(otherTenantCode.body.data.length, 0);
+  });
+
   it('enforces confidential-case policy and audits authorized confidential reads', async () => {
     const created = await authorized('post', '/api/v1/cases')
       .send({
@@ -592,6 +717,9 @@ describe('Delivery 5 people, cases, and participants', () => {
       'Caso Fictício D5 Padrão',
       'Descrição jurídica inteiramente fictícia.',
       'FICTICIO1234',
+      // A auditoria sabe que o número do processo mudou, sem guardar qual: o registro é por
+      // lista de campos permitidos, e o número não está nela.
+      '0009999-84.2026.5.02.0001',
     ]) {
       assert.equal(serialized.includes(prohibited), false);
     }

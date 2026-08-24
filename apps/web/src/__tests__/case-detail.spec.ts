@@ -22,6 +22,10 @@ const { ApiError } = await import('../api/client');
 const legalCase = {
   id: 'case-1',
   internalCode: 'DEMO-0001',
+  cnjNumber: '0001234-27.2026.5.02.0001',
+  cnjSegment: 'Justiça do Trabalho',
+  court: 'TRT da 2ª Região',
+  courtDivision: '1ª Vara do Trabalho de São Paulo',
   title: 'Caso fictício de demonstração',
   description: null,
   legalArea: 'DIREITO_TRABALHISTA',

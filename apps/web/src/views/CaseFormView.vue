@@ -2,6 +2,8 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { cnjSegmentName, isValidCnj, normalizeCnj } from '@lex-os/shared/cnj';
+
 import { ApiError, request } from '../api/client.js';
 import {
   caseStatuses,
@@ -31,6 +33,9 @@ const canSetBudget = computed(() => session.can('cases.update'));
 
 const form = reactive({
   internalCode: '',
+  cnjNumber: '',
+  court: '',
+  courtDivision: '',
   title: '',
   description: '',
   legalArea: '',
@@ -43,6 +48,29 @@ const form = reactive({
   closedAt: '',
   processingCostLimitAmount: '0.00',
 });
+
+/**
+ * Confere o número enquanto a pessoa digita, mas só depois de ela ter os 20 dígitos.
+ *
+ * Avisar antes disso seria acusar de erro quem ainda está no meio da digitação. Depois,
+ * o aviso vale: o dígito verificador pega justamente a troca de dois números, que é o
+ * erro que ninguém percebe relendo.
+ */
+const cnjCheck = computed<{ state: 'vazio' | 'valido' | 'invalido'; segment: string | null }>(
+  () => {
+    const value = form.cnjNumber.trim();
+    if (value === '') {
+      return { state: 'vazio', segment: null };
+    }
+    const digits = [...value].filter((char) => char >= '0' && char <= '9').length;
+    if (digits < 20) {
+      return { state: 'vazio', segment: null };
+    }
+    return isValidCnj(value)
+      ? { state: 'valido', segment: cnjSegmentName(value) }
+      : { state: 'invalido', segment: null };
+  },
+);
 
 const responsibleUsers = ref<AssignableUser[]>([]);
 const loading = ref(editing.value);
@@ -77,6 +105,9 @@ function normalizeCostForComparison(value: string): string {
 
 function fill(current: CaseSummary): void {
   form.internalCode = current.internalCode;
+  form.cnjNumber = current.cnjNumber ?? '';
+  form.court = current.court ?? '';
+  form.courtDivision = current.courtDivision ?? '';
   form.title = current.title;
   form.description = current.description ?? '';
   form.legalArea = humanizeCode(current.legalArea);
@@ -119,6 +150,9 @@ async function save(): Promise<void> {
   try {
     const body = {
       internalCode: form.internalCode.trim(),
+      cnjNumber: form.cnjNumber.trim() === '' ? null : normalizeCnj(form.cnjNumber.trim()),
+      court: form.court.trim() || null,
+      courtDivision: form.courtDivision.trim() || null,
       title: form.title.trim(),
       description: form.description.trim() || null,
       legalArea: toTechnicalCode(form.legalArea),
@@ -197,6 +231,49 @@ onMounted(() => void load());
           <span v-if="failure?.detailFor('internalCode')" class="field__error">
             {{ failure.detailFor('internalCode') }}
           </span>
+        </label>
+        <label class="field field--wide">
+          <span class="label">Número do processo</span>
+          <input
+            id="case-cnj-number"
+            v-model="form.cnjNumber"
+            class="data"
+            maxlength="25"
+            inputmode="numeric"
+            autocomplete="off"
+            placeholder="0001234-27.2026.5.02.0001"
+            :aria-invalid="cnjCheck.state === 'invalido'"
+          />
+          <span v-if="cnjCheck.state === 'invalido'" class="field__error">
+            Número inválido. Confira os dígitos — o padrão do CNJ detecta digitação trocada.
+          </span>
+          <span v-else-if="failure?.detailFor('cnjNumber')" class="field__error">
+            {{ failure.detailFor('cnjNumber') }}
+          </span>
+          <span v-else-if="cnjCheck.segment" class="field__hint">{{ cnjCheck.segment }}</span>
+          <span v-else class="field__hint">
+            Opcional enquanto o caso não foi protocolado. Pode colar com ou sem pontuação.
+          </span>
+        </label>
+        <label class="field">
+          <span class="label">Tribunal</span>
+          <input
+            id="case-court"
+            v-model="form.court"
+            maxlength="160"
+            autocomplete="off"
+            placeholder="Ex.: TRT da 2ª Região"
+          />
+        </label>
+        <label class="field">
+          <span class="label">Vara ou órgão julgador</span>
+          <input
+            id="case-court-division"
+            v-model="form.courtDivision"
+            maxlength="160"
+            autocomplete="off"
+            placeholder="Ex.: 1ª Vara do Trabalho de São Paulo"
+          />
         </label>
         <label class="field field--wide">
           <span class="label">Título</span>

@@ -26,6 +26,19 @@ export class CaseResponseDto {
   @ApiProperty({ example: 'DEMO-0002' })
   internalCode!: string;
 
+  @ApiPropertyOptional({ example: '0001234-27.2026.5.02.0001', nullable: true })
+  cnjNumber!: string | null;
+
+  /** Segmento do Judiciário por extenso, derivado do número — a tela não mostra dígito solto. */
+  @ApiPropertyOptional({ example: 'Justiça do Trabalho', nullable: true })
+  cnjSegment!: string | null;
+
+  @ApiPropertyOptional({ example: 'TRT da 2ª Região', nullable: true })
+  court!: string | null;
+
+  @ApiPropertyOptional({ example: '1ª Vara do Trabalho de São Paulo', nullable: true })
+  courtDivision!: string | null;
+
   @ApiProperty({ example: 'Caso fictício para validação' })
   title!: string;
 

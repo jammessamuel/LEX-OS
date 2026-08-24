@@ -8,6 +8,9 @@ const caseSelect = {
   id: true,
   organizationId: true,
   internalCode: true,
+  cnjNumber: true,
+  court: true,
+  courtDivision: true,
   title: true,
   description: true,
   legalArea: true,
@@ -64,6 +67,9 @@ export interface CaseCursor {
 export interface CreateCaseData {
   organizationId: string;
   internalCode: string;
+  cnjNumber: string | null;
+  court: string | null;
+  courtDivision: string | null;
   title: string;
   description: string | null;
   legalArea: string;
@@ -78,6 +84,9 @@ export interface CreateCaseData {
 
 export interface UpdateCaseData {
   internalCode?: string;
+  cnjNumber?: string | null;
+  court?: string | null;
+  courtDivision?: string | null;
   title?: string;
   description?: string | null;
   legalArea?: string;
@@ -106,6 +115,7 @@ export class CasesRepository {
       priority?: PriorityCode;
       confidentialityLevel?: ConfidentialityLevelCode;
       responsibleUserId?: string;
+      search?: string;
       allowConfidential: boolean;
       cursor?: CaseCursor;
       take: number;
@@ -121,6 +131,25 @@ export class CasesRepository {
             ],
           };
     const confidentialityLevel = input.allowConfidential ? input.confidentialityLevel : 'STANDARD';
+    // Uma busca só, em três campos: é o número do processo, o código interno ou o título que a
+    // pessoa tem na mão. Continua tudo dentro do escritório — o OR entra ao lado do filtro de
+    // organização, nunca no lugar dele.
+    // Vai dentro de AND porque o cursor também usa OR: os dois no mesmo objeto e um apaga o
+    // outro — a busca sumiria a partir da segunda página, sem erro nenhum.
+    const searchFilter =
+      input.search === undefined
+        ? {}
+        : {
+            AND: [
+              {
+                OR: [
+                  { cnjNumber: { contains: input.search, mode: 'insensitive' as const } },
+                  { internalCode: { contains: input.search, mode: 'insensitive' as const } },
+                  { title: { contains: input.search, mode: 'insensitive' as const } },
+                ],
+              },
+            ],
+          };
 
     return this.database.client.case.findMany({
       where: {
@@ -132,6 +161,7 @@ export class CasesRepository {
         ...(input.responsibleUserId === undefined
           ? {}
           : { responsibleUserId: input.responsibleUserId }),
+        ...searchFilter,
         ...cursorFilter,
       },
       orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],

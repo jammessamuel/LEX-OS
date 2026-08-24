@@ -1,4 +1,15 @@
 {
   "extends": "@lex-os/tsconfig/web.json",
-  "include": ["env.d.ts", "src/**/*.ts", "src/**/*.vue", "vite.config.ts"]
+  "compilerOptions": {
+    "paths": {
+      "@lex-os/shared/cnj": ["../../packages/shared/src/cnj.ts"]
+    }
+  },
+  "include": [
+    "env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.vue",
+    "vite.config.ts",
+    "../../packages/shared/src/cnj.ts"
+  ]
 }

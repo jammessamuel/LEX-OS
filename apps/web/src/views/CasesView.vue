@@ -14,6 +14,9 @@ import {
 } from '../domain/vocabulary.js';
 
 const cases = ref<CaseSummary[]>([]);
+const search = ref('');
+/** Termo que produziu a lista atual — o cursor da próxima página tem de usar o mesmo. */
+const appliedSearch = ref('');
 const session = useSessionStore();
 const nextCursor = ref<string | null>(null);
 const loading = ref(true);
@@ -30,8 +33,13 @@ async function load(cursor?: string): Promise<void> {
   }
 
   try {
+    const term = appliedSearch.value;
     const page = await request<CursorPage<CaseSummary>>('/cases', {
-      query: { limit: 25, ...(cursor === undefined ? {} : { cursor }) },
+      query: {
+        limit: 25,
+        ...(term.length >= 2 ? { search: term } : {}),
+        ...(cursor === undefined ? {} : { cursor }),
+      },
     });
     cases.value = appending ? [...cases.value, ...page.data] : page.data;
     nextCursor.value = page.pageInfo.hasNextPage ? page.pageInfo.nextCursor : null;
@@ -53,6 +61,18 @@ async function load(cursor?: string): Promise<void> {
   }
 }
 
+/** Submete pelo formulário: busca acontece quando a pessoa manda, não a cada tecla. */
+function submitSearch(): void {
+  appliedSearch.value = search.value.trim();
+  void load();
+}
+
+function clearSearch(): void {
+  search.value = '';
+  appliedSearch.value = '';
+  void load();
+}
+
 onMounted(() => {
   void load();
 });
@@ -69,6 +89,26 @@ onMounted(() => {
         Abrir caso
       </RouterLink>
     </header>
+
+    <!-- O advogado chega com o número do processo colado do e-mail. A busca aceita ele com ou
+         sem pontuação, e também o código interno ou parte do título. -->
+    <form class="case-search" role="search" @submit.prevent="submitSearch">
+      <label class="visually-hidden" for="case-search-input">
+        Buscar por número do processo, código interno ou título
+      </label>
+      <input
+        id="case-search-input"
+        v-model="search"
+        type="search"
+        maxlength="120"
+        autocomplete="off"
+        placeholder="Número do processo, código interno ou título"
+      />
+      <button class="btn btn--ghost" type="submit">Buscar</button>
+      <button v-if="appliedSearch" class="btn btn--ghost" type="button" @click="clearSearch">
+        Limpar
+      </button>
+    </form>
 
     <!-- Carregando: forma que antecipa o conteúdo, não spinner centralizado. -->
     <div v-if="loading" class="panel" aria-busy="true">
@@ -92,6 +132,15 @@ onMounted(() => {
     </div>
 
     <!-- Vazio: explica o que apareceria ali e oferece a próxima ação. -->
+    <div v-else-if="cases.length === 0 && appliedSearch" class="state">
+      <h2 class="state__title">Nenhum caso encontrado</h2>
+      <p class="state__body">
+        Nada corresponde a <span class="data">{{ appliedSearch }}</span> entre número do processo,
+        código interno e título.
+      </p>
+      <button class="btn" type="button" @click="clearSearch">Ver todos os casos</button>
+    </div>
+
     <div v-else-if="cases.length === 0" class="state">
       <h2 class="state__title">Nenhum caso por aqui ainda</h2>
       <p class="state__body">
@@ -109,12 +158,12 @@ onMounted(() => {
       <div class="scroll-x">
         <table class="rows">
           <caption class="visually-hidden">
-            Lista de casos com código interno, título, situação, prioridade, sigilo, responsável e
-            abertura.
+            Lista de casos com número do processo, título, situação, prioridade, sigilo, responsável
+            e abertura.
           </caption>
           <thead>
             <tr>
-              <th scope="col">Código</th>
+              <th scope="col">Processo</th>
               <th scope="col">Caso</th>
               <th scope="col">Situação</th>
               <th scope="col">Prioridade</th>
@@ -125,13 +174,16 @@ onMounted(() => {
           </thead>
           <tbody>
             <tr v-for="item in cases" :key="item.id">
-              <td class="data nowrap">
+              <td class="nowrap">
                 <RouterLink
-                  class="rows__link"
+                  class="rows__link data cases__number"
                   :to="{ name: 'case-detail', params: { id: item.id } }"
                 >
-                  {{ item.internalCode }}
+                  {{ item.cnjNumber ?? item.internalCode }}
                 </RouterLink>
+                <span class="rows__meta data">
+                  {{ item.cnjNumber === null ? 'Sem número de processo' : item.internalCode }}
+                </span>
               </td>
               <td>
                 <span class="rows__title">{{ item.title }}</span>
@@ -182,6 +234,23 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Busca: um campo largo e as ações à direita, na mesma linha em telas normais. */
+.case-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.case-search input {
+  flex: 1 1 24rem;
+  min-width: 0;
+}
+
+.cases__number {
+  font-variant-numeric: tabular-nums;
+}
+
 .head {
   display: flex;
   align-items: flex-start;

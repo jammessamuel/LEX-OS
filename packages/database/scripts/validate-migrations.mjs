@@ -229,6 +229,27 @@ for (const fragment of delivery9ReconciliationFragments) {
   }
 }
 
+const delivery15Migration = migrationDirectories.find((name) =>
+  name.endsWith('_delivery_15_cnj_number'),
+);
+
+if (delivery15Migration === undefined) {
+  throw new Error('The reviewed Delivery 15 CNJ-number migration is missing.');
+}
+
+const delivery15Sql = migrationSql.get(delivery15Migration);
+const delivery15Fragments = [
+  'ADD COLUMN "cnj_number" VARCHAR(25)',
+  'CONSTRAINT "cases_cnj_number_format"',
+  'CREATE UNIQUE INDEX "cases_organization_cnj_key"',
+];
+
+for (const fragment of delivery15Fragments) {
+  if (delivery15Sql === undefined || !delivery15Sql.includes(fragment)) {
+    throw new Error(`Delivery 15 CNJ migration is missing: ${fragment}`);
+  }
+}
+
 for (const [name, migration] of migrationSql) {
   const destructive = /^\s*(DROP\s+(?:TABLE|SCHEMA|DATABASE)|TRUNCATE)\b/imu.exec(migration);
 

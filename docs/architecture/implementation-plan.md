@@ -374,6 +374,48 @@ exception to explain in every sale.
   code, or a recovery code;
 - the tenant-isolation negative tests cover enrolment and verification.
 
+## Delivery 15 — The case carries its process number
+
+Authorized by the owner on 2026-08-24, from the gap analysis in
+[Análise competitiva](../product/analise-competitiva.md). Every platform in the management
+cluster shows the process number; we showed an internal code and nothing else. A lawyer opens
+the screen, does not find the number, and concludes the system is not serious — before seeing
+anything we are actually good at. It is also the key the two capabilities behind it need:
+docket movements and published-notice capture both address a case by its CNJ number.
+
+**Scope**
+
+- `cnjNumber`, `court`, and `courtDivision` on the case, all optional — a case exists in
+  the firm before it is filed, and the number arrives with the protocol;
+- the check digit is verified, not just the shape. The modulo-97 rule of Resolução 65/2008
+  detects a swapped or transposed digit; a regular expression would accept it and the error
+  would only surface the day someone queried the court;
+- one implementation of that calculation, in `packages/shared`, used by the API to refuse and
+  by the browser to warn before submit. Two copies of a check digit is exactly the code nobody
+  reviews twice;
+- the number is accepted with or without punctuation — that is how it is pasted from an
+  e-mail — and always stored punctuated;
+- unique per organization when present, so two records cannot claim the same lawsuit;
+- `GET /cases?search=` over process number, internal code, and title, normalized the same way.
+
+**Out of scope** — any integration with a court, docket movement, published-notice capture, and
+any closed catalogue of tribunals. This delivery adds a field the firm fills in; nothing calls
+outward.
+
+**Acceptance**
+
+- a number with a wrong or transposed check digit is refused with the field named, in the API
+  and in the form, and the form does not accuse anyone before the twentieth digit is typed;
+- a number pasted without punctuation is stored punctuated and found by either spelling;
+- two cases cannot hold the same number inside a firm, and the conflict names the process
+  number rather than the internal code;
+- two cases without a number coexist — the normal state before filing;
+- sending `null` clears the number, the court, or the division;
+- the search is applied alongside the tenant constraint and survives the keyset cursor: page
+  two of a search is still that search;
+- a number belonging to another firm is not found by any search path;
+- the audit records that the number changed, by field name, without storing the number.
+
 ## Governed follow-up increments
 
 ADRs 009–013 define product policy that extends beyond the numbered Delivery 0–11 plan. They do not authorize opportunistic implementation. Each capability must receive a separate vertical increment with schema, security, audit, failure-path, and documentation acceptance criteria before coding begins:

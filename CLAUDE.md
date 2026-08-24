@@ -55,16 +55,21 @@ Approval for one commit is not standing approval for the next.
 
 ### 0.3 Respect the delivery boundary
 
-The latest accepted checkpoint is **Delivery 13 — E-mail adapter and password recovery**,
-accepted 2026-08-20 with every mandatory CI job green on `main`.
+The latest accepted checkpoint is **Delivery 14 — Second factor with TOTP**, accepted
+2026-08-24 with every mandatory CI job green on `main`.
 
-**Delivery 14 — Second factor with TOTP is authorized** (owner, 2026-08-20), resolving ADR-014
-item 3. Our own RFC 6238 TOTP, never delegated to an identity provider. The shared secret is
-encrypted at rest with AES-256-GCM; enrolment activates only after a valid code proves it;
-recovery codes are single-use and stored hashed. Optional per person, requirable per firm.
+**Delivery 15 — The case carries its process number is authorized** (owner, 2026-08-24), from
+the gap analysis in `docs/product/analise-competitiva.md`. `cnjNumber`, `court`, and
+`courtDivision` on the case, all optional; the CNJ check digit verified rather than the shape
+alone, from one implementation in `packages/shared` shared by API and browser; unique per
+organization; and `GET /cases?search=` over process number, internal code, and title.
 
-Out of scope, and still requiring separate authorization: WebAuthn, SMS, federated sign-in,
-a production mail relay, the three ADR-013 notification triggers, real providers, and
+Also authorized in the same session, and not yet started: the deadline agenda, and the case
+dossier export.
+
+Out of scope, and still requiring separate authorization: any court integration, docket
+movements, published-notice capture, a closed catalogue of tribunals, WebAuthn, SMS, federated
+sign-in, a production mail relay, the three ADR-013 notification triggers, real providers, and
 production data. Do not implement future-delivery behavior opportunistically, even when it
 looks like a small addition.
 

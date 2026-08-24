@@ -25,6 +25,10 @@ vi.mock('../api/client.js', async () => {
 const savedCase = {
   id: 'case-1',
   internalCode: 'NOVO-1',
+  cnjNumber: null,
+  cnjSegment: null,
+  court: null,
+  courtDivision: null,
   title: 'Caso de teste',
   description: null,
   legalArea: 'DIREITO_TRABALHISTA',
@@ -53,6 +57,91 @@ describe('CaseFormView', () => {
     mocks.params = {};
     mocks.request.mockReset();
     mocks.replace.mockReset().mockResolvedValue(undefined);
+  });
+
+  it('avisa o dígito trocado antes de o formulário ir para a API', async () => {
+    mocks.request.mockResolvedValue({
+      data: [],
+      pageInfo: { nextCursor: null, hasNextPage: false },
+    });
+    const wrapper = mount(CaseFormView, {
+      global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } },
+    });
+    await flushPromises();
+
+    // Mesmo número do exemplo válido, com dois dígitos do sequencial trocados.
+    await wrapper.get('#case-cnj-number').setValue('0001243-27.2026.5.02.0001');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Número inválido');
+  });
+
+  it('não acusa erro enquanto a pessoa ainda está digitando', async () => {
+    mocks.request.mockResolvedValue({
+      data: [],
+      pageInfo: { nextCursor: null, hasNextPage: false },
+    });
+    const wrapper = mount(CaseFormView, {
+      global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } },
+    });
+    await flushPromises();
+
+    await wrapper.get('#case-cnj-number').setValue('0001234-27.2026');
+    await flushPromises();
+
+    expect(wrapper.text()).not.toContain('Número inválido');
+  });
+
+  it('reconhece o segmento do Judiciário quando o número fecha', async () => {
+    mocks.request.mockResolvedValue({
+      data: [],
+      pageInfo: { nextCursor: null, hasNextPage: false },
+    });
+    const wrapper = mount(CaseFormView, {
+      global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } },
+    });
+    await flushPromises();
+
+    await wrapper.get('#case-cnj-number').setValue('0001234-27.2026.5.02.0001');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Justiça do Trabalho');
+    expect(wrapper.text()).not.toContain('Número inválido');
+  });
+
+  it('envia o número normalizado quando ele foi colado sem pontuação', async () => {
+    mocks.request.mockImplementation(async (path: string) => {
+      if (path === '/users/assignable') {
+        return { data: [], pageInfo: { nextCursor: null, hasNextPage: false } };
+      }
+      if (path === '/cases') return savedCase;
+      throw new Error(`Rota inesperada: ${path}`);
+    });
+    const wrapper = mount(CaseFormView, {
+      global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } },
+    });
+    await flushPromises();
+
+    await wrapper.get('#case-internal-code').setValue('novo-1');
+    await wrapper.get('#case-title-input').setValue('Caso de teste');
+    await wrapper.get('#case-legal-area').setValue('Direito trabalhista');
+    await wrapper.get('#case-type').setValue('Reclamação trabalhista');
+    await wrapper.get('#case-cnj-number').setValue('00012342720265020001');
+    await wrapper.get('#case-court').setValue('TRT da 2ª Região');
+    await wrapper.get('form').trigger('submit');
+    await flushPromises();
+
+    expect(mocks.request).toHaveBeenCalledWith(
+      '/cases',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.objectContaining({
+          cnjNumber: '0001234-27.2026.5.02.0001',
+          court: 'TRT da 2ª Região',
+          courtDivision: null,
+        }),
+      }),
+    );
   });
 
   it('abre um caso com vocabulário humano e configura o teto antes de navegar', async () => {

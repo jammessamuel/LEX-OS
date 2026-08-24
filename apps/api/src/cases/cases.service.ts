@@ -1,5 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Prisma, withTransaction } from '@lex-os/database';
+import { cnjSegmentName } from '@lex-os/shared';
 
 import {
   AuditService,
@@ -39,10 +40,23 @@ import {
 const parseCaseCursor: (value: unknown) => CaseCursor | undefined =
   createTimestampIdCursorParser('updatedAt');
 
+/** Nome do índice violado, quando o driver informa. Vazio força o erro genérico do caso. */
+function conflictTarget(error: Prisma.PrismaClientKnownRequestError): string {
+  const target: unknown = error.meta?.['target'];
+  if (typeof target === 'string') {
+    return target;
+  }
+  return Array.isArray(target) ? target.join(',') : '';
+}
+
 function mapCase(record: CaseRecord): CaseResponseDto {
   return {
     id: record.id,
     internalCode: record.internalCode,
+    cnjNumber: record.cnjNumber,
+    cnjSegment: record.cnjNumber === null ? null : cnjSegmentName(record.cnjNumber),
+    court: record.court,
+    courtDivision: record.courtDivision,
     title: record.title,
     description: record.description,
     legalArea: record.legalArea,
@@ -124,6 +138,7 @@ export class CasesService {
       ...(query.responsibleUserId === undefined
         ? {}
         : { responsibleUserId: query.responsibleUserId }),
+      ...(query.search === undefined ? {} : { search: query.search }),
       ...(cursor === undefined ? {} : { cursor }),
       allowConfidential,
       take: query.limit + 1,
@@ -256,6 +271,9 @@ export class CasesService {
         const created = await this.repository.create(transaction, {
           organizationId: actor.organizationId,
           internalCode: input.internalCode,
+          cnjNumber: input.cnjNumber ?? null,
+          court: input.court ?? null,
+          courtDivision: input.courtDivision ?? null,
           title: input.title,
           description: input.description ?? null,
           legalArea: input.legalArea,
@@ -309,6 +327,9 @@ export class CasesService {
     this.#assertDates(nextOpenedAt, nextClosedAt);
     const data: UpdateCaseData = {
       ...(input.internalCode === undefined ? {} : { internalCode: input.internalCode }),
+      ...(input.cnjNumber === undefined ? {} : { cnjNumber: input.cnjNumber }),
+      ...(input.court === undefined ? {} : { court: input.court }),
+      ...(input.courtDivision === undefined ? {} : { courtDivision: input.courtDivision }),
       ...(input.title === undefined ? {} : { title: input.title }),
       ...(input.description === undefined ? {} : { description: input.description }),
       ...(input.legalArea === undefined ? {} : { legalArea: input.legalArea }),
@@ -498,6 +519,15 @@ export class CasesService {
 
   #rethrowKnownWriteError(error: unknown): never {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      // Duas restrições únicas convivem no caso. Dizer "código interno" quando o conflito é o
+      // número do processo manda a pessoa corrigir o campo errado.
+      if (conflictTarget(error).includes('cnj')) {
+        throw new ApiException(
+          HttpStatus.CONFLICT,
+          'CASE_CNJ_NUMBER_CONFLICT',
+          'Já existe um caso com esse número de processo.',
+        );
+      }
       throw new ApiException(
         HttpStatus.CONFLICT,
         'CASE_INTERNAL_CODE_CONFLICT',

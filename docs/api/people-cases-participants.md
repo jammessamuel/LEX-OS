@@ -1,7 +1,7 @@
 # People, cases, and participants API
 
-**Status:** Implemented in Delivery 5; case responsibility and person-to-case traversal extended in Delivery 10
-**Last updated:** 2026-08-13
+**Status:** Implemented in Delivery 5; case responsibility and person-to-case traversal extended in Delivery 10; CNJ process number added in Delivery 15
+**Last updated:** 2026-08-24
 
 File and document resources nested under an authorized case are documented separately in [Files and documents API](./files-documents.md).
 
@@ -30,27 +30,53 @@ Unknown, foreign-tenant, inaccessible confidential, and soft-deleted direct reso
 
 ## Routes and permissions
 
-| Method | Route                                 | Permission       | Behavior                                       |
-| ------ | ------------------------------------- | ---------------- | ---------------------------------------------- |
-| GET    | `/api/v1/persons`                     | `persons.read`   | Lists active people                            |
-| POST   | `/api/v1/persons`                     | `persons.manage` | Creates a person                               |
-| GET    | `/api/v1/persons/:id`                 | `persons.read`   | Reads an active person                         |
-| PATCH  | `/api/v1/persons/:id`                 | `persons.manage` | Updates an active person                       |
-| DELETE | `/api/v1/persons/:id`                 | `persons.manage` | Soft-deletes a person                          |
-| GET    | `/api/v1/cases`                       | `cases.read`     | Lists accessible active cases                  |
-| POST   | `/api/v1/cases`                       | `cases.create`   | Creates a case                                 |
-| GET    | `/api/v1/cases/:id`                   | `cases.read`     | Reads an accessible active case                |
-| PATCH  | `/api/v1/cases/:id`                   | `cases.update`   | Updates an accessible active case              |
-| PATCH  | `/api/v1/cases/:id/processing-budget` | `cases.update`   | Sets or raises the hard BRL processing ceiling |
-| DELETE | `/api/v1/cases/:id`                   | `cases.delete`   | Soft-deletes an accessible case                |
-| GET    | `/api/v1/cases/:caseId/participants`  | `cases.read`     | Lists validated participant summaries          |
-| POST   | `/api/v1/cases/:caseId/participants`  | `cases.update`   | Associates an active same-tenant person        |
+| Method | Route                                 | Permission       | Behavior                                                                                |
+| ------ | ------------------------------------- | ---------------- | --------------------------------------------------------------------------------------- |
+| GET    | `/api/v1/persons`                     | `persons.read`   | Lists active people                                                                     |
+| POST   | `/api/v1/persons`                     | `persons.manage` | Creates a person                                                                        |
+| GET    | `/api/v1/persons/:id`                 | `persons.read`   | Reads an active person                                                                  |
+| PATCH  | `/api/v1/persons/:id`                 | `persons.manage` | Updates an active person                                                                |
+| DELETE | `/api/v1/persons/:id`                 | `persons.manage` | Soft-deletes a person                                                                   |
+| GET    | `/api/v1/cases`                       | `cases.read`     | Lists accessible active cases; `search` matches process number, internal code, or title |
+| POST   | `/api/v1/cases`                       | `cases.create`   | Creates a case                                                                          |
+| GET    | `/api/v1/cases/:id`                   | `cases.read`     | Reads an accessible active case                                                         |
+| PATCH  | `/api/v1/cases/:id`                   | `cases.update`   | Updates an accessible active case                                                       |
+| PATCH  | `/api/v1/cases/:id/processing-budget` | `cases.update`   | Sets or raises the hard BRL processing ceiling                                          |
+| DELETE | `/api/v1/cases/:id`                   | `cases.delete`   | Soft-deletes an accessible case                                                         |
+| GET    | `/api/v1/cases/:caseId/participants`  | `cases.read`     | Lists validated participant summaries                                                   |
+| POST   | `/api/v1/cases/:caseId/participants`  | `cases.update`   | Associates an active same-tenant person                                                 |
 
 ## People and identifiers
 
 `personType` accepts `INDIVIDUAL`, `COMPANY`, or `GOVERNMENT_ENTITY`. CPF and CNPJ punctuation is removed before persistence, repeated digits and invalid check digits are rejected, and CPF is accepted only for an individual. CNPJ may identify a company or government entity.
 
 The database keeps the normalized value for authorized future workflows. Current API responses never expose complete CPF, CNPJ, or RG values; they return masked representations. Request bodies and query strings are not logged, and resource audits store no name, identity document, contact data, metadata, or other free legal text.
+
+## The process number
+
+`cnjNumber` holds the case's number under CNJ Resolução 65/2008 —
+`NNNNNNN-DD.AAAA.J.TR.OOOO`. It is optional, because a case exists in the firm before it is
+filed, and unique per organization when present: two records cannot claim the same lawsuit.
+`court` and `courtDivision` are free text up to 160 characters, since no closed catalogue
+covers every comarca a firm actually works in.
+
+The value is accepted with or without punctuation — that is how it arrives pasted from an
+e-mail — and always persisted punctuated. Validation checks the **check digit**, not only the
+shape: the modulo-97 rule detects a swapped or transposed digit, which a regular expression
+would let through and which would only surface the day someone queried the court. The same
+calculation runs in the browser before submit and in the API before persistence, from one
+module in `@lex-os/shared`. A rejected number returns `400 VALIDATION_ERROR` with the field;
+a number already used inside the firm returns `409 CASE_CNJ_NUMBER_CONFLICT`, distinct from
+the internal-code conflict so the message points at the right field.
+
+Responses add `cnjSegment`, the judiciary branch spelled out from the number, so a screen
+never shows a bare digit. Sending `null` clears the number, the court, or the division.
+
+`GET /api/v1/cases` accepts `search` (2 to 120 characters), matched case-insensitively
+against process number, internal code, and title, and normalized the same way — so
+`00099998420265020001` finds the case stored as `0009999-84.2026.5.02.0001`. The filter is
+applied alongside the tenant constraint, never instead of it, and is preserved across keyset
+pages. The audit records that the number changed, by field name, without storing the number.
 
 ## Cases and confidentiality
 

@@ -553,6 +553,13 @@ model Case {
   id                           String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   organizationId               String                 @map("organization_id") @db.Uuid
   internalCode                 String                 @map("internal_code") @db.VarChar(80)
+  /// Numero unico do CNJ, na forma NNNNNNN-DD.AAAA.J.TR.OOOO. Opcional porque o caso nasce
+  /// antes do protocolo — mas e por ele que o processo conversa com o resto do mundo.
+  cnjNumber                    String?                @map("cnj_number") @db.VarChar(25)
+  /// Tribunal e orgao julgador em texto livre: nao ha catalogo fechado, e inventar um
+  /// deixaria de fora a comarca que o escritorio realmente usa.
+  court                        String?                @db.VarChar(160)
+  courtDivision                String?                @map("court_division") @db.VarChar(160)
   title                        String                 @db.VarChar(255)
   description                  String?                @db.Text
   legalArea                    String                 @map("legal_area") @db.VarChar(120)
@@ -584,6 +591,7 @@ model Case {
   processingJobs  ProcessingJob[]
 
   @@unique([organizationId, internalCode])
+  @@unique([organizationId, cnjNumber], map: "cases_organization_cnj_key")
   @@unique([organizationId, id])
   @@index([organizationId, status, updatedAt])
   @@index([organizationId, responsibleUserId])

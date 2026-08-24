@@ -24,7 +24,11 @@ test('login, painel e navegação do caso respondem sem erro', async ({ page }) 
   await expect(page.getByText('Casos em aberto')).toBeVisible();
 
   await page.getByRole('link', { name: 'Casos', exact: true }).click();
-  await page.getByRole('link', { name: 'DEMO-0001' }).click();
+  // A busca é o caminho real: o advogado chega com o número do processo, não com o código
+  // interno. O caso semeado é aberto pelo próprio número.
+  await page.getByRole('searchbox').fill('00012342720265020001');
+  await page.getByRole('button', { name: 'Buscar' }).click();
+  await page.getByRole('link', { name: '0001234-27.2026.5.02.0001' }).click();
   await expect(page.getByRole('heading', { name: /Caso.*fictício.*demonstração/iu })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Cronologia' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Checklist' })).toBeVisible();
@@ -33,6 +37,7 @@ test('login, painel e navegação do caso respondem sem erro', async ({ page }) 
   await page.getByRole('link', { name: 'Editar caso' }).click();
   await expect(page.getByRole('heading', { name: 'Editar caso' })).toBeVisible();
   await expect(page.getByLabel('Código interno')).toHaveValue('DEMO-0001');
+  await expect(page.getByLabel('Número do processo')).toHaveValue('0001234-27.2026.5.02.0001');
   await page.getByRole('link', { name: 'Cancelar' }).click();
   await expect(page.getByRole('heading', { name: /Caso.*fictício.*demonstração/iu })).toBeVisible();
 

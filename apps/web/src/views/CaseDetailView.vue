@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { ApiError, request, type NoContent } from '../api/client.js';
@@ -27,6 +27,11 @@ const session = useSessionStore();
 const caseId = String(route.params.id);
 
 const legalCase = ref<CaseSummary | null>(null);
+
+/** Tribunal e vara numa linha só, sem separador solto quando um dos dois não foi informado. */
+const courtLine = computed(() =>
+  [legalCase.value?.court, legalCase.value?.courtDivision].filter(Boolean).join(' · '),
+);
 const documents = ref<CaseDocument[]>([]);
 const participants = ref<Participant[]>([]);
 const documentsNextCursor = ref<string | null>(null);
@@ -222,6 +227,13 @@ onMounted(() => {
     <template v-else-if="legalCase">
       <header class="head">
         <div>
+          <!-- O número do processo vem antes do título: é por ele que o advogado reconhece
+               o caso, e é o que ele confere ao abrir a tela. -->
+          <p v-if="legalCase.cnjNumber" class="case-process">
+            <span class="data case-process__number">{{ legalCase.cnjNumber }}</span>
+            <span v-if="courtLine" class="muted case-process__court">{{ courtLine }}</span>
+          </p>
+          <p v-else class="muted case-process case-process--pending">Sem número de processo</p>
           <h1 id="case-title">{{ legalCase.title }}</h1>
           <div class="head__meta">
             <StatusChip :label="caseStatusLabels[legalCase.status]" />
@@ -541,6 +553,26 @@ onMounted(() => {
 }
 
 .head__code {
+  font-size: var(--step--1);
+}
+
+/* Linha do processo: o número lidera, tribunal e vara acompanham em voz baixa. */
+.case-process {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  margin-bottom: var(--space-1);
+  font-size: var(--step--1);
+}
+
+.case-process__number {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.case-process--pending {
   font-size: var(--step--1);
 }
 

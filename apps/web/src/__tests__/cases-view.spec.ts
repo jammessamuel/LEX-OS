@@ -22,6 +22,10 @@ function mountView() {
 const demoCase = {
   id: '00000000-0000-4000-8000-000000000003',
   internalCode: 'DEMO-0001',
+  cnjNumber: '0001234-27.2026.5.02.0001',
+  cnjSegment: 'Justiça do Trabalho',
+  court: 'TRT da 2ª Região',
+  courtDivision: '1ª Vara do Trabalho de São Paulo',
   title: 'Caso fictício de demonstração',
   description: null,
   legalArea: 'DIREITO_TRABALHISTA',
@@ -59,6 +63,87 @@ describe('CasesView', () => {
     expect(text).toContain('Confidencial');
     expect(text).not.toContain('UNDER_ANALYSIS');
     expect(text).not.toContain('URGENT');
+  });
+
+  it('mostra o número do processo na frente e o código interno abaixo', async () => {
+    request.mockResolvedValue({
+      data: [demoCase],
+      pageInfo: { nextCursor: null, hasNextPage: false },
+    });
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('0001234-27.2026.5.02.0001');
+    expect(wrapper.text()).toContain('DEMO-0001');
+  });
+
+  it('avisa quando o caso ainda não foi protocolado, em vez de deixar a coluna vazia', async () => {
+    request.mockResolvedValue({
+      data: [{ ...demoCase, cnjNumber: null, cnjSegment: null }],
+      pageInfo: { nextCursor: null, hasNextPage: false },
+    });
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Sem número de processo');
+    expect(wrapper.text()).toContain('DEMO-0001');
+  });
+
+  it('busca pelo número colado sem pontuação, porque é assim que ele chega do e-mail', async () => {
+    request.mockResolvedValue({
+      data: [demoCase],
+      pageInfo: { nextCursor: null, hasNextPage: false },
+    });
+
+    const wrapper = mountView();
+    await flushPromises();
+    request.mockClear();
+
+    await wrapper.get('#case-search-input').setValue('00012342720265020001');
+    await wrapper.get('form[role="search"]').trigger('submit');
+    await flushPromises();
+
+    expect(request).toHaveBeenCalledWith('/cases', {
+      query: { limit: 25, search: '00012342720265020001' },
+    });
+  });
+
+  it('mantém a busca na segunda página, em vez de trazer a lista inteira de volta', async () => {
+    request.mockResolvedValue({
+      data: [demoCase],
+      pageInfo: { nextCursor: 'cursor-2', hasNextPage: true },
+    });
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    await wrapper.get('#case-search-input').setValue('DEMO');
+    await wrapper.get('form[role="search"]').trigger('submit');
+    await flushPromises();
+    request.mockClear();
+
+    await wrapper.get('.panel__more button').trigger('click');
+    await flushPromises();
+
+    expect(request).toHaveBeenCalledWith('/cases', {
+      query: { limit: 25, search: 'DEMO', cursor: 'cursor-2' },
+    });
+  });
+
+  it('distingue "nada encontrado" de "nenhum caso ainda"', async () => {
+    request.mockResolvedValue({ data: [], pageInfo: { nextCursor: null, hasNextPage: false } });
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    await wrapper.get('#case-search-input').setValue('0009999-99.2026.5.02.0001');
+    await wrapper.get('form[role="search"]').trigger('submit');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Nenhum caso encontrado');
+    expect(wrapper.text()).not.toContain('Nenhum caso por aqui ainda');
   });
 
   it('explica o vazio em vez de mostrar uma tabela sem linhas', async () => {

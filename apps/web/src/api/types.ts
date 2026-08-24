@@ -54,6 +54,10 @@ export interface CaseResponsible {
 export interface CaseSummary {
   id: string;
   internalCode: string;
+  cnjNumber: string | null;
+  cnjSegment: string | null;
+  court: string | null;
+  courtDivision: string | null;
   title: string;
   description: string | null;
   legalArea: string;
