@@ -10,12 +10,15 @@ import { login } from './session';
  */
 test('jornada completa termina com cronologia confirmada e trilha de auditoria', async ({
   page,
-}) => {
+}, testInfo) => {
   test.setTimeout(240_000);
   await login(page);
 
   // Caso novo por execução: a jornada não pode depender do estado do caso demo.
-  const internalCode = `E2E-${Date.now().toString(36).toUpperCase()}`;
+  // O marcador do projeto impede desktop e mobile, iniciados no mesmo milissegundo, de
+  // disputarem a chave única do código interno no banco compartilhado da suíte.
+  const projectMarker = testInfo.project.name.startsWith('mobile') ? 'M' : 'D';
+  const internalCode = `E2E-${projectMarker}-${Date.now().toString(36).toUpperCase()}`;
   await page.getByRole('link', { name: 'Abrir caso' }).click();
   await page.getByLabel('Código interno').fill(internalCode);
   await page.getByLabel('Título').fill('Jornada fictícia de verificação ponta a ponta');
@@ -37,6 +40,7 @@ test('jornada completa termina com cronologia confirmada e trilha de auditoria',
     ),
   });
   await page.getByRole('button', { name: /^Enviar 1 arquivo/u }).click();
+  await expect(page.getByText(/Os aceitos entraram na fila de preparação/u)).toBeVisible();
 
   // O pipeline tem sete etapas; a cronologia só existe quando o worker termina.
   await page.getByRole('link', { name: 'Cronologia' }).click();
