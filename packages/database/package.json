@@ -18,7 +18,7 @@
     "postinstall": "prisma generate",
     "lint": "eslint .",
     "test": "node --test test/*.unit.test.cjs",
-    "test:integration": "node --test test/*.integration.test.cjs",
+    "test:integration": "node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=../../infra/scripts/github-test-annotations.mjs --test-reporter-destination=stderr test/*.integration.test.cjs",
     "typecheck": "prisma generate && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

@@ -40,15 +40,6 @@ import {
 const parseCaseCursor: (value: unknown) => CaseCursor | undefined =
   createTimestampIdCursorParser('updatedAt');
 
-/** Nome do índice violado, quando o driver informa. Vazio força o erro genérico do caso. */
-function conflictTarget(error: Prisma.PrismaClientKnownRequestError): string {
-  const target: unknown = error.meta?.['target'];
-  if (typeof target === 'string') {
-    return target;
-  }
-  return Array.isArray(target) ? target.join(',') : '';
-}
-
 function mapCase(record: CaseRecord): CaseResponseDto {
   return {
     id: record.id,
@@ -305,7 +296,7 @@ export class CasesService {
       });
       return mapCase(record);
     } catch (error: unknown) {
-      this.#rethrowKnownWriteError(error);
+      throw await this.#conflictFor(error, actor.organizationId, input.cnjNumber);
     }
   }
 
@@ -374,7 +365,7 @@ export class CasesService {
       });
       return mapCase(updated);
     } catch (error: unknown) {
-      this.#rethrowKnownWriteError(error);
+      throw await this.#conflictFor(error, actor.organizationId, input.cnjNumber, id);
     }
   }
 
@@ -525,24 +516,48 @@ export class CasesService {
     });
   }
 
-  #rethrowKnownWriteError(error: unknown): never {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      // Duas restrições únicas convivem no caso. Dizer "código interno" quando o conflito é o
-      // número do processo manda a pessoa corrigir o campo errado.
-      if (conflictTarget(error).includes('cnj')) {
-        throw new ApiException(
+  /**
+   * Traduz a colisão de unicidade para o campo que a pessoa precisa corrigir.
+   *
+   * Duas restrições únicas convivem no caso, e dizer "código interno" quando o conflito é o
+   * número do processo manda corrigir o lugar errado. Qual delas estourou é decidido
+   * consultando quem já ocupa o número — e não lendo o formato interno do erro do driver,
+   * que varia entre versões e adaptadores e falharia em silêncio no dia da atualização.
+   *
+   * A consulta ignora a exclusão lógica de propósito: o índice único também ignora, então um
+   * caso excluído continua ocupando o número e a mensagem tem de refletir isso.
+   */
+  async #conflictFor(
+    error: unknown,
+    organizationId: string,
+    cnjNumber: string | null | undefined,
+    excludeCaseId?: string,
+  ): Promise<unknown> {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') {
+      return error;
+    }
+    if (typeof cnjNumber === 'string') {
+      const clash = await this.database.client.case.findFirst({
+        where: {
+          organizationId,
+          cnjNumber,
+          ...(excludeCaseId === undefined ? {} : { id: { not: excludeCaseId } }),
+        },
+        select: { id: true },
+      });
+      if (clash !== null) {
+        return new ApiException(
           HttpStatus.CONFLICT,
           'CASE_CNJ_NUMBER_CONFLICT',
           'Já existe um caso com esse número de processo.',
         );
       }
-      throw new ApiException(
-        HttpStatus.CONFLICT,
-        'CASE_INTERNAL_CODE_CONFLICT',
-        'Já existe um caso com esse código interno.',
-      );
     }
-    throw error;
+    return new ApiException(
+      HttpStatus.CONFLICT,
+      'CASE_INTERNAL_CODE_CONFLICT',
+      'Já existe um caso com esse código interno.',
+    );
   }
 
   #notFound(): ApiException {
