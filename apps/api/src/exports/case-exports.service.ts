@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import type { RuntimeConfig } from '@lex-os/config';
+import { caseDossierObjectKey } from '@lex-os/shared';
 
 import { AuditService, type RequestAuditMetadata } from '../audit/audit.service.js';
 import type { ActorContext } from '../auth/actor-context.js';
@@ -13,13 +14,6 @@ import { OBJECT_STORAGE, type ObjectStorage } from '../storage/object-storage.js
 import { CaseExportPublisher } from './case-export.publisher.js';
 import type { CaseExportResponseDto } from './dto/case-export-response.dto.js';
 
-/**
- * Quantas exportações do mesmo caso podem estar em andamento.
- *
- * Uma só. O botão fica visível e é natural clicar duas vezes enquanto nada acontece na tela;
- * sem esta trava, cada clique vira um PDF idêntico ocupando armazenamento e uma linha de
- * trabalho. Repetir o pedido devolve o job que já existe.
- */
 const jobSelect = {
   id: true,
   caseId: true,
@@ -42,18 +36,12 @@ interface JobRow {
   finishedAt: Date | null;
 }
 
-function storedObject(value: unknown): { bucket: string; key: string; byteSize: number } | null {
+function byteSizeOf(value: unknown): number | null {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return null;
   }
-  const record = value as Record<string, unknown>;
-  const bucket = record['bucket'];
-  const key = record['key'];
-  const byteSize = record['byteSize'];
-  if (typeof bucket !== 'string' || typeof key !== 'string' || typeof byteSize !== 'number') {
-    return null;
-  }
-  return { bucket, key, byteSize };
+  const byteSize = (value as Record<string, unknown>)['byteSize'];
+  return typeof byteSize === 'number' ? byteSize : null;
 }
 
 @Injectable()
@@ -81,12 +69,21 @@ export class CaseExportsService {
   ): Promise<CaseExportResponseDto> {
     await this.cases.assertAccessibleForFileResources(actor, caseId, metadata, 'EXPORT');
 
+    // Uma exportação por caso de cada vez: o botão fica visível e é natural clicar duas vezes
+    // enquanto nada acontece na tela, e sem esta trava cada clique vira um PDF idêntico.
+    //
+    // Mas só vale enquanto o pedido estiver mesmo andando. Se o
+    // worker morreu no meio, a linha fica PROCESSING para sempre e sem este recorte a pessoa
+    // nunca mais conseguiria exportar aquele caso — um travamento permanente por uma queda
+    // momentânea.
+    const freshSince = new Date(Date.now() - this.config.processing.staleAfterSeconds * 1_000);
     const pending = await this.database.client.processingJob.findFirst({
       where: {
         organizationId: actor.organizationId,
         caseId,
         jobType: 'CASE_EXPORT',
         status: { in: ['QUEUED', 'PROCESSING', 'RETRYING'] },
+        updatedAt: { gte: freshSince },
       },
       orderBy: { createdAt: 'desc' },
       select: jobSelect,
@@ -152,7 +149,7 @@ export class CaseExportsService {
     actor?: ActorContext,
     metadata?: RequestAuditMetadata,
   ): Promise<CaseExportResponseDto> {
-    const output = storedObject(job.outputMetadata);
+    const byteSize = byteSizeOf(job.outputMetadata);
     const base: CaseExportResponseDto = {
       id: job.id,
       caseId,
@@ -160,19 +157,20 @@ export class CaseExportsService {
       attempts: job.attempts,
       downloadUrl: null,
       downloadExpiresAt: null,
-      byteSize: output?.byteSize ?? null,
+      byteSize,
       errorCode: job.errorCode,
       createdAt: job.createdAt.toISOString(),
       finishedAt: job.finishedAt?.toISOString() ?? null,
     };
-    if (job.status !== 'COMPLETED' || output === null || actor === undefined) {
+    if (job.status !== 'COMPLETED' || actor === undefined) {
       return base;
     }
 
     const expiresInSeconds = this.config.objectStorage.downloadUrlTtlSeconds;
     const url = await this.storage.createDownloadUrl({
-      bucket: output.bucket,
-      key: output.key,
+      bucket: this.config.objectStorage.bucket,
+      // A chave é derivada, não guardada: o mesmo cálculo que o worker usou para escrever.
+      key: caseDossierObjectKey(actor.organizationId, caseId, job.id),
       filename: `dossie-${caseId}.pdf`,
       contentType: 'application/pdf',
       expiresInSeconds,

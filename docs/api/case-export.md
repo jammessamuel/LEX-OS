@@ -78,3 +78,26 @@ signed URL. Exporting a confidential case appends the usual `case.confidential.r
 The generated PDF is written by the worker under `exports/{organizationId}/{caseId}/{jobId}.pdf`
 in the private bucket, with metadata `lifecycle: generated`. It is a file we produced, never one
 someone uploaded, so it does not enter the quarantine and virus-scan path that governs intake.
+
+That key is **derived, never stored**: it is a pure function of the three identifiers, computed
+by the worker to write and by the API to sign. `outputMetadata` on the job holds only the byte
+size, because the generic `GET /processing-jobs` route echoes that column verbatim and the
+storage layout has no reason to leave the building.
+
+## Cost
+
+The Delivery 10 constraint `processing_jobs_completed_cost_recorded` requires provider, model,
+model version and cost on every job that reaches `COMPLETED`. That rule is about ADR-011: an AI
+execution must never finish without leaving what it cost.
+
+A dossier is not an AI execution, so the constraint was narrowed to exempt `CASE_EXPORT` and a
+second constraint, `processing_jobs_export_has_no_cost`, now asserts the opposite for it —
+no provider, no cost, no reservation. Satisfying the old rule instead would have meant writing
+a fictional provider and a zero cost into the ledger, and a cost report showing executions that
+never happened is worse than no report.
+
+## Recovering from a crash
+
+An export whose worker died stays `PROCESSING`. The request route reuses an in-flight job only
+while it is younger than `PROCESSING_STALE_AFTER_SECONDS`; past that, a new job is created.
+Without that window a single worker crash would lock one case out of exporting forever.

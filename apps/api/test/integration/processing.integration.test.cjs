@@ -570,11 +570,8 @@ describe('Delivery 7 processing HTTP contract', () => {
       data: {
         status: 'COMPLETED',
         finishedAt: new Date(),
-        outputMetadata: {
-          bucket: process.env.OBJECT_STORAGE_BUCKET ?? 'lex-os',
-          key: `exports/${ORGANIZATION_ID}/${DEMO_CASE_ID}/${accepted.body.id}.pdf`,
-          byteSize: 12_345,
-        },
+        // Só o tamanho: a chave do objeto é derivada dos identificadores, não guardada.
+        outputMetadata: { byteSize: 12_345 },
       },
     });
     const ready = await authorized(
@@ -612,7 +609,7 @@ describe('Delivery 7 processing HTTP contract', () => {
         caseId: OTHER_CASE_ID,
         jobType: 'CASE_EXPORT',
         status: 'COMPLETED',
-        outputMetadata: { bucket: 'lex-os', key: 'exports/outro.pdf', byteSize: 10 },
+        outputMetadata: { byteSize: 10 },
       },
     });
     await authorized(adminToken, 'get', `/api/v1/case-exports/${OTHER_EXPORT_JOB_ID}`).expect(404);

@@ -24,6 +24,7 @@ export type {
   KnowledgeSourceLocator,
 } from './knowledge.js';
 
+export { caseDossierObjectKey } from './case-export.js';
 export { cnjSegmentName, isValidCnj, normalizeCnj, parseCnj } from './cnj.js';
 export type { CnjParts } from './cnj.js';
 

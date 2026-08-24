@@ -7,18 +7,13 @@ import {
 } from '@nestjs/common';
 import type { RuntimeConfig } from '@lex-os/config';
 import { caseExportQueueName, parseProcessingJobMessage } from '@lex-os/contracts';
-import { cnjSegmentName } from '@lex-os/shared';
+import { caseDossierObjectKey, cnjSegmentName } from '@lex-os/shared';
 import { UnrecoverableError, Worker as BullWorker, type Job } from 'bullmq';
 
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
 import { OBJECT_WRITER, type ObjectWriter } from '../storage/object-writer.js';
 import { renderCaseDossier } from './case-dossier.js';
 import { CaseExportRepository } from './case-export.repository.js';
-
-/** Prefixo próprio no bucket: gerado por nós, nunca enviado por ninguém, nunca em quarentena. */
-export function dossierObjectKey(organizationId: string, caseId: string, jobId: string): string {
-  return `exports/${organizationId}/${caseId}/${jobId}.pdf`;
-}
 
 @Injectable()
 export class CaseExportProcessor implements OnModuleInit, OnModuleDestroy {
@@ -104,16 +99,17 @@ export class CaseExportProcessor implements OnModuleInit, OnModuleDestroy {
         },
       });
 
-      const key = dossierObjectKey(organizationId, claimed.caseId, jobId);
+      const key = caseDossierObjectKey(organizationId, claimed.caseId, jobId);
       await this.storage.writeObject({
         bucket: this.config.objectStorage.bucket,
         key,
         body: pdf,
         contentType: 'application/pdf',
       });
+      // Só o tamanho. O balde vem da configuração e a chave é derivada dos identificadores:
+      // `outputMetadata` é devolvido inteiro pela rota de acompanhamento, e o layout do
+      // armazenamento não tem por que sair de casa.
       await this.repository.complete(organizationId, jobId, claimed.caseId, {
-        bucket: this.config.objectStorage.bucket,
-        key,
         byteSize: pdf.byteLength,
       });
       this.#logger.log('case_export_generated', { jobId, byteSize: pdf.byteLength });

@@ -264,6 +264,25 @@ if (
   throw new Error('Delivery 15 case-export migration must add the CASE_EXPORT job type.');
 }
 
+const exportCostMigration = migrationDirectories.find((name) =>
+  name.endsWith('_delivery_15_export_outside_cost_model'),
+);
+
+if (exportCostMigration === undefined) {
+  throw new Error('The reviewed Delivery 15 export-cost migration is missing.');
+}
+
+const exportCostSql = migrationSql.get(exportCostMigration) ?? '';
+for (const fragment of [
+  'DROP CONSTRAINT "processing_jobs_completed_cost_recorded"',
+  `OR "job_type" = 'CASE_EXPORT'`,
+  'CONSTRAINT "processing_jobs_export_has_no_cost"',
+]) {
+  if (!exportCostSql.includes(fragment)) {
+    throw new Error(`Delivery 15 export-cost migration is missing: ${fragment}`);
+  }
+}
+
 for (const [name, migration] of migrationSql) {
   const destructive = /^\s*(DROP\s+(?:TABLE|SCHEMA|DATABASE)|TRUNCATE)\b/imu.exec(migration);
 

@@ -105,7 +105,7 @@ export class CaseExportRepository {
     organizationId: string,
     jobId: string,
     caseId: string,
-    output: { bucket: string; key: string; byteSize: number },
+    output: { byteSize: number },
   ): Promise<void> {
     await withTransaction(this.database.client, async (transaction) => {
       const updated = await transaction.processingJob.updateMany({
