@@ -219,6 +219,7 @@ enum JobType {
   DUPLICATE_DETECTION
   FILE_VALIDATION
   VIRUS_SCAN
+  CASE_EXPORT
 
   @@map("job_type")
 }

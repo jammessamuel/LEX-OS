@@ -24,6 +24,7 @@ import { ParticipantsModule } from './participants/participants.module.js';
 import { PersonsModule } from './persons/persons.module.js';
 import { ProcessingModule } from './processing/processing.module.js';
 import { SearchModule } from './search/search.module.js';
+import { ExportsModule } from './exports/exports.module.js';
 import { TasksModule } from './tasks/tasks.module.js';
 import { TimelineModule } from './timeline/timeline.module.js';
 import { UsersModule } from './users/users.module.js';
@@ -50,6 +51,7 @@ import { UsersModule } from './users/users.module.js';
     TimelineModule,
     ChecklistsModule,
     TasksModule,
+    ExportsModule,
     UsersModule,
     HealthModule,
   ],

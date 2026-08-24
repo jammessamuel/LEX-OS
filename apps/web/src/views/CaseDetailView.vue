@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { ApiError, request, type NoContent } from '../api/client.js';
-import type { CaseDocument, CaseSummary, CursorPage, Participant } from '../api/types.js';
+import type {
+  CaseDocument,
+  CaseExport,
+  CaseSummary,
+  CursorPage,
+  Participant,
+} from '../api/types.js';
 import FileIntakePanel from '../components/FileIntakePanel.vue';
 import PreparationStatus from '../components/PreparationStatus.vue';
 import ParticipantForm from '../components/ParticipantForm.vue';
@@ -196,6 +202,78 @@ async function removeCase(): Promise<void> {
   }
 }
 
+/**
+ * Exportação do dossiê: pedir, acompanhar, baixar.
+ *
+ * O documento é montado pelo worker, então a tela pergunta de tempos em tempos e para de
+ * perguntar quando termina — ou quando falha. Um polling que nunca desiste transforma uma
+ * falha silenciosa numa aba que consome bateria a tarde inteira.
+ */
+const exportJob = ref<CaseExport | null>(null);
+const exporting = ref(false);
+const exportFailure = ref<string | null>(null);
+let exportTimer: ReturnType<typeof setTimeout> | undefined;
+const EXPORT_POLL_MS = 1_500;
+const EXPORT_MAX_POLLS = 60;
+let exportPolls = 0;
+
+async function requestExport(): Promise<void> {
+  if (exporting.value) {
+    return;
+  }
+  exporting.value = true;
+  exportFailure.value = null;
+  exportPolls = 0;
+  try {
+    exportJob.value = await request<CaseExport>(`/cases/${caseId}/exports`, { method: 'POST' });
+    scheduleExportPoll();
+  } catch (error) {
+    exporting.value = false;
+    exportFailure.value = toApiError(error, 'Não foi possível pedir o dossiê.').message;
+  }
+}
+
+function scheduleExportPoll(): void {
+  const job = exportJob.value;
+  if (job === null || job.status === 'COMPLETED' || job.status === 'FAILED') {
+    exporting.value = false;
+    return;
+  }
+  if (exportPolls >= EXPORT_MAX_POLLS) {
+    exporting.value = false;
+    exportFailure.value =
+      'O dossiê está demorando mais do que o normal. Tente novamente em alguns minutos.';
+    return;
+  }
+  exportPolls += 1;
+  exportTimer = setTimeout(() => void pollExport(), EXPORT_POLL_MS);
+}
+
+async function pollExport(): Promise<void> {
+  const job = exportJob.value;
+  if (job === null) {
+    return;
+  }
+  try {
+    exportJob.value = await request<CaseExport>(`/case-exports/${job.id}`);
+    if (exportJob.value.status === 'FAILED') {
+      exporting.value = false;
+      exportFailure.value = 'Não foi possível montar o dossiê. Tente novamente.';
+      return;
+    }
+    scheduleExportPoll();
+  } catch (error) {
+    exporting.value = false;
+    exportFailure.value = toApiError(error, 'Não foi possível acompanhar o dossiê.').message;
+  }
+}
+
+onUnmounted(() => {
+  if (exportTimer !== undefined) {
+    clearTimeout(exportTimer);
+  }
+});
+
 onMounted(() => {
   void load();
 });
@@ -277,6 +355,24 @@ onMounted(() => {
           >
             Tarefas
           </RouterLink>
+          <a
+            v-if="exportJob?.status === 'COMPLETED' && exportJob.downloadUrl"
+            class="btn"
+            :href="exportJob.downloadUrl"
+            target="_blank"
+            rel="noopener"
+          >
+            Baixar dossiê
+          </a>
+          <button
+            v-else
+            class="btn btn--ghost"
+            type="button"
+            :disabled="exporting"
+            @click="requestExport"
+          >
+            {{ exporting ? 'Montando dossiê…' : 'Exportar dossiê' }}
+          </button>
           <RouterLink
             v-if="session.can('cases.update')"
             class="btn btn--ghost"
@@ -295,6 +391,8 @@ onMounted(() => {
           </button>
         </div>
       </header>
+
+      <p v-if="exportFailure" class="note note--alert" role="alert">{{ exportFailure }}</p>
 
       <div class="split">
         <div class="stack">
@@ -554,6 +652,12 @@ onMounted(() => {
 
 .head__code {
   font-size: var(--step--1);
+}
+
+/* Falha da exportação: aviso ao lado do caso, não painel de erro no lugar dele. */
+.note--alert {
+  border-inline-start-color: var(--rejeitado);
+  color: var(--rejeitado);
 }
 
 /* Linha do processo: o número lidera, tribunal e vara acompanham em voz baixa. */

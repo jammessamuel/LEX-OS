@@ -454,6 +454,44 @@ than not having them. This delivery shows the dates the firm already recorded.
 - `to` before `from` returns `400 INVALID_AGENDA_RANGE`;
 - each bucket caps at 200 and says so with the real total and a `truncated` flag.
 
+## Delivery 15 — Case dossier export
+
+Authorized in the same session as the two items above, from the same gap analysis. It is the
+delivery that turns the differentiator into something a client receives: a single document with
+the confirmed chronology, the checklist, and the origin of every extracted datum — file, page,
+excerpt. It sells the product in a meeting without asking anyone to log in.
+
+**Scope**
+
+- `POST /cases/:id/exports` persists a `CASE_EXPORT` job, publishes it, and returns `202`;
+  `GET /case-exports/:id` reports status and, once ready, a freshly signed short-lived URL;
+- the worker builds the PDF and writes it to the private bucket. The route assembles nothing:
+  a dossier for a large case inside the process serving requests works in the test and falls
+  over in production;
+- its own `case-export` queue, outside `processingQueueNames`, which governs the AI pipeline
+  where every job type has a provider, a model, and a cost. A PDF has none of those;
+- the worker gains a write-only object adapter. Reading, listing, deleting, and signing stay
+  with the API — a background process does not need that surface.
+
+**Out of scope** — sending the dossier by e-mail, a client portal, letterhead and branding
+per firm, and any choice of what to include. This delivery produces one document with
+everything the case has.
+
+**Acceptance**
+
+- the chronology contains only human-confirmed events; the unconfirmed ones are counted at the
+  end of the section and never narrated;
+- every fact from an extraction prints document, page, excerpt, provider, model, version, and
+  confidence, with the excerpt capped so a bad offset cannot dump a page;
+- dates print at the precision recorded, never finer;
+- a case that is not `STANDARD` prints the confidentiality warning in every page footer;
+- an empty case and a case with hundreds of events both render, and the footer's page total is
+  correct in both;
+- asking twice while one export runs returns the same job, not a second PDF;
+- the permission is re-checked on the status route, so losing access to the case stops the
+  download even with the job identifier in hand;
+- no audit record and no log contains the signed URL, the storage key, or case text.
+
 ## Governed follow-up increments
 
 ADRs 009–013 define product policy that extends beyond the numbered Delivery 0–11 plan. They do not authorize opportunistic implementation. Each capability must receive a separate vertical increment with schema, security, audit, failure-path, and documentation acceptance criteria before coding begins:

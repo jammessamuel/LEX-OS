@@ -110,6 +110,99 @@ describe('CaseDetailView', () => {
     request.mockReset();
   });
 
+  it('mostra o número do processo antes do título, que é como o advogado reconhece o caso', async () => {
+    request.mockImplementation(async (path: string) =>
+      path === '/cases/case-1' ? legalCase : emptyPage,
+    );
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.get('.case-process').text()).toContain('0001234-27.2026.5.02.0001');
+    expect(wrapper.text()).toContain('TRT da 2ª Região');
+  });
+
+  it('avisa quando o caso ainda não foi protocolado', async () => {
+    request.mockImplementation(async (path: string) =>
+      path === '/cases/case-1'
+        ? { ...legalCase, cnjNumber: null, cnjSegment: null, court: null, courtDivision: null }
+        : emptyPage,
+    );
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Sem número de processo');
+  });
+
+  it('pede o dossiê, acompanha o preparo e só então oferece o download', async () => {
+    vi.useFakeTimers();
+    let status = 'QUEUED';
+    request.mockImplementation(async (path: string) => {
+      if (path === '/cases/case-1') return legalCase;
+      if (path === '/cases/case-1/exports') {
+        return { id: 'export-1', caseId: 'case-1', status: 'QUEUED', downloadUrl: null };
+      }
+      if (path === '/case-exports/export-1') {
+        return {
+          id: 'export-1',
+          caseId: 'case-1',
+          status,
+          downloadUrl: status === 'COMPLETED' ? 'https://exemplo.invalid/dossie.pdf' : null,
+        };
+      }
+      return emptyPage;
+    });
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    const buttons = wrapper.findAll('button');
+    const exportButton = buttons.find((button) => button.text() === 'Exportar dossiê');
+    await exportButton?.trigger('click');
+    await flushPromises();
+
+    // Enquanto o worker monta, o botão diz o que está acontecendo e não oferece download.
+    expect(wrapper.text()).toContain('Montando dossiê');
+    expect(wrapper.find('a[href="https://exemplo.invalid/dossie.pdf"]').exists()).toBe(false);
+
+    status = 'COMPLETED';
+    await vi.advanceTimersByTimeAsync(2_000);
+    await flushPromises();
+
+    expect(wrapper.find('a[href="https://exemplo.invalid/dossie.pdf"]').exists()).toBe(true);
+    vi.useRealTimers();
+  });
+
+  it('para de perguntar e explica quando o dossiê falha', async () => {
+    vi.useFakeTimers();
+    request.mockImplementation(async (path: string) => {
+      if (path === '/cases/case-1') return legalCase;
+      if (path === '/cases/case-1/exports') {
+        return { id: 'export-1', caseId: 'case-1', status: 'QUEUED', downloadUrl: null };
+      }
+      if (path === '/case-exports/export-1') {
+        return { id: 'export-1', caseId: 'case-1', status: 'FAILED', downloadUrl: null };
+      }
+      return emptyPage;
+    });
+
+    const wrapper = mountView();
+    await flushPromises();
+    const exportButton = wrapper.findAll('button').find((b) => b.text() === 'Exportar dossiê');
+    await exportButton?.trigger('click');
+    await flushPromises();
+    await vi.advanceTimersByTimeAsync(2_000);
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Não foi possível montar o dossiê');
+    request.mockClear();
+    await vi.advanceTimersByTimeAsync(10_000);
+    // Falhou: a tela para de perguntar em vez de bater na API para sempre.
+    expect(request).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
   it('mostra o nome do responsável sem expor UUID ou rótulo genérico', async () => {
     request.mockImplementation(async (path: string) =>
       path === '/cases/case-1' ? legalCase : emptyPage,

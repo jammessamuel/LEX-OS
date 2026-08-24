@@ -250,6 +250,20 @@ for (const fragment of delivery15Fragments) {
   }
 }
 
+const caseExportMigration = migrationDirectories.find((name) =>
+  name.endsWith('_delivery_15_case_export'),
+);
+
+if (caseExportMigration === undefined) {
+  throw new Error('The reviewed Delivery 15 case-export migration is missing.');
+}
+
+if (
+  !(migrationSql.get(caseExportMigration) ?? '').includes("ADD VALUE IF NOT EXISTS 'CASE_EXPORT'")
+) {
+  throw new Error('Delivery 15 case-export migration must add the CASE_EXPORT job type.');
+}
+
 for (const [name, migration] of migrationSql) {
   const destructive = /^\s*(DROP\s+(?:TABLE|SCHEMA|DATABASE)|TRUNCATE)\b/imu.exec(migration);
 

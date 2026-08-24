@@ -245,7 +245,14 @@ export class CasesService {
     id: string,
     metadata: RequestAuditMetadata,
     access?:
-      'CHECKLISTS' | 'DOCUMENTS' | 'DOWNLOAD' | 'FILES' | 'PROCESSING' | 'TASKS' | 'TIMELINE',
+      | 'CHECKLISTS'
+      | 'DOCUMENTS'
+      | 'DOWNLOAD'
+      | 'EXPORT'
+      | 'FILES'
+      | 'PROCESSING'
+      | 'TASKS'
+      | 'TIMELINE',
   ): Promise<void> {
     const record = await this.#findAccessible(actor, id);
     if (access !== undefined && isConfidential(record.confidentialityLevel)) {
@@ -499,6 +506,7 @@ export class CasesService {
       | 'DETAIL'
       | 'DOCUMENTS'
       | 'DOWNLOAD'
+      | 'EXPORT'
       | 'FILES'
       | 'PARTICIPANTS'
       | 'PROCESSING'

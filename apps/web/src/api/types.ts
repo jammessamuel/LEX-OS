@@ -471,6 +471,19 @@ export interface CaseTask {
   updatedAt: string;
 }
 
+export interface CaseExport {
+  id: string;
+  caseId: string;
+  status: 'QUEUED' | 'PROCESSING' | 'RETRYING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+  attempts: number;
+  downloadUrl: string | null;
+  downloadExpiresAt: string | null;
+  byteSize: number | null;
+  errorCode: string | null;
+  createdAt: string;
+  finishedAt: string | null;
+}
+
 export interface AgendaTask extends CaseTask {
   case: { id: string; internalCode: string; cnjNumber: string | null; title: string } | null;
   assignedTo: { id: string; name: string } | null;

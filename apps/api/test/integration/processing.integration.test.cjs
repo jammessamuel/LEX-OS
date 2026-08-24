@@ -38,6 +38,7 @@ const OTHER_EXTRACTION_ID = '70000000-0000-4000-8000-000000000017';
 const OTHER_ENTITY_ID = '70000000-0000-4000-8000-000000000018';
 const DOCUMENT_MANAGER_USER_ID = '70000000-0000-4000-8000-000000000019';
 const DOCUMENT_MANAGER_ROLE_ID = '70000000-0000-4000-8000-000000000020';
+const OTHER_EXPORT_JOB_ID = '70000000-0000-4000-8000-000000000021';
 const ADMIN_EMAIL = 'admin@lexos.invalid';
 const READ_ONLY_EMAIL = 'd7-read-only@lexos.invalid';
 const DOCUMENT_MANAGER_EMAIL = 'd7-doc-manager@lexos.invalid';
@@ -81,7 +82,12 @@ async function cleanup() {
         { processingJob: { documentId: { in: documentIds } } },
         { userId: { in: [READ_ONLY_USER_ID, DOCUMENT_MANAGER_USER_ID] } },
         { organizationId: OTHER_ORGANIZATION_ID },
-        { entityId: { in: [CONFIDENTIAL_CASE_ID, OTHER_CASE_ID, ENTITY_ID, OTHER_ENTITY_ID] } },
+        {
+          entityId: {
+            in: [DEMO_CASE_ID, CONFIDENTIAL_CASE_ID, OTHER_CASE_ID, ENTITY_ID, OTHER_ENTITY_ID],
+          },
+        },
+        { action: { startsWith: 'case.export.' } },
       ],
     },
   });
@@ -93,6 +99,12 @@ async function cleanup() {
     where: { documentId: { in: documentIds } },
   });
   await database.client.processingJob.deleteMany({ where: { documentId: { in: documentIds } } });
+  await database.client.processingJob.deleteMany({
+    where: {
+      jobType: 'CASE_EXPORT',
+      caseId: { in: [DEMO_CASE_ID, CONFIDENTIAL_CASE_ID, OTHER_CASE_ID] },
+    },
+  });
   await database.client.document.deleteMany({ where: { id: { in: documentIds } } });
   await database.client.storedFile.deleteMany({
     where: { id: { in: [STANDARD_FILE_ID, CONFIDENTIAL_FILE_ID, OTHER_FILE_ID] } },
@@ -398,6 +410,8 @@ describe('Delivery 7 processing HTTP contract', () => {
     const response = await request(http).get('/api/v1/docs/openapi.json').expect(200);
     assert.ok(response.body.paths['/api/v1/processing-jobs']?.get);
     assert.ok(response.body.paths['/api/v1/processing-jobs/{id}']?.get);
+    assert.ok(response.body.paths['/api/v1/cases/{id}/exports']?.post);
+    assert.ok(response.body.paths['/api/v1/case-exports/{id}']?.get);
     assert.ok(response.body.paths['/api/v1/documents/{id}/extractions']?.get);
     assert.ok(response.body.paths['/api/v1/extracted-entities/{id}/confirm']?.post);
     assert.ok(response.body.paths['/api/v1/documents/{id}/reprocess']?.post);
@@ -519,6 +533,114 @@ describe('Delivery 7 processing HTTP contract', () => {
       'post',
       `/api/v1/documents/${STANDARD_DOCUMENT_ID}/reprocess`,
     ).expect(403);
+  });
+
+  it('queues one dossier at a time and never builds it inside the request', async () => {
+    const accepted = await authorized(adminToken, 'post', `/api/v1/cases/${DEMO_CASE_ID}/exports`)
+      .send({})
+      .expect(202);
+    assert.equal(accepted.body.status, 'QUEUED');
+    assert.equal(accepted.body.caseId, DEMO_CASE_ID);
+    // Nada de URL enquanto o worker nao montou o documento.
+    assert.equal(accepted.body.downloadUrl, null);
+    assert.equal(accepted.body.byteSize, null);
+
+    // Clicar de novo enquanto o primeiro roda devolve o mesmo trabalho, nao um segundo PDF.
+    const again = await authorized(adminToken, 'post', `/api/v1/cases/${DEMO_CASE_ID}/exports`)
+      .send({})
+      .expect(202);
+    assert.equal(again.body.id, accepted.body.id);
+
+    const queued = await database.client.processingJob.count({
+      where: { organizationId: ORGANIZATION_ID, caseId: DEMO_CASE_ID, jobType: 'CASE_EXPORT' },
+    });
+    assert.equal(queued, 1);
+
+    const status = await authorized(
+      adminToken,
+      'get',
+      `/api/v1/case-exports/${accepted.body.id}`,
+    ).expect(200);
+    assert.equal(status.body.status, 'QUEUED');
+    assert.equal(status.body.downloadUrl, null);
+
+    // Com o dossie pronto, a URL assinada aparece — e some do registro de auditoria.
+    await database.client.processingJob.update({
+      where: { id: accepted.body.id },
+      data: {
+        status: 'COMPLETED',
+        finishedAt: new Date(),
+        outputMetadata: {
+          bucket: process.env.OBJECT_STORAGE_BUCKET ?? 'lex-os',
+          key: `exports/${ORGANIZATION_ID}/${DEMO_CASE_ID}/${accepted.body.id}.pdf`,
+          byteSize: 12_345,
+        },
+      },
+    });
+    const ready = await authorized(
+      adminToken,
+      'get',
+      `/api/v1/case-exports/${accepted.body.id}`,
+    ).expect(200);
+    assert.equal(ready.body.status, 'COMPLETED');
+    assert.equal(ready.body.byteSize, 12_345);
+    assert.ok(typeof ready.body.downloadUrl === 'string' && ready.body.downloadUrl.length > 0);
+    assert.ok(ready.body.downloadExpiresAt);
+
+    const audits = await database.client.auditLog.findMany({
+      where: { organizationId: ORGANIZATION_ID, action: { startsWith: 'case.export.' } },
+      select: { action: true, newData: true },
+    });
+    const serialized = JSON.stringify(audits);
+    assert.ok(audits.some((entry) => entry.action === 'case.export.requested'));
+    assert.ok(audits.some((entry) => entry.action === 'case.export.downloaded'));
+    // A URL assinada e a credencial: guardar na trilha seria guardar a chave.
+    assert.equal(serialized.includes('X-Amz-Signature'), false);
+    assert.equal(serialized.includes('exports/'), false);
+  });
+
+  it('refuses to export a case the reader cannot open', async () => {
+    // Outro escritorio: nem o pedido, nem a consulta pelo identificador do trabalho.
+    await authorized(adminToken, 'post', `/api/v1/cases/${OTHER_CASE_ID}/exports`)
+      .send({})
+      .expect(404);
+
+    await database.client.processingJob.create({
+      data: {
+        id: OTHER_EXPORT_JOB_ID,
+        organizationId: OTHER_ORGANIZATION_ID,
+        caseId: OTHER_CASE_ID,
+        jobType: 'CASE_EXPORT',
+        status: 'COMPLETED',
+        outputMetadata: { bucket: 'lex-os', key: 'exports/outro.pdf', byteSize: 10 },
+      },
+    });
+    await authorized(adminToken, 'get', `/api/v1/case-exports/${OTHER_EXPORT_JOB_ID}`).expect(404);
+
+    // Caso confidencial: quem nao tem a permissao recebe o mesmo 404 opaco.
+    await authorized(readOnlyToken, 'post', `/api/v1/cases/${CONFIDENTIAL_CASE_ID}/exports`)
+      .send({})
+      .expect(404);
+
+    const mine = await authorized(
+      adminToken,
+      'post',
+      `/api/v1/cases/${CONFIDENTIAL_CASE_ID}/exports`,
+    )
+      .send({})
+      .expect(202);
+    // O acesso confidencial autorizado deixa registro.
+    const confidentialReads = await database.client.auditLog.count({
+      where: {
+        organizationId: ORGANIZATION_ID,
+        action: 'case.confidential.read',
+        entityId: CONFIDENTIAL_CASE_ID,
+      },
+    });
+    assert.ok(confidentialReads > 0);
+
+    // E o trabalho do colega segue invisivel para quem perdeu o acesso ao caso.
+    await authorized(readOnlyToken, 'get', `/api/v1/case-exports/${mine.body.id}`).expect(404);
   });
 
   it('hides other tenants and confidential jobs from unauthorized readers', async () => {

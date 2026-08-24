@@ -63,9 +63,8 @@ the gap analysis in `docs/product/analise-competitiva.md`. `cnjNumber`, `court`,
 `courtDivision` on the case, all optional; the CNJ check digit verified rather than the shape
 alone, from one implementation in `packages/shared` shared by API and browser; unique per
 organization; `GET /cases?search=` over process number, internal code, and title; and
-`GET /agenda` with the firm's deadlines, separating what is overdue from what is coming.
-
-Also authorized in the same session, and not yet started: the case dossier export.
+`GET /agenda` with the firm's deadlines, separating what is overdue from what is coming; and
+the case dossier export in PDF, built by the worker and delivered by a short-lived signed URL.
 
 Out of scope, and still requiring separate authorization: any court integration, docket
 movements, published-notice capture, a closed catalogue of tribunals, WebAuthn, SMS, federated
@@ -140,6 +139,7 @@ fits, read `AGENTS.md` section headings only, then the one section that applies.
 | Auth, RBAC, sessions              | `docs/api/authentication.md`; `docs/decisions/ADR-004-multi-tenancy.md`; `apps/api/src/auth/`, `apps/api/src/access-control/`                                                 |
 | People / cases / participants     | `docs/api/people-cases-participants.md`                                                                                                                                       |
 | Upload, storage, download         | `docs/api/files-documents.md`; `docs/decisions/ADR-003-object-storage.md`                                                                                                     |
+| Dossier export, PDF               | `docs/api/case-export.md`                                                                                                                                                     |
 | Queue, worker, job state          | `docs/architecture/delivery-7-processing-design.md`; `packages/contracts/src/index.ts`; `docs/decisions/ADR-007-background-jobs.md`                                           |
 | DB schema or migration            | `packages/database/prisma/schema.prisma` (canonical); `docs/architecture/database-migrations.md`; `docs/architecture/data-model.md`                                           |
 | AI provider / prompt / provenance | `docs/decisions/ADR-006-provider-agnostic-ai.md`; `AGENTS.md` §"AI data and provenance"                                                                                       |

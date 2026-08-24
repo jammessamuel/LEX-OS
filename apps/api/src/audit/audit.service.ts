@@ -131,6 +131,18 @@ export type DomainAuditEvent =
       newData: { limitAmount: string; currency: string; status: string };
     })
   | (DomainAuditBase & {
+      action: 'case.export.requested';
+      entityType: 'case';
+      // Só o identificador do trabalho. Nada do dossiê, que é o caso inteiro em texto.
+      newData: { jobId: string };
+    })
+  | (DomainAuditBase & {
+      action: 'case.export.downloaded';
+      entityType: 'case';
+      // A URL assinada nunca entra: ela é a credencial de acesso ao arquivo.
+      newData: { jobId: string; expiresInSeconds: number };
+    })
+  | (DomainAuditBase & {
       action: 'case.confidential.read';
       entityType: 'case';
       newData: {
@@ -141,6 +153,7 @@ export type DomainAuditEvent =
           | 'DETAIL'
           | 'DOCUMENTS'
           | 'DOWNLOAD'
+          | 'EXPORT'
           | 'FILES'
           | 'LIST'
           | 'PARTICIPANTS'

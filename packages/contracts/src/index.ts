@@ -9,6 +9,17 @@ export const processingQueueNames = {
   VIRUS_SCAN: 'virus-scan',
 } as const;
 
+/**
+ * A exportação do dossiê é um trabalho de fundo, mas não é trabalho de inteligência.
+ *
+ * Ela fica fora de `processingQueueNames` de propósito: aquele mapa governa o pipeline de IA,
+ * onde todo tipo tem provedor, modelo e custo por execução. Um PDF montado a partir do que já
+ * está no banco não tem nada disso, e enfiá-lo lá obrigaria a inventar um provedor fictício
+ * só para satisfazer o modelo de custo — que é exatamente como um controle de custo deixa de
+ * significar alguma coisa.
+ */
+export const caseExportQueueName = 'case-export' as const;
+
 export type ProcessingJobType = keyof typeof processingQueueNames;
 export type ProcessingQueueName = (typeof processingQueueNames)[ProcessingJobType];
 
