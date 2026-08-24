@@ -586,3 +586,19 @@ export interface AssignableRole {
   grantable: boolean;
   permissions: RolePermission[];
 }
+
+export interface SecondFactorStatus {
+  active: boolean;
+  requiredByOrganization: boolean;
+  unusedRecoveryCodes: number;
+}
+
+/** O segredo sai uma única vez, para o aplicativo. Não há rota que o leia de novo. */
+export interface SecondFactorEnrolment {
+  secret: string;
+  uri: string;
+}
+
+export interface SecondFactorActivated {
+  recoveryCodes: string[];
+}

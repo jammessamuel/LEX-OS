@@ -21,6 +21,7 @@ import PersonDetailView from '../views/PersonDetailView.vue';
 import PersonFormView from '../views/PersonFormView.vue';
 import PersonsView from '../views/PersonsView.vue';
 import SearchView from '../views/SearchView.vue';
+import SecurityView from '../views/SecurityView.vue';
 import UsersView from '../views/UsersView.vue';
 
 export const router = createRouter({
@@ -152,6 +153,12 @@ export const router = createRouter({
           name: 'audit',
           path: 'auditoria',
           meta: { permissions: ['audit.read', 'confidential_cases.read'] },
+        },
+        {
+          // Sem permissao: qualquer pessoa autenticada cuida da propria seguranca.
+          component: SecurityView,
+          name: 'security',
+          path: 'conta/seguranca',
         },
         {
           component: AccessDeniedView,

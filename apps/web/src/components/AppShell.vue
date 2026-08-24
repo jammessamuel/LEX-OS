@@ -68,7 +68,9 @@ async function signOut(): Promise<void> {
       </nav>
 
       <div class="shell__account">
-        <span v-if="session.user" class="shell__user">{{ session.user.name }}</span>
+        <RouterLink v-if="session.user" class="shell__user" :to="{ name: 'security' }">
+          {{ session.user.name }}
+        </RouterLink>
         <button
           class="shell__theme"
           type="button"
@@ -168,6 +170,15 @@ async function signOut(): Promise<void> {
 .shell__user {
   font-size: var(--step--1);
   color: var(--text-2);
+  text-decoration: none;
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--radius);
+}
+
+.shell__user:hover,
+.shell__user.router-link-active {
+  color: var(--ink);
+  background: var(--surface-sunk);
 }
 
 .shell__theme {

@@ -1,6 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ApiError } from '../api/client.js';
 import LoginView from '../views/LoginView.vue';
 
 const mocks = vi.hoisted(() => ({
@@ -184,5 +185,66 @@ describe('LoginView', () => {
     await flushPromises();
 
     expect(mocks.login).toHaveBeenCalledWith(expect.objectContaining({ keepSignedIn: true }));
+  });
+
+  it('pede o código quando a senha está certa e o segundo fator está ativo', async () => {
+    mocks.login.mockRejectedValueOnce(
+      new ApiError({
+        statusCode: 401,
+        code: 'SECOND_FACTOR_REQUIRED',
+        message: 'Informe o código do segundo fator para concluir a entrada.',
+      }),
+    );
+
+    const wrapper = await submitLogin();
+
+    // Não é erro: a senha foi aceita, e a tela avança em vez de acusar credencial errada.
+    expect(wrapper.text()).toContain('Senha conferida');
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+    expect(wrapper.find('#secondFactorCode').exists()).toBe(true);
+    expect(wrapper.find('#password').exists()).toBe(false);
+  });
+
+  it('envia o código no segundo passo, sem pedir a senha de novo', async () => {
+    mocks.login.mockRejectedValueOnce(
+      new ApiError({ statusCode: 401, code: 'SECOND_FACTOR_REQUIRED', message: 'x' }),
+    );
+    const wrapper = await submitLogin();
+
+    mocks.login.mockResolvedValueOnce(undefined);
+    await wrapper.get('#secondFactorCode').setValue('123456');
+    await wrapper.get('form').trigger('submit');
+    await flushPromises();
+
+    expect(mocks.login).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        password: 'senha-ficticia',
+        secondFactorCode: '123456',
+      }),
+    );
+    expect(mocks.replace).toHaveBeenCalled();
+  });
+
+  it('código errado não apaga a senha já conferida', async () => {
+    mocks.login.mockRejectedValueOnce(
+      new ApiError({ statusCode: 401, code: 'SECOND_FACTOR_REQUIRED', message: 'x' }),
+    );
+    const wrapper = await submitLogin();
+
+    mocks.login.mockRejectedValueOnce(
+      new ApiError({
+        statusCode: 401,
+        code: 'SECOND_FACTOR_CODE_INVALID',
+        message: 'Código inválido. Confira o aplicativo e tente de novo.',
+      }),
+    );
+    await wrapper.get('#secondFactorCode').setValue('000000');
+    await wrapper.get('form').trigger('submit');
+    await flushPromises();
+
+    expect(wrapper.get('[role="alert"]').text()).toContain('Código inválido');
+    // Refazer a senha inteira seria castigo por erro de digitação no código.
+    expect(wrapper.find('#secondFactorCode').exists()).toBe(true);
+    expect((wrapper.get('#secondFactorCode').element as HTMLInputElement).value).toBe('');
   });
 });

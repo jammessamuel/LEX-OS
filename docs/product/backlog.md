@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-20 · segundo fator vale na entrada
+**Última atualização:** 2026-08-24 · Entrega 14 completa
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,9 +19,9 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                              | Detalhe                                                                                                                          |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Entrega 14 — Segundo fator com TOTP | Autorizada pela sociedade em 2026-08-20. Backend completo: primitiva, banco, inscrição e entrada em duas etapas. Faltam as telas |
+| Cartão                              | Detalhe                                                                                                                           |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Entrega 14 — Segundo fator com TOTP | Autorizada pela sociedade em 2026-08-20. Escopo completo: primitiva, banco, inscrição, entrada e telas. Aceita quando a CI fechar |
 
 ---
 
@@ -92,6 +92,13 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 ## Feito
 
 Ordem cronológica inversa. Serve para o quadro não perder a memória do que já foi resolvido.
+
+- **Entrega 14, fatia 5 — as telas do segundo fator** — a entrada virou dois passos, e o
+  segundo não é tratado como erro: a senha foi aceita, então a tela avança em vez de acusar
+  credencial errada, e um código errado não apaga a senha já conferida. A segurança da conta
+  abre com o veredito — "seu acesso depende só da senha" alarma, "pede duas provas" não — e os
+  dez códigos de recuperação aparecem uma vez, com o aviso de guardá-los fora deste computador
+  e fora do telefone que os gera. Desligar exige código na tela porque exige no servidor.
 
 - **Entrega 14, fatia 4 — o segundo fator vale na entrada** — a senha sozinha deixou de bastar
   para quem o ativou: ela devolve 401 sem token e sem cookie, pedindo o código. O desafio roda
@@ -316,6 +323,10 @@ Ordem cronológica inversa. Serve para o quadro não perder a memória do que j�
 
 Mover o cartão na hora em que o estado muda, não no fim do dia. Ao concluir, escrever em
 **Feito** o que mudou para quem não acompanhou — não o nome do cartão.## A fazer — qualidade de interface
+
+| Cartão                           | Detalhe                                                                                                                                                                        |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| QR na inscrição do segundo fator | Hoje o cadastro é pela chave ou pelo link. Um codificador escrito à mão erra em silêncio — um QR sutilmente errado só aparece quando alguém tenta ler. Uma dependência resolve |
 
 | Cartão                                   | Detalhe                                                                                                         |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
