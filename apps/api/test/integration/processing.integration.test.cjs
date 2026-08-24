@@ -609,6 +609,9 @@ describe('Delivery 7 processing HTTP contract', () => {
         caseId: OTHER_CASE_ID,
         jobType: 'CASE_EXPORT',
         status: 'COMPLETED',
+        // A restrição de ciclo de vida exige encerramento em COMPLETED.
+        startedAt: new Date(),
+        finishedAt: new Date(),
         outputMetadata: { byteSize: 10 },
       },
     });

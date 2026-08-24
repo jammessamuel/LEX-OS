@@ -118,6 +118,7 @@ describe('Delivery 4 HTTP and authentication contract', () => {
     const response = await request(http).get('/api/v1/docs/openapi.json').expect(200);
     const expectedPaths = [
       '/api/v1',
+      '/api/v1/agenda',
       '/api/v1/assistant/answers',
       '/api/v1/audit-logs',
       '/api/v1/auth/invitations/accept',
@@ -128,6 +129,7 @@ describe('Delivery 4 HTTP and authentication contract', () => {
       '/api/v1/auth/refresh',
       '/api/v1/auth/second-factor',
       '/api/v1/auth/second-factor/activate',
+      '/api/v1/case-exports/{id}',
       '/api/v1/cases',
       '/api/v1/cases/{caseId}/documents',
       '/api/v1/cases/{caseId}/files',
@@ -136,6 +138,7 @@ describe('Delivery 4 HTTP and authentication contract', () => {
       '/api/v1/cases/{id}',
       '/api/v1/cases/{id}/checklist-templates',
       '/api/v1/cases/{id}/checklists',
+      '/api/v1/cases/{id}/exports',
       '/api/v1/cases/{id}/processing-budget',
       '/api/v1/cases/{id}/tasks',
       '/api/v1/cases/{id}/timeline-events',
