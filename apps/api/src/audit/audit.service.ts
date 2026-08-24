@@ -135,6 +135,7 @@ export type DomainAuditEvent =
       entityType: 'case';
       newData: {
         access:
+          | 'AGENDA'
           | 'CHECKLISTS'
           | 'DASHBOARD'
           | 'DETAIL'

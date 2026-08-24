@@ -84,10 +84,11 @@ onMounted(() => void load());
         </article>
 
         <article class="metric" :class="{ 'metric--attention': summary.tasks.overdue > 0 }">
-          <p class="label">Tarefas atrasadas</p>
+          <p class="label">Prazos atrasados</p>
           <p class="metric__value data">{{ summary.tasks.overdue }}</p>
-          <p class="metric__detail">{{ summary.tasks.open }} tarefas em aberto</p>
-          <RouterLink :to="{ name: 'cases' }">Escolher um caso</RouterLink>
+          <p class="metric__detail">{{ summary.tasks.open }} prazos em aberto</p>
+          <!-- O número levava ao acervo, que não responde "quais". A agenda responde. -->
+          <RouterLink :to="{ name: 'agenda' }">Abrir a agenda</RouterLink>
         </article>
 
         <article class="metric" :class="{ 'metric--attention': summary.processing.failed > 0 }">

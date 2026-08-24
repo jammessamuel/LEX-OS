@@ -62,10 +62,10 @@ The latest accepted checkpoint is **Delivery 14 — Second factor with TOTP**, a
 the gap analysis in `docs/product/analise-competitiva.md`. `cnjNumber`, `court`, and
 `courtDivision` on the case, all optional; the CNJ check digit verified rather than the shape
 alone, from one implementation in `packages/shared` shared by API and browser; unique per
-organization; and `GET /cases?search=` over process number, internal code, and title.
+organization; `GET /cases?search=` over process number, internal code, and title; and
+`GET /agenda` with the firm's deadlines, separating what is overdue from what is coming.
 
-Also authorized in the same session, and not yet started: the deadline agenda, and the case
-dossier export.
+Also authorized in the same session, and not yet started: the case dossier export.
 
 Out of scope, and still requiring separate authorization: any court integration, docket
 movements, published-notice capture, a closed catalogue of tribunals, WebAuthn, SMS, federated

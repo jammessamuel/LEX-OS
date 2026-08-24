@@ -38,6 +38,13 @@ const OTHER_CHECKLIST_ITEM_ID = '80000000-0000-4000-8000-000000000017';
 const OTHER_TASK_ID = '80000000-0000-4000-8000-000000000019';
 const CONFIDENTIAL_CASE_ID = '80000000-0000-4000-8000-000000000020';
 const DELETED_CASE_ID = '80000000-0000-4000-8000-000000000021';
+const AGENDA_SOON_TASK_ID = '80000000-0000-4000-8000-000000000022';
+const AGENDA_LATE_TASK_ID = '80000000-0000-4000-8000-000000000023';
+const AGENDA_CONFIDENTIAL_TASK_ID = '80000000-0000-4000-8000-000000000024';
+const AGENDA_DELETED_CASE_TASK_ID = '80000000-0000-4000-8000-000000000025';
+const AGENDA_DONE_TASK_ID = '80000000-0000-4000-8000-000000000026';
+const AGENDA_OTHER_TENANT_TASK_ID = '80000000-0000-4000-8000-000000000027';
+const DAY_MS = 86_400_000;
 const ADMIN_EMAIL = 'admin@lexos.invalid';
 const INTERN_EMAIL = 'd8-intern@lexos.invalid';
 const seedPassword = process.env.SEED_ADMIN_PASSWORD;
@@ -83,8 +90,14 @@ async function cleanup() {
   });
   const fixtureChecklistIds = fixtureChecklists.map((item) => item.id);
   const fixtureItemIds = fixtureChecklists.flatMap((item) => item.items.map((child) => child.id));
+  // A agenda espalhou tarefas por todos os casos fictícios: a limpeza tem de alcançar todos,
+  // senão a exclusão dos casos falha por chave estrangeira e o teste seguinte herda sujeira.
   const fixtureTasks = await database.client.task.findMany({
-    where: { caseId: { in: [DEMO_CASE_ID, OTHER_CASE_ID] } },
+    where: {
+      caseId: {
+        in: [DEMO_CASE_ID, AUXILIARY_CASE_ID, OTHER_CASE_ID, CONFIDENTIAL_CASE_ID, DELETED_CASE_ID],
+      },
+    },
     select: { id: true },
   });
   await database.client.auditLog.deleteMany({
@@ -92,6 +105,13 @@ async function cleanup() {
       OR: [
         { userId: INTERN_USER_ID },
         { organizationId: OTHER_ORGANIZATION_ID },
+        // A leitura confidencial pela agenda audita sem entidade: sem esta linha ela escapa
+        // da limpeza por id e se acumula a cada execução.
+        {
+          organizationId: ORGANIZATION_ID,
+          action: 'case.confidential.read',
+          entityId: null,
+        },
         {
           entityId: {
             in: [
@@ -110,7 +130,11 @@ async function cleanup() {
   });
   await database.client.refreshSession.deleteMany({ where: { userId: INTERN_USER_ID } });
   await database.client.task.deleteMany({
-    where: { caseId: { in: [DEMO_CASE_ID, OTHER_CASE_ID] } },
+    where: {
+      caseId: {
+        in: [DEMO_CASE_ID, AUXILIARY_CASE_ID, OTHER_CASE_ID, CONFIDENTIAL_CASE_ID, DELETED_CASE_ID],
+      },
+    },
   });
   await database.client.timelineEvent.deleteMany({
     where: { id: { in: [STANDARD_EVENT_ID, OTHER_EVENT_ID] } },
@@ -306,6 +330,84 @@ before(async () => {
     },
   });
 
+  // Agenda: um prazo proximo, um vencido, e tres que nao podem aparecer — caso confidencial
+  // para quem nao tem a permissao, caso excluido, e tarefa ja concluida.
+  const now = Date.now();
+  await database.client.task.createMany({
+    data: [
+      {
+        id: AGENDA_SOON_TASK_ID,
+        organizationId: ORGANIZATION_ID,
+        caseId: DEMO_CASE_ID,
+        title: 'Prazo fictício a vencer',
+        taskType: 'TEST',
+        status: 'OPEN',
+        priority: 'HIGH',
+        sourceType: 'USER',
+        createdById: ADMIN_USER_ID,
+        assignedToId: ADMIN_USER_ID,
+        dueAt: new Date(now + 2 * DAY_MS),
+      },
+      {
+        id: AGENDA_LATE_TASK_ID,
+        organizationId: ORGANIZATION_ID,
+        caseId: DEMO_CASE_ID,
+        title: 'Prazo fictício vencido',
+        taskType: 'TEST',
+        status: 'OPEN',
+        priority: 'URGENT',
+        sourceType: 'USER',
+        createdById: ADMIN_USER_ID,
+        dueAt: new Date(now - 5 * DAY_MS),
+      },
+      {
+        id: AGENDA_CONFIDENTIAL_TASK_ID,
+        organizationId: ORGANIZATION_ID,
+        caseId: CONFIDENTIAL_CASE_ID,
+        title: 'Prazo fictício de caso confidencial',
+        taskType: 'TEST',
+        status: 'OPEN',
+        sourceType: 'USER',
+        createdById: ADMIN_USER_ID,
+        dueAt: new Date(now + 3 * DAY_MS),
+      },
+      {
+        id: AGENDA_DELETED_CASE_TASK_ID,
+        organizationId: ORGANIZATION_ID,
+        caseId: DELETED_CASE_ID,
+        title: 'Prazo fictício de caso excluído',
+        taskType: 'TEST',
+        status: 'OPEN',
+        sourceType: 'USER',
+        createdById: ADMIN_USER_ID,
+        dueAt: new Date(now + 1 * DAY_MS),
+      },
+      {
+        id: AGENDA_DONE_TASK_ID,
+        organizationId: ORGANIZATION_ID,
+        caseId: DEMO_CASE_ID,
+        title: 'Prazo fictício já concluído',
+        taskType: 'TEST',
+        status: 'COMPLETED',
+        sourceType: 'USER',
+        createdById: ADMIN_USER_ID,
+        completedAt: new Date(now - DAY_MS),
+        dueAt: new Date(now + 2 * DAY_MS),
+      },
+      {
+        id: AGENDA_OTHER_TENANT_TASK_ID,
+        organizationId: OTHER_ORGANIZATION_ID,
+        caseId: OTHER_CASE_ID,
+        title: 'Prazo fictício de outro tenant',
+        taskType: 'TEST',
+        status: 'OPEN',
+        sourceType: 'USER',
+        createdById: OTHER_USER_ID,
+        dueAt: new Date(now + 2 * DAY_MS),
+      },
+    ],
+  });
+
   await createFileAndDocument({
     fileId: STANDARD_FILE_ID,
     documentId: STANDARD_DOCUMENT_ID,
@@ -447,6 +549,7 @@ describe('Delivery 8 timeline, checklist and task review', () => {
     assert.ok(response.body.paths['/api/v1/checklist-items/{id}/tasks']?.post);
     assert.ok(response.body.paths['/api/v1/cases/{id}/tasks']?.get);
     assert.ok(response.body.paths['/api/v1/tasks/{id}']?.patch);
+    assert.ok(response.body.paths['/api/v1/agenda']?.get);
   });
 
   it('returns a sourced, unconfirmed event and confirms it without mutating its extraction', async () => {
@@ -642,6 +745,100 @@ describe('Delivery 8 timeline, checklist and task review', () => {
     );
     await authorized(adminToken, 'get', `/api/v1/cases/${DELETED_CASE_ID}/checklists`).expect(404);
     await authorized(adminToken, 'get', `/api/v1/cases/${DELETED_CASE_ID}/tasks`).expect(404);
+  });
+
+  it('builds the firm agenda without letting a deadline cross a boundary', async () => {
+    const from = new Date(Date.now() - DAY_MS).toISOString();
+    const to = new Date(Date.now() + 7 * DAY_MS).toISOString();
+
+    const agenda = await authorized(adminToken, 'get', '/api/v1/agenda')
+      .query({ from, to })
+      .expect(200);
+
+    const upcomingIds = agenda.body.upcoming.tasks.map((task) => task.id);
+    const overdueIds = agenda.body.overdue.tasks.map((task) => task.id);
+
+    assert.ok(upcomingIds.includes(AGENDA_SOON_TASK_ID));
+    assert.ok(overdueIds.includes(AGENDA_LATE_TASK_ID));
+
+    // Concluída não é prazo, é histórico.
+    assert.equal(upcomingIds.includes(AGENDA_DONE_TASK_ID), false);
+    // Caso excluído não devolve prazo por nenhuma porta.
+    assert.equal(upcomingIds.includes(AGENDA_DELETED_CASE_TASK_ID), false);
+    // Outro escritório nunca, nem no balde de vencidos.
+    assert.equal(upcomingIds.includes(AGENDA_OTHER_TENANT_TASK_ID), false);
+    assert.equal(overdueIds.includes(AGENDA_OTHER_TENANT_TASK_ID), false);
+
+    // O prazo traz o processo junto: a tela não pode exigir abrir o caso para saber do que é.
+    const soon = agenda.body.upcoming.tasks.find((task) => task.id === AGENDA_SOON_TASK_ID);
+    assert.equal(soon.case.id, DEMO_CASE_ID);
+    assert.equal(soon.case.internalCode, 'D8-PRIMARY');
+    assert.equal('confidentialityLevel' in soon.case, false);
+    assert.equal(soon.assignedTo.id, ADMIN_USER_ID);
+    assert.equal('email' in soon.assignedTo, false);
+
+    // Vencidos vêm em ordem, do mais antigo ao mais recente.
+    const overdueDates = agenda.body.overdue.tasks.map((task) => Date.parse(task.dueAt));
+    assert.deepEqual(
+      overdueDates,
+      [...overdueDates].sort((left, right) => left - right),
+    );
+
+    assert.equal(agenda.body.overdue.truncated, false);
+    assert.ok(agenda.body.range.generatedAt);
+  });
+
+  it('keeps a confidential deadline out of the agenda of whoever cannot read it', async () => {
+    const from = new Date(Date.now() - DAY_MS).toISOString();
+    const to = new Date(Date.now() + 7 * DAY_MS).toISOString();
+
+    const forAdmin = await authorized(adminToken, 'get', '/api/v1/agenda')
+      .query({ from, to })
+      .expect(200);
+    assert.ok(forAdmin.body.upcoming.tasks.some((task) => task.id === AGENDA_CONFIDENTIAL_TASK_ID));
+
+    // O estagiário não tem `confidential_cases.read`: o prazo some, e some do total também —
+    // um contador que ainda conta revela que o caso existe.
+    const forIntern = await authorized(internToken, 'get', '/api/v1/agenda')
+      .query({ from, to })
+      .expect(200);
+    assert.equal(
+      forIntern.body.upcoming.tasks.some((task) => task.id === AGENDA_CONFIDENTIAL_TASK_ID),
+      false,
+    );
+    assert.ok(forIntern.body.upcoming.total < forAdmin.body.upcoming.total);
+
+    const audits = await database.client.auditLog.findMany({
+      where: {
+        organizationId: ORGANIZATION_ID,
+        action: 'case.confidential.read',
+        userId: ADMIN_USER_ID,
+      },
+      select: { newData: true },
+    });
+    assert.ok(audits.some((entry) => entry.newData?.access === 'AGENDA'));
+  });
+
+  it('narrows the agenda to one person and refuses an impossible window', async () => {
+    const from = new Date(Date.now() - DAY_MS).toISOString();
+    const to = new Date(Date.now() + 7 * DAY_MS).toISOString();
+
+    const mine = await authorized(adminToken, 'get', '/api/v1/agenda')
+      .query({ from, to, scope: 'mine' })
+      .expect(200);
+    assert.ok(mine.body.upcoming.tasks.every((task) => task.assignedToId === ADMIN_USER_ID));
+    assert.ok(mine.body.upcoming.tasks.some((task) => task.id === AGENDA_SOON_TASK_ID));
+    assert.equal(
+      mine.body.overdue.tasks.some((task) => task.id === AGENDA_LATE_TASK_ID),
+      false,
+    );
+
+    const backwards = await authorized(adminToken, 'get', '/api/v1/agenda')
+      .query({ from: to, to: from })
+      .expect(400);
+    assert.equal(backwards.body.code, 'INVALID_AGENDA_RANGE');
+
+    await authorized(adminToken, 'get', '/api/v1/agenda').query({ from: 'ontem' }).expect(400);
   });
 
   it('updates task lifecycle fields safely and permits only one concurrent completion', async () => {

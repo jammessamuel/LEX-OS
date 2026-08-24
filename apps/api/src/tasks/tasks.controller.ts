@@ -30,6 +30,8 @@ import { ChecklistItemIdParamsDto } from '../checklists/dto/checklist-params.dto
 import { ApiErrorEnvelopeDto } from '../http/error-envelope.dto.js';
 import { getRequestContext } from '../observability/request-context.js';
 import { CreateChecklistTaskRequestDto } from './dto/create-checklist-task-request.dto.js';
+import { AgendaQueryDto } from './dto/agenda-query.dto.js';
+import { AgendaResponseDto } from './dto/agenda-response.dto.js';
 import { ListTasksQueryDto } from './dto/list-tasks-query.dto.js';
 import { TaskListResponseDto, TaskResponseDto } from './dto/task-response.dto.js';
 import { TaskIdParamsDto } from './dto/task-id-params.dto.js';
@@ -41,6 +43,18 @@ import { TasksService } from './tasks.service.js';
 @Controller()
 export class TasksController {
   constructor(private readonly tasks: TasksService) {}
+
+  @Get('agenda')
+  @RequirePermissions('tasks.read')
+  @ApiOperation({
+    summary: 'Agenda de prazos do escritório: o que vence na janela e o que já venceu antes dela.',
+  })
+  @ApiOkResponse({ type: AgendaResponseDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  @ApiForbiddenResponse({ type: ApiErrorEnvelopeDto })
+  agenda(@Req() request: AuthenticatedRequest, @Query() query: AgendaQueryDto) {
+    return this.tasks.agenda(this.#actor(request), query, getRequestContext() ?? {});
+  }
 
   @Get('cases/:id/tasks')
   @RequirePermissions('tasks.read')

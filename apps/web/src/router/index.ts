@@ -8,6 +8,7 @@ import AuditView from '../views/AuditView.vue';
 import CaseChecklistView from '../views/CaseChecklistView.vue';
 import CaseDetailView from '../views/CaseDetailView.vue';
 import CaseFormView from '../views/CaseFormView.vue';
+import AgendaView from '../views/AgendaView.vue';
 import CasesView from '../views/CasesView.vue';
 import DashboardView from '../views/DashboardView.vue';
 import CaseTasksView from '../views/CaseTasksView.vue';
@@ -63,6 +64,12 @@ export const router = createRouter({
           name: 'dashboard',
           path: 'painel',
           meta: { permissions: ['cases.read', 'documents.read', 'tasks.read'] },
+        },
+        {
+          component: AgendaView,
+          name: 'agenda',
+          path: 'agenda',
+          meta: { permissions: ['tasks.read'] },
         },
         {
           component: CasesView,

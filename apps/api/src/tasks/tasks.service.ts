@@ -13,12 +13,16 @@ import {
   encodeCursor,
   type CursorPage,
 } from '../http/pagination.js';
+import type { AgendaQueryDto } from './dto/agenda-query.dto.js';
+import type { AgendaResponseDto, AgendaTaskDto } from './dto/agenda-response.dto.js';
 import type { CreateChecklistTaskRequestDto } from './dto/create-checklist-task-request.dto.js';
 import type { ListTasksQueryDto } from './dto/list-tasks-query.dto.js';
 import type { TaskResponseDto } from './dto/task-response.dto.js';
 import type { UpdateTaskRequestDto } from './dto/update-task-request.dto.js';
 import {
   TasksRepository,
+  type AgendaScope,
+  type AgendaTaskRecord,
   type TaskCursor,
   type TaskRecord,
   type UpdateTaskData,
@@ -44,6 +48,35 @@ function mapTask(record: TaskRecord): TaskResponseDto {
     sourceId: record.sourceId,
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
+  };
+}
+
+/**
+ * Teto da agenda.
+ *
+ * A tela é da quinzena de um escritório, não um relatório: uma banca que passe disso tem um
+ * problema de gestão que uma lista infinita não resolve. O total real vai junto e a resposta
+ * diz quando cortou — teto silencioso lê-se como "é só isso".
+ */
+const AGENDA_LIMIT = 200;
+
+/** Janela padrão quando o cliente não pede outra. */
+const DEFAULT_WINDOW_DAYS = 14;
+const DAY_MS = 86_400_000;
+
+function mapAgendaTask(record: AgendaTaskRecord): AgendaTaskDto {
+  return {
+    ...mapTask(record),
+    case:
+      record.case === null
+        ? null
+        : {
+            id: record.case.id,
+            internalCode: record.case.internalCode,
+            cnjNumber: record.case.cnjNumber,
+            title: record.case.title,
+          },
+    assignedTo: record.assignedTo,
   };
 }
 
@@ -91,6 +124,81 @@ export class TasksService {
           hasNextPage && last !== undefined
             ? encodeCursor({ createdAt: last.createdAt.toISOString(), id: last.id })
             : null,
+      },
+    };
+  }
+
+  /**
+   * A agenda do escritório: o que vence na janela pedida e o que já venceu antes dela.
+   *
+   * O atrasado vem em separado de propósito. Misturá-lo com o que ainda vai vencer faria o
+   * prazo perdido descer na lista junto com o resto e desaparecer no primeiro rolar de tela —
+   * e é justamente ele que precisa da primeira olhada da manhã.
+   */
+  async agenda(
+    actor: ActorContext,
+    query: AgendaQueryDto,
+    metadata: RequestAuditMetadata,
+  ): Promise<AgendaResponseDto> {
+    const generatedAt = new Date();
+    const from = query.from === undefined ? generatedAt : new Date(query.from);
+    const to =
+      query.to === undefined
+        ? new Date(from.getTime() + DEFAULT_WINDOW_DAYS * DAY_MS)
+        : new Date(query.to);
+    if (to.getTime() < from.getTime()) {
+      throw new ApiException(
+        HttpStatus.BAD_REQUEST,
+        'INVALID_AGENDA_RANGE',
+        'O fim da janela não pode ser anterior ao início.',
+      );
+    }
+
+    const allowConfidential = actor.permissions.has('confidential_cases.read');
+    const assignedToId = query.scope === 'mine' ? actor.userId : query.assignedToId;
+    const scope: AgendaScope = {
+      organizationId: actor.organizationId,
+      allowConfidential,
+      ...(assignedToId === undefined ? {} : { assignedToId }),
+    };
+
+    const [upcomingRows, overdueRows, upcomingTotal, overdueTotal] = await Promise.all([
+      this.repository.agenda(scope, { from, to }, AGENDA_LIMIT),
+      this.repository.overdue(scope, from, AGENDA_LIMIT),
+      this.repository.countAgenda(scope, { gte: from, lte: to }),
+      this.repository.countAgenda(scope, { lt: from }),
+    ]);
+
+    const confidentialCount = [...upcomingRows, ...overdueRows].filter(
+      (row) => row.case !== null && row.case.confidentialityLevel !== 'STANDARD',
+    ).length;
+    if (confidentialCount > 0) {
+      await this.audit.recordDomain({
+        organizationId: actor.organizationId,
+        userId: actor.userId,
+        entityId: null,
+        entityType: 'case',
+        action: 'case.confidential.read',
+        newData: { access: 'AGENDA', count: confidentialCount },
+        ...metadata,
+      });
+    }
+
+    return {
+      range: {
+        from: from.toISOString(),
+        to: to.toISOString(),
+        generatedAt: generatedAt.toISOString(),
+      },
+      overdue: {
+        tasks: overdueRows.map(mapAgendaTask),
+        total: overdueTotal,
+        truncated: overdueTotal > overdueRows.length,
+      },
+      upcoming: {
+        tasks: upcomingRows.map(mapAgendaTask),
+        total: upcomingTotal,
+        truncated: upcomingTotal > upcomingRows.length,
       },
     };
   }

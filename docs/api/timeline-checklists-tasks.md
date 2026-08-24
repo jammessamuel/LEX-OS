@@ -1,7 +1,7 @@
 # Timeline, checklist, and tasks API
 
-**Status:** Implemented in Delivery 8; task lifecycle extended in Delivery 10
-**Last updated:** 2026-08-18
+**Status:** Implemented in Delivery 8; task lifecycle extended in Delivery 10; firm agenda added in Delivery 15
+**Last updated:** 2026-08-24
 
 ## Security and authorization
 
@@ -22,6 +22,40 @@ User-facing timeline text, checklist snapshots, and reviewer notes are deliberat
 | POST   | `/api/v1/checklist-items/:id/tasks`     | `tasks.manage` | Creates one task from a selected pending item                  |
 | GET    | `/api/v1/cases/:id/tasks`               | `tasks.read`   | Keyset-paginates non-deleted case tasks                        |
 | PATCH  | `/api/v1/tasks/:id`                     | `tasks.manage` | Changes status, priority, due date, or assignee                |
+| GET    | `/api/v1/agenda`                        | `tasks.read`   | Firm-wide deadlines in a window, plus what is already overdue  |
+
+## The agenda
+
+`GET /api/v1/agenda` answers the question a partner opens the system with at eight in the
+morning: what is due, and what is already late. It is the one task route that is not nested
+under a case, because a deadline agenda that requires picking a case first is not an agenda.
+
+`from` and `to` are ISO instants and both optional; absent, the window is now through
+fourteen days. The **browser** decides the boundaries, because it knows the reader's time
+zone and the server — which stores everything in UTC — does not. A `to` before `from`
+returns `400 INVALID_AGENDA_RANGE`.
+
+The response has two buckets rather than one list. `overdue` holds deadlines that fell before
+the window and are still open; `upcoming` holds those inside it. They are separate on purpose:
+merged into a single date-ordered list, a missed deadline sinks below everything still to come
+and disappears at the first scroll — and it is exactly the one that needs the first look.
+
+Only `OPEN` and `IN_PROGRESS` appear. A completed or cancelled task is history, not a
+deadline. Each entry carries its case — id, internal code, CNJ number, title — and its
+assignee's id and name, so the screen does not force opening a case to learn what a deadline
+is about. The case's confidentiality level is used to filter and is never returned.
+
+`scope=mine` narrows to the authenticated user; `assignedToId` narrows to someone else.
+
+**Confidentiality and isolation.** A task whose case is confidential is absent for an actor
+without `confidential_cases.read` — absent from the list _and_ from `total`, since a counter
+that still counts reveals that the case exists. Tasks on soft-deleted cases never appear.
+Firm-level tasks with no case have no confidentiality to respect and always appear. When an
+authorized actor does see confidential deadlines, the read is audited as `access: AGENDA`
+with a count and no case text.
+
+**No silent cap.** Each bucket returns at most 200 entries alongside the real `total` and a
+`truncated` flag. A cap that does not say it capped reads as "this is everything".
 
 ## Timeline provenance
 

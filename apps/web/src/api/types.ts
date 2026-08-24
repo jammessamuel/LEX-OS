@@ -471,6 +471,23 @@ export interface CaseTask {
   updatedAt: string;
 }
 
+export interface AgendaTask extends CaseTask {
+  case: { id: string; internalCode: string; cnjNumber: string | null; title: string } | null;
+  assignedTo: { id: string; name: string } | null;
+}
+
+export interface AgendaBucket {
+  tasks: AgendaTask[];
+  total: number;
+  truncated: boolean;
+}
+
+export interface Agenda {
+  range: { from: string; to: string; generatedAt: string };
+  overdue: AgendaBucket;
+  upcoming: AgendaBucket;
+}
+
 export interface AssignableUser {
   id: string;
   name: string;

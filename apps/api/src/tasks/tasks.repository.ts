@@ -24,6 +24,66 @@ const taskSelect = {
 
 export type TaskRecord = Prisma.TaskGetPayload<{ select: typeof taskSelect }>;
 
+/**
+ * A agenda mostra a tarefa junto do processo a que ela pertence.
+ *
+ * Um prazo sem o caso ao lado obriga a abrir cada linha para saber do que se trata, que é
+ * exatamente o trabalho que a tela existe para poupar.
+ */
+const agendaSelect = {
+  ...taskSelect,
+  case: {
+    select: {
+      id: true,
+      internalCode: true,
+      cnjNumber: true,
+      title: true,
+      confidentialityLevel: true,
+    },
+  },
+  assignedTo: { select: { id: true, name: true } },
+} satisfies Prisma.TaskSelect;
+
+export type AgendaTaskRecord = Prisma.TaskGetPayload<{ select: typeof agendaSelect }>;
+
+/** Situações que ainda pedem ação. Concluída ou cancelada não é prazo, é histórico. */
+const PENDING_STATUSES = ['OPEN', 'IN_PROGRESS'] as const satisfies readonly TaskStatus[];
+
+export interface AgendaScope {
+  organizationId: string;
+  allowConfidential: boolean;
+  assignedToId?: string;
+}
+
+/**
+ * Recorte da agenda em SQL.
+ *
+ * Tarefa sem caso é do escritório e não tem sigilo a respeitar. Tarefa com caso só entra se o
+ * caso estiver vivo e — sem a permissão de sigilo — se for padrão: a agenda não pode ser a
+ * porta lateral que revela a existência de um caso confidencial pelo título do prazo.
+ */
+function agendaWhere(scope: AgendaScope): Prisma.TaskWhereInput {
+  return {
+    organizationId: scope.organizationId,
+    deletedAt: null,
+    status: { in: [...PENDING_STATUSES] },
+    ...(scope.assignedToId === undefined ? {} : { assignedToId: scope.assignedToId }),
+    AND: [
+      {
+        OR: [
+          { caseId: null },
+          {
+            case: {
+              deletedAt: null,
+              ...(scope.allowConfidential ? {} : { confidentialityLevel: 'STANDARD' }),
+            },
+          },
+        ],
+      },
+    ],
+  };
+}
+
 export interface TaskCursor {
   createdAt: Date;
   id: string;
@@ -64,6 +124,36 @@ export class TasksRepository {
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: input.take,
       select: taskSelect,
+    });
+  }
+
+  /** Prazos dentro da janela pedida, do mais próximo ao mais distante. */
+  agenda(
+    scope: AgendaScope,
+    window: { from: Date; to: Date },
+    take: number,
+  ): Promise<AgendaTaskRecord[]> {
+    return this.database.client.task.findMany({
+      where: { ...agendaWhere(scope), dueAt: { gte: window.from, lte: window.to } },
+      orderBy: [{ dueAt: 'asc' }, { id: 'asc' }],
+      take,
+      select: agendaSelect,
+    });
+  }
+
+  /** Vencidos antes da janela: o que ficou para trás não pode sumir da tela. */
+  overdue(scope: AgendaScope, before: Date, take: number): Promise<AgendaTaskRecord[]> {
+    return this.database.client.task.findMany({
+      where: { ...agendaWhere(scope), dueAt: { lt: before } },
+      orderBy: [{ dueAt: 'asc' }, { id: 'asc' }],
+      take,
+      select: agendaSelect,
+    });
+  }
+
+  countAgenda(scope: AgendaScope, range: Prisma.DateTimeFilter): Promise<number> {
+    return this.database.client.task.count({
+      where: { ...agendaWhere(scope), dueAt: range },
     });
   }
 

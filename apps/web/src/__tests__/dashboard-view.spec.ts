@@ -34,7 +34,7 @@ describe('DashboardView', () => {
     const text = wrapper.text();
     expect(text).toContain('6');
     expect(text).toContain('4');
-    expect(text).toContain('5 tarefas em aberto');
+    expect(text).toContain('5 prazos em aberto');
     expect(text).not.toContain('NEEDS_REVIEW');
     expect(text).not.toContain('LIMIT_REACHED');
   });

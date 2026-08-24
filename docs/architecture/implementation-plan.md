@@ -416,6 +416,44 @@ outward.
 - a number belonging to another firm is not found by any search path;
 - the audit records that the number changed, by field name, without storing the number.
 
+## Delivery 15 — Agenda of deadlines
+
+Authorized in the same session as the process number, from the same gap analysis. The tasks
+already carried a due date, a priority, a checklist origin, and an overdue count on the
+dashboard. What was missing was the screen a partner opens at eight in the morning — and the
+dashboard number pointed at the case list, which cannot answer "which ones".
+
+**Scope**
+
+- `GET /api/v1/agenda` under `tasks.read`: the firm's deadlines in a window, plus what fell
+  before it and is still open. The one task route not nested under a case;
+- two buckets, not one list. Merged and date-ordered, a missed deadline sinks below everything
+  still to come and disappears at the first scroll;
+- the window boundaries come from the browser, which knows the reader's time zone; the server
+  stores UTC and cannot guess where the firm is;
+- each entry carries its case and its assignee, so the screen never forces opening a case to
+  learn what a deadline is about;
+- the screen groups by day in the reader's own zone, names today and tomorrow in words, and
+  puts the overdue block first;
+- the dashboard's overdue figure now opens the agenda instead of the case list.
+
+**Out of scope** — business-day counting, court recesses, and suspension rules. Those are a
+deadline _engine_, they depend on the court calendar, and getting them subtly wrong is worse
+than not having them. This delivery shows the dates the firm already recorded.
+
+**Acceptance**
+
+- a completed or cancelled task never appears: it is history, not a deadline;
+- a task on a soft-deleted case never appears by any path;
+- a confidential case's deadline is absent for an actor without `confidential_cases.read` —
+  absent from the list and from the total, because a counter that still counts reveals the
+  case exists;
+- an authorized confidential read is audited as `access: AGENDA` with a count and no text;
+- another firm's deadline appears in neither bucket;
+- `scope=mine` returns only the caller's;
+- `to` before `from` returns `400 INVALID_AGENDA_RANGE`;
+- each bucket caps at 200 and says so with the real total and a `truncated` flag.
+
 ## Governed follow-up increments
 
 ADRs 009–013 define product policy that extends beyond the numbered Delivery 0–11 plan. They do not authorize opportunistic implementation. Each capability must receive a separate vertical increment with schema, security, audit, failure-path, and documentation acceptance criteria before coding begins:

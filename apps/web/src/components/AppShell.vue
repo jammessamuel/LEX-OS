@@ -41,6 +41,9 @@ async function signOut(): Promise<void> {
         <RouterLink v-if="session.can('cases.read')" class="shell__link" :to="{ name: 'cases' }">
           Casos
         </RouterLink>
+        <RouterLink v-if="session.can('tasks.read')" class="shell__link" :to="{ name: 'agenda' }">
+          Agenda
+        </RouterLink>
         <RouterLink
           v-if="session.can('persons.read')"
           class="shell__link"
