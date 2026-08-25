@@ -1,4 +1,12 @@
 import PDFDocument from 'pdfkit';
+import {
+  caseStatusLabels,
+  checklistItemStatusLabels,
+  labelFor,
+  participantRoleLabels,
+  participantSideLabels,
+  priorityLabels,
+} from '@lex-os/shared';
 
 /**
  * O dossiê do caso em PDF.
@@ -269,8 +277,8 @@ function cover(doc: Doc, input: DossierInput): void {
   if (input.legalCase.cnjSegment !== null) {
     labelled(doc, 'Segmento', input.legalCase.cnjSegment);
   }
-  labelled(doc, 'Situação', input.legalCase.status);
-  labelled(doc, 'Prioridade', input.legalCase.priority);
+  labelled(doc, 'Situação', labelFor(caseStatusLabels, input.legalCase.status));
+  labelled(doc, 'Prioridade', labelFor(priorityLabels, input.legalCase.priority));
   labelled(doc, 'Responsável', input.legalCase.responsible ?? 'Sem responsável designado');
   labelled(doc, 'Aberto em', dateOnly.format(new Date(input.legalCase.openedAt)));
   labelled(doc, 'Documentos', String(input.documentCount));
@@ -300,7 +308,11 @@ function participantsSection(doc: Doc, input: DossierInput): void {
     return;
   }
   for (const participant of input.participants) {
-    const marks = [participant.role, participant.side, participant.isClient ? 'cliente' : null]
+    const marks = [
+      labelFor(participantRoleLabels, participant.role),
+      participant.side === null ? null : labelFor(participantSideLabels, participant.side),
+      participant.isClient ? 'cliente' : null,
+    ]
       .filter((part): part is string => part !== null && part !== '')
       .join(' · ');
     doc.font('Helvetica-Bold').fontSize(9.5).fillColor(INK).text(participant.name, MARGIN, doc.y, {
@@ -379,7 +391,7 @@ function checklistSection(doc: Doc, input: DossierInput): void {
         doc.addPage();
       }
       const marks = [
-        item.status,
+        labelFor(checklistItemStatusLabels, item.status),
         item.mandatory ? 'obrigatório' : 'facultativo',
         item.documentTitle,
       ]

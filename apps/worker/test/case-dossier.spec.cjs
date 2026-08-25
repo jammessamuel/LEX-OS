@@ -159,10 +159,13 @@ describe('dossiê do caso', () => {
     const pages = pdfPages(await renderCaseDossier(dossier()));
 
     for (const [index, text] of pages.entries()) {
+      // O defeito produzia páginas com exatamente o rodapé e mais nada, então a medida é
+      // "sobrou alguma coisa". Exigir um mínimo maior reprovaria uma última página curta,
+      // que é legítima.
       const withoutFooter = text.replace(FOOTER, '').replace(IDENTIFIER, '').trim();
-      expect({ pagina: index + 1, conteudo: withoutFooter.length > 40 }).toEqual({
+      expect({ pagina: index + 1, temConteudo: withoutFooter.length > 0 }).toEqual({
         pagina: index + 1,
-        conteudo: true,
+        temConteudo: true,
       });
     }
   });
@@ -214,6 +217,20 @@ describe('dossiê do caso', () => {
     const text = pdfText(await renderCaseDossier(dossier()));
 
     expect(text).not.toContain('documento sigiloso');
+  });
+
+  it('escreve em português, nunca o código do banco', async () => {
+    const text = pdfText(await renderCaseDossier(dossier()));
+
+    // O documento vai por e-mail ao cliente. Código de enum ali dentro entrega que a peça
+    // saiu de um painel administrativo, e é a primeira coisa que desqualifica o produto.
+    expect(text).toContain('Em recebimento');
+    expect(text).toContain('Não recebido');
+    expect(text).toContain('Reclamante');
+    expect(text).toContain('Polo ativo');
+    for (const code of ['INTAKE', 'MISSING', 'reclamante', 'polo_ativo', 'AWAITING_VALIDATION']) {
+      expect(text).not.toContain(code);
+    }
   });
 
   it('conta o não confirmado sem narrá-lo', async () => {

@@ -2,7 +2,8 @@
   "extends": "@lex-os/tsconfig/web.json",
   "compilerOptions": {
     "paths": {
-      "@lex-os/shared/cnj": ["../../packages/shared/src/cnj.ts"]
+      "@lex-os/shared/cnj": ["../../packages/shared/src/cnj.ts"],
+      "@lex-os/shared/legal-vocabulary": ["../../packages/shared/src/legal-vocabulary.ts"]
     }
   },
   "include": [
@@ -10,6 +11,7 @@
     "src/**/*.ts",
     "src/**/*.vue",
     "vite.config.ts",
-    "../../packages/shared/src/cnj.ts"
+    "../../packages/shared/src/cnj.ts",
+    "../../packages/shared/src/legal-vocabulary.ts"
   ]
 }

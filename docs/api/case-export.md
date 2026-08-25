@@ -65,6 +65,19 @@ it.
 **Confidentiality is on every page.** A case that is not `STANDARD` prints `documento sigiloso`
 in the footer of every page, beside the process number.
 
+## The words in the document
+
+The dossier prints Portuguese, never enum codes. A PDF that reaches a client saying
+`AWAITING_VALIDATION · obrigatório` announces that the page came out of an admin panel, and
+that is the first thing that disqualifies the product in front of a partner.
+
+The labels live in `@lex-os/shared/legal-vocabulary` because the screen and the exported
+document describe **the same case**: if they diverge, the client reads one thing in the PDF
+and the lawyer sees another on screen, and the difference surfaces in the meeting where
+someone compares them. The web keeps its own typed maps against the API contract, and
+`apps/web/src/__tests__/vocabulary-drift.spec.ts` fails if the two ever disagree — it caught
+four missing checklist statuses the first time it ran.
+
 ## Audit
 
 `case.export.requested` records the job identifier. `case.export.downloaded` records the job

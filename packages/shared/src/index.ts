@@ -25,6 +25,15 @@ export type {
 } from './knowledge.js';
 
 export { caseDossierObjectKey } from './case-export.js';
+export {
+  caseStatusLabels,
+  checklistItemStatusLabels,
+  confidentialityLabels,
+  labelFor,
+  participantRoleLabels,
+  participantSideLabels,
+  priorityLabels,
+} from './legal-vocabulary.js';
 export { cnjSegmentName, isValidCnj, normalizeCnj, parseCnj } from './cnj.js';
 export type { CnjParts } from './cnj.js';
 

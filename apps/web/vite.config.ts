@@ -13,6 +13,9 @@ export default defineConfig({
       '@lex-os/shared/cnj': fileURLToPath(
         new URL('../../packages/shared/src/cnj.ts', import.meta.url),
       ),
+      '@lex-os/shared/legal-vocabulary': fileURLToPath(
+        new URL('../../packages/shared/src/legal-vocabulary.ts', import.meta.url),
+      ),
     },
   },
   server: {
