@@ -11,6 +11,16 @@ export {
 } from './prompts/generico.js';
 
 export {
+  checklistTrabalhistaV1,
+  classificationTrabalhistaV1,
+  entitiesTrabalhistaV1,
+  groundedAnswerTrabalhistaV1,
+  timelineTrabalhistaV1,
+  trabalhistaPrompts,
+} from './prompts/trabalhista.js';
+
+export {
+  assertUsableIn,
   MissingPromptError,
   promptFor,
   promptLibrary,

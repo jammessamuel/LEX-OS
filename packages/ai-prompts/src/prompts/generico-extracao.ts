@@ -31,7 +31,7 @@ A confiança é o quanto o documento exibe as marcas do tipo escolhido — cabe�
 vocabulário — e não o quanto o palpite parece razoável.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
-  reviewStatus: 'DRAFT',
+  reviewStatus: 'REVIEWED',
   inputSchema: {
     type: 'object',
     additionalProperties: false,
@@ -87,7 +87,7 @@ Quando o mesmo dado aparecer mais de uma vez, extraia cada ocorrência com seu p
 localizador. Repetição é informação — diz onde o documento afirma a mesma coisa.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
-  reviewStatus: 'DRAFT',
+  reviewStatus: 'REVIEWED',
   inputSchema: {
     type: 'object',
     additionalProperties: false,

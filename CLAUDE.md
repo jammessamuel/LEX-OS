@@ -55,21 +55,20 @@ Approval for one commit is not standing approval for the next.
 
 ### 0.3 Respect the delivery boundary
 
-The latest accepted checkpoint is **Delivery 14 — Second factor with TOTP**, accepted
-2026-08-24 with every mandatory CI job green on `main`.
+The latest accepted checkpoint is **Delivery 15 — The case carries its process number**,
+accepted 2026-08-25 with every mandatory CI job green on `main`.
 
-**Delivery 15 — The case carries its process number is authorized** (owner, 2026-08-24), from
-the gap analysis in `docs/product/analise-competitiva.md`. `cnjNumber`, `court`, and
-`courtDivision` on the case, all optional; the CNJ check digit verified rather than the shape
-alone, from one implementation in `packages/shared` shared by API and browser; unique per
-organization; `GET /cases?search=` over process number, internal code, and title; and
-`GET /agenda` with the firm's deadlines, separating what is overdue from what is coming; and
-the case dossier export in PDF, built by the worker and delivered by a short-lived signed URL.
+**Delivery 16 — Prompt library per legal specialty is authorized** (owner, 2026-08-25). The
+prompt text that never existed, a specialty catalogue that normalises `legalArea` aliases
+without closing the field, and `promptFor(task, area)` refusing to serve a draft in production.
+The five generic prompts are `REVIEWED` by owner decision; specialty prompts, coming from
+automated research, are born `DRAFT`. Still no real provider and no case text leaving.
 
-Out of scope, and still requiring separate authorization: any court integration, docket
-movements, published-notice capture, a closed catalogue of tribunals, WebAuthn, SMS, federated
-sign-in, a production mail relay, the three ADR-013 notification triggers, real providers, and
-production data. Do not implement future-delivery behavior opportunistically, even when it
+Out of scope, and still requiring separate authorization: any real AI provider (blocked by
+ADR-011 verifications 3 and 4 and by the ADR-012 subprocessor list, none of which exist yet),
+any case text leaving to a third party, court integration, docket movements, published-notice
+capture, WebAuthn, SMS, federated sign-in, a production mail relay, the three ADR-013
+notification triggers, and production data. Do not implement future-delivery behavior opportunistically, even when it
 looks like a small addition.
 
 ### 0.4 Never suppress a failing gate
@@ -142,6 +141,7 @@ fits, read `AGENTS.md` section headings only, then the one section that applies.
 | Dossier export, PDF               | `docs/api/case-export.md`                                                                                                                                                     |
 | Queue, worker, job state          | `docs/architecture/delivery-7-processing-design.md`; `packages/contracts/src/index.ts`; `docs/decisions/ADR-007-background-jobs.md`                                           |
 | DB schema or migration            | `packages/database/prisma/schema.prisma` (canonical); `docs/architecture/database-migrations.md`; `docs/architecture/data-model.md`                                           |
+| Prompt, especialidade do direito  | `packages/ai-prompts/src/` — a biblioteca e a seleção; `packages/shared/src/legal-specialties.ts` para o catálogo de áreas                                                    |
 | AI provider / prompt / provenance | `docs/decisions/ADR-006-provider-agnostic-ai.md`; `AGENTS.md` §"AI data and provenance"                                                                                       |
 | Search, embeddings, pgvector      | `docs/api/search.md`; `docs/architecture/search-performance.md`; `docs/decisions/ADR-005-pgvector.md`; `docs/architecture/system-overview.md`                                 |
 | "Is X in scope?"                  | `docs/product/mvp-scope.md` only                                                                                                                                              |
@@ -161,7 +161,9 @@ fits, read `AGENTS.md` section headings only, then the one section that applies.
 
 **Do not open unless explicitly asked:**
 `docs/architecture/prisma-schema-proposal.md` (937 lines, superseded by `schema.prisma` —
-it is a retained design record, not the source of truth) · `pnpm-lock.yaml` ·
+it is a retained design record, not the source of truth) · `docs/product/pesquisa-prompts/*.md`
+(the raw research behind the prompt library — 317 KB for labour law alone; the conclusions
+already live in the prompts, read the research only when revising one) · `pnpm-lock.yaml` ·
 already-applied files under `packages/database/prisma/migrations/`.
 
 ---

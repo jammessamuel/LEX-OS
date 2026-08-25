@@ -69,15 +69,28 @@ describe('biblioteca de prompts', () => {
   });
 
   it('recusa rascunho em produção, para nada não revisado tocar caso real', () => {
-    const draft = library.promptLibrary.find((prompt) => prompt.reviewStatus === 'DRAFT');
-    assert.ok(draft, 'O teste precisa de ao menos um rascunho para valer.');
-
+    // Rascunho sintético: a garantia não pode depender de existir rascunho na biblioteca,
+    // senão ela some justamente quando tudo estiver aprovado.
+    const rascunho = { identifier: 'lex-os.teste.rascunho', reviewStatus: 'DRAFT' };
     assert.throws(
-      () => library.promptFor(draft.task, draft.specialty, { environment: 'production' }),
+      () => library.assertUsableIn(rascunho, 'production'),
       library.UnreviewedPromptError,
     );
-    // Fora de produção o mesmo prompt é entregue normalmente.
-    assert.ok(library.promptFor(draft.task, draft.specialty, { environment: 'development' }));
+    assert.doesNotThrow(() => library.assertUsableIn(rascunho, 'development'));
+  });
+
+  it('deixa passar em produção o que foi aprovado', () => {
+    for (const prompt of library.promptLibrary.filter((p) => p.reviewStatus === 'REVIEWED')) {
+      assert.doesNotThrow(() => library.assertUsableIn(prompt, 'production'));
+    }
+  });
+
+  it('mantém aprovados os cinco genéricos, que descrevem o comportamento determinístico', () => {
+    // Decisão do dono em 2026-08-25. Prompt de especialidade, vindo de pesquisa automatizada,
+    // continua nascendo rascunho.
+    for (const prompt of library.promptLibrary.filter((p) => p.specialty === null)) {
+      assert.equal(prompt.reviewStatus, 'REVIEWED', prompt.identifier);
+    }
   });
 
   it('reclama de tarefa sem prompt em vez de devolver indefinido', () => {

@@ -10,8 +10,9 @@ import { SOURCE_IS_DATA } from './separacao.js';
  * gravada (`timeline-mock-v1` e companhia) continua significando a mesma coisa. Quando um
  * provedor real passar a consumir o texto, isso vira versão nova.
  *
- * Todos nascem `DRAFT`. Nunca passaram por revisão de advogado, e o produto é jurídico — o
- * estado tem de dizer a verdade, ainda que o efeito prático hoje seja só a recusa em produção.
+ * Estão `REVIEWED` por decisão do dono em 2026-08-25: eles descrevem o comportamento que o
+ * provedor mock já tem, determinístico e sem modelo por trás, então não há resultado de modelo
+ * a revisar. Os prompts de especialidade, que saem de pesquisa automatizada, nascem `DRAFT`.
  */
 
 export const timelinePromptV1 = {
@@ -39,7 +40,7 @@ importante.
 Todo evento produzido nasce NÃO CONFIRMADO e será revisado por uma pessoa antes de valer.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
-  reviewStatus: 'DRAFT',
+  reviewStatus: 'REVIEWED',
   inputSchema: {
     type: 'object',
     additionalProperties: false,
@@ -112,7 +113,7 @@ Devolva cada item recebido exatamente uma vez, com o identificador que veio na e
 invente identificador, não omita item, não acrescente item.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
-  reviewStatus: 'DRAFT',
+  reviewStatus: 'REVIEWED',
   inputSchema: {
     type: 'object',
     additionalProperties: false,
@@ -179,7 +180,7 @@ Não emita parecer jurídico, não recomende conduta processual e não afirme de
 advogado, e a peça é insumo de trabalho dele — não substituto do julgamento dele.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
-  reviewStatus: 'DRAFT',
+  reviewStatus: 'REVIEWED',
   inputSchema: {
     type: 'object',
     additionalProperties: false,
