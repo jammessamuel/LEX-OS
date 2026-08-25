@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { Inject, Injectable } from '@nestjs/common';
-import { groundedAnswerPromptV1 } from '@lex-os/ai-prompts';
+import type { PromptSpecification } from '@lex-os/ai-prompts';
 import type { RuntimeConfig } from '@lex-os/config';
 
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
@@ -27,6 +27,7 @@ export class MockGroundedLanguageModelProvider implements GroundedLanguageModelP
   }
 
   async generate(input: {
+    prompt: PromptSpecification;
     question: string;
     sources: readonly GroundedLanguageModelSource[];
   }): Promise<unknown> {
@@ -37,7 +38,7 @@ export class MockGroundedLanguageModelProvider implements GroundedLanguageModelP
       provider: 'lex-os-mock-language-model',
       modelName: 'deterministic-grounded-v1',
       modelVersion: '1',
-      promptVersion: groundedAnswerPromptV1.version,
+      promptVersion: input.prompt.version,
       executionId: randomUUID(),
       costAmount: '0.000000',
       costCurrency: 'BRL',

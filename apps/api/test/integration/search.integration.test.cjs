@@ -433,6 +433,9 @@ describe('Delivery 9 authorized text and semantic search', () => {
     assert.equal(grounded.body.disclaimer.includes('não é parecer jurídico'), true);
     assert.ok(grounded.body.answer);
     assert.ok(grounded.body.claims.length > 0);
+    // O caso é TRABALHISTA, então a instrução que governou a chamada tem de ser a da
+    // especialidade — não a genérica. É isto que faz a biblioteca por área valer alguma coisa.
+    assert.equal(grounded.body.model.promptVersion, 'grounded-answer-trabalhista-v1');
     assert.equal(
       grounded.body.claims.every((claim) => claim.citations.length > 0),
       true,

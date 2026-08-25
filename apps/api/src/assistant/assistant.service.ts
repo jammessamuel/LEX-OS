@@ -1,7 +1,11 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { promptFor } from '@lex-os/ai-prompts';
+import type { RuntimeConfig } from '@lex-os/config';
 
 import { AuditService, type RequestAuditMetadata } from '../audit/audit.service.js';
 import type { ActorContext } from '../auth/actor-context.js';
+import { CasesService } from '../cases/cases.service.js';
+import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
 import { ApiException } from '../http/api-exception.js';
 import type { SearchCitationDto, SearchResultDto } from '../search/dto/search-response.dto.js';
 import { SearchService } from '../search/search.service.js';
@@ -136,7 +140,9 @@ function mapClaim(
 @Injectable()
 export class AssistantService {
   constructor(
+    @Inject(RUNTIME_CONFIG) private readonly config: RuntimeConfig,
     private readonly search: SearchService,
+    private readonly cases: CasesService,
     private readonly audit: AuditService,
     @Inject(GROUNDED_LANGUAGE_MODEL_PROVIDER)
     private readonly languageModel: GroundedLanguageModelProvider,
@@ -183,7 +189,14 @@ export class AssistantService {
     }
 
     const sources = new Map(retrieval.results.map((result) => [result.chunkId, result]));
+    // A instrução muda com a área do caso: o que importa numa reclamação trabalhista não é o
+    // que importa numa ação de cobrança. Área não catalogada cai no prompt genérico.
+    const legalArea = await this.cases.legalAreaFor(actor, input.caseId);
+    const prompt = promptFor('GROUNDED_ANSWER', legalArea, {
+      environment: this.config.environment,
+    });
     const rawOutput = await this.languageModel.generate({
+      prompt,
       question: input.question,
       sources: retrieval.results.map((result) => ({
         chunkId: result.chunkId,

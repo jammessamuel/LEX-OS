@@ -251,6 +251,16 @@ export class CasesService {
     }
   }
 
+  /**
+   * Área jurídica do caso, para quem precisa dela sem carregar o caso inteiro.
+   *
+   * Passa pela mesma checagem de acesso das demais leituras: caso de outro escritório,
+   * excluído ou confidencial sem permissão devolve o mesmo 404 opaco.
+   */
+  async legalAreaFor(actor: ActorContext, id: string): Promise<string> {
+    return (await this.#findAccessible(actor, id)).legalArea;
+  }
+
   async create(
     actor: ActorContext,
     input: CreateCaseRequestDto,
