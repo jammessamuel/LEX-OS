@@ -19,6 +19,9 @@ export {
   trabalhistaPrompts,
 } from './prompts/trabalhista.js';
 
+export { civelPrompts } from './prompts/civel.js';
+export { criminalPrompts } from './prompts/criminal.js';
+
 export {
   assertUsableIn,
   MissingPromptError,

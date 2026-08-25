@@ -492,6 +492,38 @@ everything the case has.
   download even with the job identifier in hand;
 - no audit record and no log contains the signed URL, the storage key, or case text.
 
+## Delivery 16 — Prompt library per legal specialty
+
+Authorized by the owner on 2026-08-25. The package held metadata about prompts that were never
+written; the only field production read was `version`. This delivery writes the actual prompt
+text, adds a specialty catalogue that normalises `legalArea` aliases without closing the free
+field, and makes `promptFor(task, area)` the single selection point — refusing to serve a
+`DRAFT` in production, in the same fail-closed pattern as the mock providers.
+
+Mid-delivery the owner directed a drastic reduction in agent spend; the cível/criminal research
+workflow was stopped at 43/72 agents and its partial results harvested. Consequences are recorded
+per area in `docs/architecture/biblioteca-de-prompts.md`: trabalhista fully researched and
+adversarially reviewed; cível researched, unreviewed; criminal at 15/30 types, unreviewed.
+
+**Scope** — the text of 20 prompts (5 tasks × generic + 3 specialties); the specialty catalogue
+with 75 case types; assistant selects by the case's legal area and records the governing prompt
+version; provenance fix (extractions no longer stamp the fabricated `deterministic-prompt-v1`);
+schema-versus-validator drift test.
+
+**Out of scope** — any real provider (ADR-011/ADR-012 gates unchanged), any case text leaving,
+changing the worker's output contracts (ILLEGIBLE status, period coverage, empty timeline,
+citation cap — recorded, not implemented), and the remaining 15 criminal case types.
+
+**Acceptance**
+
+- every task resolves a prompt for every catalogued specialty, falling back to the generic;
+- alias and canonical spellings of an area resolve to the same prompt;
+- a `DRAFT` prompt is refused in production and served elsewhere; `REVIEWED` passes;
+- the assistant answers a TRABALHISTA case under `grounded-answer-trabalhista-v1` (integration-asserted);
+- every prompt carries the instruction-versus-content separation clause (test-enforced);
+- output schemas match the worker validators in both directions (drift test);
+- no prompt cites a súmula or tema by number.
+
 ## Governed follow-up increments
 
 ADRs 009–013 define product policy that extends beyond the numbered Delivery 0–11 plan. They do not authorize opportunistic implementation. Each capability must receive a separate vertical increment with schema, security, audit, failure-path, and documentation acceptance criteria before coding begins:

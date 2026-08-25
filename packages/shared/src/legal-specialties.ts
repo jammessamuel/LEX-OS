@@ -117,13 +117,98 @@ export const legalSpecialties: readonly LegalSpecialty[] = [
     code: 'CIVEL',
     name: 'Direito civil',
     aliases: ['CIVIL', 'DIREITO_CIVEL', 'DIREITO_CIVIL'],
-    caseTypes: [{ code: 'ACAO_DE_COBRANCA', name: 'Ação de cobrança' }],
+    caseTypes: [
+      { code: 'INDENIZACAO_DANOS_MORAIS', name: 'Indenização por danos morais' },
+      { code: 'REVISIONAL_CONTRATO_BANCARIO', name: 'Ação revisional de contrato bancário' },
+      { code: 'ADJUDICACAO_COMPULSORIA', name: 'Adjudicação compulsória de imóvel' },
+      { code: 'RESCISAO_CONTRATUAL', name: 'Rescisão contratual' },
+      { code: 'USUCAPIAO', name: 'Usucapião' },
+      {
+        code: 'BUSCA_E_APREENSAO_ALIENACAO_FIDUCIARIA',
+        name: 'Busca e apreensão em alienação fiduciária',
+      },
+      {
+        code: 'DESPEJO_POR_FALTA_DE_PAGAMENTO',
+        name: 'Despejo por falta de pagamento de aluguel e encargos',
+      },
+      { code: 'EXECUCAO_DE_TITULO_EXTRAJUDICIAL', name: 'Execução de título extrajudicial' },
+      { code: 'DIVORCIO', name: 'Divórcio' },
+      { code: 'ACAO_DE_COBRANCA', name: 'Ação de cobrança' },
+      { code: 'ACAO_MONITORIA', name: 'Ação monitória' },
+      { code: 'INDENIZACAO_POR_DANOS_MATERIAIS', name: 'Indenização por danos materiais' },
+      { code: 'GUARDA_E_REGIME_DE_CONVIVENCIA', name: 'Guarda e regime de convivência' },
+      { code: 'ACAO_REIVINDICATORIA', name: 'Ação reivindicatória' },
+      { code: 'ACAO_RENOVATORIA_DE_LOCACAO', name: 'Ação renovatória de locação não residencial' },
+      { code: 'INVENTARIO_E_PARTILHA', name: 'Inventário e partilha' },
+      { code: 'VICIO_OU_FATO_DO_PRODUTO', name: 'Vício ou fato do produto' },
+      {
+        code: 'RECONHECIMENTO_E_DISSOLUCAO_DE_UNIAO_ESTAVEL',
+        name: 'Reconhecimento e dissolução de união estável',
+      },
+      { code: 'ACAO_DE_ALIMENTOS', name: 'Ação de alimentos' },
+      { code: 'INTERDICAO_E_CURATELA', name: 'Interdição e curatela' },
+      {
+        code: 'COBRANCA_INDEVIDA_E_NEGATIVACAO',
+        name: 'Cobrança indevida e inscrição em cadastro de inadimplentes',
+      },
+      { code: 'EMBARGOS_DE_TERCEIRO', name: 'Embargos de terceiro' },
+      { code: 'INVESTIGACAO_DE_PATERNIDADE', name: 'Investigação de paternidade' },
+      { code: 'OBRIGACAO_DE_FAZER', name: 'Ação de obrigação de fazer' },
+      {
+        code: 'PLANO_SAUDE_NEGATIVA_DE_COBERTURA',
+        name: 'Negativa de cobertura por plano de saúde',
+      },
+      {
+        code: 'DECLARATORIA_INEXISTENCIA_DEBITO',
+        name: 'Ação declaratória de inexistência de débito (inexigibilidade)',
+      },
+      { code: 'CUMPRIMENTO_DE_SENTENCA', name: 'Cumprimento de sentença' },
+      { code: 'TUTELA_DE_URGENCIA', name: 'Tutela de urgência no processo civil' },
+      {
+        code: 'RESPONSABILIDADE_CIVIL_ACIDENTE_DE_TRANSITO',
+        name: 'Responsabilidade civil por acidente de trânsito',
+      },
+      { code: 'ANULATORIA_NEGOCIO_JURIDICO', name: 'Ação anulatória de negócio jurídico' },
+    ],
   },
   {
     code: 'CRIMINAL',
     name: 'Direito penal',
     aliases: ['PENAL', 'DIREITO_CRIMINAL', 'DIREITO_PENAL'],
-    caseTypes: [],
+    // 15 dos 30 tipos planejados: a pesquisa foi interrompida por economia. Aditivo — o resto
+    // entra quando for levantado.
+    caseTypes: [
+      {
+        code: 'HOMICIDIO_TRIBUNAL_DO_JURI',
+        name: 'Homicídio doloso e procedimento do tribunal do júri',
+      },
+      { code: 'ACAO_PENAL_PUBLICA_DENUNCIA', name: 'Ação penal pública e denúncia' },
+      { code: 'PRISAO_PREVENTIVA', name: 'Prisão preventiva' },
+      {
+        code: 'POSSE_E_PORTE_ILEGAL_DE_ARMA_DE_FOGO',
+        name: 'Posse e porte ilegal de arma de fogo',
+      },
+      { code: 'TRAFICO_DE_DROGAS', name: 'Tráfico de drogas' },
+      { code: 'HABEAS_CORPUS', name: 'Habeas corpus (liberatório e preventivo)' },
+      { code: 'INQUERITO_POLICIAL', name: 'Inquérito policial' },
+      {
+        code: 'PRISAO_EM_FLAGRANTE_E_AUDIENCIA_DE_CUSTODIA',
+        name: 'Prisão em flagrante e audiência de custódia',
+      },
+      {
+        code: 'LIBERDADE_PROVISORIA_E_RELAXAMENTO_DE_PRISAO',
+        name: 'Liberdade provisória e relaxamento de prisão',
+      },
+      {
+        code: 'VIOLENCIA_DOMESTICA_CONTRA_A_MULHER',
+        name: 'Violência doméstica e familiar contra a mulher',
+      },
+      { code: 'ESTELIONATO', name: 'Estelionato (CP, art. 171)' },
+      { code: 'ACAO_PENAL_PRIVADA_QUEIXA_CRIME', name: 'Ação penal privada e queixa-crime' },
+      { code: 'ROUBO', name: 'Roubo' },
+      { code: 'FURTO', name: 'Furto (art. 155 do Código Penal)' },
+      { code: 'CRIMES_CONTRA_A_DIGNIDADE_SEXUAL', name: 'Crimes contra a dignidade sexual' },
+    ],
   },
 ];
 
