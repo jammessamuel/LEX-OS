@@ -240,6 +240,10 @@ importers:
         version: 30.4.2(@types/node@24.13.3)
 
   packages/ai-prompts:
+    dependencies:
+      '@lex-os/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       '@lex-os/eslint-config':
         specifier: workspace:*

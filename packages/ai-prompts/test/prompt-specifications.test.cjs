@@ -14,6 +14,10 @@ describe('Delivery 8 prompt specifications', () => {
       assert.ok(prompt.outputSchema);
       assert.ok(prompt.examples.length > 0);
       assert.ok(prompt.validationCriteria.length > 0);
+      assert.ok(prompt.task);
+      assert.ok(prompt.template);
+      assert.ok(['DRAFT', 'REVIEWED'].includes(prompt.reviewStatus));
+      assert.equal(prompt.specialty, null);
     }
     assert.notEqual(timelinePromptV1.identifier, checklistPromptV1.identifier);
     assert.notEqual(timelinePromptV1.version, checklistPromptV1.version);

@@ -496,9 +496,10 @@ export class ProcessingRepository {
               ? {}
               : { confidenceScore: completion.extraction.confidenceScore }),
             processingTimeMs: completion.extraction.processingTimeMs,
-            promptVersion:
-              completion.extraction.promptVersion ??
-              (completion.extraction.type === 'OCR' ? null : 'deterministic-prompt-v1'),
+            // Quem passou por prompt declara a versão dele; quem não passou grava nulo.
+            // Antes, tudo que não fosse OCR recebia 'deterministic-prompt-v1' — uma versão que
+            // não correspondia a prompt nenhum, ou seja, procedência inventada.
+            promptVersion: completion.extraction.promptVersion ?? null,
           },
           select: { id: true },
         });

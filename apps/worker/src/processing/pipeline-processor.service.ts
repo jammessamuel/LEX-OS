@@ -1,3 +1,4 @@
+import { classificationPromptV1, entitiesPromptV1 } from '@lex-os/ai-prompts';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@lex-os/database';
 import type { ProcessingJobMessageV1, ProcessingJobType } from '@lex-os/contracts';
@@ -168,6 +169,7 @@ export class PipelineProcessorService {
           extraction: {
             type: 'CLASSIFICATION',
             executionId: `mock-v1:${job.id}`,
+            promptVersion: classificationPromptV1.version,
             structuredData: { documentTypeCode: result.code, requiresHumanReview: true },
             confidenceScore: result.confidence,
             processingTimeMs: 1,
@@ -192,6 +194,7 @@ export class PipelineProcessorService {
           extraction: {
             type: 'ENTITY_EXTRACTION',
             executionId: `mock-v1:${job.id}`,
+            promptVersion: entitiesPromptV1.version,
             structuredData: { entityCount: result.entities.length },
             confidenceScore: 0.98,
             processingTimeMs: 1,

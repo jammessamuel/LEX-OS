@@ -11,6 +11,9 @@
     "test": "node --test test/*.test.cjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
+  "dependencies": {
+    "@lex-os/shared": "workspace:*"
+  },
   "devDependencies": {
     "@lex-os/eslint-config": "workspace:*",
     "@lex-os/tsconfig": "workspace:*"

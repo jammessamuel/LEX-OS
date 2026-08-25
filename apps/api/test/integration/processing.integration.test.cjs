@@ -330,7 +330,8 @@ before(async () => {
       structuredData: { entityCount: 1 },
       confidenceScore: 0.98,
       processingTimeMs: 1,
-      promptVersion: 'deterministic-prompt-v1',
+      // Versão real do prompt de extração de entidades, como o worker passa a gravar.
+      promptVersion: 'entities-mock-v1',
     },
   });
   await database.client.extractedEntity.create({

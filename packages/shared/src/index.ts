@@ -25,6 +25,8 @@ export type {
 } from './knowledge.js';
 
 export { caseDossierObjectKey } from './case-export.js';
+export { legalSpecialties, specialtyCodeFor, specialtyFor } from './legal-specialties.js';
+export type { LegalCaseType, LegalSpecialty } from './legal-specialties.js';
 export {
   caseStatusLabels,
   checklistItemStatusLabels,

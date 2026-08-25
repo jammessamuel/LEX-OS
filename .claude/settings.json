@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/guard-git-commit.mjs",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-git-commit.mjs\"",
             "timeout": 10
           }
         ]
