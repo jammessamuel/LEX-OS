@@ -9,12 +9,71 @@ Este arquivo é a matéria-prima dos prompts, versionada ao lado deles para quem
 saber de onde cada instrução veio. **Não é doutrina e não substitui conferência:** é levantamento
 produzido por modelo de linguagem, com os erros que a revisão encontrou registrados abaixo.
 
-## Duas lentes não rodaram
+## As seis lentes rodaram
 
-A revisão previa seis lentes; **duas falharam por limite de sessão e não foram executadas**:
-_direito vigente_ (o que descreve regime anterior à Reforma de 2017) e _prática_ (o que falta
-para quem trabalha no escritório todo dia). São justamente as que mais pegariam desatualização,
-e a ausência delas é a maior fragilidade deste levantamento.
+Duas caíram por limite de sessão na primeira execução e foram refeitas em seguida, revisando
+**os prompts escritos**, não o levantamento bruto — melhor assim, porque criticam o que vai
+rodar. As duas acharam defeito grave.
+
+### Direito vigente — duas correções que eu tinha escrito errado
+
+O revisor abriu com um diagnóstico incômodo e correto: _"o documento de pesquisa está
+juridicamente atualizado e os prompts perderam isso na compressão"_. Eram regressões minhas, não
+lacunas da pesquisa.
+
+1. **Projeção do aviso prévio.** Eu escrevi que ela "desloca a data de saída para todos os
+   efeitos". É errado por excesso: a projeção integra o tempo de serviço e produz efeitos
+   econômicos no pré-aviso, mas o prazo de pagamento das rescisórias corre do desligamento, não
+   da data projetada. E a duração é proporcional ao tempo de serviço (Lei 12.506/2011), não fixa
+   em trinta dias. Agravante: o prompt mandava, logo abaixo, tomar cuidado com os campos
+   vizinhos do TRCT — e a instrução de topo dava licença para colapsá-los.
+2. **Controle de ponto.** Eu exigia controles "de todo o período" como se a obrigação fosse
+   universal. O art. 74, §2º, na redação de 2019, só obriga acima do limiar de empregados, e o
+   registro por exceção — pactuado por escrito ou em norma coletiva — registra apenas as
+   exceções. Combinado com "na dúvida, deixe como não atendido", o prompt produziria "não
+   atendido" sistemático contra pequeno empregador que não tem obrigação legal nenhuma.
+
+Outras quatro entraram: norma coletiva pode prevalecer sobre a lei nas matérias do art. 611-A,
+respeitado o art. 611-B, e acordo coletivo prevalece sobre convenção (art. 620) — o texto
+anterior tratava norma coletiva como norma de segunda classe; instrumento coletivo pode ser
+bienal (art. 614, §3º), não anual; a prescrição ganhou interrupção restrita a pedidos idênticos
+(art. 11, §3º) e a intercorrente da execução (art. 11-A), que é a que um escritório de fato
+perde; e o marco de **11/11/2017**, que faz o modelo datar o fato em vez de escolher regime.
+
+O revisor separou com cuidado o que sustentaria numa reunião do que precisa ser conferido na
+fonte — e vários números de súmula e de tema ficaram na segunda lista. **Nenhum deles entrou no
+texto dos prompts.**
+
+### Prática — o acervo real não é o acervo do manual
+
+Veredito de abertura: _"o acervo descrito é o acervo como ele deveria chegar — um documento por
+arquivo, já separado por tipo, legível, íntegro, sem repetição"_. Entraram: qualidade de imagem
+governando a confiança; print, áudio e e-mail encaminhado como conteúdo de terceiro não
+verificado; o carimbo de margem do PJe, porque página de arquivo isolada deixa de resolver na
+próxima exportação; audiências, prazos e datas de publicação, que são metade do trabalho do
+escritório; a cadeia disciplinar; arquivo composto com trinta documentos dentro; documentos que
+fazem perder prazo (procuração, preposição, custas, depósito recursal); documentos de saúde e
+segurança; rubrica extraída letra por letra; competência proporcional; papel de cada pessoa; e
+identidade de empresa por CNPJ.
+
+Ela também pegou **três regressões minhas** contra os prompts genéricos: eu havia perdido a
+calibragem de confiança, a regra de não corrigir grafia de nome e o critério de entidade nascer
+não confirmada. Repostas.
+
+## Quatro achados que o contrato de saída não comporta
+
+Não atendidos de propósito. Mudar o contrato é decisão de outra entrega, e fica registrado aqui
+em vez de virar promessa que o código não cumpre:
+
+| Achado                                                  | Onde trava                                                                                                                        |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Status ILEGIVEL para documento que chegou mas não se lê | `review-processing.provider.ts` aceita só `MISSING` e `AWAITING_VALIDATION`, embora `ChecklistStatus` no banco tenha oito valores |
+| Cobertura de período no checklist                       | A saída aceita só `templateItemId` e `status`, com `additionalProperties: false`                                                  |
+| Cronologia vazia                                        | `events.length === 0` é recusado, o que força o modelo a inventar evento numa página sem data                                     |
+| Mais de três citações por afirmação                     | `sourceChunkIds` tem `maxItems: 3`                                                                                                |
+
+O primeiro e o terceiro são os que mais custam: um manda pedir de novo um documento que já
+chegou, o outro empurra o modelo a produzir o que ele mesmo foi instruído a não produzir.
 
 ## Correções que já entraram nos prompts
 
