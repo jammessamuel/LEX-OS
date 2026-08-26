@@ -163,6 +163,7 @@ Todo evento nasce NÃO CONFIRMADO para revisão humana. Sem localizador, é desc
 
 ${RESPONDA_SO_JSON}`,
   reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: TIMELINE_INPUT,
   outputSchema: TIMELINE_OUTPUT,
   examples: [
@@ -219,6 +220,7 @@ que veio na entrada.
 
 ${RESPONDA_SO_JSON}`,
   reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: CHECKLIST_INPUT,
   outputSchema: CHECKLIST_OUTPUT,
   examples: [
@@ -266,6 +268,7 @@ ${RESPONDA_SO_JSON}
 
 ${QUEBRE_A_AFIRMACAO}`,
   reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: GROUNDED_INPUT,
   outputSchema: GROUNDED_OUTPUT,
   examples: [
@@ -325,6 +328,7 @@ Sem correspondência clara, OUTRO com confiança baixa.
 
 ${RESPONDA_SO_JSON}`,
   reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: CLASSIFICATION_INPUT,
   outputSchema: CLASSIFICATION_OUTPUT,
   examples: [
@@ -386,6 +390,7 @@ localizadores.
 
 ${RESPONDA_SO_JSON}`,
   reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: ENTITIES_INPUT,
   outputSchema: ENTITIES_OUTPUT,
   examples: [

@@ -136,6 +136,7 @@ Todo evento nasce NÃO CONFIRMADO para revisão humana. Sem localizador, é desc
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: TIMELINE_INPUT,
   outputSchema: TIMELINE_OUTPUT,
   examples: [
@@ -216,6 +217,7 @@ Devolva cada item recebido exatamente uma vez, com o identificador que veio na e
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: CHECKLIST_INPUT,
   outputSchema: CHECKLIST_OUTPUT,
   examples: [
@@ -271,6 +273,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.
 
 ${QUEBRE_A_AFIRMACAO}`,
   reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: GROUNDED_INPUT,
   outputSchema: GROUNDED_OUTPUT,
   examples: [
@@ -323,6 +326,7 @@ Sem correspondência clara, classifique como OUTRO com confiança baixa. Forçar
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: CLASSIFICATION_INPUT,
   outputSchema: CLASSIFICATION_OUTPUT,
   examples: [
@@ -393,6 +397,7 @@ ocorrências com seus localizadores. A divergência costuma ser o próprio objet
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: ENTITIES_INPUT,
   outputSchema: ENTITIES_OUTPUT,
   examples: [

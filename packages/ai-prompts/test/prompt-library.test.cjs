@@ -71,10 +71,75 @@ describe('biblioteca de prompts', () => {
     assert.equal(nothing.specialty, null);
   });
 
+  it('a revisão envelhece quando o texto muda, e o prompt volta a precisar de revisão', () => {
+    // O campo que mais trabalha é reviewedVersion. Sem ele uma assinatura de 2026 cobriria um
+    // texto reescrito em 2027, que é a forma mais silenciosa de a marca deixar de valer.
+    const base = {
+      identifier: 'lex-os.teste.envelhecida',
+      version: 'v2',
+      reviewStatus: 'REVIEWED',
+      review: {
+        capacity: 'LAWYER',
+        name: 'Fulana de Tal',
+        oab: 'OAB/DF 000.000',
+        standing: null,
+        date: '2026-08-01',
+        reviewedVersion: 'v1',
+        note: 'Revisão fictícia de teste.',
+      },
+    };
+    assert.match(library.reviewGapFor(base), /covers version v1, not v2/u);
+    assert.throws(() => library.assertUsableIn(base, 'real'), library.UnreviewedPromptError);
+
+    const atual = { ...base, review: { ...base.review, reviewedVersion: 'v2' } };
+    assert.equal(library.reviewGapFor(atual), null);
+    assert.doesNotThrow(() => library.assertUsableIn(atual, 'real'));
+  });
+
+  it('recusa atestação de advogado sem número de inscrição', () => {
+    // Aprovação do dono pode não ter inscrição — ela cobre comportamento de mock. Atestação que
+    // se declara de advogado, não: é dela que sai a responsabilidade pelo conteúdo jurídico.
+    const semInscricao = {
+      identifier: 'lex-os.teste.sem-oab',
+      version: 'v1',
+      reviewStatus: 'REVIEWED',
+      review: {
+        capacity: 'LAWYER',
+        name: 'Fulana de Tal',
+        oab: null,
+        standing: 'Inscrição licenciada.',
+        date: '2026-08-26',
+        reviewedVersion: 'v1',
+        note: 'Revisão fictícia de teste.',
+      },
+    };
+    assert.match(library.reviewGapFor(semInscricao), /no bar registration/u);
+  });
+
+  it('toda atestação diz quem assinou, em que qualidade e contra qual versão', () => {
+    for (const prompt of library.promptLibrary) {
+      if (prompt.reviewStatus === 'DRAFT') {
+        assert.equal(prompt.review, null, prompt.identifier);
+        continue;
+      }
+      const r = prompt.review;
+      assert.ok(r !== null, `${prompt.identifier} está REVIEWED sem atestação.`);
+      assert.ok(['LAWYER', 'OWNER'].includes(r.capacity), prompt.identifier);
+      assert.ok(r.name.length > 3, prompt.identifier);
+      assert.match(r.date, /^\d{4}-\d{2}-\d{2}$/u, prompt.identifier);
+      assert.equal(r.reviewedVersion, prompt.version, `${prompt.identifier}: revisão envelhecida.`);
+      assert.ok(r.note.length > 20, `${prompt.identifier}: atestação sem escopo declarado.`);
+      // Inscrição ausente exige dizer por quê, para o registro não fingir o que não há.
+      if (r.oab === null) {
+        assert.ok(r.standing !== null && r.standing.length > 10, prompt.identifier);
+      }
+    }
+  });
+
   it('recusa rascunho sobre acervo real, e recusa também quando ninguém disse qual é', () => {
     // Rascunho sintético: a garantia não pode depender de existir rascunho na biblioteca,
     // senão ela some justamente quando tudo estiver aprovado.
-    const rascunho = { identifier: 'lex-os.teste.rascunho', reviewStatus: 'DRAFT' };
+    const rascunho = { identifier: 'lex-os.teste.rascunho', reviewStatus: 'DRAFT', review: null };
     for (const acervo of ['real', undefined, '', 'production', 'development', 'homologacao']) {
       assert.throws(
         () => library.assertUsableIn(rascunho, acervo),
@@ -88,7 +153,7 @@ describe('biblioteca de prompts', () => {
   it('não confunde o nome do ambiente com a natureza do dado', () => {
     // Este é o buraco que a guarda antiga tinha: um laptop apontado para a base de um cliente
     // roda com NODE_ENV=development, e passava inteiro. Nome de processo não mede risco.
-    const rascunho = { identifier: 'lex-os.teste.laptop', reviewStatus: 'DRAFT' };
+    const rascunho = { identifier: 'lex-os.teste.laptop', reviewStatus: 'DRAFT', review: null };
     assert.throws(
       () => library.assertUsableIn(rascunho, 'development'),
       library.UnreviewedPromptError,

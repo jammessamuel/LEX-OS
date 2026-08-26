@@ -106,10 +106,17 @@ extração; disponibilização × publicação, certidão de fato negativo, óbi
 de juntadas entraram na cronologia. E saiu do bloco comum a exceção da verdade, que é peça
 criminal e ocupava a linha das inversões cíveis que aparecem toda semana.
 
-**A3. `REVIEWED` com nome, OAB e data** — ADR-015 item 2
+**A3. `REVIEWED` com nome, OAB e data** — ADR-015 item 2 · **MECANISMO FEITO 2026-08-26**
 Vinte de vinte estão `DRAFT`. Sem isso, promover é trocar uma palavra.
-**Terceiro porque depende de existir um advogado revisor nomeado — decisão de pessoa, não de
-código — e o A1 e o A2 não esperam por ela.**
+O registro existe e a guarda o usa. Toda atestação carrega quem assinou, em que qualidade —
+advogado ou dono —, com qual inscrição, em que data e **contra qual versão do texto**. Esse
+último campo é o que mais trabalha: alterar um prompt sobe a versão, a atestação deixa de casar,
+e o prompt volta sozinho a precisar de revisão. Uma assinatura não cobre um texto reescrito
+depois dela.
+
+Os cinco genéricos ficaram registrados pelo que são: aprovados pelo dono por descreverem o
+comportamento do mock, com e a situação declarada — o registro não finge inscrição
+que não existe. As quinze de especialidade continuam porque falta o nome de quem assina.
 
 **A4. Contrato de entrada do checklist** — ADR-015 item 3 · **FEITO 2026-08-26**
 A entrada é `{ documentTypeCode, items: [{ id, documentTypeCode }] }`. Não vai o enunciado da

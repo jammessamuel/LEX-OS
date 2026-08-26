@@ -48,6 +48,15 @@ Todo evento produzido nasce NÃO CONFIRMADO e será revisado por uma pessoa ante
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'OWNER',
+    name: 'Juscelino Farrapo Moreira',
+    oab: null,
+    standing: 'Sócio responsável pelo produto; não é advogado inscrito.',
+    date: '2026-08-25',
+    reviewedVersion: 'timeline-mock-v1',
+    note: 'Aprovado por descrever o comportamento determinístico do provedor mock, não por revisão de conteúdo jurídico. Um provedor real usando o prompt genérico exige revisão de advogado.',
+  },
   inputSchema: TIMELINE_INPUT,
   outputSchema: TIMELINE_OUTPUT,
   examples: [
@@ -91,6 +100,15 @@ invente identificador, não omita item, não acrescente item.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'OWNER',
+    name: 'Juscelino Farrapo Moreira',
+    oab: null,
+    standing: 'Sócio responsável pelo produto; não é advogado inscrito.',
+    date: '2026-08-25',
+    reviewedVersion: 'checklist-mock-v1',
+    note: 'Aprovado por descrever o comportamento determinístico do provedor mock, não por revisão de conteúdo jurídico. Um provedor real usando o prompt genérico exige revisão de advogado.',
+  },
   inputSchema: CHECKLIST_INPUT,
   outputSchema: CHECKLIST_OUTPUT,
   examples: [
@@ -131,6 +149,15 @@ advogado, e a peça é insumo de trabalho dele — não substituto do julgamento
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'OWNER',
+    name: 'Juscelino Farrapo Moreira',
+    oab: null,
+    standing: 'Sócio responsável pelo produto; não é advogado inscrito.',
+    date: '2026-08-25',
+    reviewedVersion: 'grounded-answer-mock-v1',
+    note: 'Aprovado por descrever o comportamento determinístico do provedor mock, não por revisão de conteúdo jurídico. Um provedor real usando o prompt genérico exige revisão de advogado.',
+  },
   inputSchema: {
     type: 'object',
     additionalProperties: false,

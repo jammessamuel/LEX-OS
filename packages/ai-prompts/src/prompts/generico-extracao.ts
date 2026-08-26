@@ -38,6 +38,15 @@ vocabulário — e não o quanto o palpite parece razoável.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'OWNER',
+    name: 'Juscelino Farrapo Moreira',
+    oab: null,
+    standing: 'Sócio responsável pelo produto; não é advogado inscrito.',
+    date: '2026-08-25',
+    reviewedVersion: 'classification-mock-v1',
+    note: 'Aprovado por descrever o comportamento determinístico do provedor mock, não por revisão de conteúdo jurídico. Um provedor real usando o prompt genérico exige revisão de advogado.',
+  },
   inputSchema: CLASSIFICATION_INPUT,
   outputSchema: CLASSIFICATION_OUTPUT,
   examples: [
@@ -77,6 +86,15 @@ localizador. Repetição é informação — diz onde o documento afirma a mesma
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'OWNER',
+    name: 'Juscelino Farrapo Moreira',
+    oab: null,
+    standing: 'Sócio responsável pelo produto; não é advogado inscrito.',
+    date: '2026-08-25',
+    reviewedVersion: 'entities-mock-v1',
+    note: 'Aprovado por descrever o comportamento determinístico do provedor mock, não por revisão de conteúdo jurídico. Um provedor real usando o prompt genérico exige revisão de advogado.',
+  },
   inputSchema: ENTITIES_INPUT,
   outputSchema: ENTITIES_OUTPUT,
   examples: [

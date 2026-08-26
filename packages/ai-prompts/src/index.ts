@@ -1,4 +1,10 @@
-export type { PromptReviewStatus, PromptSpecification, PromptTask } from './specification.js';
+export type {
+  PromptReview,
+  PromptReviewStatus,
+  PromptSpecification,
+  PromptTask,
+  ReviewerCapacity,
+} from './specification.js';
 export { promptTasks } from './specification.js';
 
 export {
@@ -32,6 +38,7 @@ export {
   promptFor,
   promptLibrary,
   promptVersionFor,
+  reviewGapFor,
   UnreviewedPromptError,
 } from './select.js';
 export type { PromptSelectionOptions } from './select.js';

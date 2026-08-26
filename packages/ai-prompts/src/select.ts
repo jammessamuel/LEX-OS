@@ -41,13 +41,32 @@ export class MissingPromptError extends Error {
 }
 
 export class UnreviewedPromptError extends Error {
-  constructor(identifier: string) {
+  constructor(identifier: string, reason: string) {
     super(
-      `Prompt ${identifier} is still a draft and cannot run over a real case archive. ` +
-        'A qualified reviewer must promote it to REVIEWED first.',
+      `Prompt ${identifier} cannot run over a real case archive: ${reason} ` +
+        'A named reviewer must attest the current version first.',
     );
     this.name = 'UnreviewedPromptError';
   }
+}
+
+/**
+ * A atestação cobre este texto?
+ *
+ * Devolve o motivo da recusa em vez de um booleano: quem lê o erro precisa saber se falta
+ * revisão ou se a revisão envelheceu, e as duas coisas se consertam de formas diferentes.
+ */
+export function reviewGapFor(prompt: PromptSpecification): string | null {
+  if (prompt.reviewStatus !== 'REVIEWED' || prompt.review === null) {
+    return 'it is still a draft.';
+  }
+  if (prompt.review.reviewedVersion !== prompt.version) {
+    return `the attestation covers version ${prompt.review.reviewedVersion}, not ${prompt.version}.`;
+  }
+  if (prompt.review.capacity === 'LAWYER' && prompt.review.oab === null) {
+    return 'the lawyer attestation carries no bar registration.';
+  }
+  return null;
 }
 
 export interface PromptSelectionOptions {
@@ -70,8 +89,12 @@ export interface PromptSelectionOptions {
  * tudo estivesse aprovado — que é justamente quando ela precisa continuar de pé.
  */
 export function assertUsableIn(prompt: PromptSpecification, caseArchive: string | undefined): void {
-  if (caseArchive !== 'fictional' && prompt.reviewStatus !== 'REVIEWED') {
-    throw new UnreviewedPromptError(prompt.identifier);
+  if (caseArchive === 'fictional') {
+    return;
+  }
+  const gap = reviewGapFor(prompt);
+  if (gap !== null) {
+    throw new UnreviewedPromptError(prompt.identifier, gap);
   }
 }
 
