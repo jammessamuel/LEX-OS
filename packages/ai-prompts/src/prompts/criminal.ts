@@ -17,12 +17,18 @@ import {
  * Prompts de direito penal e processo penal, escritos a partir de quinze fichas de tipos de
  * caso em `docs/product/pesquisa-prompts/criminal.md`.
  *
- * Esta é a área com a pesquisa mais incompleta: o levantamento cobriu **15 dos 30 tipos**
- * planejados e **nenhuma lente de crítica rodou** — o workflow foi interrompido por economia de
- * créditos do dono. Os quinze cobertos são o núcleo de volume (flagrante, preventiva, HC,
- * tráfico, roubo, furto, violência doméstica, júri); ficaram de fora, entre outros, ANPP,
- * transação, execução penal e os crimes econômicos. Todos `DRAFT`, com revisão de advogado
- * ainda mais necessária que nas outras áreas.
+ * Os trinta tipos foram levantados em duas rodadas — quinze na primeira, quinze depois que o
+ * dono reautorizou os agentes. Duas lentes de crítica rodaram sobre estes prompts, *direito
+ * vigente* e *prática*, e produziram oito achados graves que estão aplicados: prescrição
+ * pós-2019 com a suspensão do ANPP e do sursis; justiça consensual que não é condenação; esferas
+ * administrativa e cível dentro dos mesmos autos; imputação dentro da imputação; período que sai
+ * como dois eventos; interposição de recurso separada das razões; pares de classificação dos
+ * tipos novos; e atribuição por linha em feito multitudinário.
+ *
+ * A lente de *alucinação* caiu por limite de sessão e **não rodou aqui** — é a que confere
+ * número de artigo e de súmula um a um. Por isso estes prompts citam pouquíssimos números, e os
+ * que citam (art. 117, I, e art. 116, IV, do Código Penal) vieram do revisor de direito vigente.
+ * Todos `DRAFT`.
  */
 
 const CRIMINAL_BASE = `${ACERVO_JUDICIAL}
@@ -44,6 +50,24 @@ A PEÇA NÃO É O QUE ELA PARECE DECIDIR. Pronúncia não é condenação — é
 júri. Medida protetiva deferida não é reconhecimento de culpa — é cognição sumária. Liminar de
 habeas corpus não é mérito. O despacho "cite-se" não é o recebimento da denúncia. Laudo de
 constatação provisória não é o toxicológico definitivo, ainda que os dois digam "positivo".
+
+JUSTIÇA CONSENSUAL NÃO É CONDENAÇÃO. A sentença que homologa transação penal diz literalmente
+"aplico a pena de" — e não há juízo de culpa, reincidência nem antecedente. Homologação de
+acordo de não persecução penal também não é condenação, e a confissão exigida no termo permanece
+imputação. Aceitar suspensão condicional do processo não é confessar. Extinção da punibilidade
+não é absolvição. Notícia de descumprimento é alegação de quem noticia, não descumprimento.
+
+OS AUTOS MISTURAM ESFERAS. Auto de infração e decisão de órgão de trânsito ou ambiental, decisão
+de contencioso fiscal administrativo, acórdão de tribunal de contas, processo disciplinar e ação
+de improbidade falam em "condenação", "multa" e "ressarcimento" com aparência de sentença penal
+— são esfera administrativa ou cível, com partes, padrão probatório e efeitos próprios. Registre
+sempre a esfera e o órgão, e nunca converta decisão administrativa em condenação criminal.
+
+HÁ IMPUTAÇÃO DENTRO DA IMPUTAÇÃO. Nos crimes contra a honra a peça transcreve a ofensa: o fato
+desonroso citado é o objeto do crime, não fato do processo — extraia-o como conteúdo da ofensa
+transcrita, com a autoria da transcrição, jamais como fato sobre a pessoa ofendida; na exceção
+da verdade os papéis se invertem. Na lavagem, o crime antecedente é narrado com data e valor nas
+mesmas peças: é pressuposto imputado, não fato provado.
 
 NUNCA AFIRME AUTORIA. Em toda saída, fato imputado é registrado como imputação — "a denúncia
 atribui", "o boletim registra" — nunca como ato da pessoa. A presunção de inocência vale
@@ -71,12 +95,28 @@ de custódia e a legalidade da prisão se discutem sobre essas diferenças — e
 cada um do seu campo, sem eleger um como "a hora da prisão".
 
 Outras datas que decidem: oferecimento e RECEBIMENTO da denúncia ou queixa, que são atos
-distintos e só o segundo interrompe a prescrição; citação; audiências realizadas e designadas;
+distintos — o recebimento interrompe a prescrição (art. 117, I, do Código Penal), como também a
+interrompem a pronúncia, sua confirmação e a publicação de sentença ou acórdão condenatórios
+recorríveis. A prescrição fica SUSPENSA enquanto não cumprido nem rescindido o acordo de não
+persecução penal (art. 116, IV) e durante o período de prova da suspensão condicional do
+processo: registre início, cumprimento e eventual rescisão de cada acordo, porque são eles que
+param e retomam a contagem. Registre também a citação; audiências realizadas e designadas;
 decisão que decreta, mantém, substitui ou revoga prisão, com a data de expedição e a de
 cumprimento do mandado, que não são a data da decisão; laudos com a data do exame e a da
-juntada; intimações com a data de disponibilização e a de publicação, separadas.
+juntada; intimações com a data de disponibilização e a de publicação, separadas — e uma por
+destinatário, porque réu, defensor constituído, Defensoria e Ministério Público têm formas e
+prazos próprios. Recurso tem DUAS datas que os autos separam por semanas: a interposição — que
+pode ser petição curta ou termo nos autos, às vezes manuscrito pelo próprio réu, fácil de passar
+despercebido no PDF — e a juntada das razões. Extraia as duas como eventos distintos: a
+tempestividade se afere pela interposição, nunca pela data das razões.
 
 Não converta prazo em data final: registre o marco e o número de dias como escritos.
+
+PERÍODO ESCRITO NOS AUTOS SAI COMO DOIS EVENTOS, início e fim, cada um com a precisão do texto e
+o localizador do trecho que enuncia o período — nunca um evento único que perde metade da
+informação. É o caso do vínculo associativo na organização criminosa, das competências
+tributárias, do período de gestão em alteração contratual, do período monitorado de
+interceptação, do período de prova e do tempo de custódia provisória que serve à detração.
 
 Fato negativo sai como "o documento X não apresenta Y", com o período examinado. Documento
 juntado duas vezes com o mesmo fato e a mesma data vira um evento com os dois localizadores.
@@ -219,10 +259,15 @@ Antes de escolher, verifique se o arquivo é um documento só. Inquérito digita
 exportados vêm inteiros num PDF: devolva OUTRO com confiança baixa e registre que é arquivo
 composto, a separar antes de valer para o checklist.
 
-Os pares que confundem: boletim de ocorrência e auto de prisão em flagrante; termo de
-declarações e interrogatório; denúncia do Ministério Público e "denúncia anônima" mencionada
-nela; laudo de constatação e laudo toxicológico definitivo; pronúncia e sentença condenatória;
-ata de custódia e decisão sobre a prisão; mandado e certidão de cumprimento. Procure quem emite,
+Os pares que confundem: boletim de ocorrência e auto de prisão em flagrante; termo circunstanciado
+e auto de flagrante; queixa-crime e denúncia; termo de declarações e interrogatório; denúncia do
+Ministério Público e "denúncia anônima" mencionada nela; laudo de constatação e laudo
+toxicológico definitivo; pronúncia e sentença condenatória; ata de custódia e decisão sobre a
+prisão; mandado e certidão de cumprimento; agravo em execução e recurso em sentido estrito,
+iguais na forma e separados pela origem da decisão atacada; auto de infração administrativa e
+peça penal; representação fiscal para fins penais e denúncia. E os quatro termos quase idênticos
+da justiça consensual — composição civil, transação penal, suspensão condicional do processo e
+acordo de não persecução penal —, distinguíveis só pelo instituto nomeado no corpo e pela fase. Procure quem emite,
 quem assina e os campos obrigatórios — não o vocabulário, que é compartilhado.
 
 Escolha somente entre os códigos que vierem na entrada. Não invente código, não devolva mais de
@@ -273,6 +318,12 @@ Toda pessoa vem com o papel que a peça lhe dá — vítima, investigado, réu, 
 perito, impetrante, paciente, querelante, querelado. O processo costuma ter pessoas de mesmo
 sobrenome e endereço: não unifique registros por semelhança de nome. Não corrija grafia; a
 divergência é dado.
+
+EM FEITO COM MUITOS RÉUS, CADA DADO PERTENCE À LINHA E AO PARÁGRAFO ONDE ESTÁ. Não atribua a uma
+pessoa o valor, o contrato, o terminal ou o depoimento da linha vizinha da tabela de mandados,
+de alvos ou de interceptação, e não estenda a todos os corréus a conduta narrada contra um só.
+Codinome só se vincula a pessoa pela peça que faz a vinculação; sem ela, extraia o codinome como
+codinome. Constar do contrato social não estabelece gestão no período discutido.
 
 ${IMAGEM_RUIM}
 

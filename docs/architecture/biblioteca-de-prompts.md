@@ -31,15 +31,22 @@ aponta para a versão que governou cada execução).
 
 ## Qualidade por área — leia antes de confiar
 
-| Área        | Pesquisa        | Revisão adversarial                                                     |
-| ----------- | --------------- | ----------------------------------------------------------------------- |
-| Trabalhista | 30/30 tipos     | **6 lentes**; achou 3 citações fabricadas e 2 teses erradas, corrigidas |
-| Cível       | 30/30 tipos     | **nenhuma** — cortada por economia                                      |
-| Criminal    | **15/30 tipos** | **nenhuma** — workflow interrompido                                     |
+| Área        | Pesquisa    | Revisão adversarial                                                | Lente que faltou |
+| ----------- | ----------- | ------------------------------------------------------------------ | ---------------- |
+| Trabalhista | 30/30 tipos | **6 lentes** — 3 citações fabricadas e 2 teses erradas, corrigidas | —                |
+| Cível       | 30/30 tipos | **2 lentes** — 3 achados graves, corrigidos                        | _prática_        |
+| Criminal    | 30/30 tipos | **2 lentes** — 8 achados graves, corrigidos                        | _alucinação_     |
 
 A pesquisa bruta está em `docs/product/pesquisa-prompts/` (grande; não abrir por padrão — as
-conclusões já estão nos prompts). Nenhum prompt cita número de súmula ou tema: a revisão
-trabalhista mostrou que número fabricado é o erro mais provável e mais caro.
+conclusões já estão nos prompts), e cada arquivo abre com o que a revisão achou e qual lente não
+rodou. Nenhum prompt cita súmula ou tema por número: a revisão trabalhista mostrou que número
+fabricado é o erro mais provável e mais caro. Os poucos artigos citados vieram de revisor de
+direito vigente, que os sustentou explicitamente.
+
+**Onde a cobertura é desigual:** criminal não teve a lente de _alucinação_, que é justamente a
+que confere números — trate qualquer artigo citado ali como pendente de conferência. Cível não
+teve a lente de _prática_, então o texto pode descrever o acervo idealizado, e não o que chega
+digitalizado torto.
 
 ## Limites conhecidos do contrato de saída
 

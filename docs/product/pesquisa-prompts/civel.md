@@ -1,22 +1,47 @@
 # Pesquisa: direito civil
 
-**Data:** 2026-08-25
-**Método:** um agente por tipo de caso
+**Data:** 2026-08-26
+**Método:** um agente por tipo de caso, seguido de revisão adversarial por lente
 **Fonte:** direito brasileiro público e vigente
 **Produto:** `packages/ai-prompts/src/prompts/civel.ts`, todos marcados `DRAFT`
 
-## Aviso: esta pesquisa não foi criticada
-
 Os trinta tipos planejados foram levantados.
 
-Diferentemente da trabalhista, **nenhuma das seis lentes de revisão adversarial rodou aqui** —
-o workflow foi interrompido por decisão do dono, para conter o consumo de créditos. Na
-trabalhista a revisão achou três citações fabricadas e duas teses erradas, então a taxa de erro
-esperada deste material é a mesma **sem a camada que as pegaria**. Mitigação: os prompts desta
-área não citam número de súmula nem de tema, e as regras estruturais (procedência, status
-probatório, injeção) vêm da revisão trabalhista, que é transversal. A revisão de advogado,
-obrigatória antes de qualquer uso em produção, deve tratar este material com desconfiança
-proporcional.
+## O que a revisão encontrou
+
+Duas lentes rodaram sobre **os prompts escritos**, não sobre este levantamento — é o que vai ao
+modelo que merece a crítica. Todos os achados graves abaixo já estão aplicados em
+`packages/ai-prompts/src/prompts/civel.ts`.
+
+### Lente: alucinação — 1 achados graves
+
+**Veredito do revisor:** Não seguir para revisão de advogado antes de reescrever três pontos: a linha que atribui à citação a interrupção da prescrição (efeito do despacho, com retroação à propositura) e a mora nos contratos a termo, o exemplo penal da exceção da verdade num bloco cível, e a regra que transforma matriz e filial em pessoas jurídicas distintas — os demais achados são ajustes de enumeração e de ressalva, e o restante dos prompts, que deliberadamente não cita número de artigo ou súmula, está sólido sob a lente de alucinação.
+
+1. **Trecho:** `citação, que constitui em mora e interrompe a prescrição`
+
+   Efeito prescricional atribuído ao ato errado. Desde o CC/2002 (art. 202, I) e no CPC/2015 (art. 240, §1º), a interrupção da prescrição opera-se pelo despacho que ordena a citação e retroage à data da propositura da ação — a data da citação não é o marco interruptivo. E a constituição em mora pela citação é subsidiária: o caput do art. 240 do CPC ressalva os arts. 397 e 398 do CC, de modo que, em obrigação positiva, líquida e a termo (o caso típico dos contratos listados na mesma frase), a mora é ex re e corre do vencimento. Num prompt cuja função é extrair as datas que decidem o caso, ensinar o modelo a ancorar mora e prescrição na data da citação induz o revisor humano a fixar o marco errado.
+
+   **Correção aplicada:** citação e sua certidão — e, com elas, a data da propositura e a do despacho que ordenou a citação, porque a interrupção da prescrição se opera pelo despacho e retroage à propositura, e a mora, na obrigação com termo, conta do vencimento; registre as datas, não afirme o efeito
+
+### Lente: direito vigente — 2 achados graves
+
+**Veredito do revisor:** Reescrever antes da revisão de advogado: a regra de que a citação interrompe a prescrição (regime do CPC/73) no timeline e o requisito de duas testemunhas sem a ressalva do título eletrônico do art. 784, § 4º, do CPC no checklist; sanados esses dois pontos e os ajustes pontuais listados, o conjunto fica seguro para revisão.
+
+1. **Trecho:** `citação, que constitui em mora e interrompe a prescrição`
+
+   Regime revogado: é a redação original do art. 219 do CPC/73. No direito vigente, a prescrição se interrompe pelo despacho que ordena a citação, com retroação à data da propositura da ação (CC, art. 202, I; CPC/2015, art. 240, § 1º). Num prompt de cronologia que lista as 'datas que decidem o caso', ensinar a citação como marco interruptivo elege a data errada: os marcos relevantes são o ajuizamento e o despacho, não a citação.
+
+   **Correção aplicada:** a propositura da ação, o despacho que ordena a citação e a citação em si — três datas distintas: a prescrição se interrompe pelo despacho, retroagindo à data da propositura (CC, art. 202, I; CPC, art. 240, § 1º); registre as três, sem eleger marco
+
+2. **Trecho:** `cheque, nota promissória, duplicata e contrato com duas testemunhas não se equivalem nem se substituem`
+
+   Ignora o § 4º do art. 784 do CPC, incluído pela Lei 14.620/2023: no título executivo constituído ou atestado por meio eletrônico admite-se qualquer modalidade de assinatura eletrônica prevista em lei, dispensada a assinatura de testemunhas quando a integridade for conferida por provedor de assinatura. Um checklist que trate 'duas testemunhas' como requisito do contrato-título reprova indevidamente o contrato assinado eletronicamente — hoje a forma dominante de contratação.
+
+   **Correção aplicada:** cheque, nota promissória, duplicata e contrato assinado não se equivalem nem se substituem; o contrato físico pede duas testemunhas (CPC, art. 784, III), mas o constituído ou atestado por meio eletrônico admite qualquer assinatura eletrônica prevista em lei, dispensadas as testemunhas quando a integridade for conferida por provedor de assinatura (CPC, art. 784, § 4º, incluído pela Lei 14.620/2023) — confira qual das formas a exigência pede
+
+## A lente que não rodou
+
+**Prática** caiu por limite de sessão e não foi executada. É a que confere se o texto descreve o acervo como ele chega — digitalização ruim, PDF composto, peças repetidas — e foi a que mais rendeu na trabalhista. A revisão de advogado deve suprir essa camada.
 
 ## Os tipos de caso levantados
 

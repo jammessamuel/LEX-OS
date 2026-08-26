@@ -175,8 +175,6 @@ export const legalSpecialties: readonly LegalSpecialty[] = [
     code: 'CRIMINAL',
     name: 'Direito penal',
     aliases: ['PENAL', 'DIREITO_CRIMINAL', 'DIREITO_PENAL'],
-    // 15 dos 30 tipos planejados: a pesquisa foi interrompida por economia. Aditivo — o resto
-    // entra quando for levantado.
     caseTypes: [
       {
         code: 'HOMICIDIO_TRIBUNAL_DO_JURI',
@@ -208,6 +206,39 @@ export const legalSpecialties: readonly LegalSpecialty[] = [
       { code: 'ROUBO', name: 'Roubo' },
       { code: 'FURTO', name: 'Furto (art. 155 do Código Penal)' },
       { code: 'CRIMES_CONTRA_A_DIGNIDADE_SEXUAL', name: 'Crimes contra a dignidade sexual' },
+      { code: 'CRIMES_CONTRA_ORDEM_TRIBUTARIA', name: 'Crimes contra a ordem tributária' },
+      {
+        code: 'SUSPENSAO_CONDICIONAL_DO_PROCESSO',
+        name: 'Suspensão condicional do processo (sursis processual — art. 89 da Lei 9.099/1995)',
+      },
+      {
+        code: 'TRANSACAO_PENAL_JECRIM',
+        name: 'Transação penal no Juizado Especial Criminal (art. 76 da Lei 9.099/1995)',
+      },
+      { code: 'ACORDO_NAO_PERSECUCAO_PENAL', name: 'Acordo de não persecução penal (ANPP)' },
+      { code: 'REVISAO_CRIMINAL', name: 'Revisão criminal' },
+      {
+        code: 'LAVAGEM_DE_DINHEIRO',
+        name: 'Lavagem de dinheiro (ocultação de bens, direitos e valores — Lei 9.613/1998)',
+      },
+      { code: 'ORGANIZACAO_CRIMINOSA', name: 'Organização criminosa (art. 2º da Lei 12.850/2013)' },
+      { code: 'LESAO_CORPORAL', name: 'Lesão corporal (art. 129 do Código Penal)' },
+      { code: 'PROGRESSAO_DE_REGIME', name: 'Progressão de regime' },
+      { code: 'CRIME_AMBIENTAL', name: 'Crimes ambientais (Lei 9.605/1998)' },
+      {
+        code: 'CRIMES_DE_TRANSITO',
+        name: 'Crimes de trânsito (CTB — Lei 9.503/1997, arts. 302 a 312)',
+      },
+      {
+        code: 'CRIMES_CONTRA_ADMINISTRACAO_PUBLICA',
+        name: 'Crimes contra a Administração Pública',
+      },
+      {
+        code: 'APELACAO_RECURSO_SENTIDO_ESTRITO',
+        name: 'Recursos criminais: apelação e recurso em sentido estrito',
+      },
+      { code: 'CRIMES_CONTRA_HONRA', name: 'Crimes contra a honra (calúnia, difamação e injúria)' },
+      { code: 'LIVRAMENTO_CONDICIONAL', name: 'Execução penal: livramento condicional' },
     ],
   },
 ];

@@ -17,11 +17,15 @@ import {
  * Prompts de direito civil, escritos a partir de trinta fichas de tipos de caso em
  * `docs/product/pesquisa-prompts/civel.md`.
  *
- * A pesquisa desta área **não passou pela revisão adversarial**: o levantamento terminou, mas as
- * seis lentes de crítica foram cortadas por economia de créditos do dono. Mitiga em parte que os
- * blocos estruturais vêm da revisão trabalhista, que é transversal — mas número de artigo citado
- * aqui tem uma camada a menos de conferência. Todos `DRAFT`, e a revisão de advogado que já era
- * obrigatória fica ainda mais.
+ * Duas lentes de crítica rodaram sobre estes prompts, *direito vigente* e *alucinação*, e as
+ * duas convergiram independentemente no mesmo erro meu: eu havia escrito que a citação
+ * interrompe a prescrição, que é o regime do CPC/73 — a interrupção se opera pelo despacho que
+ * a ordena e retroage à propositura. Corrigido, junto com o requisito de duas testemunhas no
+ * título executivo, que ignorava o contrato assinado eletronicamente.
+ *
+ * A lente de *prática* caiu por limite de sessão e **não rodou aqui** — é a que confere se o
+ * texto descreve o acervo como ele chega, e foi a que mais rendeu na trabalhista. Todos
+ * `DRAFT`.
  */
 
 const CIVEL_BASE = `${ACERVO_JUDICIAL}
@@ -63,9 +67,12 @@ autos.
 
 ${CIVEL_BASE}
 
-Datas que decidem o caso: celebração, vencimento e inadimplemento nos contratos; citação, que
-constitui em mora e interrompe a prescrição; a notificação extrajudicial e sua entrega, que não
-são a mesma data; nas peças registrais, data de lavratura, do registro e da averbação são três
+Datas que decidem o caso: celebração, vencimento e inadimplemento nos contratos; a propositura
+da ação, o despacho que ordena a citação e a citação em si — três datas distintas, e você
+registra as três sem eleger marco: a interrupção da prescrição se opera pelo despacho e retroage
+à propositura (art. 202, I, do Código Civil; art. 240, §1º, do CPC), e na obrigação com termo a
+mora corre do vencimento, não da citação; a notificação extrajudicial e sua entrega, que não são
+a mesma data; nas peças registrais, data de lavratura, do registro e da averbação são três
 datas distintas na mesma matrícula; em consumo, emissão, saída e entrega da nota fiscal; em
 despejo e cobrança, a competência (mês de referência) não é a data de vencimento nem a de
 pagamento; e cada decisão com o marco que ela própria fixa.
@@ -127,8 +134,11 @@ quitação; a notificação extrajudicial com prova de entrega; procuração e s
 alcancem quem assina; e, no consumo, a nota fiscal e a ordem de serviço.
 
 Título executivo é documento com requisitos próprios: cheque, nota promissória, duplicata e
-contrato com duas testemunhas não se equivalem nem se substituem — confira qual a exigência
-pede.
+contrato assinado não se equivalem nem se substituem. O contrato em papel pede duas testemunhas
+(art. 784, III, do CPC), mas o constituído ou atestado por meio eletrônico admite qualquer
+assinatura eletrônica prevista em lei, dispensadas as testemunhas quando a integridade for
+conferida por provedor de assinatura (art. 784, §4º) — hoje a forma dominante de contratar.
+Confira qual das duas o documento é antes de reprovar por falta de testemunha.
 
 Documento parcial atende só o que ele próprio cobre: a soma dos períodos e a suficiência do
 conjunto são do sistema, que vê tudo — você vê um documento por vez.

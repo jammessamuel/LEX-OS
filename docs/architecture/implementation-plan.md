@@ -500,10 +500,12 @@ text, adds a specialty catalogue that normalises `legalArea` aliases without clo
 field, and makes `promptFor(task, area)` the single selection point — refusing to serve a
 `DRAFT` in production, in the same fail-closed pattern as the mock providers.
 
-Mid-delivery the owner directed a drastic reduction in agent spend; the cível/criminal research
-workflow was stopped at 43/72 agents and its partial results harvested. Consequences are recorded
-per area in `docs/architecture/biblioteca-de-prompts.md`: trabalhista fully researched and
-adversarially reviewed; cível researched, unreviewed; criminal at 15/30 types, unreviewed.
+Agent spend was cut mid-delivery at the owner request and later re-authorised at a smaller scale:
+72 planned agents became 43 harvested plus a focused round of 21. All three specialties now have
+30 case types. Review coverage stayed uneven and is recorded per area in
+`docs/architecture/biblioteca-de-prompts.md`: trabalhista had all six lenses, cível and criminal
+two each — cível without _prática_, criminal without _alucinação_, the lens that checks cited
+numbers.
 
 **Scope** — the text of 20 prompts (5 tasks × generic + 3 specialties); the specialty catalogue
 with 75 case types; assistant selects by the case's legal area and records the governing prompt
@@ -522,7 +524,8 @@ citation cap — recorded, not implemented), and the remaining 15 criminal case 
 - the assistant answers a TRABALHISTA case under `grounded-answer-trabalhista-v1` (integration-asserted);
 - every prompt carries the instruction-versus-content separation clause (test-enforced);
 - output schemas match the worker validators in both directions (drift test);
-- no prompt cites a súmula or tema by number.
+- no prompt cites a súmula or tema by number;
+- every legal claim flagged ALTA by an adversarial lens is corrected before the prompt ships.
 
 ## Governed follow-up increments
 
