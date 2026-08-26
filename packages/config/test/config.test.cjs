@@ -25,6 +25,7 @@ function validEnvironment(overrides = {}) {
     MAIL_FROM: 'nao-responda@lexos.invalid',
     FILE_INTAKE_MAX_FILE_BYTES: '26214400',
     FILE_INTAKE_MAX_FILES_PER_REQUEST: '10',
+    CASE_ARCHIVE: 'fictional',
     LOG_LEVEL: 'info',
     NODE_ENV: 'development',
     OBJECT_STORAGE_ACCESS_KEY: 'local-access-key',

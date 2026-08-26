@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { checklistPromptV1, timelinePromptV1 } from '@lex-os/ai-prompts';
+import type { PromptSpecification } from '@lex-os/ai-prompts';
 import type { RuntimeConfig } from '@lex-os/config';
 
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
@@ -55,13 +55,17 @@ export interface ChecklistAnalysisOutputV1 {
 }
 
 export interface TimelineProvider {
-  generate(input: { sourceTextLength: number }): TimelineProviderOutputV1;
+  generate(input: {
+    sourceTextLength: number;
+    prompt: PromptSpecification;
+  }): TimelineProviderOutputV1;
 }
 
 export interface ChecklistAnalysisProvider {
   analyze(input: {
     documentTypeCode: string | null;
     items: readonly { id: string; documentTypeCode: string | null }[];
+    prompt: PromptSpecification;
   }): ChecklistAnalysisOutputV1;
 }
 
@@ -245,13 +249,16 @@ export class MockReviewProcessingProvider implements TimelineProvider, Checklist
     }
   }
 
-  generate(input: { sourceTextLength: number }): TimelineProviderOutputV1 {
+  generate(input: {
+    sourceTextLength: number;
+    prompt: PromptSpecification;
+  }): TimelineProviderOutputV1 {
     return parseTimelineProviderOutputV1(
       {
         schemaVersion: 1,
         provider: 'lex-os-mock-timeline',
         modelName: 'deterministic-v1',
-        promptVersion: timelinePromptV1.version,
+        promptVersion: input.prompt.version,
         events: [
           {
             eventType: 'CONTRACT_DATE',
@@ -272,13 +279,14 @@ export class MockReviewProcessingProvider implements TimelineProvider, Checklist
   analyze(input: {
     documentTypeCode: string | null;
     items: readonly { id: string; documentTypeCode: string | null }[];
+    prompt: PromptSpecification;
   }): ChecklistAnalysisOutputV1 {
     return parseChecklistAnalysisOutputV1(
       {
         schemaVersion: 1,
         provider: 'lex-os-mock-checklist',
         modelName: 'deterministic-v1',
-        promptVersion: checklistPromptV1.version,
+        promptVersion: input.prompt.version,
         items: input.items.map((item) => ({
           templateItemId: item.id,
           status:

@@ -193,7 +193,7 @@ export class AssistantService {
     // que importa numa ação de cobrança. Área não catalogada cai no prompt genérico.
     const legalArea = await this.cases.legalAreaFor(actor, input.caseId);
     const prompt = promptFor('GROUNDED_ANSWER', legalArea, {
-      environment: this.config.environment,
+      caseArchive: this.config.caseArchive,
     });
     const rawOutput = await this.languageModel.generate({
       prompt,

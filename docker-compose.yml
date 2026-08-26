@@ -2,6 +2,7 @@ name: lex-os
 
 x-runtime-environment: &runtime-environment
   NODE_ENV: development
+  CASE_ARCHIVE: fictional
   API_PORT: 3000
   DEPENDENCY_TIMEOUT_MS: ${DEPENDENCY_TIMEOUT_MS:?DEPENDENCY_TIMEOUT_MS is required}
   LOG_LEVEL: ${LOG_LEVEL:?LOG_LEVEL is required}

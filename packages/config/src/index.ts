@@ -3,8 +3,21 @@ import { fileURLToPath } from 'node:url';
 export type RuntimeEnvironment = 'development' | 'production' | 'test';
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
+/**
+ * O que o acervo desta instalação guarda.
+ *
+ * Mede risco, e o nome do ambiente não mede: um laptop de desenvolvimento apontado para a base
+ * de um cliente roda com `NODE_ENV=development`, e uma homologação com acervo real também. Quem
+ * decide se um prompt em rascunho pode rodar é isto, não `environment`.
+ *
+ * Não tem valor padrão de propósito. Uma instalação sem `CASE_ARCHIVE` não sobe — e falhar na
+ * partida é o único jeito de a omissão não passar despercebida.
+ */
+export type CaseArchive = 'fictional' | 'real';
+
 export interface RuntimeConfig {
   environment: RuntimeEnvironment;
+  caseArchive: CaseArchive;
   service: {
     apiPort: number;
     dependencyTimeoutMs: number;
@@ -76,6 +89,7 @@ export interface RuntimeConfig {
 
 const environments: readonly RuntimeEnvironment[] = ['development', 'production', 'test'];
 const logLevels: readonly LogLevel[] = ['debug', 'info', 'warn', 'error'];
+const caseArchives: readonly CaseArchive[] = ['fictional', 'real'];
 const productionPlaceholders = [
   '1234',
   'change-me',
@@ -228,6 +242,7 @@ function validateProduction(config: RuntimeConfig): void {
 export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): RuntimeConfig {
   const config: RuntimeConfig = {
     environment: oneOf(env, 'NODE_ENV', environments),
+    caseArchive: oneOf(env, 'CASE_ARCHIVE', caseArchives),
     service: {
       apiPort: preferredInteger(env, 'PORT', 'API_PORT', 1, 65_535),
       dependencyTimeoutMs: integer(env, 'DEPENDENCY_TIMEOUT_MS', 100, 30_000),

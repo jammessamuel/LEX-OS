@@ -1,3 +1,4 @@
+let prompts;
 let MockReviewProcessingProvider;
 let parseChecklistAnalysisOutputV1;
 let parseTimelineProviderOutputV1;
@@ -5,12 +6,20 @@ let parseTimelineProviderOutputV1;
 beforeAll(async () => {
   ({ MockReviewProcessingProvider, parseChecklistAnalysisOutputV1, parseTimelineProviderOutputV1 } =
     await import('../dist/processing/review-processing.provider.js'));
+  prompts = await import('@lex-os/ai-prompts');
 });
+
+// O prompt agora vem de fora: quem chama escolhe pela área do caso, e o provedor carimba a
+// versão do que recebeu. Aqui basta o genérico, que é aprovado e não depende da guarda.
+const promptDe = (tarefa) => prompts.promptFor(tarefa, null, { caseArchive: 'fictional' });
 
 describe('provedores determinísticos de revisão', () => {
   it('produz cronologia versionada e vinculável à fonte', () => {
     const provider = new MockReviewProcessingProvider({ environment: 'test' });
-    const result = provider.generate({ sourceTextLength: 100 });
+    const result = provider.generate({
+      sourceTextLength: 100,
+      prompt: promptDe('TIMELINE'),
+    });
 
     expect(result).toMatchObject({
       schemaVersion: 1,
@@ -59,6 +68,7 @@ describe('provedores determinísticos de revisão', () => {
         { id: 'item-a', documentTypeCode: 'RG' },
         { id: 'item-b', documentTypeCode: 'OUTRO' },
       ],
+      prompt: promptDe('CHECKLIST'),
     });
 
     expect(result.items).toEqual([

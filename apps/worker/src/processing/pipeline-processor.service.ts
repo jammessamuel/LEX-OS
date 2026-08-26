@@ -1,10 +1,12 @@
-import { classificationPromptV1, entitiesPromptV1 } from '@lex-os/ai-prompts';
+import { promptFor } from '@lex-os/ai-prompts';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import type { RuntimeConfig } from '@lex-os/config';
 import { Prisma } from '@lex-os/database';
 import type { ProcessingJobMessageV1, ProcessingJobType } from '@lex-os/contracts';
 import { assertEmbeddingBatch, chunkKnowledgeText, type EmbeddingProvider } from '@lex-os/shared';
 import { UnrecoverableError } from 'bullmq';
 
+import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
 import { PROCESSING_PROVIDER, type ProcessingProvider } from './mock-processing.provider.js';
 import { EMBEDDING_PROVIDER } from './mock-embedding.provider.js';
 import { PermanentProcessingError, RetryableProcessingError } from './processing-error.js';
@@ -46,7 +48,21 @@ export class PipelineProcessorService {
     @Inject(EMBEDDING_PROVIDER) private readonly embeddingProvider: EmbeddingProvider,
     @Inject(PROCESSING_COST_POLICY) private readonly costPolicy: ProcessingCostPolicy,
     private readonly publisher: ProcessingQueuePublisher,
+    @Inject(RUNTIME_CONFIG) private readonly config: RuntimeConfig,
   ) {}
+
+  /**
+   * O prompt da tarefa para a área do caso.
+   *
+   * O que importa numa reclamação trabalhista não é o que importa num inventário, e a área já
+   * viaja no job. Área sem prompt próprio cai no genérico; rascunho sobre acervo real é recusado
+   * aqui, antes de o modelo ver qualquer coisa.
+   */
+  #promptFor(task: Parameters<typeof promptFor>[0], job: ClaimedProcessingJob) {
+    return promptFor(task, job.document.case.legalArea, {
+      caseArchive: this.config.caseArchive,
+    });
+  }
 
   async process(
     message: ProcessingJobMessageV1,
@@ -169,7 +185,7 @@ export class PipelineProcessorService {
           extraction: {
             type: 'CLASSIFICATION',
             executionId: `mock-v1:${job.id}`,
-            promptVersion: classificationPromptV1.version,
+            promptVersion: this.#promptFor('CLASSIFICATION', job).version,
             structuredData: { documentTypeCode: result.code, requiresHumanReview: true },
             confidenceScore: result.confidence,
             processingTimeMs: 1,
@@ -194,7 +210,7 @@ export class PipelineProcessorService {
           extraction: {
             type: 'ENTITY_EXTRACTION',
             executionId: `mock-v1:${job.id}`,
-            promptVersion: entitiesPromptV1.version,
+            promptVersion: this.#promptFor('ENTITIES', job).version,
             structuredData: { entityCount: result.entities.length },
             confidenceScore: 0.98,
             processingTimeMs: 1,
@@ -213,6 +229,7 @@ export class PipelineProcessorService {
         }
         const result = this.timelineProvider.generate({
           sourceTextLength: sourceExtraction.rawText.length,
+          prompt: this.#promptFor('TIMELINE', job),
         });
         return {
           provider: result.provider,
@@ -258,6 +275,7 @@ export class PipelineProcessorService {
         const result = this.checklistAnalysisProvider.analyze({
           documentTypeCode: job.document.documentType?.code ?? null,
           items: template.items,
+          prompt: this.#promptFor('CHECKLIST', job),
         });
         return {
           provider: result.provider,

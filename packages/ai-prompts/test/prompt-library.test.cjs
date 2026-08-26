@@ -54,34 +54,50 @@ describe('biblioteca de prompts', () => {
   });
 
   it('resolve o apelido da área para o mesmo prompt da especialidade', () => {
-    const canonical = library.promptFor('TIMELINE', 'TRABALHISTA');
-    const alias = library.promptFor('TIMELINE', 'DIREITO_TRABALHISTA');
-    const lowercase = library.promptFor('TIMELINE', 'direito_trabalhista');
+    const ficticio = { caseArchive: 'fictional' };
+    const canonical = library.promptFor('TIMELINE', 'TRABALHISTA', ficticio);
+    const alias = library.promptFor('TIMELINE', 'DIREITO_TRABALHISTA', ficticio);
+    const lowercase = library.promptFor('TIMELINE', 'direito_trabalhista', ficticio);
     assert.equal(alias.identifier, canonical.identifier);
     assert.equal(lowercase.identifier, canonical.identifier);
   });
 
   it('cai no genérico quando a área não está catalogada, em vez de falhar', () => {
-    const unknown = library.promptFor('TIMELINE', 'DIREITO_MARITIMO');
-    const nothing = library.promptFor('TIMELINE', null);
+    const unknown = library.promptFor('TIMELINE', 'DIREITO_MARITIMO', {
+      caseArchive: 'fictional',
+    });
+    const nothing = library.promptFor('TIMELINE', null, { caseArchive: 'fictional' });
     assert.equal(unknown.specialty, null);
     assert.equal(nothing.specialty, null);
   });
 
-  it('recusa rascunho em produção, para nada não revisado tocar caso real', () => {
+  it('recusa rascunho sobre acervo real, e recusa também quando ninguém disse qual é', () => {
     // Rascunho sintético: a garantia não pode depender de existir rascunho na biblioteca,
     // senão ela some justamente quando tudo estiver aprovado.
     const rascunho = { identifier: 'lex-os.teste.rascunho', reviewStatus: 'DRAFT' };
-    assert.throws(
-      () => library.assertUsableIn(rascunho, 'production'),
-      library.UnreviewedPromptError,
-    );
-    assert.doesNotThrow(() => library.assertUsableIn(rascunho, 'development'));
+    for (const acervo of ['real', undefined, '', 'production', 'development', 'homologacao']) {
+      assert.throws(
+        () => library.assertUsableIn(rascunho, acervo),
+        library.UnreviewedPromptError,
+        `Acervo "${String(acervo)}" deixou passar um rascunho.`,
+      );
+    }
+    assert.doesNotThrow(() => library.assertUsableIn(rascunho, 'fictional'));
   });
 
-  it('deixa passar em produção o que foi aprovado', () => {
+  it('não confunde o nome do ambiente com a natureza do dado', () => {
+    // Este é o buraco que a guarda antiga tinha: um laptop apontado para a base de um cliente
+    // roda com NODE_ENV=development, e passava inteiro. Nome de processo não mede risco.
+    const rascunho = { identifier: 'lex-os.teste.laptop', reviewStatus: 'DRAFT' };
+    assert.throws(
+      () => library.assertUsableIn(rascunho, 'development'),
+      library.UnreviewedPromptError,
+    );
+  });
+
+  it('deixa passar sobre acervo real o que foi aprovado', () => {
     for (const prompt of library.promptLibrary.filter((p) => p.reviewStatus === 'REVIEWED')) {
-      assert.doesNotThrow(() => library.assertUsableIn(prompt, 'production'));
+      assert.doesNotThrow(() => library.assertUsableIn(prompt, 'real'));
     }
   });
 
@@ -93,14 +109,27 @@ describe('biblioteca de prompts', () => {
     }
   });
 
+  it('resolve as cinco tarefas em cada faixa, que é o que o worker agora pede', () => {
+    const tarefas = ['CLASSIFICATION', 'ENTITIES', 'TIMELINE', 'CHECKLIST', 'GROUNDED_ANSWER'];
+    for (const area of ['TRABALHISTA', 'CIVEL', 'CRIMINAL']) {
+      for (const tarefa of tarefas) {
+        const escolhido = library.promptFor(tarefa, area, { caseArchive: 'fictional' });
+        assert.equal(escolhido.task, tarefa);
+        assert.equal(escolhido.specialty, area, `${area}/${tarefa} caiu no genérico.`);
+        assert.ok(escolhido.template.length > 400, `${area}/${tarefa} tem template curto.`);
+      }
+    }
+  });
+
   it('reclama de tarefa sem prompt em vez de devolver indefinido', () => {
     assert.throws(() => library.promptFor('TAREFA_INEXISTENTE', null), library.MissingPromptError);
   });
 
   it('devolve a versão sem precisar montar a chamada', () => {
+    const ficticio = { caseArchive: 'fictional' };
     assert.equal(
-      library.promptVersionFor('TIMELINE', 'TRABALHISTA'),
-      library.promptFor('TIMELINE', 'TRABALHISTA').version,
+      library.promptVersionFor('TIMELINE', 'TRABALHISTA', ficticio),
+      library.promptFor('TIMELINE', 'TRABALHISTA', ficticio).version,
     );
   });
 });

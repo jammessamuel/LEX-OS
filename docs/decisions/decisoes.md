@@ -1235,7 +1235,9 @@ A alternativa de manter o critério por ambiente e "cuidar para não subir dado 
 homologação" foi recusada: é procedimento humano onde cabe invariante de código, e o produto
 inteiro se vende dizendo o contrário.
 
-**Ainda não implementado.** É o item 4 da tabela e o próximo da fila.
+**Implementado em 2026-08-26** pela configuração `CASE_ARCHIVE`, que não tem valor padrão:
+uma instalação que não a declara não sobe. Estado de execução em
+[`docs/product/ordem-de-execucao.md`](../product/ordem-de-execucao.md).
 
 #### 3. `REVIEWED` precisa significar uma coisa só
 

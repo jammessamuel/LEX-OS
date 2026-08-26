@@ -68,6 +68,12 @@ For host watch mode, start only dependencies with `pnpm infra:dependencies`, kee
 
 - Every workspace script is shell-agnostic and runs under PowerShell, `cmd`, and Git Bash alike. Keep it that way: no `VAR=value command` prefixes and no `set -a; . file` sourcing in `package.json`. When a script needs environment setup, put it in a Node runner, as `apps/worker/test/run-integration.mjs` does.
 - `.gitattributes` pins the working tree to LF. Do not set `core.autocrlf=true` for this repository; CRLF on disk makes `pnpm format:check` fail on every tracked file even though the content is correct.
+- `CASE_ARCHIVE` declares what this installation's case archive holds — `fictional` or `real`.
+  It has no default: a process that does not declare it refuses to start. It is what decides
+  whether a `DRAFT` prompt may run, replacing the old `NODE_ENV === 'production'` check, because
+  the name of the environment does not measure risk — a laptop pointed at a client's database
+  runs as `development`. Keep it `fictional` locally and on the demo; set `real` the moment an
+  installation holds a client archive.
 - `WORKER_READY_FILE` defaults to the POSIX path `/tmp/lex-os-worker-ready` because the Compose healthcheck reads that exact path inside the container. In host watch mode Node resolves it to `C:\tmp\lex-os-worker-ready` and creates the directory on demand. Override it in your local `.env` if you would rather keep `C:\tmp` clean.
 
 ## Database migration workflow

@@ -70,10 +70,29 @@ por ordem de simpatia.
 
 ### Fila A — antes de qualquer cliente real tocar a biblioteca
 
-**A1. Guarda de rascunho pelo dado, não pelo ambiente** — ADR-015 item 4
-`assertUsableIn` recusa `DRAFT` quando `NODE_ENV === 'production'`. Uma homologação com acervo
-de cliente passa inteira. É o único item da fila que hoje separa "rascunho não encosta em caso
-real" de uma frase de efeito. **Primeiro porque é barato e é a promessa central da entrega.**
+**A0. A biblioteca não estava ligada ao worker** — descoberto e corrigido em 2026-08-26
+Não estava nesta fila porque eu não sabia. O worker importava os quatro prompts genéricos direto
+— `classificationPromptV1`, `entitiesPromptV1`, `timelinePromptV1`, `checklistPromptV1` — e
+nunca chamava `promptFor`. **Doze dos quinze prompts de especialidade nunca rodaram**:
+classificação, entidades, cronologia e checklist, nas três faixas. Só a resposta fundamentada,
+que sai pela API, escolhia por especialidade.
+
+A tubulação já existia: `job.document.case.legalArea` viaja no job desde sempre. Agora o
+pipeline resolve o prompt pela área e passa a especificação aos provedores, que carimbam a
+versão do que receberam em vez de uma constante. A procedência gravada em cada extração passa a
+dizer qual prompt de fato rodou.
+
+**A1. Guarda de rascunho pelo dado, não pelo ambiente** — ADR-015 item 4 · **FEITO 2026-08-26**
+`assertUsableIn` recusava `DRAFT` só quando `NODE_ENV === 'production'`. O nome do processo não
+mede risco: um laptop apontado para a base de um cliente roda como `development` e passava
+inteiro. Agora a condição é `CASE_ARCHIVE`, com dois valores — `fictional` ou `real` — e
+**sem padrão**: instalação que não declara não sobe. Omitir, errar o valor ou passar o nome de um
+ambiente conta como acervo real, e rascunho é recusado.
+
+Ganhou alcance junto com o A0: antes a guarda cobria uma das cinco tarefas, agora cobre as cinco.
+
+**Antes do próximo deploy:** `CASE_ARCHIVE=fictional` precisa existir nos serviços `api` e
+`worker` da Railway, e no seu `.env` local. Sem ela o processo falha na partida — de propósito.
 
 **A2. Faixa cível ao nível das outras duas** — Entrega 16
 Família e sucessões inteiras ausentes: sete dos trinta tipos levantados, zero documentos no
