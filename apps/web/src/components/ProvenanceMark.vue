@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useId } from 'vue';
+import { onBeforeUnmount, ref, useId } from 'vue';
 
 /**
  * Marcador de procedência em forma de nota de rodapé.
@@ -8,6 +8,12 @@ import { useId } from 'vue';
  * citação em peça impressa. A fonte — arquivo, página, trecho, modelo, confiança — é
  * revelada no hover e no foco de teclado, nunca escondida atrás de clique. Sóbrio de
  * propósito: o advogado precisa saber, não ser interrompido.
+ *
+ * A nota é posicionada em coordenadas de viewport, e não em relação ao marcador, porque os
+ * painéis que a hospedam usam `overflow: hidden` para arredondar os cantos — e overflow de
+ * ancestral recorta elemento absoluto, deixando a nota cortada na borda do cartão. Elemento
+ * fixo não é recortado por overflow, então a nota sai inteira de dentro de qualquer painel,
+ * sem obrigar cada tela a abrir o seu.
  */
 defineProps<{
   value: string;
@@ -19,13 +25,76 @@ defineProps<{
 }>();
 
 const tooltipId = useId();
+const trigger = ref<HTMLElement | null>(null);
+const tooltip = ref<HTMLElement | null>(null);
+const open = ref(false);
+const position = ref({ top: 0, left: 0 });
+
+/** Folga entre o marcador e a nota, e entre a nota e a borda da janela. */
+const GAP = 8;
+const EDGE = 12;
+
+function place(): void {
+  const anchor = trigger.value;
+  const note = tooltip.value;
+  if (anchor === null || note === null) {
+    return;
+  }
+  const mark = anchor.getBoundingClientRect();
+  const size = note.getBoundingClientRect();
+
+  // Abaixo por padrão; acima quando não couber, para a nota nunca sair pelo rodapé.
+  const below = mark.bottom + GAP;
+  const above = mark.top - size.height - GAP;
+  const fitsBelow = below + size.height <= window.innerHeight - EDGE;
+  const top = fitsBelow || above < EDGE ? below : above;
+
+  const maxLeft = window.innerWidth - size.width - EDGE;
+  const left = Math.max(EDGE, Math.min(mark.left, Math.max(EDGE, maxLeft)));
+
+  position.value = { top, left };
+}
+
+function show(): void {
+  open.value = true;
+  // A nota precisa estar medida antes de ser posicionada: `visibility` a mantém no fluxo,
+  // então o retângulo já é real neste ponto.
+  place();
+  window.addEventListener('scroll', place, true);
+  window.addEventListener('resize', place);
+}
+
+function hide(): void {
+  open.value = false;
+  window.removeEventListener('scroll', place, true);
+  window.removeEventListener('resize', place);
+}
+
+onBeforeUnmount(hide);
 </script>
 
 <template>
-  <button type="button" class="prov" :aria-describedby="tooltipId">
+  <button
+    ref="trigger"
+    type="button"
+    class="prov"
+    :aria-describedby="tooltipId"
+    @mouseenter="show"
+    @mouseleave="hide"
+    @focus="show"
+    @blur="hide"
+    @keydown.escape="hide"
+  >
     <span :class="{ data: mono }">{{ value }}</span>
     <sup class="prov__mark" aria-hidden="true">{{ index }}</sup>
-    <span :id="tooltipId" class="prov__src" role="tooltip">
+    <span
+      :id="tooltipId"
+      ref="tooltip"
+      class="prov__src"
+      :class="{ 'prov__src--open': open }"
+      role="tooltip"
+      :style="{ top: `${position.top}px`, left: `${position.left}px` }"
+    >
       <strong>{{
         confirmed ? 'Extraído por IA · confirmado por humano' : 'Extraído por IA · não confirmado'
       }}</strong>
@@ -61,12 +130,10 @@ const tooltipId = useId();
 }
 
 .prov__src {
-  position: absolute;
-  left: 0;
-  top: calc(100% + 0.5rem);
-  z-index: 10;
+  position: fixed;
+  z-index: 60;
   width: max-content;
-  max-width: 21rem;
+  max-width: min(21rem, calc(100vw - 1.5rem));
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
@@ -91,8 +158,7 @@ const tooltipId = useId();
     visibility 120ms;
 }
 
-.prov:hover .prov__src,
-.prov:focus-visible .prov__src {
+.prov__src--open {
   opacity: 1;
   visibility: visible;
   transform: none;
@@ -101,5 +167,12 @@ const tooltipId = useId();
 .prov__src strong {
   color: var(--text);
   font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prov__src {
+    transition: none;
+    transform: none;
+  }
 }
 </style>
