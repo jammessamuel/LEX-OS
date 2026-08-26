@@ -94,11 +94,17 @@ Ganhou alcance junto com o A0: antes a guarda cobria uma das cinco tarefas, agor
 **Antes do próximo deploy:** `CASE_ARCHIVE=fictional` precisa existir nos serviços `api` e
 `worker` da Railway, e no seu `.env` local. Sem ela o processo falha na partida — de propósito.
 
-**A2. Faixa cível ao nível das outras duas** — Entrega 16
+**A2. Faixa cível ao nível das outras duas** — Entrega 16 · **FEITO 2026-08-26**
 Família e sucessões inteiras ausentes: sete dos trinta tipos levantados, zero documentos no
 prompt. Endereço não é entidade. Número CNJ não é extraído — e a Entrega 15 se chama "o caso
 carrega o número do processo". Mais quatorze achados da lente de prática.
-**Segundo porque é a faixa que hoje entrega pior, e é trabalho de texto, sem contrato no meio.**
+Dezessete achados aplicados. A faixa deixou de ser a menor: classificação foi de 904 para
+1.379 palavras, entidades de 1.077 para 1.739, checklist de 1.169 para 1.838 — o maior das três.
+Família, sucessões e saúde suplementar ganharam exigência documental própria; endereço, número
+CNJ, veículo por chassi, cartório da matrícula e as colunas do extrato de birô entraram na
+extração; disponibilização × publicação, certidão de fato negativo, óbito e a armadilha do índice
+de juntadas entraram na cronologia. E saiu do bloco comum a exceção da verdade, que é peça
+criminal e ocupava a linha das inversões cíveis que aparecem toda semana.
 
 **A3. `REVIEWED` com nome, OAB e data** — ADR-015 item 2
 Vinte de vinte estão `DRAFT`. Sem isso, promover é trocar uma palavra.
