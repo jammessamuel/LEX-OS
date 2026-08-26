@@ -1,5 +1,6 @@
 import type { PromptSpecification } from '../specification.js';
 import { classificationPromptV1, entitiesPromptV1 } from './generico-extracao.js';
+import { CHECKLIST_OUTPUT } from './contratos.js';
 import { SOURCE_IS_DATA } from './separacao.js';
 
 /**
@@ -123,26 +124,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
       items: { type: 'array', minItems: 1 },
     },
   },
-  outputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['schemaVersion', 'provider', 'modelName', 'promptVersion', 'items'],
-    properties: {
-      schemaVersion: { const: 1 },
-      items: {
-        type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['templateItemId', 'status'],
-          properties: {
-            templateItemId: { type: 'string', format: 'uuid' },
-            status: { enum: ['MISSING', 'AWAITING_VALIDATION'] },
-          },
-        },
-      },
-    },
-  },
+  outputSchema: CHECKLIST_OUTPUT,
   examples: [
     {
       input: { documentTypeCode: 'OUTRO', itemDocumentTypeCode: 'OUTRO' },
@@ -226,7 +208,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
             sourceChunkIds: {
               type: 'array',
               minItems: 1,
-              maxItems: 3,
+              maxItems: 5,
               items: { type: 'string', format: 'uuid' },
             },
           },

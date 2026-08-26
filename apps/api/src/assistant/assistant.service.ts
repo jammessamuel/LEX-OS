@@ -91,7 +91,7 @@ function parseProviderOutput(
       !boundedText(claim.text, 2000) ||
       !Array.isArray(claim.sourceChunkIds) ||
       claim.sourceChunkIds.length === 0 ||
-      claim.sourceChunkIds.length > 3 ||
+      claim.sourceChunkIds.length > 5 ||
       claim.sourceChunkIds.some(
         (chunkId) => typeof chunkId !== 'string' || !authorizedChunkIds.has(chunkId),
       ) ||

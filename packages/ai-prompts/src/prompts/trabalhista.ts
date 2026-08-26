@@ -1,5 +1,25 @@
 import type { PromptSpecification } from '../specification.js';
-import { ACERVO_JUDICIAL, IMAGEM_RUIM, LOCALIZADOR_PJE } from './acervo.js';
+import {
+  ACERVO_JUDICIAL,
+  CALIBRAGEM_CRONOLOGIA,
+  CINCO_ESTADOS,
+  IMAGEM_RUIM,
+  LOCALIZADOR_PJE,
+  QUEBRE_A_AFIRMACAO,
+  VALOR_NORMALIZADO,
+} from './acervo.js';
+import {
+  CHECKLIST_INPUT,
+  CHECKLIST_OUTPUT,
+  CLASSIFICATION_INPUT,
+  CLASSIFICATION_OUTPUT,
+  ENTITIES_INPUT,
+  ENTITIES_OUTPUT,
+  GROUNDED_INPUT,
+  GROUNDED_OUTPUT,
+  TIMELINE_INPUT,
+  TIMELINE_OUTPUT,
+} from './contratos.js';
 
 /**
  * Prompts de direito do trabalho.
@@ -16,12 +36,13 @@ import { ACERVO_JUDICIAL, IMAGEM_RUIM, LOCALIZADOR_PJE } from './acervo.js';
  * calibragem de confiança, a regra de não corrigir grafia de nome e o critério de entidade
  * nascer não confirmada — todos presentes nos genéricos. Estão de volta.
  *
- * Quatro achados NÃO foram atendidos porque o contrato de saída não os comporta, e mudá-lo é
- * decisão de outra entrega. Estão registrados na pesquisa: o status ILEGIVEL (o validador em
- * `review-processing.provider.ts` aceita só MISSING e AWAITING_VALIDATION, embora o banco tenha
- * oito), a cobertura de período no checklist (a saída aceita só `templateItemId` e `status`), a
- * recusa de cronologia vazia (`events.length === 0` falha, o que força inventar evento) e o teto
- * de três citações por afirmação.
+ * Quatro achados eram de contrato, não de texto. Dois foram atendidos em 2026-08-26: o status
+ * ILEGIVEL — a análise agora propõe cinco dos oito estados do banco, incluindo ilegível,
+ * inválido e vencido — e o teto de citações, que subiu de três para cinco, o mesmo teto da
+ * recuperação. Dois continuam abertos e estão em
+ * `docs/product/pendencias-biblioteca-de-prompts.md`: a cobertura de período no checklist (a
+ * saída aceita só `templateItemId` e `status`) e a recusa de cronologia vazia
+ * (`events.length === 0` falha, o que força inventar evento).
  *
  * Todos `DRAFT`: saíram de pesquisa automatizada e nenhum advogado revisou.
  */
@@ -103,10 +124,7 @@ O mesmo documento costuma estar nos autos mais de uma vez, juntado por partes di
 trechos que afirmam o mesmo fato com a mesma data viram um evento com os dois localizadores;
 separe apenas quando data ou valor divergirem.
 
-Importância é consequência processual, não interesse do fato: alta para o que fixa prazo, decide
-pedido ou altera valor; baixa para o que só compõe contexto.
-
-Respeite a precisão do que está escrito. "Em março de 2024" produz precisão de mês.
+${CALIBRAGEM_CRONOLOGIA}
 
 ${LOCALIZADOR_PJE}
 
@@ -114,38 +132,8 @@ Todo evento nasce NÃO CONFIRMADO para revisão humana. Sem localizador, é desc
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'DRAFT',
-  inputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['sourceTextLength'],
-    properties: { sourceTextLength: { type: 'integer', minimum: 1 } },
-  },
-  outputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['schemaVersion', 'provider', 'modelName', 'promptVersion', 'events'],
-    properties: {
-      schemaVersion: { const: 1 },
-      events: {
-        type: 'array',
-        minItems: 1,
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: [
-            'eventType',
-            'title',
-            'description',
-            'occurredAt',
-            'datePrecision',
-            'importance',
-            'sourceLocator',
-            'confidenceScore',
-          ],
-        },
-      },
-    },
-  },
+  inputSchema: TIMELINE_INPUT,
+  outputSchema: TIMELINE_OUTPUT,
   examples: [
     {
       input: { sourceTextLength: 100 },
@@ -209,49 +197,19 @@ art. 614, §3º — pode ser anual ou bienal, e vigência não se confunde com d
 de assinatura. Verifique se os instrumentos juntados, somados, cobrem o período discutido sem
 lacuna. Encerrada a vigência, a cláusula não adere ao contrato.
 
-Documento cuja imagem não permite ler o campo de que a exigência depende não está atendido.
-Proponha como não atendido e não o dê por recebido: pedir novo escaneamento é mais barato do que
-descobrir na audiência que ninguém leu.
+${CINCO_ESTADOS}
 
 Sua saída é PROPOSTA. Uma pessoa revisa antes de valer, e o sistema recusa proposta que
 sobrescreva item já revisado por humano.
 
-Na dúvida, deixe como não atendido. Deixar de marcar custa uma conferência; marcar errado custa
-o prazo.
+Deixar de marcar custa uma conferência; marcar errado custa o prazo.
 
 Devolva cada item recebido exatamente uma vez, com o identificador que veio na entrada.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'DRAFT',
-  inputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['documentTypeCode', 'items'],
-    properties: {
-      documentTypeCode: { type: ['string', 'null'] },
-      items: { type: 'array', minItems: 1 },
-    },
-  },
-  outputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['schemaVersion', 'provider', 'modelName', 'promptVersion', 'items'],
-    properties: {
-      schemaVersion: { const: 1 },
-      items: {
-        type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['templateItemId', 'status'],
-          properties: {
-            templateItemId: { type: 'string', format: 'uuid' },
-            status: { enum: ['MISSING', 'AWAITING_VALIDATION'] },
-          },
-        },
-      },
-    },
-  },
+  inputSchema: CHECKLIST_INPUT,
+  outputSchema: CHECKLIST_OUTPUT,
   examples: [
     {
       input: { documentTypeCode: 'TRCT', itemDocumentTypeCode: 'TRCT' },
@@ -301,61 +259,12 @@ pouco num número que o advogado leva à audiência é pior do que não responde
 Não emita parecer, não recomende conduta processual e não afirme desfecho. Quem lê é advogado, e
 isto é insumo do trabalho dele.
 
-Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
+Responda somente com o JSON do contrato de saída, sem texto ao redor.
+
+${QUEBRE_A_AFIRMACAO}`,
   reviewStatus: 'DRAFT',
-  inputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['question', 'sources'],
-    properties: {
-      question: { type: 'string', minLength: 2, maxLength: 500 },
-      sources: {
-        type: 'array',
-        minItems: 1,
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['chunkId', 'content'],
-        },
-      },
-    },
-  },
-  outputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: [
-      'schemaVersion',
-      'provider',
-      'modelName',
-      'modelVersion',
-      'promptVersion',
-      'executionId',
-      'costAmount',
-      'costCurrency',
-      'claims',
-    ],
-    properties: {
-      schemaVersion: { const: 1 },
-      claims: {
-        type: 'array',
-        minItems: 1,
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['text', 'sourceChunkIds'],
-          properties: {
-            text: { type: 'string', minLength: 1, maxLength: 2000 },
-            sourceChunkIds: {
-              type: 'array',
-              minItems: 1,
-              maxItems: 3,
-              items: { type: 'string', format: 'uuid' },
-            },
-          },
-        },
-      },
-    },
-  },
+  inputSchema: GROUNDED_INPUT,
+  outputSchema: GROUNDED_OUTPUT,
   examples: [
     {
       input: { question: 'Qual a data de admissão?', sources: ['chunk-id-autorizado'] },
@@ -406,25 +315,8 @@ Sem correspondência clara, classifique como OUTRO com confiança baixa. Forçar
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'DRAFT',
-  inputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['availableTypeCodes'],
-    properties: {
-      availableTypeCodes: { type: 'array', minItems: 1, items: { type: 'string' } },
-    },
-  },
-  outputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['provider', 'modelName', 'code', 'confidence'],
-    properties: {
-      provider: { type: 'string' },
-      modelName: { type: 'string' },
-      code: { type: 'string' },
-      confidence: { type: 'number', minimum: 0, maximum: 1 },
-    },
-  },
+  inputSchema: CLASSIFICATION_INPUT,
+  outputSchema: CLASSIFICATION_OUTPUT,
   examples: [
     {
       input: { availableTypeCodes: ['TRCT', 'HOLERITE', 'OUTRO'] },
@@ -479,6 +371,8 @@ Valor sempre acompanhado do que o identifica: a rubrica, a competência e o docu
 
 Ao extrair cláusula de norma coletiva, traga o instrumento, a vigência e o número da cláusula.
 
+${VALOR_NORMALIZADO}
+
 ${IMAGEM_RUIM}
 
 ${LOCALIZADOR_PJE}
@@ -491,37 +385,8 @@ ocorrências com seus localizadores. A divergência costuma ser o próprio objet
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'DRAFT',
-  inputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['sourceTextLength'],
-    properties: { sourceTextLength: { type: 'integer', minimum: 1 } },
-  },
-  outputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['provider', 'modelName', 'entities'],
-    properties: {
-      provider: { type: 'string' },
-      modelName: { type: 'string' },
-      entities: {
-        type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: [
-            'entityType',
-            'normalizedValue',
-            'originalValue',
-            'pageNumber',
-            'startOffset',
-            'endOffset',
-            'confidenceScore',
-          ],
-        },
-      },
-    },
-  },
+  inputSchema: ENTITIES_INPUT,
+  outputSchema: ENTITIES_OUTPUT,
   examples: [
     {
       input: { sourceTextLength: 100 },

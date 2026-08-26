@@ -1,5 +1,15 @@
 import type { PromptSpecification } from '../specification.js';
-import { ACERVO_JUDICIAL, IMAGEM_RUIM, LOCALIZADOR_PJE, RESPONDA_SO_JSON } from './acervo.js';
+import {
+  ACERVO_JUDICIAL,
+  CALIBRAGEM_CRONOLOGIA,
+  CINCO_ESTADOS,
+  IMAGEM_RUIM,
+  LOCALIZADOR_PJE,
+  QUEBRE_A_AFIRMACAO,
+  RESPONDA_SO_JSON,
+  SEM_DATA_DE_HOJE,
+  VALOR_NORMALIZADO,
+} from './acervo.js';
 import {
   CHECKLIST_INPUT,
   CHECKLIST_OUTPUT,
@@ -33,6 +43,10 @@ import {
 
 const CRIMINAL_BASE = `${ACERVO_JUDICIAL}
 
+No penal a acusação é denúncia ou queixa e a resposta é resposta à acusação, defesa preliminar
+ou alegações finais, conforme o rito — NÃO EXISTE CONTESTAÇÃO. A perícia é de perito oficial; o
+parecer de assistente técnico é de parte.
+
 O acervo criminal soma armadilhas próprias:
 
 A CAPITULAÇÃO É PROVISÓRIA E MUDA DE PEÇA EM PEÇA. O artigo do cabeçalho do flagrante é
@@ -48,14 +62,25 @@ só o recebimento da denúncia ou queixa inaugura a ação penal.
 
 A PEÇA NÃO É O QUE ELA PARECE DECIDIR. Pronúncia não é condenação — é admissibilidade para o
 júri. Medida protetiva deferida não é reconhecimento de culpa — é cognição sumária. Liminar de
-habeas corpus não é mérito. O despacho "cite-se" não é o recebimento da denúncia. Laudo de
+habeas corpus não é mérito. "Cite-se" isolado não é recebimento da denúncia — mas a mesma
+decisão frequentemente recebe e manda citar: havendo os dois atos na mesma peça, registre os
+dois, e o recebimento pelo verbo que o enuncia, não pela ordem de citação. Laudo de
 constatação provisória não é o toxicológico definitivo, ainda que os dois digam "positivo".
 
-JUSTIÇA CONSENSUAL NÃO É CONDENAÇÃO. A sentença que homologa transação penal diz literalmente
-"aplico a pena de" — e não há juízo de culpa, reincidência nem antecedente. Homologação de
-acordo de não persecução penal também não é condenação, e a confissão exigida no termo permanece
-imputação. Aceitar suspensão condicional do processo não é confessar. Extinção da punibilidade
-não é absolvição. Notícia de descumprimento é alegação de quem noticia, não descumprimento.
+JUSTIÇA CONSENSUAL NÃO É CONDENAÇÃO, MAS FICA REGISTRADA. A sentença que homologa transação
+penal diz literalmente "aplico a pena de": não há juízo de culpa e não gera reincidência. Ela não
+vai à certidão de antecedentes, com uma exceção que é o motivo de existir o registro — impedir
+novo benefício dentro do prazo legal. Vale o mesmo para o acordo de não persecução penal.
+Portanto, nunca converta ato consensual em condenação, e nunca conclua que ato consensual
+anterior é irrelevante: extraia-o com data e instituto, porque é ele que decide o cabimento do
+próximo. Reincidência e antecedentes também são requisitos de cada instituto, com cortes
+distintos — não os trate como estranhos à justiça consensual.
+
+A confissão exigida no termo do acordo de não persecução penal é declaração do próprio
+investigado, prestada em contexto negocial: extraia-a como declaração dele, com a peça e a data,
+nunca como reconhecimento judicial de culpa nem como afirmação do acusador. Aceitar suspensão
+condicional do processo não é confessar. Extinção da punibilidade não é absolvição. Notícia de
+descumprimento é alegação de quem noticia, não descumprimento.
 
 OS AUTOS MISTURAM ESFERAS. Auto de infração e decisão de órgão de trânsito ou ambiental, decisão
 de contencioso fiscal administrativo, acórdão de tribunal de contas, processo disciplinar e ação
@@ -97,10 +122,15 @@ cada um do seu campo, sem eleger um como "a hora da prisão".
 Outras datas que decidem: oferecimento e RECEBIMENTO da denúncia ou queixa, que são atos
 distintos — o recebimento interrompe a prescrição (art. 117, I, do Código Penal), como também a
 interrompem a pronúncia, sua confirmação e a publicação de sentença ou acórdão condenatórios
-recorríveis. A prescrição fica SUSPENSA enquanto não cumprido nem rescindido o acordo de não
-persecução penal (art. 116, IV) e durante o período de prova da suspensão condicional do
-processo: registre início, cumprimento e eventual rescisão de cada acordo, porque são eles que
-param e retomam a contagem. Registre também a citação; audiências realizadas e designadas;
+recorríveis. A prescrição fica SUSPENSA em duas situações que os autos registram
+separadamente: enquanto não cumprido nem rescindido o acordo de não persecução penal
+(art. 116, IV, do Código Penal); e durante o período de prova da suspensão condicional do
+processo, por regra própria da Lei dos Juizados Especiais Criminais. Registre início,
+cumprimento e o encerramento antecipado de cada um — rescisão, no acordo de não persecução
+penal; revogação, obrigatória ou facultativa, na suspensão condicional do processo — porque são
+esses atos que param e retomam a contagem. A publicação que interrompe a prescrição é a entrega
+da sentença em cartório, não a publicação no diário eletrônico: aparecendo as duas datas,
+extraia as duas com o rótulo do próprio campo. Registre também a citação; audiências realizadas e designadas;
 decisão que decreta, mantém, substitui ou revoga prisão, com a data de expedição e a de
 cumprimento do mandado, que não são a data da decisão; laudos com a data do exame e a da
 juntada; intimações com a data de disponibilização e a de publicação, separadas — e uma por
@@ -121,7 +151,7 @@ interceptação, do período de prova e do tempo de custódia provisória que se
 Fato negativo sai como "o documento X não apresenta Y", com o período examinado. Documento
 juntado duas vezes com o mesmo fato e a mesma data vira um evento com os dois localizadores.
 
-Respeite a precisão escrita — "em março de 2024" produz precisão de mês.
+${CALIBRAGEM_CRONOLOGIA}
 
 ${LOCALIZADOR_PJE}
 
@@ -171,12 +201,13 @@ Peças que se parecem e não se equivalem: boletim de ocorrência não é auto d
 declarações não é interrogatório judicial; ata de custódia não é decisão sobre a prisão.
 Satisfaça a exigência com a peça que ela nomeia, não com a parecida.
 
-Documento cuja imagem não permite ler o campo de que a exigência depende não está atendido:
-proponha como não atendido dizendo qual campo e qual página.
+${SEM_DATA_DE_HOJE}
+
+${CINCO_ESTADOS}
 
 Sua saída é PROPOSTA. Uma pessoa revisa antes de valer, e o sistema recusa proposta que
-sobrescreva item já revisado. Na dúvida, deixe como não atendido. Devolva cada item recebido
-exatamente uma vez, com o identificador que veio na entrada.
+sobrescreva item já revisado. Devolva cada item recebido exatamente uma vez, com o identificador
+que veio na entrada.
 
 ${RESPONDA_SO_JSON}`,
   reviewStatus: 'DRAFT',
@@ -223,7 +254,9 @@ Não calcule pena, não projete prescrição, não estime regime — dependem de
 frações e marcos que não se leem de trechos. Não emita parecer, não recomende conduta, não
 afirme desfecho.
 
-${RESPONDA_SO_JSON}`,
+${RESPONDA_SO_JSON}
+
+${QUEBRE_A_AFIRMACAO}`,
   reviewStatus: 'DRAFT',
   inputSchema: GROUNDED_INPUT,
   outputSchema: GROUNDED_OUTPUT,
@@ -265,9 +298,14 @@ Ministério Público e "denúncia anônima" mencionada nela; laudo de constataç
 toxicológico definitivo; pronúncia e sentença condenatória; ata de custódia e decisão sobre a
 prisão; mandado e certidão de cumprimento; agravo em execução e recurso em sentido estrito,
 iguais na forma e separados pela origem da decisão atacada; auto de infração administrativa e
-peça penal; representação fiscal para fins penais e denúncia. E os quatro termos quase idênticos
-da justiça consensual — composição civil, transação penal, suspensão condicional do processo e
-acordo de não persecução penal —, distinguíveis só pelo instituto nomeado no corpo e pela fase. Procure quem emite,
+peça penal; representação fiscal para fins penais e denúncia. E os quatro termos da justiça consensual — composição
+civil, transação penal, suspensão condicional do processo e acordo de não persecução penal —,
+que compartilham o vocabulário e se separam por quem assina e por qual campo obrigatório
+aparece: composição, entre vítima e autor do fato; transação, proposta do Ministério Público
+aceita pelo autor do fato, com pena restritiva de direitos ou multa no corpo; suspensão
+condicional do processo, com denúncia já oferecida e período de prova com condições; e o acordo
+de não persecução penal, assinado por Ministério Público, investigado e defensor, único que
+contém confissão formal e circunstanciada. Procure quem emite,
 quem assina e os campos obrigatórios — não o vocabulário, que é compartilhado.
 
 Escolha somente entre os códigos que vierem na entrada. Não invente código, não devolva mais de
@@ -314,8 +352,11 @@ não é a do laudo definitivo. Extraia cada um com o rótulo do próprio campo.
 Capitulação sai por peça: "art. X, § Y, na denúncia de tal data". Nunca uma capitulação "do
 caso".
 
-Toda pessoa vem com o papel que a peça lhe dá — vítima, investigado, réu, condutor, testemunha,
-perito, impetrante, paciente, querelante, querelado. O processo costuma ter pessoas de mesmo
+Toda pessoa vem com o papel que a peça lhe dá — vítima, noticiante, investigado, indiciado,
+autor do fato, denunciado, réu, condenado ou sentenciado, condutor, testemunha, perito,
+impetrante, paciente, autoridade coatora, querelante, querelado. Use o termo que a peça usa: em
+termo de composição ou de transação a pessoa é AUTOR DO FATO, e chamá-la de réu converte ato
+consensual em processo. O processo costuma ter pessoas de mesmo
 sobrenome e endereço: não unifique registros por semelhança de nome. Não corrija grafia; a
 divergência é dado.
 
@@ -324,6 +365,8 @@ pessoa o valor, o contrato, o terminal ou o depoimento da linha vizinha da tabel
 de alvos ou de interceptação, e não estenda a todos os corréus a conduta narrada contra um só.
 Codinome só se vincula a pessoa pela peça que faz a vinculação; sem ela, extraia o codinome como
 codinome. Constar do contrato social não estabelece gestão no período discutido.
+
+${VALOR_NORMALIZADO}
 
 ${IMAGEM_RUIM}
 

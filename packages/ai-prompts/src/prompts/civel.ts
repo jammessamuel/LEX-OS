@@ -1,5 +1,15 @@
 import type { PromptSpecification } from '../specification.js';
-import { ACERVO_JUDICIAL, IMAGEM_RUIM, LOCALIZADOR_PJE, RESPONDA_SO_JSON } from './acervo.js';
+import {
+  ACERVO_JUDICIAL,
+  CALIBRAGEM_CRONOLOGIA,
+  CINCO_ESTADOS,
+  IMAGEM_RUIM,
+  LOCALIZADOR_PJE,
+  QUEBRE_A_AFIRMACAO,
+  RESPONDA_SO_JSON,
+  SEM_DATA_DE_HOJE,
+  VALOR_NORMALIZADO,
+} from './acervo.js';
 import {
   CHECKLIST_INPUT,
   CHECKLIST_OUTPUT,
@@ -29,6 +39,9 @@ import {
  */
 
 const CIVEL_BASE = `${ACERVO_JUDICIAL}
+
+No cível a peça que abre é a petição inicial e a resposta é a contestação; laudo do perito do
+juízo é prova pericial.
 
 O acervo cível soma armadilhas próprias:
 
@@ -87,7 +100,7 @@ alegação; recibo discriminado é documento. Fato negativo ("não há pagamento
 O mesmo documento aparece juntado por mais de uma parte: mesmo fato com mesma data vira um
 evento com os dois localizadores.
 
-Respeite a precisão escrita — "em março de 2024" produz precisão de mês.
+${CALIBRAGEM_CRONOLOGIA}
 
 ${LOCALIZADOR_PJE}
 
@@ -143,13 +156,13 @@ Confira qual das duas o documento é antes de reprovar por falta de testemunha.
 Documento parcial atende só o que ele próprio cobre: a soma dos períodos e a suficiência do
 conjunto são do sistema, que vê tudo — você vê um documento por vez.
 
-Documento cuja imagem não permite ler o campo de que a exigência depende não está atendido:
-proponha como não atendido, dizendo qual campo e qual página, para o pedido ao cliente ser de
-novo escaneamento e não de novo documento.
+${SEM_DATA_DE_HOJE}
+
+${CINCO_ESTADOS}
 
 Sua saída é PROPOSTA. Uma pessoa revisa antes de valer, e o sistema recusa proposta que
-sobrescreva item já revisado. Na dúvida, deixe como não atendido. Devolva cada item recebido
-exatamente uma vez, com o identificador que veio na entrada.
+sobrescreva item já revisado. Devolva cada item recebido exatamente uma vez, com o identificador
+que veio na entrada.
 
 ${RESPONDA_SO_JSON}`,
   reviewStatus: 'DRAFT',
@@ -195,7 +208,9 @@ acórdão, e a data: não eleja qual prevalece.
 Não calcule atualização, juros nem saldo devedor — o critério muda com o período e não se lê do
 documento. Não emita parecer, não recomende conduta, não afirme desfecho.
 
-${RESPONDA_SO_JSON}`,
+${RESPONDA_SO_JSON}
+
+${QUEBRE_A_AFIRMACAO}`,
   reviewStatus: 'DRAFT',
   inputSchema: GROUNDED_INPUT,
   outputSchema: GROUNDED_OUTPUT,
@@ -287,6 +302,8 @@ Toda pessoa vem com o papel que o documento lhe dá — autor, réu, fiador, ced
 perito, advogado. Nome que só aparece em bloco de assinatura ou rodapé de assinatura eletrônica
 não é parte. Não corrija grafia de nome nem de razão social: divergência é dado. Empresa se
 identifica pelo CNPJ impresso; CNPJ diferente é entidade diferente.
+
+${VALOR_NORMALIZADO}
 
 ${IMAGEM_RUIM}
 

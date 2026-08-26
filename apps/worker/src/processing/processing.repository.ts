@@ -9,6 +9,11 @@ import {
 import type { ProcessingJobType } from '@lex-os/contracts';
 
 import { DatabaseService } from '../database/database.service.js';
+import type {
+  DatePrecision,
+  Importance,
+  ProposableChecklistStatus,
+} from './review-processing.provider.js';
 import { deterministicJobId } from './deterministic-id.js';
 import { assertTransition } from './job-state-machine.js';
 import type { MeasuredProviderCost, ProviderCostQuote } from './processing-cost-policy.js';
@@ -138,8 +143,8 @@ export interface StageCompletion {
       title: string;
       description: string;
       occurredAt: string;
-      datePrecision: 'DAY';
-      importance: 'NORMAL';
+      datePrecision: DatePrecision;
+      importance: Importance;
       sourceLocator: { pageNumber: number; startOffset: number; endOffset: number };
       confidenceScore: number;
     }[];
@@ -149,7 +154,7 @@ export interface StageCompletion {
     templateVersion: number;
     items: readonly {
       templateItemId: string;
-      status: 'MISSING' | 'AWAITING_VALIDATION';
+      status: ProposableChecklistStatus;
     }[];
   };
   knowledgeIndex?: {
@@ -702,7 +707,8 @@ export class ProcessingRepository {
 
         let updatedItemCount = 0;
         for (const result of completion.checklist.items) {
-          if (result.status !== 'AWAITING_VALIDATION') {
+          // MISSING nao move nada: e o estado em que o item ja nasce.
+          if (result.status === 'MISSING') {
             continue;
           }
           const updated = await transaction.caseChecklistItem.updateMany({
@@ -713,7 +719,7 @@ export class ProcessingRepository {
               templateItemId: result.templateItemId,
               status: 'MISSING',
             },
-            data: { status: 'AWAITING_VALIDATION', documentId: job.documentId },
+            data: { status: result.status, documentId: job.documentId },
           });
           updatedItemCount += updated.count;
         }

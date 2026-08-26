@@ -20,12 +20,28 @@ export interface TimelineProviderOutputV1 {
     title: string;
     description: string;
     occurredAt: string;
-    datePrecision: 'DAY';
-    importance: 'NORMAL';
+    datePrecision: DatePrecision;
+    importance: Importance;
     sourceLocator: SourceLocatorV1;
     confidenceScore: number;
   }[];
 }
+
+export const datePrecisions = ['EXACT', 'DAY', 'MONTH', 'YEAR', 'APPROXIMATE', 'UNKNOWN'] as const;
+export const importanceLevels = ['LOW', 'NORMAL', 'HIGH', 'CRITICAL'] as const;
+// Os cinco estados que a analise automatica pode propor. VALIDATED, NOT_APPLICABLE e RECEIVED
+// ficam de fora de proposito: sao juizo de quem revisa, e a analise nunca preenche validatedBy.
+export const proposableChecklistStatuses = [
+  'MISSING',
+  'AWAITING_VALIDATION',
+  'ILLEGIBLE',
+  'INVALID',
+  'EXPIRED',
+] as const;
+
+export type DatePrecision = (typeof datePrecisions)[number];
+export type Importance = (typeof importanceLevels)[number];
+export type ProposableChecklistStatus = (typeof proposableChecklistStatuses)[number];
 
 export interface ChecklistAnalysisOutputV1 {
   schemaVersion: 1;
@@ -34,7 +50,7 @@ export interface ChecklistAnalysisOutputV1 {
   promptVersion: string;
   items: readonly {
     templateItemId: string;
-    status: 'MISSING' | 'AWAITING_VALIDATION';
+    status: ProposableChecklistStatus;
   }[];
 }
 
@@ -112,8 +128,14 @@ export function parseTimelineProviderOutputV1(
       event.description.length > 4000 ||
       typeof event.occurredAt !== 'string' ||
       Number.isNaN(Date.parse(event.occurredAt)) ||
-      event.datePrecision !== 'DAY' ||
-      event.importance !== 'NORMAL' ||
+      // O prompt manda respeitar a precisão escrita — "em março de 2024" produz precisão de
+      // mês. Aceitar só DAY forçava o modelo a carimbar um dia que o documento não dá, ou a
+      // ter o trabalho inteiro descartado. Data precisa inventada, com localizador que abre na
+      // página certa, é o erro que nenhuma conferência humana pega.
+      typeof event.datePrecision !== 'string' ||
+      !(datePrecisions as readonly string[]).includes(event.datePrecision) ||
+      typeof event.importance !== 'string' ||
+      !(importanceLevels as readonly string[]).includes(event.importance) ||
       typeof event.confidenceScore !== 'number' ||
       event.confidenceScore < 0 ||
       event.confidenceScore > 1 ||
@@ -141,8 +163,9 @@ export function parseTimelineProviderOutputV1(
       title: event.title,
       description: event.description,
       occurredAt: event.occurredAt,
-      datePrecision: event.datePrecision,
-      importance: event.importance,
+      // A guarda acima já provou que o valor está no catálogo; o compilador não a acompanha.
+      datePrecision: event.datePrecision as DatePrecision,
+      importance: event.importance as Importance,
       sourceLocator: {
         pageNumber: pageNumber as number,
         startOffset: startOffset as number,
@@ -193,12 +216,16 @@ export function parseChecklistAnalysisOutputV1(
       typeof item.templateItemId !== 'string' ||
       !expected.has(item.templateItemId) ||
       seen.has(item.templateItemId) ||
-      (item.status !== 'MISSING' && item.status !== 'AWAITING_VALIDATION')
+      typeof item.status !== 'string' ||
+      !(proposableChecklistStatuses as readonly string[]).includes(item.status)
     ) {
       throw new Error('Invalid checklist item analysis output.');
     }
     seen.add(item.templateItemId);
-    return { templateItemId: item.templateItemId, status: item.status };
+    return {
+      templateItemId: item.templateItemId,
+      status: item.status as ProposableChecklistStatus,
+    };
   });
 
   return {

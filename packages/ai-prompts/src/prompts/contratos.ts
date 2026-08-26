@@ -64,7 +64,7 @@ export const CHECKLIST_OUTPUT = {
         required: ['templateItemId', 'status'],
         properties: {
           templateItemId: { type: 'string', format: 'uuid' },
-          status: { enum: ['MISSING', 'AWAITING_VALIDATION'] },
+          status: { enum: ['MISSING', 'AWAITING_VALIDATION', 'ILLEGIBLE', 'INVALID', 'EXPIRED'] },
         },
       },
     },
@@ -117,7 +117,7 @@ export const GROUNDED_OUTPUT = {
           sourceChunkIds: {
             type: 'array',
             minItems: 1,
-            maxItems: 3,
+            maxItems: 5,
             items: { type: 'string', format: 'uuid' },
           },
         },
