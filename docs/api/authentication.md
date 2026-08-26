@@ -122,7 +122,7 @@ an attempt to sign in before accepting fails in the normal verification path rat
 special case. The invitation stores only a SHA-256 hash of a 256-bit opaque token; the clear-text
 token is returned **once**, in the creation response, and never again — not in a later read, not
 in a log, not in the audit trail. Until the ADR-013 e-mail adapter exists, the administrator
-delivers it out of band; see [ADR-014](../decisions/ADR-014-fronteira-de-identidade-e-acesso.md),
+delivers it out of band; see [ADR-014](../decisions/decisoes.md#adr-014-fronteira-de-identidade-e-acesso),
 item 2.
 
 Roles supplied at invitation must be global or owned by the acting tenant **and already held by
@@ -168,7 +168,7 @@ still `INVITED` has no usable password and must go through acceptance.
 
 Nobody changes their own roles or their own status. Without that rule the last administrator can
 lock the firm out of its own account; see
-[ADR-014](../decisions/ADR-014-fronteira-de-identidade-e-acesso.md), item 8, for the case that
+[ADR-014](../decisions/decisoes.md#adr-014-fronteira-de-identidade-e-acesso), item 8, for the case that
 remains open — the sole administrator blocked by another route.
 
 A person from another tenant returns 404 on every one of these routes, identical to a person who
@@ -226,7 +226,7 @@ Templates are a closed catalogue in `@lex-os/shared`, rendered as plain text. Pl
 choice, not a limitation — a legal-operations e-mail needs no layout, and HTML would open the
 door to interpolating content without escaping. The development and test adapter records
 instead of delivering and refuses production startup; the production relay is still an open
-item in [ADR-014](../decisions/ADR-014-fronteira-de-identidade-e-acesso.md).
+item in [ADR-014](../decisions/decisoes.md#adr-014-fronteira-de-identidade-e-acesso).
 
 ## Staying signed in
 

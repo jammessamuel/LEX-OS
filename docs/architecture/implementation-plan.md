@@ -300,7 +300,7 @@ e-mail, and cross-organization users. Real client data stays blocked by ADR-012.
 ## Delivery 13 — E-mail adapter and password recovery
 
 Authorized by the owner on 2026-08-20, resolving items 1 and 2 of
-[ADR-014](../decisions/ADR-014-fronteira-de-identidade-e-acesso.md). It is the only remaining
+[ADR-014](../decisions/decisoes.md#adr-014-fronteira-de-identidade-e-acesso). It is the only remaining
 item that pushes risk outside the system: today an invitation link is handed over by whatever
 channel the administrator picks, and a forgotten password has no path but an administrator.
 
@@ -337,7 +337,7 @@ production relay contract, and anything about deliverability. Those are separate
 ## Delivery 14 — Second factor with TOTP
 
 Authorized by the owner on 2026-08-20, resolving item 3 of
-[ADR-014](../decisions/ADR-014-fronteira-de-identidade-e-acesso.md). A whole legal archive
+[ADR-014](../decisions/decisoes.md#adr-014-fronteira-de-identidade-e-acesso). A whole legal archive
 behind one password is the first thing a security review asks about, and the decision recorded
 there is explicit: our own TOTP, never delegated to an identity provider, because a second
 factor that exists only for the clients who happen to have an IdP is not a control — it is an

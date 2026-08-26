@@ -188,13 +188,13 @@ The first executable MVP is accepted when:
 
 The partners accepted the following decisions on 2026-08-07. Acceptance fixes the product policy, but does not authorize implementing a capability outside its delivery increment.
 
-| Decision                                     | Accepted direction                                                                 | Record                                                       |
-| -------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Scope of the internal assistant              | Source-grounded answers; refuse when no authorized source supports the response    | [ADR-009](../decisions/ADR-009-internal-assistant-scope.md)  |
-| Ingestion channels and WhatsApp positioning  | Upload and e-mail in the MVP; WhatsApp remains a future connector                  | [ADR-010](../decisions/ADR-010-ingestion-channels.md)        |
-| Processing cost model and provider selection | User subscription with included allowance, measured overage, and hard case ceiling | [ADR-011](../decisions/ADR-011-processing-cost-model.md)     |
-| Retention, legal hold, and LGPD posture      | Preserve by default, no automatic purge, case hold fails closed                    | [ADR-012](../decisions/ADR-012-retention-legal-hold-lgpd.md) |
-| Internal notifications                       | Minimum-content e-mail with server-resolved recipients and worker delivery         | [ADR-013](../decisions/ADR-013-notificacoes-internas.md)     |
+| Decision                                     | Accepted direction                                                                 | Record                                                                                                               |
+| -------------------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Scope of the internal assistant              | Source-grounded answers; refuse when no authorized source supports the response    | [ADR-009](../decisions/decisoes.md#adr-009-definir-o-escopo-do-assistente-interno)                                   |
+| Ingestion channels and WhatsApp positioning  | Upload and e-mail in the MVP; WhatsApp remains a future connector                  | [ADR-010](../decisions/decisoes.md#adr-010-decidir-os-canais-de-ingestão-do-mvp)                                     |
+| Processing cost model and provider selection | User subscription with included allowance, measured overage, and hard case ceiling | [ADR-011](../decisions/decisoes.md#adr-011-estabelecer-o-modelo-de-custo-de-processamento-e-a-escolha-de-provedores) |
+| Retention, legal hold, and LGPD posture      | Preserve by default, no automatic purge, case hold fails closed                    | [ADR-012](../decisions/decisoes.md#adr-012-estabelecer-retenção-legal-hold-e-a-postura-de-lgpd)                      |
+| Internal notifications                       | Minimum-content e-mail with server-resolved recipients and worker delivery         | [ADR-013](../decisions/decisoes.md#adr-013-notificações-internas-por-e-mail)                                         |
 
 See [roadmap alignment](./roadmap-alignment.md) for how this scope maps onto the conceptual proposal's 11 components and 4 phases.
 
