@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { ApiError, request, type NoContent } from '../api/client.js';
 import type {
   CaseDocument,
+  CaseSummary,
   CursorPage,
   Extraction,
   ExtractedEntity,
@@ -28,6 +29,26 @@ const session = useSessionStore();
 const documentId = String(route.params.id);
 
 const doc = ref<CaseDocument | null>(null);
+
+/**
+ * O caso do documento, buscado só para o breadcrumb dizer qual processo é.
+ *
+ * A trilha mostrava a palavra "caso" — um rótulo que não identifica nada numa tela em que o
+ * advogado navega entre vários processos. Falhar esta busca não pode derrubar o documento:
+ * o rótulo genérico volta como reserva e o link continua funcionando.
+ */
+const legalCase = ref<CaseSummary | null>(null);
+const caseCrumb = computed(
+  () => legalCase.value?.cnjNumber ?? legalCase.value?.internalCode ?? 'caso',
+);
+
+async function loadCase(caseId: string): Promise<void> {
+  try {
+    legalCase.value = await request<CaseSummary>(`/cases/${caseId}`);
+  } catch {
+    legalCase.value = null;
+  }
+}
 const extractions = ref<Extraction[]>([]);
 const loading = ref(true);
 const failure = ref<ApiError | null>(null);
@@ -180,6 +201,9 @@ async function load(): Promise<void> {
     ]);
     doc.value = document;
     extractions.value = extractionPage.data;
+    if (document.caseId !== null) {
+      void loadCase(document.caseId);
+    }
   } catch (error) {
     failure.value =
       error instanceof ApiError
@@ -282,7 +306,7 @@ onMounted(() => {
         :to="{ name: 'case-detail', params: { id: doc.caseId } }"
         class="data"
       >
-        caso
+        {{ caseCrumb }}
       </RouterLink>
       <span aria-hidden="true">/</span>
       <span>{{ doc?.title ?? '…' }}</span>
