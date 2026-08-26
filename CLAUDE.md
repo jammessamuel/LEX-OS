@@ -58,7 +58,8 @@ Approval for one commit is not standing approval for the next.
 The latest accepted checkpoint is **Delivery 15 — The case carries its process number**,
 accepted 2026-08-25 with every mandatory CI job green on `main`.
 
-**Delivery 16 — Prompt library per legal specialty is authorized** (owner, 2026-08-25). The
+**Delivery 16 — Prompt library per legal specialty is authorized** (owner, 2026-08-25). ADR-015
+records the direction and `docs/product/ordem-de-execucao.md` records what is left, in order. The
 prompt text that never existed, a specialty catalogue that normalises `legalArea` aliases
 without closing the field, and `promptFor(task, area)` refusing to serve a draft in production.
 The five generic prompts are `REVIEWED` by owner decision; specialty prompts, coming from
@@ -131,33 +132,34 @@ uses Vitest under `apps/web/src/__tests__/`. Integration tests need the Compose 
 Start every task by locating its row. Read the listed files and nothing else. If no row
 fits, read `AGENTS.md` section headings only, then the one section that applies.
 
-| Task                              | Read exactly                                                                                                                                                                  |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Any change whatsoever             | This file, §0 and §3. Nothing more by default.                                                                                                                                |
-| New/changed HTTP endpoint         | The matching `docs/api/*.md`; `AGENTS.md` §"TypeScript and API conventions" + §"Multi-tenancy and access control"; the sibling controller/DTO next to your target             |
-| Auth, RBAC, sessions              | `docs/api/authentication.md`; `docs/decisions/ADR-004-multi-tenancy.md`; `apps/api/src/auth/`, `apps/api/src/access-control/`                                                 |
-| People / cases / participants     | `docs/api/people-cases-participants.md`                                                                                                                                       |
-| Upload, storage, download         | `docs/api/files-documents.md`; `docs/decisions/ADR-003-object-storage.md`                                                                                                     |
-| Dossier export, PDF               | `docs/api/case-export.md`                                                                                                                                                     |
-| Queue, worker, job state          | `docs/architecture/delivery-7-processing-design.md`; `packages/contracts/src/index.ts`; `docs/decisions/ADR-007-background-jobs.md`                                           |
-| DB schema or migration            | `packages/database/prisma/schema.prisma` (canonical); `docs/architecture/database-migrations.md`; `docs/architecture/data-model.md`                                           |
-| Prompt, especialidade do direito  | `packages/ai-prompts/src/` — a biblioteca e a seleção; `packages/shared/src/legal-specialties.ts` para o catálogo de áreas                                                    |
-| AI provider / prompt / provenance | `docs/decisions/ADR-006-provider-agnostic-ai.md`; `AGENTS.md` §"AI data and provenance"                                                                                       |
-| Search, embeddings, pgvector      | `docs/api/search.md`; `docs/architecture/search-performance.md`; `docs/decisions/ADR-005-pgvector.md`; `docs/architecture/system-overview.md`                                 |
-| "Is X in scope?"                  | `docs/product/mvp-scope.md` only                                                                                                                                              |
-| "Where are we against the pitch?" | `docs/product/roadmap-alignment.md` only — it maps the 11 conceptual components and 4 phases onto the 12 deliveries                                                           |
-| "Onde estamos contra o mercado?"  | `docs/product/analise-competitiva.md` only — 20 concorrentes em três clusters e o de/para função a função, de 2026-08-24                                                      |
-| Any user-facing screen or copy    | `docs/product/ui-harness.md` first — tokens, shared classes, screen skeleton, review rules. `docs/product/design-principles.md` only when the aesthetic itself is in question |
-| Assistant, chat, grounded answers | `docs/decisions/ADR-009-internal-assistant-scope.md` — **decided 2026-08-07**: grounded answering only; refuse without an authorized source                                   |
-| Ingestion channels, WhatsApp      | `docs/decisions/ADR-010-ingestion-channels.md` — **decided 2026-08-07**: upload + e-mail in MVP; WhatsApp is a future connector                                               |
-| Replacing a mock AI provider      | `docs/decisions/ADR-011-processing-cost-model.md` — **decided 2026-08-07**: per-execution cost + hard per-case ceiling must exist first                                       |
-| Deletion, retention, legal hold   | `docs/decisions/ADR-012-retention-legal-hold-lgpd.md` — **decided 2026-08-07**: preserve always; automatic purge forbidden; legal hold fails closed                           |
-| Notifications, internal e-mail    | `docs/decisions/ADR-013-notificacoes-internas.md` — **decided 2026-08-07**: minimal content only; send from the worker; audited without body                                  |
-| Convite, papel, bloqueio, senha   | `docs/decisions/ADR-014-fronteira-de-identidade-e-acesso.md` — **decidido 2026-08-20**: adapter de e-mail primeiro; TOTP próprio; papel nunca vem de grupo do IdP             |
-| Starting a new delivery           | `docs/architecture/implementation-plan.md` — **only that delivery's section** plus §"Cross-delivery security test matrix"                                                     |
-| Local env, Docker, ports          | `docs/architecture/local-development.md`; `docker-compose.yml`                                                                                                                |
-| Operations, backup, incidents     | `docs/operations/runbook.md` — backup/restore procedure, rehearsal script, and hosted-demo deploy steps                                                                       |
-| Module boundaries, layering       | `docs/decisions/ADR-001-monolithic-modular-architecture.md`; `docs/architecture/system-overview.md`                                                                           |
+| Task                              | Read exactly                                                                                                                                                                              |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Any change whatsoever             | This file, §0 and §3. Nothing more by default.                                                                                                                                            |
+| New/changed HTTP endpoint         | The matching `docs/api/*.md`; `AGENTS.md` §"TypeScript and API conventions" + §"Multi-tenancy and access control"; the sibling controller/DTO next to your target                         |
+| Auth, RBAC, sessions              | `docs/api/authentication.md`; `docs/decisions/ADR-004-multi-tenancy.md`; `apps/api/src/auth/`, `apps/api/src/access-control/`                                                             |
+| People / cases / participants     | `docs/api/people-cases-participants.md`                                                                                                                                                   |
+| Upload, storage, download         | `docs/api/files-documents.md`; `docs/decisions/ADR-003-object-storage.md`                                                                                                                 |
+| Dossier export, PDF               | `docs/api/case-export.md`                                                                                                                                                                 |
+| Queue, worker, job state          | `docs/architecture/delivery-7-processing-design.md`; `packages/contracts/src/index.ts`; `docs/decisions/ADR-007-background-jobs.md`                                                       |
+| DB schema or migration            | `packages/database/prisma/schema.prisma` (canonical); `docs/architecture/database-migrations.md`; `docs/architecture/data-model.md`                                                       |
+| Prompt, especialidade do direito  | `docs/decisions/ADR-015-biblioteca-de-prompts-e-pesquisa-por-agentes.md` — **decidido 2026-08-26**: o contrato de saída faz parte do prompt; `packages/ai-prompts/src/` para a biblioteca |
+| "O que falta e em que ordem?"     | `docs/product/ordem-de-execucao.md` only — estado verificado dos 15 ADRs e a fila única que os atravessa                                                                                  |
+| AI provider / prompt / provenance | `docs/decisions/ADR-006-provider-agnostic-ai.md`; `AGENTS.md` §"AI data and provenance"                                                                                                   |
+| Search, embeddings, pgvector      | `docs/api/search.md`; `docs/architecture/search-performance.md`; `docs/decisions/ADR-005-pgvector.md`; `docs/architecture/system-overview.md`                                             |
+| "Is X in scope?"                  | `docs/product/mvp-scope.md` only                                                                                                                                                          |
+| "Where are we against the pitch?" | `docs/product/roadmap-alignment.md` only — it maps the 11 conceptual components and 4 phases onto the 12 deliveries                                                                       |
+| "Onde estamos contra o mercado?"  | `docs/product/analise-competitiva.md` only — 20 concorrentes em três clusters e o de/para função a função, de 2026-08-24                                                                  |
+| Any user-facing screen or copy    | `docs/product/ui-harness.md` first — tokens, shared classes, screen skeleton, review rules. `docs/product/design-principles.md` only when the aesthetic itself is in question             |
+| Assistant, chat, grounded answers | `docs/decisions/ADR-009-internal-assistant-scope.md` — **decided 2026-08-07**: grounded answering only; refuse without an authorized source                                               |
+| Ingestion channels, WhatsApp      | `docs/decisions/ADR-010-ingestion-channels.md` — **decided 2026-08-07**: upload + e-mail in MVP; WhatsApp is a future connector                                                           |
+| Replacing a mock AI provider      | `docs/decisions/ADR-011-processing-cost-model.md` — **decided 2026-08-07**: per-execution cost + hard per-case ceiling must exist first                                                   |
+| Deletion, retention, legal hold   | `docs/decisions/ADR-012-retention-legal-hold-lgpd.md` — **decided 2026-08-07**: preserve always; automatic purge forbidden; legal hold fails closed                                       |
+| Notifications, internal e-mail    | `docs/decisions/ADR-013-notificacoes-internas.md` — **decided 2026-08-07**: minimal content only; send from the worker; audited without body                                              |
+| Convite, papel, bloqueio, senha   | `docs/decisions/ADR-014-fronteira-de-identidade-e-acesso.md` — **decidido 2026-08-20**: adapter de e-mail primeiro; TOTP próprio; papel nunca vem de grupo do IdP                         |
+| Starting a new delivery           | `docs/architecture/implementation-plan.md` — **only that delivery's section** plus §"Cross-delivery security test matrix"                                                                 |
+| Local env, Docker, ports          | `docs/architecture/local-development.md`; `docker-compose.yml`                                                                                                                            |
+| Operations, backup, incidents     | `docs/operations/runbook.md` — backup/restore procedure, rehearsal script, and hosted-demo deploy steps                                                                                   |
+| Module boundaries, layering       | `docs/decisions/ADR-001-monolithic-modular-architecture.md`; `docs/architecture/system-overview.md`                                                                                       |
 
 **Do not open unless explicitly asked:**
 `docs/architecture/prisma-schema-proposal.md` (937 lines, superseded by `schema.prisma` —

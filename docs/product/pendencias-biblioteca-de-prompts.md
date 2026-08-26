@@ -258,16 +258,17 @@ por erro. Criminal por último: é onde um erro custa liberdade.
 Nada aqui está errado; está ausente. Todos **bloqueiam** o primeiro provedor real,
 independentemente da qualidade dos prompts.
 
-| Portão                                                            | Origem                 | Estado                               |
-| ----------------------------------------------------------------- | ---------------------- | ------------------------------------ |
-| Custo consultável por organização, caso, provedor e modelo        | ADR-011, verificação 3 | Nenhuma agregação existe             |
-| Termos de tratamento de dados registrados                         | ADR-011, verificação 4 | `docs/legal/` não existe             |
-| Lista de suboperadores versionada                                 | ADR-012                | Não existe                           |
-| Legal hold                                                        | ADR-012                | Zero ocorrências em código           |
-| Custo do assistente debitando o orçamento do caso                 | ADR-011                | Calcula e audita, não desconta       |
-| `ProcessingCostPolicy.quote()` recebendo páginas, bytes ou tokens | ADR-011                | Assinatura não expressa cotação real |
-| Os três gatilhos de notificação                                   | ADR-013                | Não implementados                    |
-| Um único prompt `REVIEWED`                                        | Esta entrega           | Vinte de vinte em `DRAFT`            |
+| Portão                                                            | Origem                 | Estado                                     |
+| ----------------------------------------------------------------- | ---------------------- | ------------------------------------------ |
+| Custo consultável por organização, provedor e modelo              | ADR-011, verificação 3 | Por caso existe e é enforçado; falta somar |
+| Termos de tratamento de dados registrados                         | ADR-011, verificação 4 | `docs/legal/` não existe                   |
+| Lista de suboperadores versionada                                 | ADR-012                | Não existe                                 |
+| Legal hold                                                        | ADR-012                | Zero ocorrências em código                 |
+| Custo do assistente debitando o orçamento do caso                 | ADR-011                | Calcula e audita, não desconta             |
+| Canal de entrada por e-mail                                       | ADR-010                | Decidido como MVP, nunca construído        |
+| `ProcessingCostPolicy.quote()` recebendo páginas, bytes ou tokens | ADR-011                | Assinatura não expressa cotação real       |
+| Os três gatilhos de notificação                                   | ADR-013                | Não implementados                          |
+| Um único prompt `REVIEWED`                                        | Esta entrega           | Vinte de vinte em `DRAFT`                  |
 
 E uma dívida que não é de ADR nenhum: **a senha guardada em `localStorage`** no front, decidida
 pelo dono depois de eu objetar uma vez. Fica registrada como bloqueio de produção.
