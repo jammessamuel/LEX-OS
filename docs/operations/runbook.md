@@ -167,6 +167,28 @@ deterministic/mock stack to production.
   never runs migrations.
 - CI performs no deploy, by design.
 
+**A new required variable goes to the platform before the code that reads it.** The config
+loader throws at startup, so a container missing one never becomes healthy, and Railway keeps
+serving the previous deploy — which looks like nothing happened. Set it on **every service that
+runs a Node process, in every environment**, with `--skip-deploys` so the change is inert until
+you deploy:
+
+```
+railway variables --service api    --environment production --set K=V --skip-deploys
+railway variables --service worker --environment production --set K=V --skip-deploys
+railway variables --service api    --environment staging    --set K=V --skip-deploys
+railway variables --service worker --environment staging    --set K=V --skip-deploys
+```
+
+Four places, not two: the project has **production and staging**, and both carry `api` and
+`worker`. `web`, `postgres`, `Redis` and `minio` do not read the loader. Then add the line to
+`.env.example` — CI builds its `.env` from that file — and to `docker-compose.yml`. Your own
+`.env` is not in the repository and nobody can update it for you.
+
+`CASE_ARCHIVE` is the current example: `fictional` or `real`, no default, and it decides whether
+a `DRAFT` prompt may run. Staging is `fictional` today. **The day staging receives a real client
+archive, change it to `real`** — that switch is the whole reason the setting exists.
+
 ## Remaining production blockers
 
 - real malware scanner and production OCR/AI/embedding/language-model adapters;
