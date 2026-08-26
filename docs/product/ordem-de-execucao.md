@@ -115,8 +115,8 @@ e o prompt volta sozinho a precisar de revisão. Uma assinatura não cobre um te
 depois dela.
 
 Os cinco genéricos ficaram registrados pelo que são: aprovados pelo dono por descreverem o
-comportamento do mock, com e a situação declarada — o registro não finge inscrição
-que não existe. As quinze de especialidade continuam porque falta o nome de quem assina.
+comportamento do mock, com `oab: null` e a situação declarada — o registro não finge inscrição
+que não existe. As quinze de especialidade continuam `DRAFT` porque falta o nome de quem assina.
 
 **A4. Contrato de entrada do checklist** — ADR-015 item 3 · **FEITO 2026-08-26**
 A entrada é `{ documentTypeCode, items: [{ id, documentTypeCode }] }`. Não vai o enunciado da
