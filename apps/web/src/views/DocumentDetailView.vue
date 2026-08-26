@@ -703,7 +703,10 @@ onMounted(() => {
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--text-3);
-  align-self: baseline;
+  /* A célula estica até o fim da linha do grid: com `align-self: baseline` ela parava na
+     própria altura e a borda inferior flutuava acima da borda do valor — um degrau visível
+     sempre que o chip deixava o valor mais alto. O padding maior compensa a fonte menor e
+     mantém o texto alinhado ao do valor. */
   padding-top: 0.75rem;
 }
 
