@@ -1056,7 +1056,7 @@ Cada uma traz o que destrava — e o custo de deixar como está.
 Hoje só um administrador consegue resolver, refazendo o convite. Numa banca com quarenta
 advogados isso vira chamado semanal para o sócio que tiver o acesso.
 
-**Destrava com:** o adapter de e-mail do [ADR-013](./ADR-013-notificacoes-internas.md). A
+**Destrava com:** o adapter de e-mail do [ADR-013](#adr-013-notificações-internas-por-e-mail). A
 recuperação é o mesmo mecanismo do convite — token de uso único, com validade, guardado em
 hash — apontando para uma pessoa que já está ativa. O que falta é o canal, não a mecânica.
 
@@ -1131,7 +1131,7 @@ ativos, ou aceitar que o desbloqueio seja procedimento nosso de suporte, com reg
 
 Em ordem, e a ordem importa:
 
-1. **Adapter de e-mail** ([ADR-013](./ADR-013-notificacoes-internas.md)) — resolve os itens 1 e
+1. **Adapter de e-mail** ([ADR-013](#adr-013-notificações-internas-por-e-mail)) — resolve os itens 1 e
    2 de uma vez e é o único que hoje transfere risco para fora do sistema.
 2. **Segundo fator** (item 3) — o primeiro que aparece em due diligence.
 3. **Entrada federada** (item 4) — quando houver a primeira banca grande no funil.
@@ -1146,7 +1146,7 @@ administrador. Funciona em escritório pequeno e degrada com o tamanho do client
 contrário do que a estratégia comercial persegue.
 
 Nenhum destes itens bloqueia dado real de cliente. Esse bloqueio continua sendo do
-[ADR-012](./ADR-012-retention-legal-hold-lgpd.md).
+[ADR-012](#adr-012-estabelecer-retenção-legal-hold-e-a-postura-de-lgpd).
 
 ---
 
