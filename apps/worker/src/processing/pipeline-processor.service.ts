@@ -20,6 +20,7 @@ import { ProcessingQueuePublisher } from './processing-queue.publisher.js';
 import {
   CHECKLIST_ANALYSIS_PROVIDER,
   type ChecklistAnalysisProvider,
+  sourceTextFrom,
   TIMELINE_PROVIDER,
   type TimelineProvider,
 } from './review-processing.provider.js';
@@ -177,7 +178,13 @@ export class PipelineProcessorService {
         };
       }
       case 'DOCUMENT_CLASSIFICATION': {
-        const result = this.provider.classify();
+        // O catálogo de tipos e o texto do documento: a classificação precisava dos dois e
+        // não recebia nenhum. O mock ignora, o provedor real não vai poder.
+        const classificationText = job.document.extractions[0]?.rawText ?? '';
+        const result = this.provider.classify({
+          availableTypeCodes: await this.repository.availableDocumentTypeCodes(job),
+          sourceText: sourceTextFrom(classificationText),
+        });
         return {
           provider: result.provider,
           modelName: result.modelName,
@@ -198,7 +205,10 @@ export class PipelineProcessorService {
         };
       }
       case 'ENTITY_EXTRACTION': {
-        const result = this.provider.extractEntities();
+        const entitiesText = job.document.extractions[0]?.rawText ?? '';
+        const result = this.provider.extractEntities({
+          sourceText: sourceTextFrom(entitiesText),
+        });
         return {
           provider: result.provider,
           modelName: result.modelName,
@@ -229,6 +239,7 @@ export class PipelineProcessorService {
         }
         const result = this.timelineProvider.generate({
           sourceTextLength: sourceExtraction.rawText.length,
+          sourceText: sourceTextFrom(sourceExtraction.rawText),
           prompt: this.#promptFor('TIMELINE', job),
         });
         return {
@@ -272,8 +283,12 @@ export class PipelineProcessorService {
             nextJobType: 'EMBEDDING',
           };
         }
+        // O texto do documento chega aqui pela mesma extração que a cronologia usou; sem ele
+        // a análise só poderia comparar códigos de tipo, que é o que o mock já faz sem modelo.
+        const checklistText = job.document.extractions[0]?.rawText ?? null;
         const result = this.checklistAnalysisProvider.analyze({
           documentTypeCode: job.document.documentType?.code ?? null,
+          sourceText: checklistText === null ? null : sourceTextFrom(checklistText),
           items: template.items,
           prompt: this.#promptFor('CHECKLIST', job),
         });

@@ -1,4 +1,5 @@
 import type { PromptSpecification } from '../specification.js';
+import { CLASSIFICATION_INPUT, ENTITIES_INPUT } from './contratos.js';
 import { SOURCE_IS_DATA } from './separacao.js';
 
 /**
@@ -32,14 +33,7 @@ vocabulário — e não o quanto o palpite parece razoável.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'REVIEWED',
-  inputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['availableTypeCodes'],
-    properties: {
-      availableTypeCodes: { type: 'array', minItems: 1, items: { type: 'string' } },
-    },
-  },
+  inputSchema: CLASSIFICATION_INPUT,
   outputSchema: {
     type: 'object',
     additionalProperties: false,
@@ -88,12 +82,7 @@ localizador. Repetição é informação — diz onde o documento afirma a mesma
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'REVIEWED',
-  inputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['sourceTextLength'],
-    properties: { sourceTextLength: { type: 'integer', minimum: 1 } },
-  },
+  inputSchema: ENTITIES_INPUT,
   outputSchema: {
     type: 'object',
     additionalProperties: false,

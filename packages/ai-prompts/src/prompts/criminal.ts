@@ -3,11 +3,13 @@ import {
   ACERVO_JUDICIAL,
   CALIBRAGEM_CRONOLOGIA,
   CINCO_ESTADOS,
+  ENUNCIADO_MANDA,
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
+  TEXTO_PODE_VIR_CORTADO,
   VALOR_NORMALIZADO,
 } from './acervo.js';
 import {
@@ -151,6 +153,8 @@ interceptação, do período de prova e do tempo de custódia provisória que se
 Fato negativo sai como "o documento X não apresenta Y", com o período examinado. Documento
 juntado duas vezes com o mesmo fato e a mesma data vira um evento com os dois localizadores.
 
+${TEXTO_PODE_VIR_CORTADO}
+
 ${CALIBRAGEM_CRONOLOGIA}
 
 ${LOCALIZADOR_PJE}
@@ -200,6 +204,10 @@ exigência de laudo definitivo; mandados com as certidões de cumprimento.
 Peças que se parecem e não se equivalem: boletim de ocorrência não é auto de flagrante; termo de
 declarações não é interrogatório judicial; ata de custódia não é decisão sobre a prisão.
 Satisfaça a exigência com a peça que ela nomeia, não com a parecida.
+
+${ENUNCIADO_MANDA}
+
+${TEXTO_PODE_VIR_CORTADO}
 
 ${SEM_DATA_DE_HOJE}
 

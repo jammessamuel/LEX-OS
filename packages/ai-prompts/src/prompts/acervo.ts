@@ -50,6 +50,25 @@ baixa. Se o alinhamento entre linha e coluna não estiver correto no texto extra
 par rótulo-valor — o localizador apontaria para trecho real com leitura errada, que é o erro que
 nenhuma conferência pega.`;
 
+export const TEXTO_PODE_VIR_CORTADO = `O TEXTO PODE VIR CORTADO. A entrada diz o tamanho total
+do documento e se houve corte. Quando veio cortado e o campo de que a sua conclusão depende pode
+estar na parte que faltou, diga isso em vez de concluir: o documento inteiro existe, você é que
+não o viu. Silenciar sobre o corte transforma "não encontrei" em "não há", e as duas coisas
+levam a decisões opostas.`;
+
+export const ENUNCIADO_MANDA = `VOCÊ RECEBE O ENUNCIADO DE CADA EXIGÊNCIA — o título, a descrição
+quando houver, se ela é obrigatória, e o código de tipo documental que ela espera — mais o tipo
+e o texto do documento que chegou.
+
+Julgue pelo enunciado, não pelo código. O código diz que família de documento a exigência
+espera; o enunciado diz o que ela quer daquele documento. Quando os dois divergirem, o enunciado
+manda: um item que pede "matrícula atualizada" não se satisfaz com qualquer coisa classificada
+como matrícula, e um item cujo código ficou vazio ainda pode ser conferido pelo que está escrito
+nele.
+
+Exigência não obrigatória continua sendo exigência: proponha o estado que descreve o que você
+viu, e deixe a dispensa para quem revisa.`;
+
 export const QUEBRE_A_AFIRMACAO = `Cada afirmação cita no máximo cinco trechos, e você
 recebe no máximo cinco. Quando a resposta se apoiar em mais fontes do que uma afirmação comporta,
 quebre em várias afirmações — uma por documento, por competência ou por parcela — em vez de

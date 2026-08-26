@@ -2,6 +2,20 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { RuntimeConfig } from '@lex-os/config';
 
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
+import type { SourceText } from './review-processing.provider.js';
+
+/**
+ * O que a classificação recebe.
+ *
+ * O catálogo sozinho não classifica nada: até 2026-08-26 esta chamada não recebia argumento
+ * algum, e o prompt mandava distinguir minuta de contrato assinado sobre um documento que o
+ * provedor nunca via. O mock continua devolvendo OUTRO — quem precisa da entrada é o provedor
+ * real, e o contrato tem de existir antes dele.
+ */
+export interface ClassificationInput {
+  availableTypeCodes: readonly string[];
+  sourceText: SourceText;
+}
 
 export interface MockTextResult {
   provider: string;
@@ -12,8 +26,13 @@ export interface MockTextResult {
 
 export interface ProcessingProvider {
   extractText(mimeType: string): MockTextResult;
-  classify(): { provider: string; modelName: string; code: 'OUTRO'; confidence: number };
-  extractEntities(): {
+  classify(input: ClassificationInput): {
+    provider: string;
+    modelName: string;
+    code: 'OUTRO';
+    confidence: number;
+  };
+  extractEntities(input: { sourceText: SourceText }): {
     provider: string;
     modelName: string;
     entities: readonly {
@@ -48,7 +67,12 @@ export class MockProcessingProvider implements ProcessingProvider {
     };
   }
 
-  classify(): { provider: string; modelName: string; code: 'OUTRO'; confidence: number } {
+  classify(): {
+    provider: string;
+    modelName: string;
+    code: 'OUTRO';
+    confidence: number;
+  } {
     return {
       provider: 'lex-os-mock-classifier',
       modelName: 'deterministic-v1',

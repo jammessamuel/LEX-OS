@@ -14,7 +14,7 @@ Ordenado por prioridade de conserto. Cada item diz onde está, por que dói, e o
 Estes quatro não se consertam escrevendo melhor. O prompt pode estar perfeito e continuar
 sem poder fazer o que promete.
 
-**Três dos quatro foram fechados em 2026-08-26.** Resta o P0.2, que é decisão de entrega.
+**Os quatro foram fechados em 2026-08-26.**
 
 ### P0.1 — O checklist tem oito estados no banco e dois na saída — **CORRIGIDO**
 
@@ -38,7 +38,7 @@ O genérico passou a apontar para `CHECKLIST_OUTPUT` em vez de repetir o literal
 que o deixou para trás. Três testes de deriva novos, e o bloco `CINCO_ESTADOS` ensina a
 diferença nas três faixas.
 
-### P0.2 — O prompt de checklist não recebe o que precisaria julgar
+### P0.2 — O prompt de checklist não recebe o que precisaria julgar — **CORRIGIDO**
 
 `CHECKLIST_INPUT` é `{ documentTypeCode, items }`, e `items` é `{ id, documentTypeCode }[]`.
 Não vai texto do documento, não vai imagem, não vai página, e **não vai o enunciado da
@@ -50,8 +50,20 @@ literalmente o que o mock determinístico já faz sem modelo nenhum.
 
 É o prompt mais bem escrito dos cinco e o que menos decide.
 
-**Conserto:** ou o contrato passa a carregar o enunciado do item e o texto extraído, ou o prompt
-passa a dizer a verdade sobre o que pode julgar. A primeira opção é decisão de entrega.
+**Feito em 2026-08-26, e o defeito era maior do que este item.** Ao abrir o contrato apareceu que
+a fome era das **quatro** tarefas que leem documento: a cronologia recebia só o comprimento do
+texto, o checklist só códigos de tipo, e classificação e entidades **não recebiam argumento
+nenhum** — enquanto as quatro instruções mandavam ler o documento. O mock determinístico não
+sentia falta porque não lê nada; o defeito só apareceria no primeiro provedor real, respondendo
+sobre um texto que nunca viu.
+
+Agora as quatro recebem `sourceText` — conteúdo, tamanho total e o aviso de truncamento, com
+limite de 20.000 caracteres declarado em `SOURCE_TEXT_LIMIT`. O checklist recebe também o
+**enunciado** de cada exigência: título, descrição e se é obrigatória. A classificação recebe o
+catálogo de tipos, que ela mandava respeitar e nunca recebia.
+
+Três testes de deriva novos: uma entrada por tarefa em toda faixa, o texto presente nas quatro
+tarefas que o leem, e o enunciado presente no checklist.
 
 ### P0.3 — O catálogo de tipos de documento tem 21 códigos genéricos — **CORRIGIDO**
 

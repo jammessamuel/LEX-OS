@@ -13,11 +13,20 @@ beforeAll(async () => {
 // versão do que recebeu. Aqui basta o genérico, que é aprovado e não depende da guarda.
 const promptDe = (tarefa) => prompts.promptFor(tarefa, null, { caseArchive: 'fictional' });
 
+// O texto do documento entrou na entrada em 2026-08-26. Montar aqui a forma real, e não a
+// mínima que o mock aceita, é o que faz este teste falhar quando o contrato mudar de novo.
+const textoDe = (conteudo) => ({
+  content: conteudo,
+  totalLength: conteudo.length,
+  truncated: false,
+});
+
 describe('provedores determinísticos de revisão', () => {
   it('produz cronologia versionada e vinculável à fonte', () => {
     const provider = new MockReviewProcessingProvider({ environment: 'test' });
     const result = provider.generate({
       sourceTextLength: 100,
+      sourceText: textoDe('Contrato ficticio celebrado em 05/08/2026.'),
       prompt: promptDe('TIMELINE'),
     });
 
@@ -64,9 +73,22 @@ describe('provedores determinísticos de revisão', () => {
     const provider = new MockReviewProcessingProvider({ environment: 'test' });
     const result = provider.analyze({
       documentTypeCode: 'OUTRO',
+      sourceText: textoDe('Documento ficticio para conferencia.'),
       items: [
-        { id: 'item-a', documentTypeCode: 'RG' },
-        { id: 'item-b', documentTypeCode: 'OUTRO' },
+        {
+          id: 'item-a',
+          documentTypeCode: 'RG',
+          title: 'Documento de identidade',
+          description: 'Frente e verso legiveis.',
+          isRequired: true,
+        },
+        {
+          id: 'item-b',
+          documentTypeCode: 'OUTRO',
+          title: 'Outros documentos do caso',
+          description: null,
+          isRequired: false,
+        },
       ],
       prompt: promptDe('CHECKLIST'),
     });

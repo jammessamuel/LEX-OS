@@ -111,11 +111,14 @@ Vinte de vinte estão `DRAFT`. Sem isso, promover é trocar uma palavra.
 **Terceiro porque depende de existir um advogado revisor nomeado — decisão de pessoa, não de
 código — e o A1 e o A2 não esperam por ela.**
 
-**A4. Contrato de entrada do checklist** — ADR-015 item 3, o quarto que ficou
+**A4. Contrato de entrada do checklist** — ADR-015 item 3 · **FEITO 2026-08-26**
 A entrada é `{ documentTypeCode, items: [{ id, documentTypeCode }] }`. Não vai o enunciado da
 exigência nem o texto do documento: o prompt não tem como saber que o item 3 pede "matrícula
 atualizada", e o que sobra é comparar duas strings — o que o mock já faz sem modelo.
-**Quarto porque é decisão de entrega: muda contrato, validador, mapeamento e teste de deriva.**
+Ao abrir o contrato apareceu que a fome era das **quatro** tarefas que leem documento, não só do
+checklist: classificação e entidades não recebiam argumento nenhum. As quatro passam a receber o
+texto com aviso de truncamento; o checklist recebe o enunciado de cada exigência; a classificação
+recebe o catálogo que mandava respeitar. Com isso os quatro P0 estão fechados.
 
 ### Fila B — os portões do provedor real
 

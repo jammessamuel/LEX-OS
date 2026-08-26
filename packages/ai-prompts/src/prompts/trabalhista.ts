@@ -3,9 +3,11 @@ import {
   ACERVO_JUDICIAL,
   CALIBRAGEM_CRONOLOGIA,
   CINCO_ESTADOS,
+  ENUNCIADO_MANDA,
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  TEXTO_PODE_VIR_CORTADO,
   VALOR_NORMALIZADO,
 } from './acervo.js';
 import {
@@ -124,6 +126,8 @@ O mesmo documento costuma estar nos autos mais de uma vez, juntado por partes di
 trechos que afirmam o mesmo fato com a mesma data viram um evento com os dois localizadores;
 separe apenas quando data ou valor divergirem.
 
+${TEXTO_PODE_VIR_CORTADO}
+
 ${CALIBRAGEM_CRONOLOGIA}
 
 ${LOCALIZADOR_PJE}
@@ -196,6 +200,10 @@ Instrumento coletivo vale pela vigência que ele próprio declara, limitada a do
 art. 614, §3º — pode ser anual ou bienal, e vigência não se confunde com data-base nem com data
 de assinatura. Verifique se os instrumentos juntados, somados, cobrem o período discutido sem
 lacuna. Encerrada a vigência, a cláusula não adere ao contrato.
+
+${ENUNCIADO_MANDA}
+
+${TEXTO_PODE_VIR_CORTADO}
 
 ${CINCO_ESTADOS}
 

@@ -3,11 +3,13 @@ import {
   ACERVO_JUDICIAL,
   CALIBRAGEM_CRONOLOGIA,
   CINCO_ESTADOS,
+  ENUNCIADO_MANDA,
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
+  TEXTO_PODE_VIR_CORTADO,
   VALOR_NORMALIZADO,
 } from './acervo.js';
 import {
@@ -144,6 +146,8 @@ alegação; recibo discriminado é documento. Fato negativo ("não há pagamento
 O mesmo documento aparece juntado por mais de uma parte: mesmo fato com mesma data vira um
 evento com os dois localizadores.
 
+${TEXTO_PODE_VIR_CORTADO}
+
 ${CALIBRAGEM_CRONOLOGIA}
 
 ${LOCALIZADOR_PJE}
@@ -239,6 +243,10 @@ Confira qual das duas o documento é antes de reprovar por falta de testemunha.
 
 Documento parcial atende só o que ele próprio cobre: a soma dos períodos e a suficiência do
 conjunto são do sistema, que vê tudo — você vê um documento por vez.
+
+${ENUNCIADO_MANDA}
+
+${TEXTO_PODE_VIR_CORTADO}
 
 ${SEM_DATA_DE_HOJE}
 

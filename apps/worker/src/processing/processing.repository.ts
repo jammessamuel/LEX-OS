@@ -10,6 +10,7 @@ import type { ProcessingJobType } from '@lex-os/contracts';
 
 import { DatabaseService } from '../database/database.service.js';
 import type {
+  ChecklistRequirement,
   DatePrecision,
   Importance,
   ProposableChecklistStatus,
@@ -100,10 +101,7 @@ export interface NextProcessingJob {
 export interface ChecklistTemplateForProcessing {
   id: string;
   version: number;
-  items: readonly {
-    id: string;
-    documentTypeCode: string | null;
-  }[];
+  items: readonly ChecklistRequirement[];
 }
 
 export type ClaimResult =
@@ -228,6 +226,23 @@ function assertTenantRelationships(job: JobTargetRecord): asserts job is JobTarg
 export class ProcessingRepository {
   constructor(private readonly database: DatabaseService) {}
 
+  /**
+   * Os códigos de tipo documental que a classificação pode escolher.
+   *
+   * O catálogo global mais o da própria organização, que pode acrescentar tipos sem ver os de
+   * ninguém — a consulta é escopada por `organizationId` como toda leitura do sistema. Até
+   * 2026-08-26 a classificação não recebia catálogo nenhum e mesmo assim o prompt mandava
+   * escolher "somente entre os códigos que vierem na entrada".
+   */
+  async availableDocumentTypeCodes(job: ClaimedProcessingJob): Promise<readonly string[]> {
+    const types = await this.database.client.documentType.findMany({
+      where: { OR: [{ organizationId: null }, { organizationId: job.organizationId }] },
+      orderBy: [{ code: 'asc' }],
+      select: { code: true },
+    });
+    return [...new Set(types.map((type) => type.code))];
+  }
+
   async findChecklistTemplate(
     job: ClaimedProcessingJob,
   ): Promise<ChecklistTemplateForProcessing | null> {
@@ -238,6 +253,9 @@ export class ProcessingRepository {
         orderBy: [{ sortOrder: 'asc' as const }, { id: 'asc' as const }],
         select: {
           id: true,
+          title: true,
+          description: true,
+          isRequired: true,
           documentType: { select: { code: true } },
         },
       },
@@ -267,6 +285,9 @@ export class ProcessingRepository {
           items: template.items.map((item) => ({
             id: item.id,
             documentTypeCode: item.documentType?.code ?? null,
+            title: item.title,
+            description: item.description,
+            isRequired: item.isRequired,
           })),
         };
   }

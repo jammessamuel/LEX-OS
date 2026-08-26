@@ -143,6 +143,40 @@ describe('divergência schema × validador', () => {
     }
   });
 
+  it('cada tarefa declara uma entrada só, em toda faixa', () => {
+    // A saída já tinha esta guarda; a entrada não, e foi por aí que o genérico ficou para trás
+    // duas vezes — declarando um contrato antigo enquanto as faixas seguiam adiante.
+    for (const tarefa of prompts.promptTasks) {
+      const daTarefa = prompts.promptLibrary.filter((p) => p.task === tarefa);
+      expect(daTarefa.length).toBeGreaterThan(1);
+      const entradas = new Set(daTarefa.map((p) => JSON.stringify(p.inputSchema)));
+      expect(entradas.size).toBe(1);
+    }
+  });
+
+  it('a entrada carrega o texto do documento nas tarefas que o leem', () => {
+    // O defeito que isto guarda: cronologia recebia só o comprimento do texto, checklist só
+    // códigos de tipo, e classificação e entidades não recebiam argumento nenhum — enquanto as
+    // quatro instruções mandavam ler o documento. Só apareceria no primeiro provedor real.
+    for (const tarefa of ['TIMELINE', 'CHECKLIST', 'CLASSIFICATION', 'ENTITIES']) {
+      const entrada = prompts.promptLibrary.find((p) => p.task === tarefa).inputSchema;
+      const campo = entrada.properties.sourceText;
+      // Jest não aceita mensagem no expect; o nome da tarefa entra na própria asserção.
+      expect({ tarefa, recebeTexto: campo !== undefined }).toEqual({ tarefa, recebeTexto: true });
+      const forma = campo.oneOf === undefined ? campo : campo.oneOf[0];
+      expect(new Set(forma.required)).toEqual(new Set(['content', 'totalLength', 'truncated']));
+    }
+  });
+
+  it('o checklist recebe o enunciado da exigência, não só o código de tipo', () => {
+    // Sem o enunciado o modelo não sabe que o item pede "matrícula atualizada", e o julgamento
+    // vira comparação de duas strings — o que o mock determinístico já faz sem modelo nenhum.
+    const item = prompts.checklistPromptV1.inputSchema.properties.items.items;
+    expect(new Set(item.required)).toEqual(
+      new Set(['id', 'documentTypeCode', 'title', 'description', 'isRequired']),
+    );
+  });
+
   it('campo extra é recusado dos dois lados', () => {
     expect(prompts.timelinePromptV1.outputSchema.additionalProperties).toBe(false);
     const output = timelineOutput();

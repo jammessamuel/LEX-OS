@@ -6,11 +6,42 @@
  * uma divergência entre elas não teria sequer onde aparecer.
  */
 
+/**
+ * Quanto texto de documento cabe numa chamada.
+ *
+ * Existe para ser uma decisão escrita, e não uma descoberta no dia em que um PDF de duzentas
+ * páginas estourar a janela de um provedor real. Truncar é pior do que não truncar, então o
+ * contrato obriga a dizer que truncou: o prompt sabe que viu um pedaço e responde por ele.
+ */
+export const SOURCE_TEXT_LIMIT = 20_000;
+
+/**
+ * O texto do documento como a tarefa o recebe.
+ *
+ * Antes de 2026-08-26 a cronologia recebia apenas o comprimento do texto e o checklist apenas
+ * códigos de tipo. As duas instruções mandavam ler o documento; nenhuma das duas entradas
+ * carregava o documento. O mock determinístico não sentia falta porque não lê nada — o defeito
+ * só apareceria no primeiro provedor real, respondendo sobre um texto que nunca viu.
+ */
+export const SOURCE_TEXT = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['content', 'totalLength', 'truncated'],
+  properties: {
+    content: { type: 'string' },
+    totalLength: { type: 'integer', minimum: 0 },
+    truncated: { type: 'boolean' },
+  },
+} as const;
+
 export const TIMELINE_INPUT = {
   type: 'object',
   additionalProperties: false,
-  required: ['sourceTextLength'],
-  properties: { sourceTextLength: { type: 'integer', minimum: 1 } },
+  required: ['sourceTextLength', 'sourceText'],
+  properties: {
+    sourceTextLength: { type: 'integer', minimum: 1 },
+    sourceText: SOURCE_TEXT,
+  },
 } as const;
 
 export const TIMELINE_OUTPUT = {
@@ -43,10 +74,29 @@ export const TIMELINE_OUTPUT = {
 export const CHECKLIST_INPUT = {
   type: 'object',
   additionalProperties: false,
-  required: ['documentTypeCode', 'items'],
+  required: ['documentTypeCode', 'sourceText', 'items'],
   properties: {
     documentTypeCode: { type: ['string', 'null'] },
-    items: { type: 'array', minItems: 1 },
+    sourceText: { oneOf: [SOURCE_TEXT, { type: 'null' }] },
+    items: {
+      type: 'array',
+      minItems: 1,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        // O enunciado da exigência é o que faltava: sem ele o modelo não tem como saber que o
+        // item pede "matrícula atualizada", e o julgamento vira comparação de duas strings —
+        // exatamente o que o mock determinístico já fazia sem modelo nenhum.
+        required: ['id', 'documentTypeCode', 'title', 'description', 'isRequired'],
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          documentTypeCode: { type: ['string', 'null'] },
+          title: { type: 'string', minLength: 1 },
+          description: { type: ['string', 'null'] },
+          isRequired: { type: 'boolean' },
+        },
+      },
+    },
   },
 } as const;
 
@@ -129,9 +179,10 @@ export const GROUNDED_OUTPUT = {
 export const CLASSIFICATION_INPUT = {
   type: 'object',
   additionalProperties: false,
-  required: ['availableTypeCodes'],
+  required: ['availableTypeCodes', 'sourceText'],
   properties: {
     availableTypeCodes: { type: 'array', minItems: 1, items: { type: 'string' } },
+    sourceText: SOURCE_TEXT,
   },
 } as const;
 
@@ -147,7 +198,12 @@ export const CLASSIFICATION_OUTPUT = {
   },
 } as const;
 
-export const ENTITIES_INPUT = TIMELINE_INPUT;
+export const ENTITIES_INPUT = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['sourceText'],
+  properties: { sourceText: SOURCE_TEXT },
+} as const;
 
 export const ENTITIES_OUTPUT = {
   type: 'object',

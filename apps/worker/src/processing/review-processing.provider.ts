@@ -1,5 +1,33 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { PromptSpecification } from '@lex-os/ai-prompts';
+import { SOURCE_TEXT_LIMIT, type PromptSpecification } from '@lex-os/ai-prompts';
+
+/**
+ * O texto do documento como as tarefas de revisão o recebem, com o aviso de truncamento.
+ *
+ * Recortar sem avisar faria o modelo concluir sobre um documento que ele viu pela metade.
+ */
+export interface SourceText {
+  content: string;
+  totalLength: number;
+  truncated: boolean;
+}
+
+export function sourceTextFrom(rawText: string): SourceText {
+  return {
+    content: rawText.slice(0, SOURCE_TEXT_LIMIT),
+    totalLength: rawText.length,
+    truncated: rawText.length > SOURCE_TEXT_LIMIT,
+  };
+}
+
+/** A exigência como o checklist a recebe: o enunciado, não só o código de tipo. */
+export interface ChecklistRequirement {
+  id: string;
+  documentTypeCode: string | null;
+  title: string;
+  description: string | null;
+  isRequired: boolean;
+}
 import type { RuntimeConfig } from '@lex-os/config';
 
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
@@ -57,6 +85,7 @@ export interface ChecklistAnalysisOutputV1 {
 export interface TimelineProvider {
   generate(input: {
     sourceTextLength: number;
+    sourceText: SourceText;
     prompt: PromptSpecification;
   }): TimelineProviderOutputV1;
 }
@@ -64,7 +93,8 @@ export interface TimelineProvider {
 export interface ChecklistAnalysisProvider {
   analyze(input: {
     documentTypeCode: string | null;
-    items: readonly { id: string; documentTypeCode: string | null }[];
+    sourceText: SourceText | null;
+    items: readonly ChecklistRequirement[];
     prompt: PromptSpecification;
   }): ChecklistAnalysisOutputV1;
 }
@@ -251,6 +281,7 @@ export class MockReviewProcessingProvider implements TimelineProvider, Checklist
 
   generate(input: {
     sourceTextLength: number;
+    sourceText: SourceText;
     prompt: PromptSpecification;
   }): TimelineProviderOutputV1 {
     return parseTimelineProviderOutputV1(
@@ -278,7 +309,8 @@ export class MockReviewProcessingProvider implements TimelineProvider, Checklist
 
   analyze(input: {
     documentTypeCode: string | null;
-    items: readonly { id: string; documentTypeCode: string | null }[];
+    sourceText: SourceText | null;
+    items: readonly ChecklistRequirement[];
     prompt: PromptSpecification;
   }): ChecklistAnalysisOutputV1 {
     return parseChecklistAnalysisOutputV1(

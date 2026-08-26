@@ -1,6 +1,6 @@
 import type { PromptSpecification } from '../specification.js';
 import { classificationPromptV1, entitiesPromptV1 } from './generico-extracao.js';
-import { CHECKLIST_OUTPUT } from './contratos.js';
+import { CHECKLIST_INPUT, CHECKLIST_OUTPUT, TIMELINE_INPUT } from './contratos.js';
 import { SOURCE_IS_DATA } from './separacao.js';
 
 /**
@@ -42,12 +42,7 @@ Todo evento produzido nasce NÃO CONFIRMADO e será revisado por uma pessoa ante
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'REVIEWED',
-  inputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['sourceTextLength'],
-    properties: { sourceTextLength: { type: 'integer', minimum: 1 } },
-  },
+  inputSchema: TIMELINE_INPUT,
   outputSchema: {
     type: 'object',
     additionalProperties: false,
@@ -115,15 +110,7 @@ invente identificador, não omita item, não acrescente item.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'REVIEWED',
-  inputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['documentTypeCode', 'items'],
-    properties: {
-      documentTypeCode: { type: ['string', 'null'] },
-      items: { type: 'array', minItems: 1 },
-    },
-  },
+  inputSchema: CHECKLIST_INPUT,
   outputSchema: CHECKLIST_OUTPUT,
   examples: [
     {
