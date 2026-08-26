@@ -143,6 +143,30 @@ describe('divergência schema × validador', () => {
     }
   });
 
+  it('o schema declara os mesmos enums que o validador aceita', () => {
+    // Antes de 2026-08-26 o schema da cronologia listava os nomes dos campos e nada mais: os
+    // enums viviam só no validador. Schema que não diz o que aceita é documentação muda, e foi
+    // gerando o caderno de revisão jurídica que a lacuna apareceu — o advogado revisor não
+    // teria como conferir a instrução contra o que a saída comporta.
+    const evento = prompts.timelinePromptV1.outputSchema.properties.events.items.properties;
+    expect(new Set(evento.datePrecision.enum)).toEqual(new Set(parsers.datePrecisions));
+    expect(new Set(evento.importance.enum)).toEqual(new Set(parsers.importanceLevels));
+  });
+
+  it('todo campo obrigatório da saída tem propriedade declarada', () => {
+    for (const prompt of prompts.promptLibrary) {
+      const raiz = prompt.outputSchema.properties ?? {};
+      const colecao = Object.values(raiz).find((v) => v.type === 'array' && v.items !== undefined);
+      const item = colecao?.items ?? prompt.outputSchema;
+      const declarados = new Set(Object.keys(item.properties ?? {}));
+      const faltando = (item.required ?? []).filter((campo) => !declarados.has(campo));
+      expect({ prompt: prompt.identifier, faltando }).toEqual({
+        prompt: prompt.identifier,
+        faltando: [],
+      });
+    }
+  });
+
   it('cada tarefa declara uma entrada só, em toda faixa', () => {
     // A saída já tinha esta guarda; a entrada não, e foi por aí que o genérico ficou para trás
     // duas vezes — declarando um contrato antigo enquanto as faixas seguiam adiante.

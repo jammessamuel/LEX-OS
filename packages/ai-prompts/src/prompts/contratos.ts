@@ -66,6 +66,31 @@ export const TIMELINE_OUTPUT = {
           'sourceLocator',
           'confidenceScore',
         ],
+        // Os dois enums vinham só no validador do worker. O schema declarava os nomes dos
+        // campos e nada sobre o que eles aceitam, então ninguém revisando o contrato — nem
+        // advogado, nem quem escreve o prompt — conseguia ver que precisão de data admite
+        // aproximada e desconhecida, que é a diferença entre registrar e inventar um dia.
+        properties: {
+          eventType: { type: 'string', minLength: 1 },
+          title: { type: 'string', minLength: 1 },
+          description: { type: 'string' },
+          occurredAt: { type: 'string' },
+          datePrecision: {
+            enum: ['EXACT', 'DAY', 'MONTH', 'YEAR', 'APPROXIMATE', 'UNKNOWN'],
+          },
+          importance: { enum: ['LOW', 'NORMAL', 'HIGH', 'CRITICAL'] },
+          sourceLocator: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['pageNumber', 'startOffset', 'endOffset'],
+            properties: {
+              pageNumber: { type: 'integer', minimum: 1 },
+              startOffset: { type: 'integer', minimum: 0 },
+              endOffset: { type: 'integer', minimum: 0 },
+            },
+          },
+          confidenceScore: { type: 'number', minimum: 0, maximum: 1 },
+        },
       },
     },
   },
@@ -226,6 +251,15 @@ export const ENTITIES_OUTPUT = {
           'endOffset',
           'confidenceScore',
         ],
+        properties: {
+          entityType: { type: 'string', minLength: 1 },
+          normalizedValue: { type: 'string' },
+          originalValue: { type: 'string' },
+          pageNumber: { type: 'integer', minimum: 1 },
+          startOffset: { type: 'integer', minimum: 0 },
+          endOffset: { type: 'integer', minimum: 0 },
+          confidenceScore: { type: 'number', minimum: 0, maximum: 1 },
+        },
       },
     },
   },

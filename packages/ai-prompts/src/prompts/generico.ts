@@ -1,6 +1,12 @@
 import type { PromptSpecification } from '../specification.js';
 import { classificationPromptV1, entitiesPromptV1 } from './generico-extracao.js';
-import { CHECKLIST_INPUT, CHECKLIST_OUTPUT, TIMELINE_INPUT } from './contratos.js';
+import {
+  CHECKLIST_INPUT,
+  CHECKLIST_OUTPUT,
+  GROUNDED_OUTPUT,
+  TIMELINE_INPUT,
+  TIMELINE_OUTPUT,
+} from './contratos.js';
 import { SOURCE_IS_DATA } from './separacao.js';
 
 /**
@@ -43,32 +49,7 @@ Todo evento produzido nasce NÃO CONFIRMADO e será revisado por uma pessoa ante
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'REVIEWED',
   inputSchema: TIMELINE_INPUT,
-  outputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['schemaVersion', 'provider', 'modelName', 'promptVersion', 'events'],
-    properties: {
-      schemaVersion: { const: 1 },
-      events: {
-        type: 'array',
-        minItems: 1,
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: [
-            'eventType',
-            'title',
-            'description',
-            'occurredAt',
-            'datePrecision',
-            'importance',
-            'sourceLocator',
-            'confidenceScore',
-          ],
-        },
-      },
-    },
-  },
+  outputSchema: TIMELINE_OUTPUT,
   examples: [
     {
       input: { sourceTextLength: 100 },
@@ -167,42 +148,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
       },
     },
   },
-  outputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: [
-      'schemaVersion',
-      'provider',
-      'modelName',
-      'modelVersion',
-      'promptVersion',
-      'executionId',
-      'costAmount',
-      'costCurrency',
-      'claims',
-    ],
-    properties: {
-      schemaVersion: { const: 1 },
-      claims: {
-        type: 'array',
-        minItems: 1,
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['text', 'sourceChunkIds'],
-          properties: {
-            text: { type: 'string', minLength: 1, maxLength: 2000 },
-            sourceChunkIds: {
-              type: 'array',
-              minItems: 1,
-              maxItems: 5,
-              items: { type: 'string', format: 'uuid' },
-            },
-          },
-        },
-      },
-    },
-  },
+  outputSchema: GROUNDED_OUTPUT,
   examples: [
     {
       input: { question: 'Qual data consta no contrato?', sources: ['chunk-id-autorizado'] },

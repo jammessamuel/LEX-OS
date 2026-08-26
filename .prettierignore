@@ -5,3 +5,8 @@ dist
 coverage
 coverage-integration
 pnpm-lock.yaml
+
+# Gerado por infra/scripts/gera-revisao-juridica.mjs a partir da biblioteca de prompts.
+# Reformatar aqui faria a regeneracao sujar a arvore a cada vez, e o texto reflowado
+# deixaria de ser exatamente o que vai ao modelo — que e o ponto do caderno.
+docs/product/revisao-juridica

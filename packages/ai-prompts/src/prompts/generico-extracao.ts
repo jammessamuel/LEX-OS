@@ -1,5 +1,10 @@
 import type { PromptSpecification } from '../specification.js';
-import { CLASSIFICATION_INPUT, ENTITIES_INPUT } from './contratos.js';
+import {
+  CLASSIFICATION_INPUT,
+  CLASSIFICATION_OUTPUT,
+  ENTITIES_INPUT,
+  ENTITIES_OUTPUT,
+} from './contratos.js';
 import { SOURCE_IS_DATA } from './separacao.js';
 
 /**
@@ -34,17 +39,7 @@ vocabulário — e não o quanto o palpite parece razoável.
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'REVIEWED',
   inputSchema: CLASSIFICATION_INPUT,
-  outputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['provider', 'modelName', 'code', 'confidence'],
-    properties: {
-      provider: { type: 'string' },
-      modelName: { type: 'string' },
-      code: { type: 'string' },
-      confidence: { type: 'number', minimum: 0, maximum: 1 },
-    },
-  },
+  outputSchema: CLASSIFICATION_OUTPUT,
   examples: [
     {
       input: { availableTypeCodes: ['CONTRATO', 'PROCURACAO', 'OUTRO'] },
@@ -83,31 +78,7 @@ localizador. Repetição é informação — diz onde o documento afirma a mesma
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   reviewStatus: 'REVIEWED',
   inputSchema: ENTITIES_INPUT,
-  outputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['provider', 'modelName', 'entities'],
-    properties: {
-      provider: { type: 'string' },
-      modelName: { type: 'string' },
-      entities: {
-        type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: [
-            'entityType',
-            'normalizedValue',
-            'originalValue',
-            'pageNumber',
-            'startOffset',
-            'endOffset',
-            'confidenceScore',
-          ],
-        },
-      },
-    },
-  },
+  outputSchema: ENTITIES_OUTPUT,
   examples: [
     {
       input: { sourceTextLength: 100 },
