@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 
 import { ApiError, request } from '../api/client.js';
 import type {
+  NotificationPreferences,
   SecondFactorActivated,
   SecondFactorEnrolment,
   SecondFactorStatus,
@@ -116,8 +117,77 @@ function cancelEnrolment(): void {
   stepFailure.value = null;
 }
 
+const avisos = ref<NotificationPreferences | null>(null);
+const salvandoAvisos = ref(false);
+const falhaAvisos = ref<ApiError | null>(null);
+
+const ROTULOS: Readonly<Record<string, [string, string]>> = {
+  'task-assigned': [
+    'Tarefa atribuída a você',
+    'Quando alguém coloca uma tarefa no seu nome. Tarefa que você mesmo se atribui não avisa.',
+  ],
+  'preparation-digest': [
+    'Resumo de preparação concluída',
+    'Um resumo por dia dos documentos que terminaram o preparo nos casos sob sua responsabilidade.',
+  ],
+};
+
+function rotuloDoAviso(aviso: string): string {
+  return ROTULOS[aviso]?.[0] ?? aviso;
+}
+
+function explicacaoDoAviso(aviso: string): string {
+  return ROTULOS[aviso]?.[1] ?? '';
+}
+
+async function carregarAvisos(): Promise<void> {
+  try {
+    avisos.value = await request<NotificationPreferences>('/auth/notifications');
+  } catch {
+    // Aviso é secundário nesta tela: falhar aqui não pode esconder o segundo fator, que é a
+    // razão de a pessoa ter aberto isto.
+    avisos.value = null;
+  }
+}
+
+/**
+ * Liga ou desliga um aviso.
+ *
+ * Manda o conjunto inteiro, e não a mudança: duas abas abertas mandando pedidos opostos viram
+ * um problema de última escrita, em vez de um estado que ninguém sabe reconstruir.
+ */
+async function alternarAviso(aviso: string): Promise<void> {
+  if (avisos.value === null) {
+    return;
+  }
+  const atual = avisos.value.silenced;
+  const proximo = atual.includes(aviso)
+    ? atual.filter((item) => item !== aviso)
+    : [...atual, aviso];
+  salvandoAvisos.value = true;
+  falhaAvisos.value = null;
+  try {
+    avisos.value = await request<NotificationPreferences>('/auth/notifications', {
+      method: 'PUT',
+      body: { silenced: proximo },
+    });
+  } catch (error) {
+    falhaAvisos.value =
+      error instanceof ApiError
+        ? error
+        : new ApiError({
+            statusCode: 0,
+            code: 'UNEXPECTED',
+            message: 'Não foi possível salvar a preferência de avisos.',
+          });
+  } finally {
+    salvandoAvisos.value = false;
+  }
+}
+
 onMounted(() => {
   void load();
+  void carregarAvisos();
 });
 </script>
 
@@ -293,10 +363,87 @@ onMounted(() => {
         </div>
       </div>
     </template>
+    <!--
+      Os avisos ficam aqui e não numa tela própria: a pergunta "o que chega no meu e-mail" é
+      da mesma família de "quem entra na minha conta", e as duas se respondem no mesmo lugar.
+    -->
+    <div v-if="avisos" class="panel avisos">
+      <h2 class="avisos__titulo">Avisos por e-mail</h2>
+      <p class="avisos__lede muted">
+        O e-mail carrega o código do caso, o que aconteceu e um link. Nunca documento, nome de parte
+        ou teor de peça — o resto só se vê aqui dentro, com a sua permissão de sempre.
+      </p>
+
+      <label v-for="aviso in avisos.silenceable" :key="aviso" class="aviso">
+        <input
+          type="checkbox"
+          :checked="!avisos.silenced.includes(aviso)"
+          :disabled="salvandoAvisos"
+          @change="alternarAviso(aviso)"
+        />
+        <span>
+          <span class="aviso__nome">{{ rotuloDoAviso(aviso) }}</span>
+          <span class="aviso__nota muted">{{ explicacaoDoAviso(aviso) }}</span>
+        </span>
+      </label>
+
+      <p class="aviso aviso--fixo">
+        <span class="aviso__nome">Documento que falhou na preparação</span>
+        <span class="aviso__nota muted">
+          Este não se desliga. Documento parado costuma custar prazo, e o aviso é a única coisa
+          entre a falha e a véspera.
+        </span>
+      </p>
+
+      <p v-if="falhaAvisos" class="note note--alert" role="alert">{{ falhaAvisos.message }}</p>
+    </div>
   </section>
 </template>
 
 <style scoped>
+.avisos {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+}
+
+.avisos__titulo {
+  margin: 0 0 var(--space-2);
+  font-size: 1.05rem;
+}
+
+.avisos__lede {
+  margin: 0 0 var(--space-4);
+  font-size: 0.88rem;
+  max-width: 46rem;
+  line-height: 1.55;
+}
+
+.aviso {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+}
+
+.aviso--fixo {
+  display: block;
+  margin: 0;
+  opacity: 0.72;
+}
+
+.aviso__nome {
+  display: block;
+  font-weight: 500;
+}
+
+.aviso__nota {
+  display: block;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin-top: 0.15rem;
+}
+
 .lede {
   font-size: var(--step--1);
   color: var(--text-2);

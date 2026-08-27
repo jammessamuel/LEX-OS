@@ -416,6 +416,12 @@ export interface ChecklistTemplate {
   items: ChecklistTemplateItem[];
 }
 
+/** Avisos por e-mail que a pessoa desligou (ADR-013). */
+export interface NotificationPreferences {
+  silenced: string[];
+  silenceable: string[];
+}
+
 export interface ProcessingCostBucket {
   key: string | null;
   label: string | null;
