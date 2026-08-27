@@ -420,6 +420,7 @@ model User {
   refreshSessions            RefreshSession[]
   userRoles                  UserRole[]
   responsibleCases           Case[]                 @relation("CaseResponsible")
+  legalHeldCases             Case[]                 @relation("CaseLegalHoldBy")
   uploadedFiles              StoredFile[]           @relation("FileUploadedBy")
   classifiedDocuments        Document[]             @relation("DocumentClassifiedBy")
   confirmedExtractedEntities ExtractedEntity[]      @relation("EntityConfirmedBy")
@@ -580,9 +581,18 @@ model Case {
   createdAt                    DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt                    DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt                    DateTime?              @map("deleted_at") @db.Timestamptz(6)
+  /// Retencao obrigatoria (ADR-012). Com a marca posta, nenhum caminho de exclusao alcanca o
+  /// caso nem nada dentro dele — inclusive administrativo. Os tres campos andam juntos por
+  /// restricao de banco: estado de hold pela metade seria estado indeterminado, e a decisao
+  /// manda recusar a exclusao quando o estado nao puder ser determinado. Impedir que ele exista
+  /// e mais forte que testa-lo.
+  legalHoldAt                  DateTime?              @map("legal_hold_at") @db.Timestamptz(6)
+  legalHoldById                String?                @map("legal_hold_by") @db.Uuid
+  legalHoldReason              String?                @map("legal_hold_reason") @db.Text
 
   organization    Organization      @relation(fields: [organizationId], references: [id])
   responsibleUser User?             @relation("CaseResponsible", fields: [organizationId, responsibleUserId], references: [organizationId, id])
+  legalHoldBy     User?             @relation("CaseLegalHoldBy", fields: [organizationId, legalHoldById], references: [organizationId, id])
   participants    CaseParticipant[]
   documents       Document[]
   timelineEvents  TimelineEvent[]
@@ -596,6 +606,7 @@ model Case {
   @@unique([organizationId, id])
   @@index([organizationId, status, updatedAt])
   @@index([organizationId, responsibleUserId])
+  @@index([organizationId, legalHoldAt])
   @@map("cases")
 }
 

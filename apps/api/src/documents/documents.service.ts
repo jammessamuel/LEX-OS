@@ -203,12 +203,19 @@ export class DocumentsService {
     return mapDocument(updated);
   }
 
+  /**
+   * Exclusão lógica do documento.
+   *
+   * A retenção do caso alcança o que está dentro dele. O filtro do repositório é quem impede;
+   * esta consulta existe para a mensagem dizer que há retenção, e qual o motivo.
+   */
   async remove(actor: ActorContext, id: string, metadata: RequestAuditMetadata): Promise<void> {
     const current = await this.#findAccessible(actor, id, metadata);
     if (current.caseId === null) {
       throw this.#notFound();
     }
     const caseId = current.caseId;
+    await this.cases.assertNotUnderLegalHold(actor.organizationId, caseId);
     await withTransaction(this.database.client, async (transaction) => {
       const removed = await this.repository.softDelete(
         transaction,

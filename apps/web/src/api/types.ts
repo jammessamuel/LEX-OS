@@ -75,6 +75,9 @@ export interface CaseSummary {
   processingLimitReachedAt: string | null;
   openedAt: string;
   closedAt: string | null;
+  /** Retenção obrigatória (ADR-012). Com data, nada do caso pode ser excluído. */
+  legalHoldAt: string | null;
+  legalHoldReason: string | null;
   createdAt: string;
   updatedAt: string;
 }

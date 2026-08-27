@@ -125,6 +125,14 @@ export type DomainAuditEvent =
       newData: CaseAuditSnapshot & { softDeleted: true };
     })
   | (DomainAuditBase & {
+      // Retencao entra e sai com autor, horario e motivo (ADR-012). O motivo e texto que a
+      // pessoa escreve, entao vale a mesma regra de sempre: nada do conteudo do caso aqui.
+      action: 'case.legal_hold.placed' | 'case.legal_hold.released';
+      entityType: 'case';
+      oldData: CaseAuditSnapshot;
+      newData: CaseAuditSnapshot & { legalHoldReason: string };
+    })
+  | (DomainAuditBase & {
       action: 'case.processing_budget.updated';
       entityType: 'case';
       oldData: { limitAmount: string; currency: string; status: string };

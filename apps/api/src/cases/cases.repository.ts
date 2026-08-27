@@ -33,6 +33,9 @@ const caseSelect = {
   },
   openedAt: true,
   closedAt: true,
+  legalHoldAt: true,
+  legalHoldById: true,
+  legalHoldReason: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.CaseSelect;
@@ -289,6 +292,14 @@ export class CasesRepository {
     return { outcome: 'UPDATED', record };
   }
 
+  /**
+   * Exclusão lógica do caso.
+   *
+   * `legalHoldAt: null` no `where` é a guarda de verdade, e é de propósito que ela viva aqui e
+   * não no serviço: retenção obrigatória tem de valer para todo chamador, inclusive um futuro
+   * caminho administrativo ou de reconciliação, e uma condição no filtro não se esquece de
+   * chamar. Quem quiser a mensagem certa consulta o hold antes; quem esquecer, não exclui.
+   */
   async softDelete(
     transaction: TransactionClient,
     organizationId: string,
@@ -296,9 +307,56 @@ export class CasesRepository {
     occurredAt: Date,
   ): Promise<boolean> {
     const result = await transaction.case.updateMany({
-      where: { id, organizationId, deletedAt: null },
+      where: { id, organizationId, deletedAt: null, legalHoldAt: null },
       data: { deletedAt: occurredAt },
     });
     return result.count === 1;
+  }
+
+  /**
+   * O caso está sob retenção?
+   *
+   * Falha fechada: caso que não existe, ou cuja linha não pôde ser lida, conta como retido. A
+   * decisão do ADR-012 é explícita — quando o estado do hold não puder ser determinado, a
+   * exclusão é recusada.
+   */
+  async legalHoldOf(
+    organizationId: string,
+    id: string,
+  ): Promise<{ held: true; reason: string; since: Date } | { held: false }> {
+    const record = await this.database.client.case.findFirst({
+      where: { id, organizationId },
+      select: { legalHoldAt: true, legalHoldReason: true },
+    });
+    if (record === null) {
+      return {
+        held: true,
+        reason: 'Não foi possível determinar a retenção do caso.',
+        since: new Date(0),
+      };
+    }
+    if (record.legalHoldAt === null || record.legalHoldReason === null) {
+      return { held: false };
+    }
+    return { held: true, reason: record.legalHoldReason, since: record.legalHoldAt };
+  }
+
+  async setLegalHold(
+    transaction: TransactionClient,
+    organizationId: string,
+    id: string,
+    hold: { at: Date; byId: string; reason: string } | null,
+  ): Promise<CaseRecord | null> {
+    const result = await transaction.case.updateMany({
+      where: { id, organizationId, deletedAt: null },
+      data:
+        hold === null
+          ? { legalHoldAt: null, legalHoldById: null, legalHoldReason: null }
+          : { legalHoldAt: hold.at, legalHoldById: hold.byId, legalHoldReason: hold.reason },
+    });
+    if (result.count !== 1) {
+      return null;
+    }
+    return this.findById(organizationId, id);
   }
 }

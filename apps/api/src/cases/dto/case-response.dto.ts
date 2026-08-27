@@ -90,6 +90,19 @@ export class CaseResponseDto {
   @ApiPropertyOptional({ format: 'date-time', nullable: true })
   closedAt!: string | null;
 
+  @ApiProperty({
+    description:
+      'Momento em que a retenção obrigatória foi posta. Nulo quando o caso não está retido.',
+    nullable: true,
+  })
+  legalHoldAt!: string | null;
+
+  @ApiProperty({
+    description: 'Motivo registrado da retenção obrigatória.',
+    nullable: true,
+  })
+  legalHoldReason!: string | null;
+
   @ApiProperty({ format: 'date-time' })
   createdAt!: string;
 

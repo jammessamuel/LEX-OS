@@ -68,7 +68,7 @@ export function setUnauthorizedHandler(handler: () => void): void {
 export type NoContent = undefined;
 
 export interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   query?: Record<string, string | number | undefined>;
   /** Interno: evita laço infinito quando a própria renovação devolve 401. */

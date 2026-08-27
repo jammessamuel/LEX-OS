@@ -20,6 +20,8 @@ vi.mock('vue-router', () => ({
 const { ApiError } = await import('../api/client');
 
 const legalCase = {
+  legalHoldAt: null,
+  legalHoldReason: null,
   id: 'case-1',
   internalCode: 'DEMO-0001',
   cnjNumber: '0001234-27.2026.5.02.0001',
@@ -108,6 +110,105 @@ describe('CaseDetailView', () => {
     setActivePinia(createPinia());
     useSessionStore().$patch({ permissions: new Set(['documents.read']) });
     request.mockReset();
+  });
+
+  const retido = {
+    ...legalCase,
+    legalHoldAt: '2026-08-20T13:00:00.000Z',
+    legalHoldReason: 'Ordem judicial de preservação no processo 0009999-84.2026.5.02.0001.',
+  };
+
+  function comCaso(dados: Record<string, unknown>) {
+    request.mockImplementation(async (path: string) =>
+      path === '/cases/case-1' ? dados : emptyPage,
+    );
+  }
+
+  it('sob retenção, o caso diz que está retido, por quê, e o que isso impede', async () => {
+    useSessionStore().$patch({ permissions: new Set(['documents.read', 'cases.delete']) });
+    comCaso(retido);
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    const texto = wrapper.text();
+    expect(texto).toContain('Sob retenção obrigatória');
+    expect(texto).toContain('Ordem judicial de preservação');
+    // O efeito precisa estar escrito, e a parte que mais importa é o alcance: o ADR-012 diz
+    // que a retenção bloqueia todo caminho de exclusão, "inclusive administrativos".
+    expect(texto).toContain('excluídos por ninguém');
+    expect(texto).toContain('inclusive por quem administra');
+  });
+
+  it('sob retenção, excluir fica impedido com o motivo à vista, e não escondido', async () => {
+    useSessionStore().$patch({ permissions: new Set(['documents.read', 'cases.delete']) });
+    comCaso(retido);
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    const [excluir] = wrapper
+      .findAll('button')
+      .filter((botao) => botao.text().includes('Excluir caso'));
+    if (excluir === undefined) {
+      throw new Error('O botão de excluir sumiu; ele deve ficar à vista, desabilitado.');
+    }
+    // Sumir com o botão não explica nada a quem procura por que não consegue excluir.
+    expect(excluir.attributes('disabled')).toBeDefined();
+    expect(excluir.attributes('title')).toContain('retenção obrigatória');
+  });
+
+  it('sem retenção, excluir continua disponível', async () => {
+    useSessionStore().$patch({ permissions: new Set(['documents.read', 'cases.delete']) });
+    comCaso({ ...legalCase, legalHoldAt: null, legalHoldReason: null });
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    const [excluir] = wrapper
+      .findAll('button')
+      .filter((botao) => botao.text().includes('Excluir caso'));
+    expect(excluir?.attributes('disabled')).toBeUndefined();
+  });
+
+  it('exige motivo para pôr a retenção, nos dois sentidos', async () => {
+    useSessionStore().$patch({ permissions: new Set(['documents.read', 'cases.legal_hold']) });
+    comCaso({ ...legalCase, legalHoldAt: null, legalHoldReason: null });
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    const [reter] = wrapper.findAll('button').filter((b) => b.text() === 'Reter caso');
+    if (reter === undefined) {
+      throw new Error('Quem tem a permissão deveria poder reter o caso.');
+    }
+    await reter.trigger('click');
+
+    const [confirmar] = wrapper.findAll('button[type="submit"]');
+    // Sem motivo o registro não explica nada a quem for auditar depois.
+    expect(confirmar?.attributes('disabled')).toBeDefined();
+
+    await wrapper.get('#hold-reason').setValue('Ordem judicial de preservação.');
+    expect(wrapper.findAll('button[type="submit"]')[0]?.attributes('disabled')).toBeUndefined();
+
+    request.mockResolvedValueOnce(retido);
+    await wrapper.get('form').trigger('submit');
+    await flushPromises();
+
+    expect(request).toHaveBeenCalledWith('/cases/case-1/legal-hold', {
+      method: 'PUT',
+      body: { hold: true, reason: 'Ordem judicial de preservação.' },
+    });
+  });
+
+  it('não oferece reter a quem não tem a permissão', async () => {
+    useSessionStore().$patch({ permissions: new Set(['documents.read', 'cases.delete']) });
+    comCaso({ ...legalCase, legalHoldAt: null, legalHoldReason: null });
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.findAll('button').some((b) => b.text() === 'Reter caso')).toBe(false);
   });
 
   it('mostra o número do processo antes do título, que é como o advogado reconhece o caso', async () => {

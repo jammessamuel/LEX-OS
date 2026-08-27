@@ -182,6 +182,34 @@ function onParticipantCreated(participant: Participant): void {
   addingParticipant.value = false;
 }
 
+const underLegalHold = computed(() => legalCase.value?.legalHoldAt != null);
+const holdReason = ref('');
+const changingHold = ref(false);
+const holdFormOpen = ref(false);
+
+/**
+ * Põe ou retira a retenção obrigatória.
+ *
+ * O motivo é exigido nos dois sentidos: quem libera um caso retido responde por isso, e a
+ * auditoria sem o porquê não explica nada a quem for olhar depois.
+ */
+async function toggleLegalHold(hold: boolean): Promise<void> {
+  changingHold.value = true;
+  failure.value = null;
+  try {
+    legalCase.value = await request<CaseSummary>(`/cases/${caseId}/legal-hold`, {
+      method: 'PUT',
+      body: { hold, reason: holdReason.value },
+    });
+    holdFormOpen.value = false;
+    holdReason.value = '';
+  } catch (error) {
+    failure.value = toApiError(error, 'Não foi possível alterar a retenção do caso.');
+  } finally {
+    changingHold.value = false;
+  }
+}
+
 async function removeCase(): Promise<void> {
   if (
     !window.confirm(
@@ -314,6 +342,7 @@ onMounted(() => {
           <p v-else class="muted case-process case-process--pending">Sem número de processo</p>
           <h1 id="case-title">{{ legalCase.title }}</h1>
           <div class="head__meta">
+            <StatusChip v-if="underLegalHold" label="Sob retenção obrigatória" tone="rejeitado" />
             <StatusChip :label="caseStatusLabels[legalCase.status]" />
             <StatusChip
               :label="priorityLabels[legalCase.priority]"
@@ -381,16 +410,83 @@ onMounted(() => {
             Editar caso
           </RouterLink>
           <button
+            v-if="session.can('cases.legal_hold') && !holdFormOpen"
+            class="btn"
+            type="button"
+            :disabled="changingHold"
+            @click="holdFormOpen = true"
+          >
+            {{ underLegalHold ? 'Retirar retenção' : 'Reter caso' }}
+          </button>
+          <!--
+            O botão continua à vista sob retenção, desabilitado e com o motivo no title. Sumir
+            com ele não explicaria nada: quem procura por que não consegue excluir precisa
+            encontrar o botão e a razão no mesmo lugar.
+          -->
+          <button
             v-if="session.can('cases.delete')"
             class="btn btn--danger"
             type="button"
-            :disabled="removing"
+            :disabled="removing || underLegalHold"
+            :title="
+              underLegalHold
+                ? 'O caso está sob retenção obrigatória. Retire a retenção antes de excluir.'
+                : undefined
+            "
             @click="removeCase"
           >
             {{ removing ? 'Excluindo…' : 'Excluir caso' }}
           </button>
         </div>
       </header>
+
+      <div v-if="underLegalHold" class="hold" role="note">
+        <p class="hold__titulo">Este caso está sob retenção obrigatória.</p>
+        <p class="hold__motivo">{{ legalCase.legalHoldReason }}</p>
+        <p class="hold__efeito">
+          Enquanto a retenção estiver posta, nem o caso nem seus documentos e pessoas podem ser
+          excluídos por ninguém, inclusive por quem administra a organização.
+        </p>
+      </div>
+
+      <form
+        v-if="holdFormOpen"
+        class="hold-form"
+        @submit.prevent="toggleLegalHold(!underLegalHold)"
+      >
+        <label class="label" for="hold-reason">
+          {{ underLegalHold ? 'Motivo da liberação' : 'Motivo da retenção' }}
+        </label>
+        <input
+          id="hold-reason"
+          v-model="holdReason"
+          type="text"
+          maxlength="500"
+          required
+          :placeholder="
+            underLegalHold
+              ? 'Ex.: decisão que determinou a guarda foi cumprida em 12/08.'
+              : 'Ex.: ordem judicial de preservação no processo 0009999-84.2026.5.02.0001.'
+          "
+        />
+        <div class="hold-form__acoes">
+          <button
+            class="btn"
+            type="submit"
+            :disabled="changingHold || holdReason.trim().length < 3"
+          >
+            {{ changingHold ? 'Registrando…' : underLegalHold ? 'Retirar retenção' : 'Reter caso' }}
+          </button>
+          <button
+            class="btn btn--ghost"
+            type="button"
+            :disabled="changingHold"
+            @click="holdFormOpen = false"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
 
       <p v-if="exportFailure" class="note note--alert" role="alert">{{ exportFailure }}</p>
 
@@ -617,6 +713,48 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.hold {
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  background: var(--surface-sunk);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--danger, #b3261e);
+  border-radius: var(--radius);
+}
+
+.hold__titulo {
+  margin: 0 0 var(--space-2);
+  font-weight: 600;
+}
+
+.hold__motivo {
+  margin: 0 0 var(--space-2);
+  color: var(--text-2);
+}
+
+.hold__efeito {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+.hold-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  background: var(--surface-sunk);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.hold-form__acoes {
+  display: flex;
+  gap: var(--space-2);
+}
+
 .crumb {
   display: flex;
   align-items: center;

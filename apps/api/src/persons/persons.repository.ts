@@ -127,8 +127,15 @@ export class PersonsRepository {
     id: string,
     occurredAt: Date,
   ): Promise<boolean> {
+    // Pessoa que participa de caso sob retenção não sai das listas: apagá-la mudaria o que o
+    // caso retido mostra, que é exatamente o que a retenção existe para impedir.
     const result = await transaction.person.updateMany({
-      where: { id, organizationId, deletedAt: null },
+      where: {
+        id,
+        organizationId,
+        deletedAt: null,
+        participations: { none: { case: { legalHoldAt: { not: null } } } },
+      },
       data: { deletedAt: occurredAt },
     });
     return result.count === 1;

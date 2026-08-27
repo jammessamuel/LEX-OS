@@ -8,16 +8,18 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   Req,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
-  ApiNotFoundResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -29,6 +31,7 @@ import type { AuthenticatedRequest } from '../auth/authenticated-request.js';
 import { ApiErrorEnvelopeDto } from '../http/error-envelope.dto.js';
 import { getRequestContext } from '../observability/request-context.js';
 import { CasesService } from './cases.service.js';
+import { LegalHoldRequestDto } from './dto/legal-hold-request.dto.js';
 import { CaseIdParamsDto } from './dto/case-id-params.dto.js';
 import { CaseListResponseDto, CaseResponseDto } from './dto/case-response.dto.js';
 import { CreateCaseRequestDto } from './dto/create-case-request.dto.js';
@@ -108,6 +111,32 @@ export class CasesController {
       this.#actor(request),
       params.id,
       input.limitAmount,
+      getRequestContext() ?? {},
+    );
+  }
+
+  @Put(':id/legal-hold')
+  @RequirePermissions('cases.legal_hold')
+  @ApiOperation({
+    summary: 'Põe ou retira a retenção obrigatória de um caso acessível (ADR-012).',
+    description:
+      'Com a retenção posta, nenhum caminho de exclusão alcança o caso nem nada dentro dele. ' +
+      'A operação é auditada com autor, horário e motivo.',
+  })
+  @ApiOkResponse({ type: CaseResponseDto })
+  @ApiBadRequestResponse({ type: ApiErrorEnvelopeDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  @ApiForbiddenResponse({ type: ApiErrorEnvelopeDto })
+  @ApiNotFoundResponse({ type: ApiErrorEnvelopeDto })
+  setLegalHold(
+    @Req() request: AuthenticatedRequest,
+    @Param() params: CaseIdParamsDto,
+    @Body() input: LegalHoldRequestDto,
+  ) {
+    return this.cases.setLegalHold(
+      this.#actor(request),
+      params.id,
+      input,
       getRequestContext() ?? {},
     );
   }

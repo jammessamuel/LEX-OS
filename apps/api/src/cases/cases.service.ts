@@ -65,6 +65,8 @@ function mapCase(record: CaseRecord): CaseResponseDto {
     processingLimitReachedAt: record.processingLimitReachedAt?.toISOString() ?? null,
     openedAt: record.openedAt.toISOString(),
     closedAt: record.closedAt?.toISOString() ?? null,
+    legalHoldAt: record.legalHoldAt?.toISOString() ?? null,
+    legalHoldReason: record.legalHoldReason,
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
   };
@@ -426,8 +428,73 @@ export class CasesService {
     return mapCase(result);
   }
 
+  /**
+   * Põe ou retira a retenção obrigatória (ADR-012).
+   *
+   * Retirar exige motivo tanto quanto pôr: quem levanta uma retenção responde por isso, e a
+   * auditoria sem o porquê não serve a ninguém depois.
+   */
+  async setLegalHold(
+    actor: ActorContext,
+    id: string,
+    input: { hold: boolean; reason: string },
+    metadata: RequestAuditMetadata,
+  ): Promise<CaseResponseDto> {
+    const current = await this.#findAccessible(actor, id);
+    const reason = input.reason.trim();
+    if (reason.length === 0) {
+      throw new ApiException(
+        HttpStatus.BAD_REQUEST,
+        'LEGAL_HOLD_REASON_REQUIRED',
+        'A retenção exige um motivo registrado.',
+      );
+    }
+    const record = await withTransaction(this.database.client, async (transaction) => {
+      const updated = await this.repository.setLegalHold(
+        transaction,
+        actor.organizationId,
+        id,
+        input.hold ? { at: new Date(), byId: actor.userId, reason } : null,
+      );
+      if (updated === null) {
+        throw this.#notFound();
+      }
+      await this.audit.recordDomainInTransaction(transaction, {
+        organizationId: actor.organizationId,
+        userId: actor.userId,
+        entityId: id,
+        entityType: 'case',
+        action: input.hold ? 'case.legal_hold.placed' : 'case.legal_hold.released',
+        oldData: auditSnapshot(current),
+        // O motivo entra no registro; o conteúdo do caso, não.
+        newData: { ...auditSnapshot(updated), legalHoldReason: reason },
+        ...metadata,
+      });
+      return updated;
+    });
+    return mapCase(record);
+  }
+
+  /**
+   * Recusa a operação quando o caso está retido, com o motivo à vista.
+   *
+   * A guarda que de fato impede está no filtro do repositório. Esta existe para a mensagem: o
+   * advogado precisa saber que há retenção e por quê, e não receber "não encontrado".
+   */
+  async assertNotUnderLegalHold(organizationId: string, caseId: string): Promise<void> {
+    const hold = await this.repository.legalHoldOf(organizationId, caseId);
+    if (hold.held) {
+      throw new ApiException(
+        HttpStatus.CONFLICT,
+        'CASE_UNDER_LEGAL_HOLD',
+        `O caso está sob retenção obrigatória e nada dele pode ser excluído. Motivo: ${hold.reason}`,
+      );
+    }
+  }
+
   async remove(actor: ActorContext, id: string, metadata: RequestAuditMetadata): Promise<void> {
     const current = await this.#findAccessible(actor, id);
+    await this.assertNotUnderLegalHold(actor.organizationId, id);
     await withTransaction(this.database.client, async (transaction) => {
       const removed = await this.repository.softDelete(
         transaction,

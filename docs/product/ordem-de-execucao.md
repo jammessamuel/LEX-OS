@@ -25,7 +25,7 @@ Estado verificado no código em 2026-08-26, não deduzido dos ADRs.
 | **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada, citação obrigatória                   | Teto de recuperação em 5 trechos limita pergunta ampla          |
 | **010** | Canais de entrada              | ✅ Upload                                                             | ❌ **Canal de e-mail nunca foi construído** — zero no código    |
 | **011** | Modelo de custo                | ✅ Cotação por execução, teto por caso enforçado, custo gravado       | ❌ Agregação por organização/provedor/modelo · ❌ `docs/legal/` |
-| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga automática                                               | ❌ **Legal hold: zero ocorrências** · ❌ Lista de suboperadores |
+| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga automática · ✅ Legal hold                               | ❌ Lista de suboperadores                                       |
 | **013** | Notificações internas          | ✅ Caixa de saída + despachante no worker (Entrega 13)                | ❌ Os três gatilhos: preparo concluído, falha, tarefa atribuída |
 | **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código | Itens 4–7 adiados **por decisão**, não por esquecimento         |
 | **015** | Biblioteca de prompts          | ✅ Itens 1, 5, 6, 7 · ✅ Item 3 em três quartos                       | ❌ Item 4 (guarda pelo dado) · ❌ Item 2 (`REVIEWED` com OAB)   |
@@ -139,7 +139,22 @@ O teto por caso já existe e é enforçado (`Case.processingCostLimitAmount`, ve
 `cases.repository.ts:272`). Falta somar por organização e abrir por provedor e modelo.
 **B4. Custo do assistente debitando o orçamento do caso** — ADR-011
 Hoje calcula e audita, não desconta.
-**B5. Legal hold** — ADR-012. Zero ocorrências em código, e falha-fechado é o requisito.
+**B5. Legal hold** — ADR-012 · **FEITO 2026-08-27**
+
+A marca vive no caso, e a guarda que de fato impede está no **filtro do repositório**, não no
+serviço: retenção tem de valer para todo chamador, inclusive um futuro caminho administrativo ou
+de reconciliação, e condição no filtro não se esquece de chamar. Alcança caso, documento e pessoa
+que participe de caso retido.
+
+O estado indeterminado que o ADR-012 manda recusar foi tornado **impossível de existir**: uma
+restrição de banco obriga data, autor e motivo a entrarem e saírem juntos. A consulta de hold
+falha fechada — caso que não pôde ser lido conta como retido.
+
+Na tela, o botão de excluir continua à vista, desabilitado, com o motivo no . Sumir com
+ele não explicaria nada a quem procura por que não consegue excluir.
+
+**Migração escrita à mão** por não haver banco nesta máquina; ela nunca foi aplicada. O job de
+integração da CI é a primeira execução real.
 
 **Ordem interna:** B1 e B2 são documento, não código, e destravam a conversa comercial — vêm
 primeiro. B3 e B4 são o mesmo trabalho de agregação. B5 é o maior e o mais tarde, mas nada do
