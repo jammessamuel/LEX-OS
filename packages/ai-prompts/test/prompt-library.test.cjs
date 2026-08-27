@@ -160,9 +160,37 @@ describe('biblioteca de prompts', () => {
     );
   });
 
-  it('deixa passar sobre acervo real o que foi aprovado', () => {
-    for (const prompt of library.promptLibrary.filter((p) => p.reviewStatus === 'REVIEWED')) {
-      assert.doesNotThrow(() => library.assertUsableIn(prompt, 'real'));
+  it('a recusa sobre acervo real acompanha exatamente a lacuna da atestação', () => {
+    // "REVIEWED" não basta por si: a atestação precisa cobrir esta versão do texto e, quando se
+    // declara de advogado, carregar a inscrição. A guarda e o diagnóstico têm de contar a mesma
+    // história — se divergirem, o erro que a pessoa lê deixa de explicar a recusa.
+    for (const prompt of library.promptLibrary) {
+      const lacuna = library.reviewGapFor(prompt);
+      if (lacuna === null) {
+        assert.doesNotThrow(() => library.assertUsableIn(prompt, 'real'), prompt.identifier);
+      } else {
+        assert.throws(
+          () => library.assertUsableIn(prompt, 'real'),
+          library.UnreviewedPromptError,
+          prompt.identifier,
+        );
+      }
+    }
+  });
+
+  it('registra a revisão de advogada sem inscrição ativa, e continua barrando acervo real', () => {
+    // Situação real em 2026-08-27: as três faixas foram lidas e aprovadas por advogada cuja
+    // inscrição não está ativa — atividade policial é incompatível com a advocacia, art. 28, V
+    // da Lei 8.906/94. O registro guarda quem leu, e a guarda continua de pé. As duas coisas
+    // são verdadeiras ao mesmo tempo, e o registro não finge o contrário.
+    const especialidade = library.promptLibrary.filter((p) => p.specialty !== null);
+    assert.equal(especialidade.length, 15);
+    for (const prompt of especialidade) {
+      assert.equal(prompt.reviewStatus, 'REVIEWED', prompt.identifier);
+      assert.equal(prompt.review.capacity, 'LAWYER', prompt.identifier);
+      assert.equal(prompt.review.oab, null, prompt.identifier);
+      assert.match(prompt.review.standing, /incompat/iu, prompt.identifier);
+      assert.match(library.reviewGapFor(prompt), /no bar registration/u, prompt.identifier);
     }
   });
 

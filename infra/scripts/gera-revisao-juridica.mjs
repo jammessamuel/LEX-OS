@@ -71,7 +71,34 @@ const compartilhados = paragrafosCompartilhados();
 const destino = `${raiz}docs/product/revisao-juridica`;
 mkdirSync(destino, { recursive: true });
 
-const ABERTURA = (area, materia, palavras) => `# Revisão jurídica — ${materia}
+/** O estado da revisão desta faixa, lido das atestações e não de memória. */
+function estadoDaRevisao(prompts) {
+  const atestacoes = prompts.map((p) => p.review).filter((r) => r !== null);
+  if (atestacoes.length === 0) {
+    return `Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada
+e passaram por três revisões adversariais, também automatizadas, que acharam erros graves —
+inclusive três citações legais **fabricadas** numa das faixas. É por isso que este caderno existe:
+enquanto ninguém assinar, estas instruções só rodam sobre material fictício, e o sistema recusa
+usá-las sobre acervo de cliente.`;
+  }
+  const r = atestacoes[0];
+  const inscricao =
+    r.oab === null
+      ? `**sem número de inscrição registrado** — ${r.standing ?? 'situação não declarada'}`
+      : `inscrição ${r.oab}`;
+  return `**Revisadas por ${r.name} em ${r.date}**, ${inscricao}.
+
+${r.note}
+
+As instruções também passaram por três revisões adversariais automatizadas, que acharam erros
+graves antes desta leitura — inclusive três citações legais **fabricadas** numa das faixas.
+
+Enquanto a atestação não carregar inscrição ativa, o sistema continua recusando estas instruções
+sobre acervo de cliente e as libera apenas sobre material fictício. Isso é intencional: a marca
+registra quem leu, e a guarda registra o que a leitura ainda não cobre.`;
+}
+
+const ABERTURA = (area, materia, palavras, revisao) => `# Revisão jurídica — ${materia}
 
 > **Este documento foi gerado a partir do código em ${new Date().toISOString().slice(0, 10)}.**
 > Não o edite: as correções voltam como anotação, e quem altera o texto é quem mexe na
@@ -87,11 +114,7 @@ Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em po
 modelo junto com o documento. As cinco instruções de ${materia} estão abaixo, na íntegra e
 exatamente como o sistema as usa — **${palavras} palavras**.
 
-Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada e passaram
-por três revisões adversariais, também automatizadas, que acharam erros graves — inclusive três
-citações legais **fabricadas** numa das faixas. É por isso que este caderno existe: enquanto
-ninguém assinar, estas instruções só rodam sobre material fictício, e o sistema recusa usá-las
-sobre acervo de cliente.
+${revisao}
 
 ## O que procurar
 
@@ -191,7 +214,7 @@ ${contratoLegivel(prompt.outputSchema)}
   const arquivo = `${destino}/${area.toLowerCase()}.md`;
   writeFileSync(
     arquivo,
-    `${ABERTURA(area, materia, palavras.toLocaleString('pt-BR'))}${secoes.join('\n---\n\n')}${ENCERRAMENTO(materia)}`,
+    `${ABERTURA(area, materia, palavras.toLocaleString('pt-BR'), estadoDaRevisao(prompts))}${secoes.join('\n---\n\n')}${ENCERRAMENTO(materia)}`,
     'utf8',
   );
   process.stdout.write(`${arquivo} · ${prompts.length} tarefas · ${palavras} palavras

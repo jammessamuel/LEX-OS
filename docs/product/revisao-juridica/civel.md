@@ -1,6 +1,6 @@
 # Revisão jurídica — direito civil e processo civil
 
-> **Este documento foi gerado a partir do código em 2026-08-26.**
+> **Este documento foi gerado a partir do código em 2026-08-27.**
 > Não o edite: as correções voltam como anotação, e quem altera o texto é quem mexe na
 > biblioteca. Regenerar com `node infra/scripts/gera-revisao-juridica.mjs`.
 
@@ -14,11 +14,16 @@ Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em po
 modelo junto com o documento. As cinco instruções de direito civil e processo civil estão abaixo, na íntegra e
 exatamente como o sistema as usa — **8.213 palavras**.
 
-Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada e passaram
-por três revisões adversariais, também automatizadas, que acharam erros graves — inclusive três
-citações legais **fabricadas** numa das faixas. É por isso que este caderno existe: enquanto
-ninguém assinar, estas instruções só rodam sobre material fictício, e o sistema recusa usá-las
-sobre acervo de cliente.
+**Revisadas por Thais Regina Farrapo Moreira em 2026-08-27**, **sem número de inscrição registrado** — Advogada. Atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94), então a inscrição não está ativa. Número não informado..
+
+Leitura integral do caderno de revisão desta faixa, gerado a partir da própria biblioteca. Aprovado sem ressalvas registradas. Não cobre a conferência de número de artigo e súmula um a um, que continua sendo trabalho das lentes automatizadas.
+
+As instruções também passaram por três revisões adversariais automatizadas, que acharam erros
+graves antes desta leitura — inclusive três citações legais **fabricadas** numa das faixas.
+
+Enquanto a atestação não carregar inscrição ativa, o sistema continua recusando estas instruções
+sobre acervo de cliente e as libera apenas sobre material fictício. Isso é intencional: a marca
+registra quem leu, e a guarda registra o que a leitura ainda não cobre.
 
 ## O que procurar
 
