@@ -1,36 +1,36 @@
 # Ordem de execução — estado por ADR e o que vem a seguir
 
-**Data:** 2026-08-26
+**Data:** 2026-08-27
 **Para que serve:** não se perder. Quinze ADRs decidiram coisas ao longo de meses; algumas
 viraram código, outras esperam, e algumas esperam sem que ninguém lembre por quê. Este
 documento diz, de cada uma, o que está de pé — e monta **uma** ordem de execução que atravessa
 todas.
 
-Estado verificado no código em 2026-08-26, não deduzido dos ADRs.
+Estado verificado no código em 2026-08-27, não deduzido dos ADRs.
 
 ---
 
 ## 1. Onde estamos, ADR por ADR
 
-| ADR     | Decisão                        | Construído                                                            | Aberto                                                          |
-| ------- | ------------------------------ | --------------------------------------------------------------------- | --------------------------------------------------------------- |
-| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                 | —                                                               |
-| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 17 migrações                 | —                                                               |
-| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                | —                                                               |
-| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos      | —                                                               |
-| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                              | —                                                               |
-| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed                                         | Nenhum provedor real — **por decisão**, ver 011 e 012           |
-| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP              | —                                                               |
-| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                            | —                                                               |
-| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada, citação obrigatória                   | Teto de recuperação em 5 trechos limita pergunta ampla          |
-| **010** | Canais de entrada              | ✅ Upload                                                             | ❌ **Canal de e-mail nunca foi construído** — zero no código    |
-| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos | —                                                               |
-| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                       | Transferência internacional e responsável nomeado               |
-| **013** | Notificações internas          | ✅ Caixa de saída + despachante no worker (Entrega 13)                | ❌ Os três gatilhos: preparo concluído, falha, tarefa atribuída |
-| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código | Itens 4–7 adiados **por decisão**, não por esquecimento         |
-| **015** | Biblioteca de prompts          | ✅ Itens 1, 5, 6, 7 · ✅ Item 3 em três quartos                       | ❌ Item 4 (guarda pelo dado) · ❌ Item 2 (`REVIEWED` com OAB)   |
+| ADR     | Decisão                        | Construído                                                                          | Aberto                                                                  |
+| ------- | ------------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                               | —                                                                       |
+| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 17 migrações                               | —                                                                       |
+| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                              | —                                                                       |
+| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos                    | —                                                                       |
+| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                                            | —                                                                       |
+| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real atrás da porta                    | Recusa existir sobre acervo real — falta a cláusula de não-treino (012) |
+| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP                            | —                                                                       |
+| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                                          | —                                                                       |
+| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada, citação obrigatória                                 | Teto de recuperação em 5 trechos limita pergunta ampla                  |
+| **010** | Canais de entrada              | ✅ Upload                                                                           | ❌ **Canal de e-mail nunca foi construído** — zero no código            |
+| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos               | —                                                                       |
+| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                                     | Transferência internacional e responsável nomeado                       |
+| **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Falha terminal e tarefa atribuída | ❌ Terceiro gatilho: preparo concluído — precisa de job repetível       |
+| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código               | Itens 4–7 adiados **por decisão**, não por esquecimento                 |
+| **015** | Biblioteca de prompts          | ✅ Itens 1, 3, 4, 5, 6, 7 · ✅ Item 2 (mecanismo)                                   | 15 dos 20 prompts seguem `DRAFT` — falta quem assina                    |
 
-**Leitura rápida:** dos quinze, oito estão inteiramente de pé. O que sobra se concentra em três
+**Leitura rápida:** dos quinze, nove estão inteiramente de pé. O que sobra se concentra em três
 lugares — os portões que liberam o provedor real (011, 012), o que promete aviso e não avisa
 (010, 013), e o que a rodada de prompts abriu (015).
 
@@ -172,9 +172,21 @@ provedor real sai sem ele.
 
 ### Fila C — o que promete aviso e não avisa
 
-**C1. Os três gatilhos do ADR-013** — preparo concluído, falha terminal de documento, tarefa
-atribuída. A caixa de saída e o despachante já existem desde a Entrega 13: falta só quem
-dispara. **É a maior razão de valor por linha de código na fila inteira.**
+**C1. Os três gatilhos do ADR-013** — dois ligados em 2026-08-27, um aberto
+A caixa de saída e o despachante existiam desde a Entrega 13 e nada disparava. Agora disparam a
+**falha terminal de documento** e a **tarefa atribuída**, com conteúdo mínimo: código interno do
+caso, o que aconteceu em linguagem de gente, e um link. Não viaja título de documento, teor
+extraído, nome de parte, mensagem técnica do erro nem título de tarefa — este último ficou de
+fora por decisão desta rodada, porque em caso jurídico costuma descrever a peça que falta.
+
+A falha avisa só na tentativa terminal, e não consulta preferência nenhuma: o opt-out é por
+gatilho e a falha não está na lista. A coluna guarda o que foi **desligado**, não o que foi
+ligado, para conta nova nascer recebendo. Tarefa atribuída a si mesmo não avisa. Os dois avisos
+são enfileirados fora da transação do fato.
+
+**Aberto: o terceiro gatilho** — resumo diário de preparo concluído. Precisa de job repetível no
+worker, que não existe; por isso ficou em pedaço próprio. **É a maior razão de valor por linha de
+código na fila inteira.**
 
 **C2. Canal de entrada por e-mail** — ADR-010. Decidido como MVP e nunca construído. Zero
 ocorrências. Vale reabrir a decisão em vez de executá-la em silêncio: o upload atende, e o
