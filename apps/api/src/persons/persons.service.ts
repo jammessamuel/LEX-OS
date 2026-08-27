@@ -215,6 +215,9 @@ export class PersonsService {
     if (current === null) {
       throw this.#notFound();
     }
+    // A recusa por retenção precisa de mensagem própria: "não encontrado" mandaria o
+    // advogado procurar um defeito que não existe.
+    await this.repository.assertNotInHeldCase(actor.organizationId, id);
     await withTransaction(this.database.client, async (transaction) => {
       const removed = await this.repository.softDelete(
         transaction,

@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { Prisma, type TransactionClient } from '@lex-os/database';
 
 import { DatabaseService } from '../database/database.service.js';
+import { ApiException } from '../http/api-exception.js';
 import type { PersonTypeCode } from './person.constants.js';
 
 const personSelect = {
@@ -129,15 +130,40 @@ export class PersonsRepository {
   ): Promise<boolean> {
     // Pessoa que participa de caso sob retenção não sai das listas: apagá-la mudaria o que o
     // caso retido mostra, que é exatamente o que a retenção existe para impedir.
+    //
+    // A verificação é uma consulta à parte, e não uma condição no `where`, porque `updateMany`
+    // não aceita filtro de relação — ele valida em tempo de execução e lança. Vive dentro da
+    // mesma transação de propósito: se ela lançar, nada é excluído, que é o comportamento certo.
+    const emCasoRetido = await transaction.caseParticipant.count({
+      where: { organizationId, personId: id, case: { legalHoldAt: { not: null } } },
+    });
+    if (emCasoRetido > 0) {
+      return false;
+    }
     const result = await transaction.person.updateMany({
-      where: {
-        id,
-        organizationId,
-        deletedAt: null,
-        participations: { none: { case: { legalHoldAt: { not: null } } } },
-      },
+      where: { id, organizationId, deletedAt: null },
       data: { deletedAt: occurredAt },
     });
     return result.count === 1;
+  }
+
+  /**
+   * Recusa com mensagem quando a pessoa participa de caso sob retenção (ADR-012).
+   *
+   * A guarda que impede está dentro da transação de `softDelete`. Esta existe para a mensagem:
+   * "não encontrado" mandaria o advogado procurar um defeito que não existe.
+   */
+  async assertNotInHeldCase(organizationId: string, personId: string): Promise<void> {
+    const retido = await this.database.client.caseParticipant.findFirst({
+      where: { organizationId, personId, case: { legalHoldAt: { not: null } } },
+      select: { case: { select: { internalCode: true, legalHoldReason: true } } },
+    });
+    if (retido !== null) {
+      throw new ApiException(
+        HttpStatus.CONFLICT,
+        'PERSON_IN_CASE_UNDER_LEGAL_HOLD',
+        `A pessoa participa do caso ${retido.case?.internalCode ?? ''}, que está sob retenção obrigatória, e por isso não pode ser excluída. Motivo: ${retido.case?.legalHoldReason ?? ''}`,
+      );
+    }
   }
 }

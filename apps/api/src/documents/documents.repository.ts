@@ -148,15 +148,17 @@ export class DocumentsRepository {
     fileId: string,
     occurredAt: Date,
   ): Promise<boolean> {
-    // O documento vive dentro do caso, então a retenção do caso o alcança. A condição fica no
-    // filtro pela mesma razão que no caso: guarda que depende de o chamador lembrar não é guarda.
+    // O documento vive dentro do caso, então a retenção do caso o alcança. Consulta à parte
+    // pelo mesmo motivo da pessoa: `updateMany` não aceita filtro de relação. Dentro da
+    // transação, para que lançar aqui signifique não excluir nada.
+    const emCasoRetido = await transaction.document.count({
+      where: { id: documentId, organizationId, case: { legalHoldAt: { not: null } } },
+    });
+    if (emCasoRetido > 0) {
+      return false;
+    }
     const result = await transaction.document.updateMany({
-      where: {
-        id: documentId,
-        organizationId,
-        deletedAt: null,
-        case: { legalHoldAt: null },
-      },
+      where: { id: documentId, organizationId, deletedAt: null },
       data: { deletedAt: occurredAt },
     });
     if (result.count !== 1) {
