@@ -294,7 +294,13 @@ export function checklistItemTone(
       return 'pendente';
     case 'NOT_APPLICABLE':
       return 'neutro';
+    // Ilegível, inválido e vencido são o mesmo tipo de notícia que "não recebido": a exigência
+    // não está satisfeita e alguém precisa agir. Caíam no default e saíam com a cor de neutro,
+    // que na tela lê como resolvido.
     case 'MISSING':
+    case 'ILLEGIBLE':
+    case 'INVALID':
+    case 'EXPIRED':
       return isRequired ? 'rejeitado' : 'pendente';
     default:
       return 'rejeitado';

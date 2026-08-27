@@ -91,6 +91,96 @@ describe('CaseChecklistView', () => {
     expect(wrapper.get('[role="status"]').classes()).toContain('verdict--blocked');
   });
 
+  it('conta como travado o obrigatório ilegível, inválido ou vencido', async () => {
+    // A regressão que isto guarda: quando a análise passou a propor cinco estados, o contador
+    // continuou somando só MISSING. Documento obrigatório ilegível sumia da conta, e o caso
+    // aparecia mais completo do que estava — numa tela cuja função é dizer o que falta.
+    for (const status of ['ILLEGIBLE', 'INVALID', 'EXPIRED']) {
+      request.mockReset();
+      mockLoad([checklist([item({ status, documentId: 'doc-1' })])]);
+
+      const wrapper = mountView();
+      await flushPromises();
+
+      const verdict = wrapper.get('[role="status"]');
+      expect(verdict.text(), status).toContain('1 exigência obrigatória');
+      expect(verdict.classes(), status).toContain('verdict--blocked');
+    }
+  });
+
+  it('mostra ilegível com a cor de pendência, não com a de resolvido', async () => {
+    mockLoad([checklist([item({ status: 'ILLEGIBLE', documentId: 'doc-1' })])]);
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Ilegível');
+    // Os três estados novos caíam no default da função de tom e saíam neutros, que na tela lê
+    // como coisa resolvida.
+    expect(wrapper.html()).toContain('rejeitado');
+  });
+
+  it('deixa recusar dizendo o defeito, porque cada defeito muda o pedido ao cliente', async () => {
+    mockLoad([checklist([item({ status: 'AWAITING_VALIDATION', documentId: 'doc-1' })])]);
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    const [recusar] = wrapper.findAll('button').filter((botao) => botao.text() === 'Recusar');
+    if (recusar === undefined) {
+      throw new Error('A exigência com documento vinculado não ofereceu recusa.');
+    }
+    await recusar.trigger('click');
+
+    const texto = wrapper.text();
+    expect(texto).toContain('Ilegível');
+    expect(texto).toContain('Inválido');
+    expect(texto).toContain('Vencido');
+    // O critério vai junto do rótulo: escolher errado aqui manda o pedido errado ao cliente.
+    expect(texto).toContain('novo escaneamento');
+
+    request.mockResolvedValueOnce({
+      ...item({ status: 'ILLEGIBLE', documentId: 'doc-1' }),
+    });
+    const [ilegivel] = wrapper
+      .findAll('.recusa__opcao')
+      .filter((botao) => botao.text().includes('Ilegível'));
+    if (ilegivel === undefined) {
+      throw new Error('A opção Ilegível não apareceu entre os motivos de recusa.');
+    }
+    await ilegivel.trigger('click');
+    await flushPromises();
+
+    expect(request).toHaveBeenCalledWith('/checklist-items/it-1', {
+      method: 'PATCH',
+      body: { status: 'ILLEGIBLE' },
+    });
+  });
+
+  it('não oferece recusa sem documento vinculado, que a API recusaria', async () => {
+    // `documentRequiredStatuses` na API exige documento para ilegível, inválido e vencido.
+    // Oferecer o botão sem documento produziria um 400 que o advogado não tem como resolver.
+    mockLoad([checklist([item({ status: 'MISSING', documentId: null })])]);
+
+    const wrapper = mountView();
+    await flushPromises();
+
+    expect(wrapper.findAll('button').some((b) => b.text() === 'Recusar')).toBe(false);
+  });
+
+  it('oferece criar tarefa para todo estado que a API considera pendente', async () => {
+    for (const status of ['MISSING', 'ILLEGIBLE', 'INVALID', 'EXPIRED']) {
+      request.mockReset();
+      mockLoad([checklist([item({ status, documentId: status === 'MISSING' ? null : 'doc-1' })])]);
+
+      const wrapper = mountView();
+      await flushPromises();
+
+      const tem = wrapper.findAll('button').some((b) => b.text().includes('Criar tarefa'));
+      expect({ status, tem }).toEqual({ status, tem: true });
+    }
+  });
+
   it('sem obrigatória em falta, o veredito muda de tom e informa o progresso', async () => {
     mockLoad([
       checklist([

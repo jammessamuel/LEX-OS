@@ -40,12 +40,61 @@ function toApiError(error: unknown, fallback: string): ApiError {
     : new ApiError({ statusCode: 0, code: 'UNEXPECTED', message: fallback });
 }
 
-/** O que trava o protocolo: exigência obrigatória ainda não recebida. */
+/**
+ * O que trava o protocolo: exigência obrigatória que ainda não está satisfeita.
+ *
+ * Não é só "não recebido". Documento ilegível, inválido ou vencido também trava, e contá-los
+ * fora fazia o caso parecer mais completo do que está — que é o pior erro possível numa tela
+ * cuja função é dizer o que falta antes do prazo.
+ */
+const pendingStatuses = new Set<ChecklistItemStatus>([
+  'MISSING',
+  'ILLEGIBLE',
+  'INVALID',
+  'EXPIRED',
+]);
 const blocking = computed(() =>
   checklists.value.flatMap((checklist) =>
-    checklist.items.filter((item) => item.isRequired && item.status === 'MISSING'),
+    checklist.items.filter((item) => item.isRequired && pendingStatuses.has(item.status)),
   ),
 );
+
+/**
+ * Por que uma exigência foi recusada.
+ *
+ * O ciclo que isto existe para quebrar: o documento chega ilegível, o advogado marca só como
+ * não recebido, pede ao cliente, o cliente reenvia o mesmo arquivo, e repete até a véspera.
+ * Dizer qual é o defeito muda o pedido — novo escaneamento, documento assinado, certidão nova.
+ */
+const rejectionReasons = [
+  [
+    'ILLEGIBLE',
+    'Ilegível',
+    'A imagem não deixa ler o campo de que a exigência depende. O pedido ao cliente é de novo escaneamento, não de novo documento.',
+  ],
+  [
+    'INVALID',
+    'Inválido',
+    'Documento certo, sem assinatura, sem os poderes do ato ou fora da forma exigida. O pedido é do mesmo documento regularizado.',
+  ],
+  [
+    'EXPIRED',
+    'Vencido',
+    'A validade se afere por data e a data já passou. O pedido é de certidão nova, com a data de emissão à vista.',
+  ],
+] as const;
+
+const rejectingFor = ref<string | null>(null);
+
+function openRejection(itemId: string): void {
+  rejectingFor.value = itemId;
+  actionFailure.value = null;
+}
+
+async function rejectItem(item: CaseChecklistItem, status: ChecklistItemStatus): Promise<void> {
+  await updateItem(item, status);
+  rejectingFor.value = null;
+}
 
 const allItems = computed(() => checklists.value.flatMap((checklist) => checklist.items));
 const settled = computed(
@@ -320,8 +369,21 @@ onMounted(() => {
                 </button>
                 <button
                   v-if="
+                    session.can('cases.update') &&
+                    item.documentId !== null &&
+                    rejectingFor !== item.id
+                  "
+                  class="btn btn--ghost btn--sm"
+                  type="button"
+                  :disabled="updating.has(item.id)"
+                  @click="openRejection(item.id)"
+                >
+                  Recusar
+                </button>
+                <button
+                  v-if="
                     session.can('tasks.manage') &&
-                    item.status === 'MISSING' &&
+                    pendingStatuses.has(item.status) &&
                     creatingFor !== item.id
                   "
                   class="btn btn--ghost btn--sm"
@@ -331,6 +393,31 @@ onMounted(() => {
                   {{ createdFor.has(item.id) ? 'Criar outra tarefa' : 'Criar tarefa' }}
                 </button>
               </div>
+            </div>
+
+            <!--
+              Recusar pede o motivo em vez de aceitar um "não" genérico: cada motivo produz um
+              pedido diferente ao cliente, e é a distinção entre eles que evita o cliente
+              reenviar o mesmo arquivo até a véspera.
+            -->
+            <div v-if="rejectingFor === item.id" class="recusa">
+              <p class="recusa__pergunta">Qual é o defeito do documento recebido?</p>
+              <div class="recusa__opcoes">
+                <button
+                  v-for="[motivo, rotulo, explicacao] in rejectionReasons"
+                  :key="motivo"
+                  class="recusa__opcao"
+                  type="button"
+                  :disabled="updating.has(item.id)"
+                  @click="rejectItem(item, motivo)"
+                >
+                  <span class="recusa__rotulo">{{ rotulo }}</span>
+                  <span class="recusa__explicacao">{{ explicacao }}</span>
+                </button>
+              </div>
+              <button class="btn btn--ghost btn--sm" type="button" @click="rejectingFor = null">
+                Cancelar
+              </button>
             </div>
 
             <!-- A tarefa nasce no contexto da exigência e já recebe prioridade e prazo. -->
@@ -492,6 +579,64 @@ onMounted(() => {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.recusa {
+  flex-basis: 100%;
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface-sunk);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.recusa__pergunta {
+  margin: 0 0 var(--space-3);
+  font-size: 0.85rem;
+  color: var(--text-2);
+}
+
+.recusa__opcoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+/* Cada motivo mostra o critério junto: escolher errado aqui manda o pedido errado ao cliente. */
+.recusa__opcao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  text-align: left;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.recusa__opcao:hover:not(:disabled),
+.recusa__opcao:focus-visible {
+  border-color: var(--line-strong);
+}
+
+.recusa__opcao:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.recusa__rotulo {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.recusa__explicacao {
+  font-size: 0.78rem;
+  color: var(--text-3);
+  line-height: 1.45;
 }
 
 .task-form {
