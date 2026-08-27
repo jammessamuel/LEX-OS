@@ -150,7 +150,7 @@ O estado indeterminado que o ADR-012 manda recusar foi tornado **impossível de 
 restrição de banco obriga data, autor e motivo a entrarem e saírem juntos. A consulta de hold
 falha fechada — caso que não pôde ser lido conta como retido.
 
-Na tela, o botão de excluir continua à vista, desabilitado, com o motivo no . Sumir com
+Na tela, o botão de excluir continua à vista, desabilitado, com o motivo na dica. Sumir com
 ele não explicaria nada a quem procura por que não consegue excluir.
 
 **Migração escrita à mão** por não haver banco nesta máquina; ela nunca foi aplicada. O job de
