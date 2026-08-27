@@ -3,6 +3,11 @@ name: lex-os
 x-runtime-environment: &runtime-environment
   NODE_ENV: development
   CASE_ARCHIVE: fictional
+  AI_LANGUAGE_MODEL_PROVIDER: mock
+  AI_LANGUAGE_MODEL_NAME: deterministic-grounded-v1
+  AI_LANGUAGE_MODEL_API_KEY: ''
+  AI_INPUT_COST_PER_MILLION_TOKENS: '0'
+  AI_OUTPUT_COST_PER_MILLION_TOKENS: '0'
   API_PORT: 3000
   DEPENDENCY_TIMEOUT_MS: ${DEPENDENCY_TIMEOUT_MS:?DEPENDENCY_TIMEOUT_MS is required}
   LOG_LEVEL: ${LOG_LEVEL:?LOG_LEVEL is required}

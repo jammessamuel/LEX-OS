@@ -15,9 +15,34 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
  */
 export type CaseArchive = 'fictional' | 'real';
 
+/**
+ * Quem responde as perguntas fundamentadas.
+ *
+ * `mock` é o determinístico que não faz chamada externa. `anthropic` fala com um modelo de
+ * verdade — e, por decisão do ADR-012, só é aceito sobre acervo fictício enquanto não houver
+ * cláusula assinada de que o fornecedor não treina com o conteúdo enviado. A validação disso
+ * está no adaptador, que se recusa a existir na combinação proibida.
+ */
+export type LanguageModelProviderName = 'mock' | 'anthropic';
+
 export interface RuntimeConfig {
   environment: RuntimeEnvironment;
   caseArchive: CaseArchive;
+  languageModel: {
+    provider: LanguageModelProviderName;
+    /** Vazio quando o provedor é o mock. Nunca aparece em log, auditoria ou resposta. */
+    apiKey: string;
+    modelName: string;
+    /**
+     * Preço por milhão de tokens, **já na moeda do modelo de custo**.
+     *
+     * Fica em configuração e não em código porque preço muda sem aviso, e preço errado em
+     * código vira teto de caso calculado sobre número inventado. Converter moeda também é do
+     * operador: inventar uma taxa de câmbio aqui seria pior que pedir o valor convertido.
+     */
+    inputCostPerMillionTokens: string;
+    outputCostPerMillionTokens: string;
+  };
   service: {
     apiPort: number;
     dependencyTimeoutMs: number;
@@ -90,6 +115,7 @@ export interface RuntimeConfig {
 const environments: readonly RuntimeEnvironment[] = ['development', 'production', 'test'];
 const logLevels: readonly LogLevel[] = ['debug', 'info', 'warn', 'error'];
 const caseArchives: readonly CaseArchive[] = ['fictional', 'real'];
+const languageModelProviders: readonly LanguageModelProviderName[] = ['mock', 'anthropic'];
 const productionPlaceholders = [
   '1234',
   'change-me',
@@ -122,6 +148,20 @@ function oneOf<const T extends string>(
   }
 
   return value as T;
+}
+
+/**
+ * Decimal como texto, para não perder precisão em ponto flutuante.
+ *
+ * O modelo de custo trabalha com `Decimal` de seis casas; passar por `number` no caminho
+ * introduziria erro que só aparece somado ao fim do mês.
+ */
+function decimalString(env: NodeJS.ProcessEnv, name: string): string {
+  const value = required(env, name);
+  if (!/^\d{1,9}(\.\d{1,6})?$/u.test(value)) {
+    throw new Error(`${name} must be a decimal amount with at most six decimal places.`);
+  }
+  return value;
 }
 
 function integer(env: NodeJS.ProcessEnv, name: string, minimum: number, maximum: number): number {
@@ -235,6 +275,9 @@ function validateProduction(config: RuntimeConfig): void {
   );
   assertProductionSecret('AUTH_ACCESS_TOKEN_SECRET', config.authentication.accessTokenSecret, 32);
   assertProductionSecret('REDIS_PASSWORD', config.redis.password);
+  if (config.languageModel.provider !== 'mock') {
+    assertProductionSecret('AI_LANGUAGE_MODEL_API_KEY', config.languageModel.apiKey, 20);
+  }
   assertProductionSecret('OBJECT_STORAGE_ACCESS_KEY', config.objectStorage.accessKey);
   assertProductionSecret('OBJECT_STORAGE_SECRET_KEY', config.objectStorage.secretKey);
 }
@@ -243,6 +286,13 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   const config: RuntimeConfig = {
     environment: oneOf(env, 'NODE_ENV', environments),
     caseArchive: oneOf(env, 'CASE_ARCHIVE', caseArchives),
+    languageModel: {
+      provider: oneOf(env, 'AI_LANGUAGE_MODEL_PROVIDER', languageModelProviders),
+      apiKey: env.AI_LANGUAGE_MODEL_API_KEY ?? '',
+      modelName: required(env, 'AI_LANGUAGE_MODEL_NAME'),
+      inputCostPerMillionTokens: decimalString(env, 'AI_INPUT_COST_PER_MILLION_TOKENS'),
+      outputCostPerMillionTokens: decimalString(env, 'AI_OUTPUT_COST_PER_MILLION_TOKENS'),
+    },
     service: {
       apiPort: preferredInteger(env, 'PORT', 'API_PORT', 1, 65_535),
       dependencyTimeoutMs: integer(env, 'DEPENDENCY_TIMEOUT_MS', 100, 30_000),
