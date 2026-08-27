@@ -10,8 +10,29 @@
  * escrever um modelo, e escrever um modelo é uma decisão revisável.
  */
 
-export const emailTemplates = ['invitation', 'password-reset'] as const;
+export const emailTemplates = [
+  'invitation',
+  'password-reset',
+  'document-failed',
+  'task-assigned',
+  'preparation-digest',
+] as const;
 export type EmailTemplateId = (typeof emailTemplates)[number];
+
+/**
+ * Os avisos que o escritório recebe, e quais dá para silenciar (ADR-013).
+ *
+ * `document-failed` não está na lista de silenciáveis, e a ausência é a regra: ignorar uma
+ * falha de documento custa prazo processual, então ela é o único aviso que não se desliga.
+ * Isso não é conferido em tempo de execução — o código do gatilho de falha simplesmente não
+ * consulta preferência nenhuma, que é uma garantia mais forte que uma checagem.
+ */
+export const silenceableNotifications = ['task-assigned', 'preparation-digest'] as const;
+export type SilenceableNotification = (typeof silenceableNotifications)[number];
+
+export function isSilenceableNotification(value: string): value is SilenceableNotification {
+  return (silenceableNotifications as readonly string[]).includes(value);
+}
 
 export interface EmailRecipient {
   /** Identificador da pessoa, para auditar o envio sem guardar o endereço. */
@@ -77,6 +98,55 @@ export function renderEmail(message: EmailMessage): RenderedEmail {
           '',
           `O convite vale até ${required(message.data, 'expiresAt')} e serve uma única vez.`,
           'Se você não esperava este convite, ignore esta mensagem.',
+        ].join('\n'),
+      };
+    }
+    // Conteúdo mínimo, sempre (ADR-013): código interno do caso, o que aconteceu em
+    // linguagem de gente, e um link. Nunca título de documento, teor extraído, nome de parte,
+    // documento de identificação ou mensagem técnica de erro. Um e-mail interceptado revela
+    // que o caso teve movimento, e nada além disso.
+    case 'document-failed': {
+      const caseCode = required(message.data, 'caseCode');
+      return {
+        subject: `Documento não pôde ser preparado — caso ${caseCode}`,
+        text: [
+          `${required(message.data, 'recipientName')},`,
+          '',
+          `Um documento do caso ${caseCode} não pôde ser preparado e precisa de atenção.`,
+          'Abra o caso para ver qual é e o que fazer:',
+          '',
+          required(message.data, 'link'),
+          '',
+          'Este é o único aviso que não pode ser desligado: documento parado costuma custar prazo.',
+        ].join('\n'),
+      };
+    }
+    case 'task-assigned': {
+      const caseCode = required(message.data, 'caseCode');
+      return {
+        subject: `Tarefa atribuída a você — caso ${caseCode}`,
+        text: [
+          `${required(message.data, 'recipientName')},`,
+          '',
+          `Uma tarefa do caso ${caseCode} foi atribuída a você.`,
+          'Abra a tarefa para ver o que é e o prazo:',
+          '',
+          required(message.data, 'link'),
+        ].join('\n'),
+      };
+    }
+    case 'preparation-digest': {
+      return {
+        subject: 'Preparação de documentos concluída no LEX OS',
+        text: [
+          `${required(message.data, 'recipientName')},`,
+          '',
+          `${required(message.data, 'documentCount')} documento(s) terminaram a preparação nos casos sob sua responsabilidade.`,
+          `Casos com movimento: ${required(message.data, 'caseCodes')}.`,
+          '',
+          'Abra o painel para conferir:',
+          '',
+          required(message.data, 'link'),
         ].join('\n'),
       };
     }

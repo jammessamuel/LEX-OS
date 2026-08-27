@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import type { RuntimeConfig } from '@lex-os/config';
+import { isSilenceableNotification, silenceableNotifications } from '@lex-os/shared';
 import { withTransaction } from '@lex-os/database';
 import { JwtService } from '@nestjs/jwt';
 
@@ -10,6 +11,10 @@ import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
 import { DatabaseService } from '../database/database.service.js';
 import { ApiException } from '../http/api-exception.js';
 import type { ActorContext } from './actor-context.js';
+import type {
+  NotificationPreferencesDto,
+  NotificationPreferencesRequestDto,
+} from './dto/notification-preferences.dto.js';
 import { ACCESS_TOKEN_AUDIENCE, ACCESS_TOKEN_ISSUER } from './auth.constants.js';
 import { AuthRepository } from './auth.repository.js';
 import {
@@ -413,5 +418,46 @@ export class AuthService {
       'INVALID_SESSION',
       'Sessão inválida ou expirada.',
     );
+  }
+
+  /** Os avisos que esta pessoa desligou (ADR-013). */
+  async notificationPreferences(actor: ActorContext): Promise<NotificationPreferencesDto> {
+    const user = await this.database.client.user.findFirst({
+      where: { organizationId: actor.organizationId, id: actor.userId },
+      select: { silencedNotifications: true },
+    });
+    return {
+      silenced: (user?.silencedNotifications ?? []).filter(isSilenceableNotification),
+      silenceable: silenceableNotifications,
+    };
+  }
+
+  /**
+   * Substitui o conjunto de avisos silenciados.
+   *
+   * O boundary já recusou qualquer valor fora do catálogo silenciável, então a falha de
+   * documento não chega aqui. Guardar o conjunto inteiro, e não um delta, torna duas abas
+   * concorrentes um problema de última escrita e não de estado incoerente.
+   */
+  async updateNotificationPreferences(
+    actor: ActorContext,
+    input: NotificationPreferencesRequestDto,
+    metadata: RequestAuditMetadata,
+  ): Promise<NotificationPreferencesDto> {
+    const silenced = [...new Set(input.silenced)];
+    await this.database.client.user.updateMany({
+      where: { organizationId: actor.organizationId, id: actor.userId },
+      data: { silencedNotifications: silenced },
+    });
+    await this.audit.recordDomain({
+      organizationId: actor.organizationId,
+      userId: actor.userId,
+      entityId: actor.userId,
+      entityType: 'user',
+      action: 'user.notifications.updated',
+      newData: { silencedCount: silenced.length },
+      ...metadata,
+    });
+    return { silenced, silenceable: silenceableNotifications };
   }
 }

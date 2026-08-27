@@ -125,6 +125,14 @@ export type DomainAuditEvent =
       newData: CaseAuditSnapshot & { softDeleted: true };
     })
   | (DomainAuditBase & {
+      // Só a contagem do que foi silenciado. Qual aviso a pessoa desligou é preferência dela,
+      // e a auditoria existe para responder "por que ninguém foi avisado?", que a contagem já
+      // responde junto com o registro de envio.
+      action: 'user.notifications.updated';
+      entityType: 'user';
+      newData: { silencedCount: number };
+    })
+  | (DomainAuditBase & {
       // Consulta de custo e leitura agregada: registra o recorte pedido, nunca os valores nem
       // quais casos entraram na soma.
       action: 'processing.cost.summarised';

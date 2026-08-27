@@ -5,6 +5,7 @@ import { MockProcessingProvider, PROCESSING_PROVIDER } from './mock-processing.p
 import { MockProcessingCostPolicy, PROCESSING_COST_POLICY } from './processing-cost-policy.js';
 import { EMBEDDING_PROVIDER, MockEmbeddingProvider } from './mock-embedding.provider.js';
 import { PipelineProcessorService } from './pipeline-processor.service.js';
+import { ProcessingNotificationsService } from './processing-notifications.service.js';
 import { ProcessingQueuePublisher } from './processing-queue.publisher.js';
 import { ProcessingReconcilerService } from './processing-reconciler.service.js';
 import { ProcessingRepository } from './processing.repository.js';
@@ -18,6 +19,7 @@ import {
 @Module({
   imports: [RuntimeConfigModule],
   providers: [
+    ProcessingNotificationsService,
     { provide: PROCESSING_PROVIDER, useClass: MockProcessingProvider },
     { provide: PROCESSING_COST_POLICY, useClass: MockProcessingCostPolicy },
     { provide: EMBEDDING_PROVIDER, useClass: MockEmbeddingProvider },

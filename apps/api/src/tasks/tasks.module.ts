@@ -5,11 +5,12 @@ import { CasesModule } from '../cases/cases.module.js';
 import { ChecklistsModule } from '../checklists/checklists.module.js';
 import { TasksController } from './tasks.controller.js';
 import { TasksRepository } from './tasks.repository.js';
+import { TaskNotificationsService } from './task-notifications.service.js';
 import { TasksService } from './tasks.service.js';
 
 @Module({
   imports: [AuditModule, CasesModule, ChecklistsModule],
   controllers: [TasksController],
-  providers: [TasksRepository, TasksService],
+  providers: [TaskNotificationsService, TasksRepository, TasksService],
 })
 export class TasksModule {}

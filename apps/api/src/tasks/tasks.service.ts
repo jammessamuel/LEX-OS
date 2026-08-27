@@ -2,6 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { Prisma, withTransaction } from '@lex-os/database';
 
 import { AuditService, type RequestAuditMetadata } from '../audit/audit.service.js';
+import { TaskNotificationsService } from './task-notifications.service.js';
 import type { ActorContext } from '../auth/actor-context.js';
 import { CasesService } from '../cases/cases.service.js';
 import { ChecklistsService } from '../checklists/checklists.service.js';
@@ -98,6 +99,7 @@ export class TasksService {
     private readonly cases: CasesService,
     private readonly checklists: ChecklistsService,
     private readonly audit: AuditService,
+    private readonly notifications: TaskNotificationsService,
   ) {}
 
   async list(
@@ -255,6 +257,14 @@ export class TasksService {
           ...metadata,
         });
         return created;
+      });
+      // Fora da transação: a tarefa existir importa mais que o aviso sobre ela.
+      await this.notifications.taskAssigned({
+        organizationId: actor.organizationId,
+        assignedToId: task.assignedToId,
+        assignedById: actor.userId,
+        caseId: source.caseId,
+        taskId: task.id,
       });
       return mapTask(task);
     } catch (error: unknown) {

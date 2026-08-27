@@ -7,14 +7,16 @@ import {
   HttpStatus,
   Inject,
   Post,
+  Put,
   Req,
   Res,
 } from '@nestjs/common';
 import type { RuntimeConfig } from '@lex-os/config';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiCookieAuth,
   ApiConflictResponse,
+  ApiCookieAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -27,6 +29,10 @@ import type { CookieOptions, Response } from 'express';
 
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
 import { ApiErrorEnvelopeDto } from '../http/error-envelope.dto.js';
+import {
+  NotificationPreferencesDto,
+  NotificationPreferencesRequestDto,
+} from './dto/notification-preferences.dto.js';
 import { getRequestContext } from '../observability/request-context.js';
 import { REFRESH_COOKIE_NAME, REFRESH_PERSIST_COOKIE_NAME } from './auth.constants.js';
 import type { AuthenticatedRequest } from './authenticated-request.js';
@@ -208,6 +214,36 @@ export class AuthController {
       sameSite: 'strict',
       path: '/api/v1/auth',
     };
+  }
+
+  @Get('notifications')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Lista os avisos que esta pessoa desligou (ADR-013).' })
+  @ApiOkResponse({ type: NotificationPreferencesDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  notificationPreferences(@Req() request: AuthenticatedRequest) {
+    return this.auth.notificationPreferences(this.#actor(request));
+  }
+
+  @Put('notifications')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Substitui o conjunto de avisos desligados.',
+    description:
+      'Falha de documento não é silenciável e é recusada aqui: ignorá-la custa prazo processual.',
+  })
+  @ApiOkResponse({ type: NotificationPreferencesDto })
+  @ApiBadRequestResponse({ type: ApiErrorEnvelopeDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  updateNotificationPreferences(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: NotificationPreferencesRequestDto,
+  ) {
+    return this.auth.updateNotificationPreferences(
+      this.#actor(request),
+      input,
+      getRequestContext() ?? {},
+    );
   }
 
   @Get('second-factor')

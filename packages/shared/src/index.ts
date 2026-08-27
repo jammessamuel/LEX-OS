@@ -39,7 +39,13 @@ export {
 export { cnjSegmentName, isValidCnj, normalizeCnj, parseCnj } from './cnj.js';
 export type { CnjParts } from './cnj.js';
 
-export { emailTemplates, RecordingEmailProvider, renderEmail } from './email.js';
+export {
+  isSilenceableNotification,
+  silenceableNotifications,
+  emailTemplates,
+  RecordingEmailProvider,
+  renderEmail,
+} from './email.js';
 
 export {
   decodeBase32,
@@ -59,6 +65,7 @@ export type {
   EmailProvider,
   EmailRecipient,
   EmailTemplateId,
+  SilenceableNotification,
   RenderedEmail,
 } from './email.js';
 

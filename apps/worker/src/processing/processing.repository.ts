@@ -64,6 +64,10 @@ const jobTargetSelect = {
         select: {
           id: true,
           organizationId: true,
+          // Para o aviso de falha (ADR-013): a quem mandar, e o único dado do caso que o
+          // e-mail carrega. Nada além do código interno sai daqui para fora do sistema.
+          internalCode: true,
+          responsibleUserId: true,
           legalArea: true,
           caseType: true,
           processingCostLimitAmount: true,

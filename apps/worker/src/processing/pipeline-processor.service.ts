@@ -7,6 +7,7 @@ import { assertEmbeddingBatch, chunkKnowledgeText, type EmbeddingProvider } from
 import { UnrecoverableError } from 'bullmq';
 
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
+import { ProcessingNotificationsService } from './processing-notifications.service.js';
 import { PROCESSING_PROVIDER, type ProcessingProvider } from './mock-processing.provider.js';
 import { EMBEDDING_PROVIDER } from './mock-embedding.provider.js';
 import { PermanentProcessingError, RetryableProcessingError } from './processing-error.js';
@@ -50,6 +51,7 @@ export class PipelineProcessorService {
     @Inject(PROCESSING_COST_POLICY) private readonly costPolicy: ProcessingCostPolicy,
     private readonly publisher: ProcessingQueuePublisher,
     @Inject(RUNTIME_CONFIG) private readonly config: RuntimeConfig,
+    private readonly notifications: ProcessingNotificationsService,
   ) {}
 
   /**
@@ -389,6 +391,9 @@ export class PipelineProcessorService {
         correlationId,
         this.costPolicy.measureFailure(job.jobType, error),
       );
+      // Só na falha terminal. Avisar a cada tentativa transformaria o aviso em ruído, e o
+      // aviso que vira ruído deixa de ser lido — que é o mesmo que não existir.
+      await this.notifications.documentFailed(job);
       if (permanent) {
         throw new UnrecoverableError(safeMessage);
       }

@@ -416,9 +416,13 @@ model User {
   updatedAt       DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt       DateTime?  @map("deleted_at") @db.Timestamptz(6)
 
-  organization               Organization           @relation(fields: [organizationId], references: [id])
-  refreshSessions            RefreshSession[]
-  userRoles                  UserRole[]
+  organization          Organization     @relation(fields: [organizationId], references: [id])
+  refreshSessions       RefreshSession[]
+  userRoles             UserRole[]
+  /// Avisos que a pessoa desligou (ADR-013). Falha de documento nao entra aqui: e o unico
+  /// que nao se silencia, e a garantia e o gatilho dela nao consultar preferencia nenhuma.
+  silencedNotifications String[]         @default([]) @map("silenced_notifications")
+
   responsibleCases           Case[]                 @relation("CaseResponsible")
   legalHeldCases             Case[]                 @relation("CaseLegalHoldBy")
   uploadedFiles              StoredFile[]           @relation("FileUploadedBy")
