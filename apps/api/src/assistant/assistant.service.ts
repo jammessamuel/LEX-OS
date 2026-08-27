@@ -153,7 +153,6 @@ export class AssistantService {
     input: GroundedAnswerRequestDto,
     metadata: RequestAuditMetadata,
   ): Promise<GroundedAnswerResponseDto> {
-    await this.cases.assertAssistantBudgetAvailable(actor.organizationId, input.caseId);
     const retrieval = await this.search.search(
       actor,
       {
@@ -193,6 +192,10 @@ export class AssistantService {
     // A instrução muda com a área do caso: o que importa numa reclamação trabalhista não é o
     // que importa numa ação de cobrança. Área não catalogada cai no prompt genérico.
     const legalArea = await this.cases.legalAreaFor(actor, input.caseId);
+
+    // O teto do caso passa a valer para a pergunta manual. Aqui é o último ponto em que
+    // recusar ainda evita a despesa: logo abaixo o modelo é chamado.
+    await this.cases.assertAssistantBudgetAvailable(actor.organizationId, input.caseId);
     const prompt = promptFor('GROUNDED_ANSWER', legalArea, {
       caseArchive: this.config.caseArchive,
     });
