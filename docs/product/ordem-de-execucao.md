@@ -24,8 +24,8 @@ Estado verificado no código em 2026-08-26, não deduzido dos ADRs.
 | **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                            | —                                                               |
 | **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada, citação obrigatória                   | Teto de recuperação em 5 trechos limita pergunta ampla          |
 | **010** | Canais de entrada              | ✅ Upload                                                             | ❌ **Canal de e-mail nunca foi construído** — zero no código    |
-| **011** | Modelo de custo                | ✅ Cotação por execução, teto por caso enforçado, custo gravado       | ❌ Agregação por organização/provedor/modelo · ❌ `docs/legal/` |
-| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga automática · ✅ Legal hold                               | ❌ Lista de suboperadores                                       |
+| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos | —                                                               |
+| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                       | Transferência internacional e responsável nomeado               |
 | **013** | Notificações internas          | ✅ Caixa de saída + despachante no worker (Entrega 13)                | ❌ Os três gatilhos: preparo concluído, falha, tarefa atribuída |
 | **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código | Itens 4–7 adiados **por decisão**, não por esquecimento         |
 | **015** | Biblioteca de prompts          | ✅ Itens 1, 5, 6, 7 · ✅ Item 3 em três quartos                       | ❌ Item 4 (guarda pelo dado) · ❌ Item 2 (`REVIEWED` com OAB)   |
@@ -132,12 +132,22 @@ recebe o catálogo que mandava respeitar. Com isso os quatro P0 estão fechados.
 Nenhum destes é opcional, e nenhum existe hoje. Enquanto qualquer um faltar, o provedor real
 permanece bloqueado — e é a única coisa que separa a biblioteca de valer para o cliente.
 
-**B1. Lista de suboperadores versionada** — ADR-012
-**B2. `docs/legal/` com os termos de tratamento registrados** — ADR-011, verificação 4
-**B3. Agregação de custo por organização, provedor e modelo** — ADR-011, verificação 3
+**B1. Lista de suboperadores versionada** — ADR-012 · **FEITO 2026-08-27**
+[`docs/legal/suboperadores.md`](../legal/suboperadores.md). Hoje são dois: Railway e Vercel.
+Nenhum provedor de modelo, nenhum antivírus externo, nenhum relay de e-mail de produção — e a
+regra que restringe a escolha do provedor está escrita ali: fornecedor que treina com o conteúdo
+enviado não é elegível, a qualquer preço.
+
+**B2. Termos de tratamento registrados** — ADR-011, verificação 4 · **FEITO 2026-08-27**
+[`docs/legal/termos-de-tratamento.md`](../legal/termos-de-tratamento.md). Não é o contrato: é o
+registro técnico do que o sistema faz, para quem redigir o contrato saber o que está descrevendo.
+Ele abre duas pendências que ninguém tinha escrito: **a hospedagem está nos Estados Unidos**, o
+que não serve a acervo de cliente brasileiro sem transferência internacional consentida, e **não
+há responsável nomeado** pelo atendimento a titular.
+**B3. Agregação de custo por organização, provedor e modelo** — ADR-011, v. 3 · **FEITO 2026-08-27**
 O teto por caso já existe e é enforçado (`Case.processingCostLimitAmount`, verificado em
 `cases.repository.ts:272`). Falta somar por organização e abrir por provedor e modelo.
-**B4. Custo do assistente debitando o orçamento do caso** — ADR-011
+**B4. Custo do assistente debitando o orçamento do caso** — ADR-011 · **FEITO 2026-08-27**
 Hoje calcula e audita, não desconta.
 **B5. Legal hold** — ADR-012 · **FEITO 2026-08-27**
 

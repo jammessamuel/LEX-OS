@@ -47,6 +47,7 @@ const permissions = [
   ['persons.manage', 'Cadastrar e atualizar pessoas autorizadas da organização.'],
   // Os identificadores derivam do indice: permissao nova entra sempre no fim do array.
   ['cases.legal_hold', 'Marcar e retirar retencao obrigatoria de casos autorizados.'],
+  ['processing_costs.read', 'Consultar o custo de processamento da organizacao.'],
 ] as const;
 
 const documentTypes = [
@@ -281,6 +282,7 @@ async function main(): Promise<void> {
             IDS.partnerRole,
             [
               'cases.legal_hold',
+              'processing_costs.read',
               'organizations.read',
               'users.read',
               'roles.read',

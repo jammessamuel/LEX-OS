@@ -125,6 +125,13 @@ export type DomainAuditEvent =
       newData: CaseAuditSnapshot & { softDeleted: true };
     })
   | (DomainAuditBase & {
+      // Consulta de custo e leitura agregada: registra o recorte pedido, nunca os valores nem
+      // quais casos entraram na soma.
+      action: 'processing.cost.summarised';
+      entityType: 'processing_cost';
+      newData: { groupBy: string; bucketCount: number };
+    })
+  | (DomainAuditBase & {
       // Retencao entra e sai com autor, horario e motivo (ADR-012). O motivo e texto que a
       // pessoa escreve, entao vale a mesma regra de sempre: nada do conteudo do caso aqui.
       action: 'case.legal_hold.placed' | 'case.legal_hold.released';

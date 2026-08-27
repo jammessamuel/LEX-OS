@@ -481,6 +481,38 @@ export class CasesService {
    * A guarda que de fato impede está no filtro do repositório. Esta existe para a mensagem: o
    * advogado precisa saber que há retenção e por quê, e não receber "não encontrado".
    */
+  /**
+   * O caso ainda tem orçamento para uma pergunta ao assistente?
+   *
+   * O teto do caso passa a valer para a pergunta manual, não só para o processamento
+   * automático. Recusar antes é o único momento em que a recusa evita a despesa.
+   */
+  async assertAssistantBudgetAvailable(organizationId: string, caseId: string): Promise<void> {
+    const record = await this.repository.findById(organizationId, caseId);
+    if (record === null) {
+      throw this.#notFound();
+    }
+    if (record.processingBudgetStatus === 'LIMIT_REACHED') {
+      throw new ApiException(
+        HttpStatus.CONFLICT,
+        'CASE_PROCESSING_BUDGET_REACHED',
+        'O caso atingiu o teto de custo de processamento. Ajuste o teto para continuar.',
+      );
+    }
+  }
+
+  /** Debita a despesa da resposta já gerada. Ver `chargeAssistantCost` no repositório. */
+  async chargeAssistantCost(organizationId: string, caseId: string, amount: string): Promise<void> {
+    await withTransaction(this.database.client, async (transaction) => {
+      await this.repository.chargeAssistantCost(
+        transaction,
+        organizationId,
+        caseId,
+        new Prisma.Decimal(amount),
+      );
+    });
+  }
+
   async assertNotUnderLegalHold(organizationId: string, caseId: string): Promise<void> {
     const hold = await this.repository.legalHoldOf(organizationId, caseId);
     if (hold.held) {

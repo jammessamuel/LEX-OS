@@ -1,6 +1,7 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Req } from '@nestjs/common';
 import {
   ApiAcceptedResponse,
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
   ApiForbiddenResponse,
@@ -17,6 +18,10 @@ import { ApiErrorEnvelopeDto } from '../http/error-envelope.dto.js';
 import { getRequestContext } from '../observability/request-context.js';
 import { DocumentIdParamsDto } from '../documents/dto/document-id-params.dto.js';
 import { ListProcessingJobsQueryDto } from './dto/list-processing-jobs-query.dto.js';
+import {
+  ProcessingCostQueryDto,
+  ProcessingCostSummaryDto,
+} from './dto/processing-cost-summary.dto.js';
 import { ProcessingJobIdParamsDto } from './dto/processing-job-id-params.dto.js';
 import {
   ProcessingJobListResponseDto,
@@ -29,6 +34,22 @@ import { ProcessingService } from './processing.service.js';
 @Controller()
 export class ProcessingController {
   constructor(private readonly processing: ProcessingService) {}
+
+  @Get('processing-costs')
+  @RequirePermissions('processing_costs.read')
+  @ApiOperation({
+    summary: 'Soma o custo de processamento da organização no período (ADR-011, verificação 3).',
+    description:
+      'O teto que já existia era por caso. Este total é o da organização, e é o número que ' +
+      'permite ver a conta crescer antes de ela chegar.',
+  })
+  @ApiOkResponse({ type: ProcessingCostSummaryDto })
+  @ApiBadRequestResponse({ type: ApiErrorEnvelopeDto })
+  @ApiUnauthorizedResponse({ type: ApiErrorEnvelopeDto })
+  @ApiForbiddenResponse({ type: ApiErrorEnvelopeDto })
+  costSummary(@Req() request: AuthenticatedRequest, @Query() query: ProcessingCostQueryDto) {
+    return this.processing.costSummary(this.#actor(request), query, getRequestContext() ?? {});
+  }
 
   @Get('processing-jobs')
   @RequirePermissions('documents.read')

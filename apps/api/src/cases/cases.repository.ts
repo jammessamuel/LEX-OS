@@ -359,4 +359,53 @@ export class CasesRepository {
     }
     return this.findById(organizationId, id);
   }
+
+  /**
+   * Debita do orçamento do caso o custo de uma resposta do assistente (ADR-011).
+   *
+   * Até 2026-08-27 o assistente calculava o custo, gravava na auditoria e não descontava de
+   * nada. O teto por caso existia e a única despesa que não passava por ele era justamente a
+   * que o advogado dispara à mão, uma pergunta por vez, quantas vezes quiser.
+   *
+   * Debita depois de responder, e não antes: a resposta já foi gerada e o custo já existe.
+   * Recusar a gravação aqui não desfaria a despesa — só a esconderia. O teto age na pergunta
+   * seguinte, que é onde ele ainda consegue agir.
+   */
+  async chargeAssistantCost(
+    transaction: TransactionClient,
+    organizationId: string,
+    caseId: string,
+    amount: Prisma.Decimal,
+  ): Promise<{ spent: Prisma.Decimal; limit: Prisma.Decimal; limitReached: boolean } | null> {
+    const current = await transaction.case.findFirst({
+      where: { organizationId, id: caseId, deletedAt: null },
+      select: {
+        processingCostLimitAmount: true,
+        processingCostSpentAmount: true,
+        processingCostReservedAmount: true,
+      },
+    });
+    if (current === null) {
+      return null;
+    }
+    const spent = current.processingCostSpentAmount.add(amount);
+    const limit = current.processingCostLimitAmount;
+    const limitReached =
+      limit.greaterThan(0) &&
+      spent.add(current.processingCostReservedAmount).greaterThanOrEqualTo(limit);
+
+    await transaction.case.updateMany({
+      where: { organizationId, id: caseId, deletedAt: null },
+      data: {
+        processingCostSpentAmount: spent,
+        ...(limitReached
+          ? {
+              processingBudgetStatus: 'LIMIT_REACHED' as const,
+              processingLimitReachedAt: new Date(),
+            }
+          : {}),
+      },
+    });
+    return { spent, limit, limitReached };
+  }
 }

@@ -35,6 +35,20 @@ export type ProcessingJobRecord = Prisma.ProcessingJobGetPayload<{
   select: typeof processingJobSelect;
 }>;
 
+/** Um recorte do custo somado no período. */
+export interface ProcessingCostBucket {
+  key: string | null;
+  amount: Prisma.Decimal;
+  executions: number;
+}
+
+export interface ProcessingCostTotals {
+  total: Prisma.Decimal;
+  executions: number;
+  currency: string;
+  buckets: readonly ProcessingCostBucket[];
+}
+
 export interface ProcessingJobCursor {
   createdAt: Date;
   id: string;
@@ -132,5 +146,62 @@ export class ProcessingRepository {
       data: { processingStatus: 'QUEUED' },
     });
     return job;
+  }
+
+  /**
+   * Custo somado no período, aberto pelo recorte pedido (ADR-011, verificação 3).
+   *
+   * O teto que já existia era por caso. Sem somar por organização, um escritório com trezentos
+   * casos ativos não tinha teto nenhum de fato: cada caso respeitava o seu e a conta chegava
+   * inteira no fim do mês, sem ninguém ter visto crescer.
+   *
+   * Conta só execução concluída com custo gravado. Trabalho reservado e não concluído não é
+   * despesa: somá-lo mostraria um número que nunca vai ser cobrado.
+   */
+  async costSummary(
+    organizationId: string,
+    range: { from: Date; to: Date },
+    groupBy: 'provider' | 'model' | 'jobType' | 'case',
+  ): Promise<ProcessingCostTotals> {
+    const where = {
+      organizationId,
+      costAmount: { not: null },
+      finishedAt: { gte: range.from, lt: range.to },
+    } satisfies Prisma.ProcessingJobWhereInput;
+
+    const campo = {
+      provider: 'provider',
+      model: 'modelName',
+      jobType: 'jobType',
+      case: 'caseId',
+    }[groupBy] as 'provider' | 'modelName' | 'jobType' | 'caseId';
+
+    const [geral, grupos] = await Promise.all([
+      this.database.client.processingJob.aggregate({
+        where,
+        _sum: { costAmount: true },
+        _count: { _all: true },
+      }),
+      this.database.client.processingJob.groupBy({
+        by: [campo],
+        where,
+        _sum: { costAmount: true },
+        _count: { _all: true },
+        orderBy: { _sum: { costAmount: 'desc' } },
+      }),
+    ]);
+
+    return {
+      total: geral._sum.costAmount ?? new Prisma.Decimal(0),
+      executions: geral._count._all,
+      // A moeda é a mesma da organização inteira por construção do modelo de custo; devolver a
+      // do primeiro grupo evitaria uma consulta e mentiria no dia em que isso deixar de valer.
+      currency: 'BRL',
+      buckets: grupos.map((grupo) => ({
+        key: (grupo as Record<string, unknown>)[campo] as string | null,
+        amount: grupo._sum.costAmount ?? new Prisma.Decimal(0),
+        executions: grupo._count._all,
+      })),
+    };
   }
 }

@@ -18,6 +18,10 @@ import {
 import { MetricsService } from '../observability/metrics.service.js';
 import type { ListProcessingJobsQueryDto } from './dto/list-processing-jobs-query.dto.js';
 import type { ProcessingJobResponseDto } from './dto/processing-job-response.dto.js';
+import type {
+  ProcessingCostQueryDto,
+  ProcessingCostSummaryDto,
+} from './dto/processing-cost-summary.dto.js';
 import { ProcessingQueuePublisher } from './processing-queue.publisher.js';
 import {
   ProcessingRepository,
@@ -202,5 +206,59 @@ export class ProcessingService {
 
   #notFound(): ApiException {
     return new ApiException(HttpStatus.NOT_FOUND, 'NOT_FOUND', 'Recurso não encontrado.');
+  }
+
+  /**
+   * Quanto a organização gastou no período, aberto pelo recorte pedido.
+   *
+   * A janela padrão é o mês corrente. Sem período, "quanto gastamos" não tem resposta útil, e
+   * varrer a tabela inteira a cada abertura de tela custa mais do que a pergunta vale.
+   */
+  async costSummary(
+    actor: ActorContext,
+    query: ProcessingCostQueryDto,
+    metadata: RequestAuditMetadata,
+  ): Promise<ProcessingCostSummaryDto> {
+    const to = query.to === undefined ? new Date() : new Date(query.to);
+    const inicioDoMes = new Date(to);
+    inicioDoMes.setUTCDate(1);
+    inicioDoMes.setUTCHours(0, 0, 0, 0);
+    const from = query.from === undefined ? inicioDoMes : new Date(query.from);
+
+    if (from.getTime() >= to.getTime()) {
+      throw new ApiException(
+        HttpStatus.BAD_REQUEST,
+        'INVALID_COST_RANGE',
+        'A data inicial deve ser anterior à final.',
+      );
+    }
+
+    const groupBy = query.groupBy ?? 'provider';
+    const somado = await this.repository.costSummary(actor.organizationId, { from, to }, groupBy);
+
+    await this.audit.recordDomain({
+      organizationId: actor.organizationId,
+      userId: actor.userId,
+      entityId: null,
+      entityType: 'processing_cost',
+      action: 'processing.cost.summarised',
+      newData: { groupBy, bucketCount: somado.buckets.length },
+      ...metadata,
+    });
+
+    return {
+      from: from.toISOString(),
+      to: to.toISOString(),
+      currency: somado.currency,
+      total: somado.total.toFixed(6),
+      executions: somado.executions,
+      groupBy,
+      buckets: somado.buckets.map((bucket) => ({
+        key: bucket.key,
+        label: bucket.key,
+        amount: bucket.amount.toFixed(6),
+        executions: bucket.executions,
+      })),
+    };
   }
 }

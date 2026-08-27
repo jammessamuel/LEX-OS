@@ -153,6 +153,7 @@ export class AssistantService {
     input: GroundedAnswerRequestDto,
     metadata: RequestAuditMetadata,
   ): Promise<GroundedAnswerResponseDto> {
+    await this.cases.assertAssistantBudgetAvailable(actor.organizationId, input.caseId);
     const retrieval = await this.search.search(
       actor,
       {
@@ -222,6 +223,14 @@ export class AssistantService {
       },
       ...metadata,
     });
+
+    // A resposta ja foi gerada e o custo ja existe. Debitar depois nao evita esta despesa —
+    // evita a proxima, que e onde o teto ainda consegue agir.
+    await this.cases.chargeAssistantCost(
+      actor.organizationId,
+      input.caseId,
+      parsed.model.costAmount,
+    );
 
     return {
       status: 'ANSWER',
