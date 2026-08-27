@@ -21,6 +21,7 @@ import LoginView from '../views/LoginView.vue';
 import PersonDetailView from '../views/PersonDetailView.vue';
 import PersonFormView from '../views/PersonFormView.vue';
 import PersonsView from '../views/PersonsView.vue';
+import ProcessingCostsView from '../views/ProcessingCostsView.vue';
 import SearchView from '../views/SearchView.vue';
 import SecurityView from '../views/SecurityView.vue';
 import UsersView from '../views/UsersView.vue';
@@ -118,6 +119,12 @@ export const router = createRouter({
           name: 'document-detail',
           path: 'documentos/:id',
           meta: { permissions: ['documents.read'] },
+        },
+        {
+          component: ProcessingCostsView,
+          name: 'processing-costs',
+          path: 'custos',
+          meta: { permissions: ['processing_costs.read'] },
         },
         {
           component: UsersView,

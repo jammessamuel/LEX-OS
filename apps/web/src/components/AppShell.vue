@@ -65,6 +65,13 @@ async function signOut(): Promise<void> {
         >
           Auditoria
         </RouterLink>
+        <RouterLink
+          v-if="session.can('processing_costs.read')"
+          class="shell__link"
+          :to="{ name: 'processing-costs' }"
+        >
+          Custos
+        </RouterLink>
         <RouterLink v-if="session.can('users.read')" class="shell__link" :to="{ name: 'users' }">
           Equipe
         </RouterLink>

@@ -416,6 +416,24 @@ export interface ChecklistTemplate {
   items: ChecklistTemplateItem[];
 }
 
+export interface ProcessingCostBucket {
+  key: string | null;
+  label: string | null;
+  amount: string;
+  executions: number;
+}
+
+/** Custo somado da organização no período (ADR-011, verificação 3). */
+export interface ProcessingCostSummary {
+  from: string;
+  to: string;
+  currency: string;
+  total: string;
+  executions: number;
+  groupBy: 'provider' | 'model' | 'jobType' | 'case';
+  buckets: ProcessingCostBucket[];
+}
+
 export interface CaseChecklistItem {
   id: string;
   caseChecklistId: string;
