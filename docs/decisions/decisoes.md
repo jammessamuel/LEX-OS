@@ -24,12 +24,13 @@
 | [ADR-007](#adr-007-use-persistent-processing-jobs-with-bullmq-workers)                       | Use persistent processing jobs with BullMQ workers                       | Accepted | 2026-08-05 |
 | [ADR-008](#adr-008-use-english-technical-names-and-brazilian-portuguese-product-language)    | Use English technical names and Brazilian Portuguese product language    | Accepted | 2026-08-05 |
 | [ADR-009](#adr-009-definir-o-escopo-do-assistente-interno)                                   | Definir o escopo do Assistente Interno                                   | Aceito   | 2026-08-05 |
-| [ADR-010](#adr-010-decidir-os-canais-de-ingestão-do-mvp)                                     | Decidir os canais de ingestão do MVP                                     | Aceito   | 2026-08-05 |
+| [ADR-010](#adr-010-decidir-os-canais-de-ingestão-do-mvp)                                     | Decidir os canais de ingestão do MVP                                     | Superado | 2026-08-05 |
 | [ADR-011](#adr-011-estabelecer-o-modelo-de-custo-de-processamento-e-a-escolha-de-provedores) | Estabelecer o modelo de custo de processamento e a escolha de provedores | Aceito   | 2026-08-05 |
 | [ADR-012](#adr-012-estabelecer-retenção-legal-hold-e-a-postura-de-lgpd)                      | Estabelecer retenção, legal hold e a postura de LGPD                     | Aceito   | 2026-08-05 |
 | [ADR-013](#adr-013-notificações-internas-por-e-mail)                                         | Notificações internas por e-mail                                         | Aceito   | 2026-08-07 |
 | [ADR-014](#adr-014-fronteira-de-identidade-e-acesso)                                         | Fronteira de identidade e acesso                                         | Aceito   | 2026-08-20 |
 | [ADR-015](#adr-015-biblioteca-de-prompts-e-pesquisa-por-agentes)                             | Biblioteca de prompts e pesquisa por agentes                             | Aceito   | 2026-08-26 |
+| [ADR-016](#adr-016-encerrar-o-mvp-sem-fabricar-as-condições-externas)                        | Encerrar o MVP sem fabricar as condições externas                        | Aceito   | 2026-08-28 |
 
 ## Estado de execução
 
@@ -503,7 +504,7 @@ Some Brazilian legal concepts are domain codes without a clearer or safer transl
 
 ## ADR-009: Definir o escopo do Assistente Interno
 
-- **Status:** Aceito — decidido pela sociedade em 2026-08-07
+- **Status:** Superado pelo ADR-016 em 2026-08-28 — decisão original preservada abaixo
 - **Data:** 2026-08-05
 - **Decisores:** sócios da SAMUEL DEV LTDA
 - **Trava:** componente conceitual #10, escopo da Fase 3, desdobramentos da Delivery 9
@@ -1316,3 +1317,98 @@ Três mudanças exigem voltar aqui antes:
 2. **Prompt editável fora do repositório**, por qualquer mecanismo. Contradiz as decisões 1 e 2.
 3. **Qualquer alteração de contrato de saída de tarefa de IA.** Passa pela decisão 3: o
    revisor jurídico lê o contrato junto com o texto.
+
+---
+
+## ADR-016: Encerrar o MVP sem fabricar as condições externas
+
+- **Status:** Aceito — decidido pelo dono em 2026-08-28
+- **Data:** 2026-08-28
+- **Decisor:** Samuel James Sousa Barreto, em nome da SAMUEL DEV LTDA
+- **Trava:** o que ainda é trabalho de produto depois da Entrega 16
+- **Supera:** somente a decisão de incluir ingestão por e-mail no MVP do ADR-010; o restante do
+  ADR-010 continua como histórico e como restrição para qualquer conector futuro
+
+### Decisão (2026-08-28)
+
+Cinco decisões encerram a fila sem transformar ausência de contrato, medição ou revisão em
+software aparentemente pronto.
+
+| #   | Decisão                                                        | Condição inegociável                                                         |
+| --- | -------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 1   | A recuperação do assistente permanece limitada a cinco trechos | Ampliar exige avaliação de qualidade, latência e custo sobre acervo fictício |
+| 2   | Upload é o único canal de entrada do MVP                       | E-mail de entrada vira conector futuro com incremento e ameaça próprios      |
+| 3   | O adaptador real continua restrito a `CASE_ARCHIVE=fictional`  | Acervo real não sai sem os portões jurídicos e comerciais do ADR-012         |
+| 4   | Os quinze prompts de especialidade permanecem `DRAFT`          | Promoção exige nome, OAB, data e versão do texto revisado                    |
+| 5   | A aplicação deixa de guardar senha em `localStorage`           | Credencial persistente fica exclusivamente com o gerenciador do navegador    |
+
+### Por que cinco trechos continuam sendo o teto
+
+Cinco é o limite que o contrato atual consegue citar e que o orçamento por caso consegue
+atribuir sem esconder descarte. Aumentá-lo por intuição ampliaria custo, contexto e chance de
+misturar fontes sem uma avaliação que prove ganho. Pergunta ampla deve ser refinada pelo usuário;
+o sistema não compensa um recorte insuficiente com conhecimento próprio do modelo.
+
+O teto pode ser reaberto quando existir uma avaliação versionada com perguntas amplas fictícias,
+medindo cobertura, citações resolvíveis, latência e custo nas alternativas. Até lá, permanecer em
+cinco é decisão, não pendência.
+
+### Por que a ingestão por e-mail sai do MVP
+
+O upload autenticado já prova a proposta central e passa pelo pipeline hostil completo. Ingestão
+por e-mail acrescentaria uma porta não autenticada, falsificação de remetente, polling ou webhook,
+reconciliação de mensagens e uma nova relação caixa/organização/caso sem existir demanda de
+cliente que pague essa superfície.
+
+O conector futuro precisa de incremento próprio. Antes de código, ele define provedor de caixa,
+autenticação do servidor, remetentes verificados, regra de associação a caso, retenção da mensagem
+de origem, tratamento de anexos e resposta a indisponibilidade. Remetente não verificado nunca
+escreve em tenant algum, preservando a parte de segurança do ADR-010.
+
+### O que não pode ser resolvido por engenharia
+
+Três ausências continuam bloqueando acervo real: cláusula assinada de não treinamento com o
+fornecedor, mecanismo jurídico de transferência internacional para a região hospedada e pessoa
+nomeada para atendimento a titular. Nenhuma variável, teste ou documento interno substitui essas
+decisões externas.
+
+Da mesma forma, o mecanismo de atestação dos prompts está pronto, mas o sistema não inventa o
+advogado revisor. Os prompts especializados podem ser exercitados em acervo fictício; continuam
+recusados para acervo real enquanto não houver assinatura válida.
+
+### Senha no dispositivo
+
+A aplicação não oferece mais guardar senha. Ao ler um registro criado por versão anterior, remove
+imediatamente `password` e `savePassword` e regrava somente escritório, e-mail, persistência da
+sessão e última rota. `autocomplete` permanece no formulário para que o cofre do navegador possa
+preencher a credencial sem expô-la ao JavaScript da aplicação.
+
+### Consequências
+
+**Positivas**
+
+- a fila de código não finge depender de escolhas que pertencem ao jurídico ou ao fornecedor;
+- o MVP fecha com uma única entrada autenticada e uma fronteira de ameaça menor;
+- acervo real e promoção jurídica continuam falhando fechado;
+- sai um bloqueio de produção que expunha a senha a qualquer script executado na origem.
+
+**Negativas**
+
+- anexos recebidos por e-mail continuam exigindo upload humano;
+- perguntas amplas podem pedir refinamento em vez de uma resposta única;
+- o demo especializado continua marcado como rascunho;
+- quem rejeita o gerenciador do navegador digita a senha novamente.
+
+### Verificações de conformidade
+
+- nenhuma propriedade `password` ou `savePassword` permanece nas preferências do dispositivo;
+- um registro legado é saneado na primeira leitura e nunca preenche o campo de senha;
+- não existe worker, webhook, polling ou rota de ingestão por e-mail no MVP;
+- `CASE_ARCHIVE` continua obrigatório e o valor `real` recusa prompt sem atestação válida;
+- ampliar o teto de cinco fontes exige nova decisão apoiada pela avaliação descrita acima;
+- documentação de escopo, execução e harness aponta para este registro sem apagar o histórico.
+
+### Condição para quem mexer nisto depois
+
+Reabrir qualquer uma das cinco decisões exige novo ADR. Implementar o conector de e-mail ou
+permitir acervo real é um novo incremento vertical, não manutenção da Entrega 16.

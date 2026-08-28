@@ -2,7 +2,9 @@
 
 O LEX OS é um sistema inteligente de operações jurídicas para escritórios de advocacia brasileiros. O projeto recebe material operacional desorganizado e prepara um dossiê jurídico estruturado, pesquisável e rastreável para análise humana.
 
-O último marco aceito é a **Entrega 10 — Fatia vertical essencial da web**. A **Entrega 11 — Verificação do MVP e endurecimento do CI** está autorizada e implementada, e só é aceita depois que toda a matriz de CI passar na `main`: qualidade, integração com ensaio de recuperação, Playwright, revisão de dependências e o contrato OpenAPI inventariado. Provedores reais de IA/OCR/scanner, ingestão por e-mail, legal hold e administração completa de usuários permanecem fora desta entrega.
+O último marco aceito é a **Entrega 16 — Biblioteca de prompts por especialidade**. O MVP está
+encerrado pelo ADR-016, sem Entrega 17 autorizada: upload é o único canal de entrada; conectores de
+e-mail e WhatsApp são futuros; acervo real continua bloqueado pelos portões jurídicos do ADR-012.
 
 ## Base da arquitetura
 
@@ -42,7 +44,7 @@ O último marco aceito é a **Entrega 10 — Fatia vertical essencial da web**. 
 
 Leia o [`AGENTS.md`](./AGENTS.md), o [guia de desenvolvimento local](./docs/architecture/local-development.md) e os documentos em [`docs/`](./docs/) antes de alterar o sistema. O [`CLAUDE.md`](./CLAUDE.md) é a tabela de roteamento que um agente deve ler primeiro.
 
-O [alinhamento com o roadmap](./docs/product/roadmap-alignment.md) mapeia os 11 componentes e as 4 fases da proposta conceitual sobre as 12 entregas e registra as quatro decisões ainda em aberto.
+O [alinhamento com o roadmap](./docs/product/roadmap-alignment.md) mapeia os 11 componentes e as 4 fases da proposta conceitual sobre as entregas concluídas e as condições externas ainda abertas.
 
 ## Pré-requisitos
 
@@ -193,12 +195,11 @@ Estes itens estão registrados de propósito. Nenhum deles autoriza dado real de
 - o modelo de linguagem tem adaptador real atrás da porta, mas ele se recusa a existir enquanto `CASE_ARCHIVE` não for `fictional`: falta a cláusula assinada de que o fornecedor não treina com o conteúdo enviado;
 - upload duplicado é vinculado dentro do tenant, mas o segundo objeto continua armazenado até existir política aprovada de retenção e deduplicação;
 - a reconciliação relata objeto ausente, quarentena velha e órfão sem apagar nada: prova jurídica não se remove automaticamente;
-- não há adaptador de e-mail de ingestão (ADR-010); o de notificação interna (ADR-013) existe, com caixa de saída, despachante e os três gatilhos ligados;
+- ingestão por e-mail saiu do MVP pelo ADR-016; o adaptador de notificação interna (ADR-013) existe, com caixa de saída, despachante e os três gatilhos ligados;
 - do ADR-012, retenção e legal hold estão construídos; o que ainda bloqueia dado real de cliente é a hospedagem nos Estados Unidos sem transferência internacional consentida e a ausência de responsável nomeado pelo atendimento a titular;
 - o ensaio de recuperação prova mecânica, e só isso: não é política de backup de produção, nem define RPO, RTO, residência regional ou legal hold, e roda apenas sobre fixture fictício;
 - busca vetorial é exata, sem índice ANN, até um modelo/dimensão de produção ser escolhido;
 - os hooks de Git rodam formato e lint antes do commit e aplicam a política de mensagem; os demais gates obrigatórios rodam na CI;
-- a tela de entrada oferece guardar a senha neste dispositivo, e ela fica em texto puro no armazenamento do navegador; antes de dado real de cliente essa opção precisa sair ou virar decisão por escritório;
 - o demo hospedado contém somente dados fictícios; não é ambiente de produção jurídica.
 
-O marco aceito é a **Entrega 15 — o caso carrega o número do processo**, aceita em 2026-08-25. A Entrega 16 (biblioteca de prompts por especialidade) e, depois dela, o adaptador de modelo real e os três gatilhos do ADR-013 estão autorizados e em andamento, ainda não aceitos: o marco só avança quando a CI fechar verde sobre eles. A fronteira de escopo vigente está na seção 0.3 do [`CLAUDE.md`](./CLAUDE.md), o estado por ADR e a ordem do que falta em [`docs/product/ordem-de-execucao.md`](./docs/product/ordem-de-execucao.md), o quadro de trabalho em [`docs/product/backlog.md`](./docs/product/backlog.md), e os bloqueios operacionais também no [runbook](./docs/operations/runbook.md).
+O marco aceito é a **Entrega 16 — biblioteca de prompts por especialidade**, aceita em 2026-08-28 depois de a CI obrigatória fechar verde na `main`. O ADR-016 encerra o MVP sem autorizar uma Entrega 17: o que resta exige contrato, responsável jurídico, assinatura profissional ou novo incremento explícito. A fronteira de escopo vigente está na seção 0.3 do [`CLAUDE.md`](./CLAUDE.md), o estado por ADR e a ordem do que falta em [`docs/product/ordem-de-execucao.md`](./docs/product/ordem-de-execucao.md), o quadro de trabalho em [`docs/product/backlog.md`](./docs/product/backlog.md), e os bloqueios operacionais também no [runbook](./docs/operations/runbook.md).

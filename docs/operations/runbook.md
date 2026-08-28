@@ -1,16 +1,16 @@
 # LEX OS operational runbook
 
-**Status:** Delivery 11 implementation; production use remains blocked
+**Status:** Delivery 16 accepted; production use remains blocked
 
-**Last updated:** 2026-08-20
+**Last updated:** 2026-08-28
 
 ## Scope and safety boundary
 
 This runbook covers a development or staging preview that contains fictional data only. It does not
 authorize production onboarding, destructive purge, real provider activation, or an LGPD claim.
 Production remains blocked by the controls listed below, especially a real malware scanner,
-case-level legal hold, approved retention procedures, regional durable backups, restore objectives,
-subprocessor governance, and production provider adapters.
+approved retention procedures, regional durable backups, restore objectives, international-transfer
+governance, a named data-subject contact, and production provider adapters.
 
 Never paste secrets into commands, logs, tickets, or this document. Use the environment/secret
 manager and service references. CI is verification-only and has no deployment step or production
@@ -191,15 +191,14 @@ archive, change it to `real`** — that switch is the whole reason the setting e
 
 ## Remaining production blockers
 
-- real malware scanner and production OCR/AI/embedding/language-model adapters;
+- real malware scanner and production OCR/embedding adapters;
 - approved provider/subprocessor terms forbidding training on submitted content;
-- case-level legal hold that fails closed on every deletion path;
 - retention, legal basis, data-subject, customer-offboarding, and irreversible-purge procedures;
 - durable same-region PostgreSQL/object-storage backup policy with measured RPO/RTO and scheduled
   restore exercises;
 - trusted reverse-proxy/IP policy, TLS, least-privilege service identities, alert routing, and secret
   rotation procedure;
-- production e-mail ingestion/notification increments authorized separately under ADR-010/013;
+- a production notification relay under ADR-013; inbound e-mail ingestion is post-MVP under ADR-016;
 - a reviewed real-provider cost policy and explicit release path after the per-case ceiling;
 - load/adversarial-file evidence representative of production volume.
 

@@ -5,6 +5,9 @@
 (criminal) e lente de prática (cível) — mais os limites que eu já conhecia.
 **Estado da biblioteca:** 20 prompts, cinco tarefas × quatro faixas, **todos `DRAFT`**.
 
+**Natureza deste arquivo:** registro histórico da revisão de 2026-08-26. O estado vigente e as
+decisões posteriores estão em `docs/product/ordem-de-execucao.md` e no ADR-016.
+
 Ordenado por prioridade de conserto. Cada item diz onde está, por que dói, e o que fazer.
 
 ---
@@ -282,8 +285,8 @@ independentemente da qualidade dos prompts.
 | Os três gatilhos de notificação                                   | ADR-013                | Não implementados                          |
 | Um único prompt `REVIEWED`                                        | Esta entrega           | Vinte de vinte em `DRAFT`                  |
 
-E uma dívida que não é de ADR nenhum: **a senha guardada em `localStorage`** no front, decidida
-pelo dono depois de eu objetar uma vez. Fica registrada como bloqueio de produção.
+A dívida que existia fora dos ADRs — senha guardada em `localStorage` — foi removida em
+2026-08-28 pelo ADR-016. A leitura atual também saneia registros legados na primeira abertura.
 
 ---
 

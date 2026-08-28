@@ -1,6 +1,6 @@
 # LEX OS system overview
 
-**Status:** Delivery 10 accepted; Delivery 11 verification implemented pending CI acceptance
+**Status:** Delivery 16 accepted; MVP closed by ADR-016
 
 **Last updated:** 2026-08-18
 

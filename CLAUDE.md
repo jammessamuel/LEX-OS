@@ -55,28 +55,22 @@ Approval for one commit is not standing approval for the next.
 
 ### 0.3 Respect the delivery boundary
 
-The latest accepted checkpoint is **Delivery 15 — The case carries its process number**,
-accepted 2026-08-25 with every mandatory CI job green on `main`.
+The latest accepted checkpoint is **Delivery 16 — Prompt library per legal specialty**, accepted
+2026-08-28 after the mandatory CI passed on `main`. The real model adapter remains usable only
+with `CASE_ARCHIVE=fictional`; the three ADR-013 notification triggers, cost controls and legal
+hold are implemented.
 
-**Delivery 16 — Prompt library per legal specialty is authorized** (owner, 2026-08-25). ADR-015
-records the direction and `docs/product/ordem-de-execucao.md` records what is left, in order. The
-prompt text that never existed, a specialty catalogue that normalises `legalArea` aliases
-without closing the field, and `promptFor(task, area)` refusing to serve a draft in production.
-The five generic prompts are `REVIEWED` by owner decision; specialty prompts, coming from
-automated research, are born `DRAFT`.
-
-**Authorized and in progress, not yet accepted** (owner, 2026-08-27): the real model adapter
-behind the existing port, and the ADR-013 notification triggers — all three now wired: terminal
-document failure, task assigned, and the daily preparation digest. The ADR-011 and ADR-012 gates
-that blocked the provider are now written — subprocessor list, processing terms, cost aggregation
-per organization, assistant cost debiting the case budget, legal hold. The adapter still refuses to be constructed unless `CASE_ARCHIVE`
-is `fictional`, because the no-training clause does not exist. The accepted checkpoint stays
-Delivery 15 until CI is green on this work.
+**No Delivery 17 is authorized.** ADR-016 closes the MVP and records the deliberate stops: upload
+is the only inbound channel, grounded retrieval stays at five sources until a measured evaluation,
+specialty prompts stay `DRAFT` until a named lawyer signs them, and the application never stores a
+password. External legal conditions from ADR-012 remain fail-closed and cannot be completed by
+engineering.
 
 Out of scope, and still requiring separate authorization: any real-archive case text leaving to
-a third party, court integration, docket movements, published-notice capture, WebAuthn, SMS,
-federated sign-in, a production mail relay, and production data. Do not implement
-future-delivery behavior opportunistically, even when it looks like a small addition.
+a third party, inbound e-mail or WhatsApp connectors, court integration, docket movements,
+published-notice capture, WebAuthn, SMS, federated sign-in, a production mail relay, billing,
+public signup, and production data. Do not implement future-delivery behavior opportunistically,
+even when it looks like a small addition.
 
 ### 0.4 Never suppress a failing gate
 
@@ -149,7 +143,7 @@ fits, read `AGENTS.md` section headings only, then the one section that applies.
 | Queue, worker, job state          | `docs/architecture/delivery-7-processing-design.md`; `packages/contracts/src/index.ts`; `docs/decisions/decisoes.md#adr-007-use-persistent-processing-jobs-with-bullmq-workers`                     |
 | DB schema or migration            | `packages/database/prisma/schema.prisma` (canonical); `docs/architecture/database-migrations.md`; `docs/architecture/data-model.md`                                                                 |
 | Prompt, especialidade do direito  | `docs/decisions/decisoes.md#adr-015-biblioteca-de-prompts-e-pesquisa-por-agentes` — **decidido 2026-08-26**: o contrato de saída faz parte do prompt; `packages/ai-prompts/src/` para a biblioteca  |
-| "O que falta e em que ordem?"     | `docs/product/ordem-de-execucao.md` only — estado verificado dos 15 ADRs e a fila única que os atravessa                                                                                            |
+| "O que falta e em que ordem?"     | `docs/product/ordem-de-execucao.md` only — estado verificado dos 16 ADRs e a fila única que os atravessa                                                                                            |
 | AI provider / prompt / provenance | `docs/decisions/decisoes.md#adr-006-keep-ai-capabilities-provider-agnostic-and-source-grounded`; `AGENTS.md` §"AI data and provenance"                                                              |
 | Search, embeddings, pgvector      | `docs/api/search.md`; `docs/architecture/search-performance.md`; `docs/decisions/decisoes.md#adr-005-start-semantic-search-with-pgvector`; `docs/architecture/system-overview.md`                   |
 | "Is X in scope?"                  | `docs/product/mvp-scope.md` only                                                                                                                                                                    |
@@ -157,7 +151,7 @@ fits, read `AGENTS.md` section headings only, then the one section that applies.
 | "Onde estamos contra o mercado?"  | `docs/product/analise-competitiva.md` only — 20 concorrentes em três clusters e o de/para função a função, de 2026-08-24                                                                            |
 | Any user-facing screen or copy    | `docs/product/ui-harness.md` first — tokens, shared classes, screen skeleton, review rules. `docs/product/design-principles.md` only when the aesthetic itself is in question                       |
 | Assistant, chat, grounded answers | `docs/decisions/decisoes.md#adr-009-definir-o-escopo-do-assistente-interno` — **decided 2026-08-07**: grounded answering only; refuse without an authorized source                                  |
-| Ingestion channels, WhatsApp      | `docs/decisions/decisoes.md#adr-010-decidir-os-canais-de-ingestão-do-mvp` — **decided 2026-08-07**: upload + e-mail in MVP; WhatsApp is a future connector                                          |
+| Ingestion channels, WhatsApp      | `docs/decisions/decisoes.md#adr-016-encerrar-o-mvp-sem-fabricar-as-condições-externas` — **decidido 2026-08-28**: upload no MVP; e-mail e WhatsApp são conectores futuros                           |
 | Replacing a mock AI provider      | `docs/decisions/decisoes.md#adr-011-estabelecer-o-modelo-de-custo-de-processamento-e-a-escolha-de-provedores` — **decided 2026-08-07**: per-execution cost + hard per-case ceiling must exist first |
 | Deletion, retention, legal hold   | `docs/decisions/decisoes.md#adr-012-estabelecer-retenção-legal-hold-e-a-postura-de-lgpd` — **decided 2026-08-07**: preserve always; automatic purge forbidden; legal hold fails closed              |
 | Notifications, internal e-mail    | `docs/decisions/decisoes.md#adr-013-notificações-internas-por-e-mail` — **decided 2026-08-07**: minimal content only; send from the worker; audited without body                                    |

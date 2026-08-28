@@ -1,7 +1,7 @@
 # Quadro de trabalho
 
 **Status:** Fonte da verdade do que está em andamento
-**Última atualização:** 2026-08-24 · Entrega 14 completa, com QR
+**Última atualização:** 2026-08-28 · Entrega 16 aceita; MVP encerrado pelo ADR-016
 
 Este arquivo é o quadro. Ele vive no repositório de propósito: fica versionado, aparece no
 diff para quem revisa, e um agente consegue lê-lo sem depender de ferramenta externa.
@@ -19,21 +19,21 @@ Regras do quadro:
 
 ## Fazendo
 
-| Cartão                              | Detalhe                                                                                                                           |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Entrega 14 — Segundo fator com TOTP | Autorizada pela sociedade em 2026-08-20. Escopo completo: primitiva, banco, inscrição, entrada e telas. Aceita quando a CI fechar |
+| Cartão | Detalhe                                                          |
+| ------ | ---------------------------------------------------------------- |
+| —      | Nenhum incremento em andamento; a Entrega 17 não está autorizada |
 
 ---
 
 ## Próximos incrementos — ainda não autorizados
 
-São capacidades úteis, mas não pertencem ao aceite da Delivery 10. Só entram em **Fazendo**
+São capacidades úteis, mas não pertencem ao MVP encerrado. Só entram em **Fazendo**
 depois de receberem escopo e autorização explícitos.
 
-| Cartão                         | Fundação disponível                                               |
-| ------------------------------ | ----------------------------------------------------------------- |
-| Assistente — conversa completa | A resposta ancorada simples existe; histórico de conversa não     |
-| Referência visual viva         | Tokens e dois temas existem; falta definir o artefato de catálogo |
+| Cartão                        | Fundação disponível                                               |
+| ----------------------------- | ----------------------------------------------------------------- |
+| Conectores de e-mail/WhatsApp | Exigem novo incremento e modelo de ameaça                         |
+| Referência visual viva        | Tokens e dois temas existem; falta definir o artefato de catálogo |
 
 ---
 
@@ -42,13 +42,13 @@ depois de receberem escopo e autorização explícitos.
 Nada aqui pode virar front antes de a rota existir. Registrado para deixar de ser
 invisível.
 
-| Cartão | O que falta                                                                                          |
-| ------ | ---------------------------------------------------------------------------------------------------- |
-| —      | Nada bloqueado. A administração de usuários saiu daqui: virou a Entrega 12, autorizada em 2026-08-20 |
+| Cartão | O que falta                                            |
+| ------ | ------------------------------------------------------ |
+| —      | Nada bloqueado; o MVP não possui cartão ativo de front |
 
 ---
 
-## Decidido pela sociedade — 2026-08-07 e 2026-08-20
+## Decidido pela sociedade — 2026-08-07 a 2026-08-28
 
 Os cinco registros abertos foram fechados. As decisões liberam planejamento e
 implementação futura; não autorizam, por si só, o início de uma nova entrega.
@@ -56,11 +56,13 @@ implementação futura; não autorizam, por si só, o início de uma nova entreg
 | Registro | Decisão                                                   | Condição inegociável                                                      |
 | -------- | --------------------------------------------------------- | ------------------------------------------------------------------------- |
 | ADR-009  | Resposta ancorada em fonte autorizada                     | Sem fonte autorizada, o sistema recusa responder                          |
-| ADR-010  | Upload e e-mail no MVP; WhatsApp como conector futuro     | Remetente não verificado nunca escreve em um tenant                       |
+| ADR-010  | Superado pelo ADR-016 quanto ao e-mail no MVP             | Remetente não verificado nunca escreve em um tenant                       |
 | ADR-011  | Assinatura com franquia e medição de excedente            | Custo por execução e teto rígido por caso antes do primeiro provedor real |
 | ADR-012  | Preservar por padrão; sem expurgo automático              | Legal hold falha fechado e nenhum fornecedor treina com o conteúdo        |
 | ADR-013  | Notificações internas com conteúdo mínimo                 | Somente código do caso, tipo do acontecimento e link                      |
 | ADR-014  | Fronteira de identidade: as oito resolvidas em 2026-08-20 | Adapter de e-mail primeiro; TOTP próprio; papel nunca vem de grupo do IdP |
+| ADR-015  | Biblioteca versionada de prompts por especialidade        | Rascunho só vira revisado com nome, OAB, data e versão                    |
+| ADR-016  | Encerrar o MVP sem fabricar condições externas            | Upload único; acervo real e conectores continuam falhando fechado         |
 
 ---
 
@@ -68,11 +70,11 @@ implementação futura; não autorizam, por si só, o início de uma nova entreg
 
 Nenhum é código. Cada um trava trabalho abaixo dele.
 
-| Cartão                           | Registro | Trava                                                                        |
-| -------------------------------- | -------- | ---------------------------------------------------------------------------- |
-| Fronteira de identidade e acesso | ADR-014  | Oito pendências registradas. As duas primeiras dependem do adapter de e-mail |
-| Aprovar a fundação de design     | —        | Nada: já é possível construir em cima                                        |
-| Família tipográfica definitiva   | —        | Exige licença e teste em documento denso                                     |
+| Cartão                           | Registro | Trava                                                             |
+| -------------------------------- | -------- | ----------------------------------------------------------------- |
+| Acervo real                      | ADR-012  | Contrato, transferência internacional e responsável por titulares |
+| Prompts especializados revisados | ADR-015  | Advogado identificado com OAB, data e versão                      |
+| Família tipográfica definitiva   | —        | Exige licença e teste em documento denso                          |
 
 ---
 
@@ -84,7 +86,7 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Gate de lint e formato pré-commit | Instalado em 2026-08-18 dentro da Entrega 11; falha fechado sem pnpm                                                                       |
 | Matriz E2E ampliada               | Jornada total no Playwright e abuso HTTP da matriz cobertos; CI do `08dd44d` verde                                                         |
-| Limitações de produção            | Registradas no README e no runbook em 2026-08-18: mocks, ADR-010/012/013, admin de usuários e hold jurídico bloqueiam dado real            |
+| Limitações de produção            | Atualizadas no README e no runbook em 2026-08-28; condições externas do ADR-012 bloqueiam dado real                                        |
 | Checklist em caso sem template    | Corrigido em 2026-08-18: a etapa conclui sem exigências, o EMBEDDING roda e o documento segue pesquisável; coberto por teste de integração |
 
 ---
@@ -333,7 +335,15 @@ Ordem cronológica inversa. Serve para o quadro não perder a memória do que j�
 ## Manutenção
 
 Mover o cartão na hora em que o estado muda, não no fim do dia. Ao concluir, escrever em
-**Feito** o que mudou para quem não acompanhou — não o nome do cartão.## A fazer — qualidade de interface
+**Feito** o que mudou para quem não acompanhou — não o nome do cartão.
+
+## Apêndice histórico — não usar como estado atual
+
+O conteúdo abaixo veio de versões antigas do quadro e é preservado apenas como memória de
+execução. O estado atual está no início deste arquivo e a ordem vigente está em
+`docs/product/ordem-de-execucao.md`.
+
+## A fazer — qualidade de interface
 
 | Cartão | Detalhe |
 | ------ | ------- |
@@ -355,7 +365,7 @@ Mover o cartão na hora em que o estado muda, não no fim do dia. Ao concluir, e
 
 ## Próximos incrementos — ainda não autorizados
 
-São capacidades úteis, mas não pertencem ao aceite da Delivery 10. Só entram em **Fazendo**
+São capacidades úteis registradas historicamente. Só entram em **Fazendo**
 depois de receberem escopo e autorização explícitos.
 
 | Cartão                         | Fundação disponível                                               |
@@ -381,13 +391,13 @@ invisível.
 Os cinco registros abertos foram fechados. As decisões liberam planejamento e
 implementação futura; não autorizam, por si só, o início de uma nova entrega.
 
-| Registro | Decisão                                               | Condição inegociável                                                      |
-| -------- | ----------------------------------------------------- | ------------------------------------------------------------------------- |
-| ADR-009  | Resposta ancorada em fonte autorizada                 | Sem fonte autorizada, o sistema recusa responder                          |
-| ADR-010  | Upload e e-mail no MVP; WhatsApp como conector futuro | Remetente não verificado nunca escreve em um tenant                       |
-| ADR-011  | Assinatura com franquia e medição de excedente        | Custo por execução e teto rígido por caso antes do primeiro provedor real |
-| ADR-012  | Preservar por padrão; sem expurgo automático          | Legal hold falha fechado e nenhum fornecedor treina com o conteúdo        |
-| ADR-013  | Notificações internas com conteúdo mínimo             | Somente código do caso, tipo do acontecimento e link                      |
+| Registro | Decisão                                          | Condição inegociável                                                      |
+| -------- | ------------------------------------------------ | ------------------------------------------------------------------------- |
+| ADR-009  | Resposta ancorada em fonte autorizada            | Sem fonte autorizada, o sistema recusa responder                          |
+| ADR-010  | Registro histórico, superado pelo ADR-016 no MVP | Remetente não verificado nunca escreve em um tenant                       |
+| ADR-011  | Assinatura com franquia e medição de excedente   | Custo por execução e teto rígido por caso antes do primeiro provedor real |
+| ADR-012  | Preservar por padrão; sem expurgo automático     | Legal hold falha fechado e nenhum fornecedor treina com o conteúdo        |
+| ADR-013  | Notificações internas com conteúdo mínimo        | Somente código do caso, tipo do acontecimento e link                      |
 
 ---
 
@@ -411,7 +421,7 @@ Itens que não são funcionalidade, mas que a equipe não deve esquecer.
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Gate de lint e formato pré-commit | Instalado em 2026-08-18 dentro da Entrega 11; falha fechado sem pnpm                                                                       |
 | Matriz E2E ampliada               | Jornada total no Playwright e abuso HTTP da matriz cobertos; CI do `08dd44d` verde                                                         |
-| Limitações de produção            | Registradas no README e no runbook em 2026-08-18: mocks, ADR-010/012/013, admin de usuários e hold jurídico bloqueiam dado real            |
+| Limitações de produção            | Registro histórico; o estado vigente está no README e no runbook atualizados em 2026-08-28                                                 |
 | Checklist em caso sem template    | Corrigido em 2026-08-18: a etapa conclui sem exigências, o EMBEDDING roda e o documento segue pesquisável; coberto por teste de integração |
 
 ---

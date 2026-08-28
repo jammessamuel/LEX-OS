@@ -1,7 +1,7 @@
 # LEX OS MVP scope
 
-**Status:** Baseline proposal  
-**Last updated:** 2026-08-05
+**Status:** Accepted MVP scope; closed by ADR-016
+**Last updated:** 2026-08-28
 
 ## MVP objective
 
@@ -108,6 +108,7 @@ ZIP intake is part of the target preparation experience, but safe extraction lim
 - advanced jurimetrics;
 - billing, charging, subscription management, or commercial CRM;
 - WhatsApp service or live messaging integrations;
+- inbound e-mail ingestion, deferred as a future connector by ADR-016;
 - native mobile applications;
 - public precedent ingestion in the first sprint;
 - every ERP connector;
@@ -138,7 +139,12 @@ Permission bundles will be seeded, but organization-specific roles may later com
 
 ## Required API surface
 
-Routes live under `/api/v1` and are exposed only when their delivery is implemented. Delivery 10 exposes authentication, current organization, assignable users, people, cases, person-to-case traversal, participant association/listing, secure file intake/list/download authorization, document list/detail/correction/soft delete, processing progress/detail and exact-cost metadata, extraction history/reprocessing/entity confirmation, timeline review/confirmation, checklist application/item review, task lifecycle management, authorized text/semantic search, source-grounded mock answers, dashboard aggregates, and supervised audit metadata. Full user administration and invitation/onboarding remain scheduled for later deliveries.
+Routes live under `/api/v1` and are exposed only when their delivery is implemented. The accepted
+MVP exposes authentication and second factor, current organization, tenant-scoped user and role
+administration, invitations, assignable users, people, cases, participants, secure file intake,
+document review and download authorization, processing and cost metadata, extraction and entity
+confirmation, timeline, checklist, tasks, search, source-grounded answers, dashboard aggregates,
+notifications, legal hold, dossier export and supervised audit metadata.
 
 Every list route must define pagination, sorting allowlists, filters, and stable ordering. Every error uses:
 
@@ -191,7 +197,7 @@ The partners accepted the following decisions on 2026-08-07. Acceptance fixes th
 | Decision                                     | Accepted direction                                                                 | Record                                                                                                               |
 | -------------------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Scope of the internal assistant              | Source-grounded answers; refuse when no authorized source supports the response    | [ADR-009](../decisions/decisoes.md#adr-009-definir-o-escopo-do-assistente-interno)                                   |
-| Ingestion channels and WhatsApp positioning  | Upload and e-mail in the MVP; WhatsApp remains a future connector                  | [ADR-010](../decisions/decisoes.md#adr-010-decidir-os-canais-de-ingestão-do-mvp)                                     |
+| Ingestion channels and WhatsApp positioning  | Upload is the MVP channel; e-mail and WhatsApp are future connectors               | [ADR-016](../decisions/decisoes.md#adr-016-encerrar-o-mvp-sem-fabricar-as-condições-externas)                        |
 | Processing cost model and provider selection | User subscription with included allowance, measured overage, and hard case ceiling | [ADR-011](../decisions/decisoes.md#adr-011-estabelecer-o-modelo-de-custo-de-processamento-e-a-escolha-de-provedores) |
 | Retention, legal hold, and LGPD posture      | Preserve by default, no automatic purge, case hold fails closed                    | [ADR-012](../decisions/decisoes.md#adr-012-estabelecer-retenção-legal-hold-e-a-postura-de-lgpd)                      |
 | Internal notifications                       | Minimum-content e-mail with server-resolved recipients and worker delivery         | [ADR-013](../decisions/decisoes.md#adr-013-notificações-internas-por-e-mail)                                         |

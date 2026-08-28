@@ -1,7 +1,7 @@
 # Local development topology
 
-**Status:** Updated through Delivery 10
-**Last updated:** 2026-08-18
+**Status:** Updated through Delivery 16
+**Last updated:** 2026-08-28
 
 ## Purpose
 
@@ -146,11 +146,9 @@ The shared logger recursively redacts password, secret, authorization, cookie, t
 
 ## Delivery boundary
 
-The accepted checkpoint remains Delivery 10 until the complete Delivery 11 CI matrix passes on `main`. The complete local stack, database and HTTP foundations,
-tenant-aware legal/file modules, persistent mock processing, timeline/checklist review, hybrid
-search, grounded mock answers, supervised audit retrieval, processing-cost ceiling, and essential
-responsive web workflow are implemented. Delivery 11 extends Playwright through fictional case
-creation, upload, worker processing, extraction, sourced timeline confirmation, and audit at desktop
-and mobile breakpoints; it also adds dependency, recovery, and CI gates. E-mail behavior, complete
-user administration, full person management, and real AI/OCR/scanner providers remain separately
-governed. See the [operational runbook](../operations/runbook.md).
+The accepted checkpoint is Delivery 16. The complete local stack, tenant-aware legal and file
+modules, persistent processing, review flows, hybrid search, grounded answers, identity
+administration, second factor, legal hold, cost controls, notifications and specialty prompt
+library are implemented for fictional data. ADR-016 closes the MVP: inbound e-mail is a future
+connector, and real client archives remain blocked by external legal and operational conditions.
+See the [operational runbook](../operations/runbook.md).

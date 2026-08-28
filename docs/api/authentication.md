@@ -1,7 +1,7 @@
 # Authentication and HTTP contract
 
 **Status:** Implemented in Delivery 4; web permission projection added in Delivery 10
-**Last updated:** 2026-08-13
+**Last updated:** 2026-08-28
 
 ## HTTP platform
 
@@ -246,26 +246,15 @@ Signing out clears both.
 **The access token never leaves memory.** It is held in the session store and nothing writes it
 to disk, so a script flaw cannot read a live session out of `localStorage`.
 
-**The web client stores the password when — and only when — the person asks it to.** By default
-`localStorage` holds the firm slug, the e-mail, the "stay signed in" choice and the last internal
-route, and the password is left to the browser's own manager: the login form declares `name` and
-`autocomplete` on all three fields so the manager offers to save and fill. A second checkbox,
-"Guardar também a senha neste dispositivo", is off unless ticked; ticking it writes the password
-into the same `localStorage` record.
+**The web client never stores the password.** `localStorage` holds only the firm slug, e-mail,
+the "stay signed in" choice and the last internal route. The login form declares `name` and
+`autocomplete` on all credential fields so the browser's protected password manager can offer
+to save and fill without exposing the credential to application JavaScript.
 
-The cost is stated on the screen next to the checkbox and is stated here too: the password sits
-in **clear text on disk**, readable by anyone with access to that computer or browser profile and
-by any script that ever runs on the page — and it opens the whole firm's dossier, not one screen.
-The browser's manager remains the recommended path.
-
-This is an owner decision, taken with the cost in view and over a recorded objection. It is
-registered as a **production blocker** in `docs/product/ordem-de-execucao.md` (queue E, item E1):
-before any real client archive, the option has to go or become a per-firm decision.
-
-Two mechanics keep the choice honest. Unticking erases the stored password immediately, rather
-than leaving it until the next sign-in — keeping it "just in case" after someone said no would be
-worse than never having offered. And a read returns the password only while the flag is still on,
-so a record left behind by an older version cannot resurrect it.
+Versions before ADR-016 offered an opt-in that wrote the password in clear text. Preference
+loading is also the forward migration: when it sees the legacy `password` or `savePassword`
+property, it rewrites the record with only the safe fields and never fills the password input.
+The application does not retain a fallback copy "just in case".
 
 ## Second factor
 

@@ -2,16 +2,8 @@
  * Preferências de entrada, guardadas neste dispositivo.
  *
  * O que fica aqui é conveniência: o nome curto do escritório, o e-mail, a escolha de
- * continuar conectado e a última tela aberta.
- *
- * **A senha também, quando a pessoa pede explicitamente.** Isso é uma escolha do dono do
- * produto, tomada com o custo à vista: em `localStorage` a senha fica em texto puro no
- * disco, legível por qualquer script que venha a rodar na página. O gerenciador do navegador
- * continua sendo o caminho recomendado — o formulário declara `name` e `autocomplete` para
- * ele se oferecer — e guardar aqui é o atalho para quem prefere não depender dele.
- *
- * Está registrado como bloqueio de produção no README: antes de dado real de cliente, esta
- * opção precisa sair ou virar decisão por escritório.
+ * continuar conectado e a última tela aberta. Credenciais nunca entram neste registro;
+ * quem quiser preencher a senha novamente usa o gerenciador protegido do navegador.
  *
  * Toda leitura e escrita é protegida: janela anônima, armazenamento desativado por política
  * e navegador que lança ao acessar são situações normais, e nenhuma delas pode impedir
@@ -24,9 +16,6 @@ export interface SignInPreferences {
   organizationSlug: string;
   email: string;
   keepSignedIn: boolean;
-  /** Guardada apenas se a pessoa marcar a opção. Ver o aviso no topo do arquivo. */
-  password: string;
-  savePassword: boolean;
   /** Caminho interno da última tela. Só caminho: nada de conteúdo pesquisado. */
   lastRoute: string | null;
 }
@@ -35,8 +24,6 @@ const empty: SignInPreferences = {
   organizationSlug: '',
   email: '',
   keepSignedIn: false,
-  password: '',
-  savePassword: false,
   lastRoute: null,
 };
 
@@ -60,16 +47,18 @@ export function readPreferences(): SignInPreferences {
       return { ...empty };
     }
     const record = parsed as Record<string, unknown>;
-    return {
+    const next: SignInPreferences = {
       organizationSlug: typeof record.organizationSlug === 'string' ? record.organizationSlug : '',
       email: typeof record.email === 'string' ? record.email : '',
       keepSignedIn: record.keepSignedIn === true,
-      savePassword: record.savePassword === true,
-      // Só devolve a senha se a opção continuar ligada: desmarcar precisa apagar de fato.
-      password:
-        record.savePassword === true && typeof record.password === 'string' ? record.password : '',
       lastRoute: isInternalPath(record.lastRoute) ? record.lastRoute : null,
     };
+    // Versões anteriores ofereciam guardar a senha em texto puro. Ler uma preferência antiga
+    // também é a migração: reescreve apenas os campos seguros e remove a credencial do disco.
+    if ('password' in record || 'savePassword' in record) {
+      write(next);
+    }
+    return next;
   } catch {
     return { ...empty };
   }
@@ -87,15 +76,10 @@ export function rememberSignIn(input: {
   organizationSlug: string;
   email: string;
   keepSignedIn: boolean;
-  savePassword: boolean;
-  password: string;
 }): void {
   write({
     ...readPreferences(),
     ...input,
-    // Desmarcar apaga na hora. Guardar a senha "por via das dúvidas" depois de a pessoa
-    // dizer que não quer seria pior que nunca ter oferecido.
-    password: input.savePassword ? input.password : '',
   });
 }
 
@@ -106,8 +90,6 @@ export function forgetIdentity(): void {
     organizationSlug: current.organizationSlug,
     email: '',
     keepSignedIn: false,
-    password: '',
-    savePassword: false,
     lastRoute: null,
   });
 }

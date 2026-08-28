@@ -1,7 +1,7 @@
 # Ordem de execução — estado por ADR e o que vem a seguir
 
 **Data:** 2026-08-28
-**Para que serve:** não se perder. Quinze ADRs decidiram coisas ao longo de meses; algumas
+**Para que serve:** não se perder. Dezesseis ADRs decidiram coisas ao longo de meses; algumas
 viraram código, outras esperam, e algumas esperam sem que ninguém lembre por quê. Este
 documento diz, de cada uma, o que está de pé — e monta **uma** ordem de execução que atravessa
 todas.
@@ -15,24 +15,25 @@ Estado verificado no código em 2026-08-28, não deduzido dos ADRs.
 | ADR     | Decisão                        | Construído                                                            | Aberto                                                                  |
 | ------- | ------------------------------ | --------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                 | —                                                                       |
-| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 17 migrações                 | —                                                                       |
+| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 19 migrações                 | —                                                                       |
 | **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                | —                                                                       |
 | **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos      | —                                                                       |
 | **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                              | —                                                                       |
 | **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real atrás da porta      | Recusa existir sobre acervo real — falta a cláusula de não-treino (012) |
 | **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP              | —                                                                       |
 | **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                            | —                                                                       |
-| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada, citação obrigatória                   | Teto de recuperação em 5 trechos limita pergunta ampla                  |
-| **010** | Canais de entrada              | ✅ Upload                                                             | ❌ **Canal de e-mail nunca foi construído** — zero no código            |
+| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada, citação obrigatória                   | — Teto de 5 fontes mantido deliberadamente pelo ADR-016                 |
+| **010** | Canais de entrada              | ✅ Upload                                                             | Superado pelo ADR-016; e-mail passou a conector futuro                  |
 | **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos | —                                                                       |
 | **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                       | Transferência internacional e responsável nomeado                       |
 | **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos    | —                                                                       |
 | **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código | Itens 4–7 adiados **por decisão**, não por esquecimento                 |
 | **015** | Biblioteca de prompts          | ✅ Itens 1, 3, 4, 5, 6, 7 · ✅ Item 2 (mecanismo)                     | 15 dos 20 prompts seguem `DRAFT` — falta quem assina                    |
+| **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                   | Condições externas permanecem falhando fechado                          |
 
-**Leitura rápida:** dos quinze, dez estão inteiramente de pé. O que sobra se concentra em três
-lugares — os portões que liberam o provedor real (011, 012), o que promete aviso e não avisa
-(010, 013), e o que a rodada de prompts abriu (015).
+**Leitura rápida:** a fila de engenharia do MVP fechou. O que sobra não é código disfarçado:
+contrato e transferência internacional (012), responsável por titulares (012) e assinatura
+profissional dos prompts (015). Conectores futuros exigem novo incremento.
 
 ---
 
@@ -129,8 +130,8 @@ recebe o catálogo que mandava respeitar. Com isso os quatro P0 estão fechados.
 
 ### Fila B — os portões do provedor real
 
-Nenhum destes é opcional, e nenhum existe hoje. Enquanto qualquer um faltar, o provedor real
-permanece bloqueado — e é a única coisa que separa a biblioteca de valer para o cliente.
+Os controles técnicos e os registros internos foram fechados. O adaptador pode ser exercitado
+com acervo fictício; acervo real continua bloqueado pelas condições externas do ADR-012.
 
 **B1. Lista de suboperadores versionada** — ADR-012 · **FEITO 2026-08-27**
 [`docs/legal/suboperadores.md`](../legal/suboperadores.md). Hoje são dois: Railway e Vercel.
@@ -198,9 +199,11 @@ documento a `NEEDS_REVIEW`. O aviso se desliga, ao contrário da falha. Sete dia
 quem nunca recebeu, para instalação parada não mandar o mês inteiro; e a varredura é represada
 em uma hora, porque o laço do worker bate a cada cinco segundos e `finished_at` não é indexado.
 
-**C2. Canal de entrada por e-mail** — ADR-010. Decidido como MVP e nunca construído. Zero
-ocorrências. Vale reabrir a decisão em vez de executá-la em silêncio: o upload atende, e o
-canal de e-mail traz superfície de entrada não autenticada.
+**C2. Canal de entrada por e-mail — ENCERRADO POR DECISÃO EM 2026-08-28.**
+
+O ADR-016 supera somente esta parte do ADR-010: upload permanece a entrada do MVP e e-mail vira
+conector futuro. Não construir uma porta não autenticada sem demanda, provedor de caixa e modelo
+de associação a tenant é a decisão; não é item esquecido.
 
 ### Fila D — adiados por decisão, não esquecidos
 
@@ -213,23 +216,16 @@ Não fazer nada aqui é a decisão correta até a condição mudar. Registrado p
 | Autocadastro de escritório     | 014, 5 | Teste gratuito ou autoatendimento |
 | Troca de nome curto            | 014, 6 | Sem custo em esperar              |
 | Pessoa em dois escritórios     | 014, 7 | Demanda real de cliente           |
-| Conector de WhatsApp           | 010    | Depois do MVP                     |
-| Teto de recuperação acima de 5 | 009    | Decisão de custo e de contexto    |
+| Conectores de e-mail/WhatsApp  | 016    | Novo incremento e demanda real    |
+| Teto de recuperação acima de 5 | 016    | Avaliação de qualidade/custo      |
 
 ### Fila E — dívida fora de ADR
 
-**E1. Senha guardada em `localStorage`** no front. Decidida pelo dono depois de objeção
-registrada. **Bloqueio de produção**, não pendência de backlog.
+**E1. Senha guardada em `localStorage` — FECHADO 2026-08-28.** O ADR-016 retirou a opção. A
+preferência guarda somente campos de conveniência e saneia registros legados na primeira leitura.
 
-Reaberto e **reafirmado pelo dono em 2026-08-28**, com as duas saídas na mesa — tirar a opção, ou
-torná-la decisão por escritório. A opção fica. O que mudou foi a documentação: `authentication.md`
-afirmava que o cliente nunca guarda senha, o que era falso desde que a caixa existe, e agora
-descreve o comportamento real, o custo e esta pendência. Não reabrir sem fato novo: a decisão já
-foi tomada duas vezes com o custo à vista.
-
-**E2. `pnpm test:integration` não roda nesta máquina** — não há Docker instalado. A suíte que
-cobre escrita de checklist, seed e fila só é exercida no CI. Não é defeito do código, mas
-muda o que se pode afirmar localmente.
+**E2. Integração sem Docker local — FECHADO 2026-08-28.** Docker está disponível nesta máquina;
+os gates de integração voltam a ser obrigatórios também localmente.
 
 ---
 
@@ -239,20 +235,16 @@ As três perguntas que esta seção fazia foram todas respondidas. A Fila A fech
 Fila B em 27/08, o C1 em 27/08. **A fila de código está vazia** — e isso não é figura de
 linguagem: não sobrou item nesta lista que uma sessão consiga executar sozinha.
 
-O que resta são decisões, e cada uma tem dono diferente do engenheiro:
+O que resta exige ato externo verificável; autorização genérica de engenharia não o substitui:
 
-| O que falta                                           | ADR      | Quem decide            | O que destrava                           |
-| ----------------------------------------------------- | -------- | ---------------------- | ---------------------------------------- |
-| Cláusula de não-treino assinada com o fornecedor      | 012      | Sociedade, comercial   | O adaptador real sobre acervo de cliente |
-| Transferência internacional consentida (host nos EUA) | 012      | Sociedade, jurídico    | Qualquer acervo de cliente brasileiro    |
-| Responsável nomeado pelo atendimento a titular        | 012      | Sociedade              | Conformidade de titular na LGPD          |
-| Assinatura dos 15 prompts de especialidade            | 015, i.2 | Advogado com inscrição | A biblioteca deixar de ser rascunho      |
-| Canal de entrada por e-mail: reabrir ou executar      | 010      | Dono                   | O C2 — adiado pelo dono em 28/08         |
-| Teto de recuperação acima de 5 trechos                | 009      | Dono, custo e contexto | Pergunta ampla no assistente             |
-
-Duas pendências operacionais, que são de máquina e não de decisão: `CASE_ARCHIVE=fictional`
-precisa existir nos serviços da Railway antes do próximo deploy — sem ela o processo falha na
-partida, de propósito — e o E2 segue de pé, sem Docker nesta máquina.
+| O que falta                                                                                    | ADR      | Quem decide            | O que destrava                           |
+| ---------------------------------------------------------------------------------------------- | -------- | ---------------------- | ---------------------------------------- |
+| Cláusula de não-treino assinada com o fornecedor                                               | 012      | Sociedade, comercial   | O adaptador real sobre acervo de cliente |
+| Transferência internacional consentida (host nos EUA)                                          | 012      | Sociedade, jurídico    | Qualquer acervo de cliente brasileiro    |
+| Responsável nomeado pelo atendimento a titular                                                 | 012      | Sociedade              | Conformidade de titular na LGPD          |
+| Assinatura dos 15 prompts de especialidade                                                     | 015, i.2 | Advogado com inscrição | A biblioteca deixar de ser rascunho      |
+| `CASE_ARCHIVE=fictional` continua obrigatório em API e worker, local e Railway. A configuração |
+| é uma trava operacional, não autorização para inserir acervo real.                             |
 
 **A ordem mudou porque a lista acabou.** Enquanto nenhuma dessas decisões cair, o que sobra para
 uma sessão é manutenção de documento e dívida que ninguém levantou ainda. Vale mais dizer isso do

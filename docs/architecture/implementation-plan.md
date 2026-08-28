@@ -1,8 +1,8 @@
 # Incremental implementation plan
 
-**Status:** Delivery 13 accepted; Delivery 14 authorized
+**Status:** Delivery 16 accepted; no Delivery 17 authorized
 
-**Last updated:** 2026-08-20
+**Last updated:** 2026-08-28
 
 ## Delivery strategy
 
@@ -494,7 +494,8 @@ everything the case has.
 
 ## Delivery 16 — Prompt library per legal specialty
 
-Authorized by the owner on 2026-08-25. The package held metadata about prompts that were never
+Authorized by the owner on 2026-08-25 and accepted on 2026-08-28 after the mandatory CI passed
+on `main`. The package held metadata about prompts that were never
 written; the only field production read was `version`. This delivery writes the actual prompt
 text, adds a specialty catalogue that normalises `legalArea` aliases without closing the free
 field, and makes `promptFor(task, area)` the single selection point — refusing to serve a
@@ -533,13 +534,21 @@ ADRs 009–013 define product policy that extends beyond the numbered Delivery 0
 
 - source-grounded assistant responses after Delivery 9 retrieval is accepted (ADR-009) — backend
   contract implemented with a deterministic mock during Delivery 10;
-- authenticated e-mail ingestion that reuses the hostile-file intake pipeline (ADR-010);
+- inbound e-mail ingestion was removed from the MVP by ADR-016 and now requires a separately
+  authorized connector increment;
 - per-execution cost accounting and a hard recoverable case ceiling before any real provider
   (ADR-011) — backend and worker controls implemented during Delivery 10;
 - fail-closed case legal hold and required governance procedures before real client data (ADR-012);
 - minimum-content worker e-mail notifications with preferences and body-free audit records (ADR-013).
 
-Governance and cost controls precede real providers. Retrieval precedes assistant responses. Inbound ingestion and outbound notification remain distinct increments. Exact ordering after Delivery 11 requires a reviewed plan update and explicit authorization.
+Governance and cost controls precede real providers. Retrieval precedes assistant responses.
+Inbound connectors and outbound notifications remain distinct capabilities. ADR-016 closes this
+MVP plan; any later increment requires a reviewed plan update and explicit authorization.
+
+ADR-016 closes this follow-up list for the MVP. It supersedes only the inbound e-mail part of
+ADR-010, keeps the five-source retrieval ceiling, preserves the real-archive and prompt-review
+gates, and removes password persistence from the web client. No item in this section authorizes a
+Delivery 17.
 
 ## Cross-delivery security test matrix
 
@@ -587,8 +596,5 @@ The Delivery 9 checkpoint is **Text and semantic search foundation**. It is comp
 - synthetic `EXPLAIN (ANALYZE, BUFFERS)` evidence documents lexical GIN and exact-vector behavior;
 - the full format, lint, typecheck, unit, integration, build, migration-validation, migration-status, and Compose gates pass.
 
-That checkpoint is accepted. **Delivery 10 — Essential web vertical slice** is also accepted: its
-responsive, permission-aware pt-BR interface uses real API contracts, exposes recoverable states,
-and passes the component and essential desktop/mobile Playwright gates. Delivery 11 is authorized,
-implemented locally, and awaits its mandatory CI result; governed follow-up increments remain
-separately authorized work.
+That checkpoint is accepted. Deliveries 10 through 16 are also accepted, each with its recorded
+security and verification gates. ADR-016 closes the MVP boundary; no Delivery 17 is authorized.

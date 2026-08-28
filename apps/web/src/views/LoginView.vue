@@ -18,7 +18,6 @@ const organizationSlug = ref(
   typeof route.query.escritorio === 'string' ? route.query.escritorio : saved.organizationSlug,
 );
 const keepSignedIn = ref(saved.keepSignedIn);
-const savePassword = ref(saved.savePassword);
 
 /**
  * Segundo passo. A senha correta de quem tem o fator ativo devolve 401 com um código
@@ -27,7 +26,7 @@ const savePassword = ref(saved.savePassword);
 const needsSecondFactor = ref(false);
 const secondFactorCode = ref('');
 const email = ref(saved.email);
-const password = ref(saved.password);
+const password = ref('');
 const submitting = ref(false);
 const failure = ref<ApiError | null>(null);
 
@@ -59,8 +58,6 @@ async function submit(): Promise<void> {
     rememberSignIn({
       ...credentials,
       keepSignedIn: keepSignedIn.value,
-      savePassword: savePassword.value,
-      password: password.value,
     });
     await router.replace(destinationAfterLogin());
   } catch (error) {
@@ -171,17 +168,6 @@ async function submit(): Promise<void> {
               <span class="keep__hint">
                 Deixe desmarcado em computador compartilhado: a sessão termina ao fechar o
                 navegador.
-              </span>
-            </span>
-          </label>
-
-          <label class="keep">
-            <input v-model="savePassword" type="checkbox" name="save-password" />
-            <span class="keep__text">
-              Guardar também a senha neste dispositivo
-              <span class="keep__hint">
-                Ela fica legível para quem tiver acesso a este computador ou ao navegador. Em
-                máquina compartilhada, prefira deixar o navegador guardar por você.
               </span>
             </span>
           </label>
