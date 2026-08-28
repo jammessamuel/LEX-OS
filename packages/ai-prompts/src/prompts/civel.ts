@@ -155,17 +155,8 @@ ${LOCALIZADOR_PJE}
 Todo evento nasce NÃO CONFIRMADO para revisão humana. Sem localizador, é descartado.
 
 ${RESPONDA_SO_JSON}`,
-  reviewStatus: 'REVIEWED',
-  review: {
-    capacity: 'LAWYER',
-    name: 'Thais Regina Farrapo Moreira',
-    oab: null,
-    standing:
-      'Advogada. Atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94), então a inscrição não está ativa. Número não informado.',
-    date: '2026-08-27',
-    reviewedVersion: 'timeline-civel-v1',
-    note: 'Leitura integral do caderno de revisão desta faixa, gerado a partir da própria biblioteca. Aprovado sem ressalvas registradas. Não cobre a conferência de número de artigo e súmula um a um, que continua sendo trabalho das lentes automatizadas.',
-  },
+  reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: TIMELINE_INPUT,
   outputSchema: TIMELINE_OUTPUT,
   examples: [
@@ -267,17 +258,8 @@ sobrescreva item já revisado. Devolva cada item recebido exatamente uma vez, co
 que veio na entrada.
 
 ${RESPONDA_SO_JSON}`,
-  reviewStatus: 'REVIEWED',
-  review: {
-    capacity: 'LAWYER',
-    name: 'Thais Regina Farrapo Moreira',
-    oab: null,
-    standing:
-      'Advogada. Atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94), então a inscrição não está ativa. Número não informado.',
-    date: '2026-08-27',
-    reviewedVersion: 'checklist-civel-v1',
-    note: 'Leitura integral do caderno de revisão desta faixa, gerado a partir da própria biblioteca. Aprovado sem ressalvas registradas. Não cobre a conferência de número de artigo e súmula um a um, que continua sendo trabalho das lentes automatizadas.',
-  },
+  reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: CHECKLIST_INPUT,
   outputSchema: CHECKLIST_OUTPUT,
   examples: [
@@ -335,17 +317,8 @@ Não emita parecer, não recomende conduta, não afirme desfecho.
 ${RESPONDA_SO_JSON}
 
 ${QUEBRE_A_AFIRMACAO}`,
-  reviewStatus: 'REVIEWED',
-  review: {
-    capacity: 'LAWYER',
-    name: 'Thais Regina Farrapo Moreira',
-    oab: null,
-    standing:
-      'Advogada. Atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94), então a inscrição não está ativa. Número não informado.',
-    date: '2026-08-27',
-    reviewedVersion: 'grounded-answer-civel-v1',
-    note: 'Leitura integral do caderno de revisão desta faixa, gerado a partir da própria biblioteca. Aprovado sem ressalvas registradas. Não cobre a conferência de número de artigo e súmula um a um, que continua sendo trabalho das lentes automatizadas.',
-  },
+  reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: GROUNDED_INPUT,
   outputSchema: GROUNDED_OUTPUT,
   examples: [
@@ -419,17 +392,8 @@ Sem correspondência clara, OUTRO com confiança baixa. Forçar tipo plausível 
 admitir que não deu.
 
 ${RESPONDA_SO_JSON}`,
-  reviewStatus: 'REVIEWED',
-  review: {
-    capacity: 'LAWYER',
-    name: 'Thais Regina Farrapo Moreira',
-    oab: null,
-    standing:
-      'Advogada. Atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94), então a inscrição não está ativa. Número não informado.',
-    date: '2026-08-27',
-    reviewedVersion: 'classification-civel-v1',
-    note: 'Leitura integral do caderno de revisão desta faixa, gerado a partir da própria biblioteca. Aprovado sem ressalvas registradas. Não cobre a conferência de número de artigo e súmula um a um, que continua sendo trabalho das lentes automatizadas.',
-  },
+  reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: CLASSIFICATION_INPUT,
   outputSchema: CLASSIFICATION_OUTPUT,
   examples: [
@@ -521,17 +485,8 @@ nasce NÃO CONFIRMADA. Quando o mesmo dado divergir entre documentos, extraia as
 com seus localizadores — a divergência costuma ser o objeto do pedido.
 
 ${RESPONDA_SO_JSON}`,
-  reviewStatus: 'REVIEWED',
-  review: {
-    capacity: 'LAWYER',
-    name: 'Thais Regina Farrapo Moreira',
-    oab: null,
-    standing:
-      'Advogada. Atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94), então a inscrição não está ativa. Número não informado.',
-    date: '2026-08-27',
-    reviewedVersion: 'entities-civel-v1',
-    note: 'Leitura integral do caderno de revisão desta faixa, gerado a partir da própria biblioteca. Aprovado sem ressalvas registradas. Não cobre a conferência de número de artigo e súmula um a um, que continua sendo trabalho das lentes automatizadas.',
-  },
+  reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: ENTITIES_INPUT,
   outputSchema: ENTITIES_OUTPUT,
   examples: [

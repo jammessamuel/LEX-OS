@@ -162,17 +162,8 @@ ${LOCALIZADOR_PJE}
 Todo evento nasce NÃO CONFIRMADO para revisão humana. Sem localizador, é descartado.
 
 ${RESPONDA_SO_JSON}`,
-  reviewStatus: 'REVIEWED',
-  review: {
-    capacity: 'LAWYER',
-    name: 'Thais Regina Farrapo Moreira',
-    oab: null,
-    standing:
-      'Advogada. Atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94), então a inscrição não está ativa. Número não informado.',
-    date: '2026-08-27',
-    reviewedVersion: 'timeline-criminal-v1',
-    note: 'Leitura integral do caderno de revisão desta faixa, gerado a partir da própria biblioteca. Aprovado sem ressalvas registradas. Não cobre a conferência de número de artigo e súmula um a um, que continua sendo trabalho das lentes automatizadas.',
-  },
+  reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: TIMELINE_INPUT,
   outputSchema: TIMELINE_OUTPUT,
   examples: [
@@ -228,17 +219,8 @@ sobrescreva item já revisado. Devolva cada item recebido exatamente uma vez, co
 que veio na entrada.
 
 ${RESPONDA_SO_JSON}`,
-  reviewStatus: 'REVIEWED',
-  review: {
-    capacity: 'LAWYER',
-    name: 'Thais Regina Farrapo Moreira',
-    oab: null,
-    standing:
-      'Advogada. Atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94), então a inscrição não está ativa. Número não informado.',
-    date: '2026-08-27',
-    reviewedVersion: 'checklist-criminal-v1',
-    note: 'Leitura integral do caderno de revisão desta faixa, gerado a partir da própria biblioteca. Aprovado sem ressalvas registradas. Não cobre a conferência de número de artigo e súmula um a um, que continua sendo trabalho das lentes automatizadas.',
-  },
+  reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: CHECKLIST_INPUT,
   outputSchema: CHECKLIST_OUTPUT,
   examples: [
@@ -285,17 +267,8 @@ afirme desfecho.
 ${RESPONDA_SO_JSON}
 
 ${QUEBRE_A_AFIRMACAO}`,
-  reviewStatus: 'REVIEWED',
-  review: {
-    capacity: 'LAWYER',
-    name: 'Thais Regina Farrapo Moreira',
-    oab: null,
-    standing:
-      'Advogada. Atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94), então a inscrição não está ativa. Número não informado.',
-    date: '2026-08-27',
-    reviewedVersion: 'grounded-answer-criminal-v1',
-    note: 'Leitura integral do caderno de revisão desta faixa, gerado a partir da própria biblioteca. Aprovado sem ressalvas registradas. Não cobre a conferência de número de artigo e súmula um a um, que continua sendo trabalho das lentes automatizadas.',
-  },
+  reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: GROUNDED_INPUT,
   outputSchema: GROUNDED_OUTPUT,
   examples: [
@@ -354,17 +327,8 @@ ${IMAGEM_RUIM}
 Sem correspondência clara, OUTRO com confiança baixa.
 
 ${RESPONDA_SO_JSON}`,
-  reviewStatus: 'REVIEWED',
-  review: {
-    capacity: 'LAWYER',
-    name: 'Thais Regina Farrapo Moreira',
-    oab: null,
-    standing:
-      'Advogada. Atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94), então a inscrição não está ativa. Número não informado.',
-    date: '2026-08-27',
-    reviewedVersion: 'classification-criminal-v1',
-    note: 'Leitura integral do caderno de revisão desta faixa, gerado a partir da própria biblioteca. Aprovado sem ressalvas registradas. Não cobre a conferência de número de artigo e súmula um a um, que continua sendo trabalho das lentes automatizadas.',
-  },
+  reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: CLASSIFICATION_INPUT,
   outputSchema: CLASSIFICATION_OUTPUT,
   examples: [
@@ -425,17 +389,8 @@ nasce NÃO CONFIRMADA. Quando o mesmo dado divergir entre peças, extraia as oco
 localizadores.
 
 ${RESPONDA_SO_JSON}`,
-  reviewStatus: 'REVIEWED',
-  review: {
-    capacity: 'LAWYER',
-    name: 'Thais Regina Farrapo Moreira',
-    oab: null,
-    standing:
-      'Advogada. Atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94), então a inscrição não está ativa. Número não informado.',
-    date: '2026-08-27',
-    reviewedVersion: 'entities-criminal-v1',
-    note: 'Leitura integral do caderno de revisão desta faixa, gerado a partir da própria biblioteca. Aprovado sem ressalvas registradas. Não cobre a conferência de número de artigo e súmula um a um, que continua sendo trabalho das lentes automatizadas.',
-  },
+  reviewStatus: 'DRAFT',
+  review: null,
   inputSchema: ENTITIES_INPUT,
   outputSchema: ENTITIES_OUTPUT,
   examples: [

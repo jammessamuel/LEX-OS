@@ -185,14 +185,17 @@ Four places, not two: the project has **production and staging**, and both carry
 `.env.example` — CI builds its `.env` from that file — and to `docker-compose.yml`. Your own
 `.env` is not in the repository and nobody can update it for you.
 
-`CASE_ARCHIVE` is the current example: `fictional` or `real`, no default, and it decides whether
-a `DRAFT` prompt may run. Staging is `fictional` today. **The day staging receives a real client
-archive, change it to `real`** — that switch is the whole reason the setting exists.
+`CASE_ARCHIVE` is the current example: `fictional` or `real`, with no default. The current build
+refuses `real` at startup in every environment, before opening an HTTP or worker entry. Staging
+and production are `fictional` today. Do not change the value to admit a client archive: a future
+approved delivery removes the startup guard only after the evidence package of ADR-012/016 is
+complete.
 
 ## Remaining production blockers
 
 - real malware scanner and production OCR/embedding adapters;
-- approved provider/subprocessor terms forbidding training on submitted content;
+- company-owned provider acceptance, transfer instruments and regional commitments compatible
+  with ADR-012;
 - retention, legal basis, data-subject, customer-offboarding, and irreversible-purge procedures;
 - durable same-region PostgreSQL/object-storage backup policy with measured RPO/RTO and scheduled
   restore exercises;

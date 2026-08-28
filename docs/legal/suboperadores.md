@@ -1,74 +1,101 @@
 # Lista de suboperadores
 
-- **Versão:** 1 · **Vigente desde:** 2026-08-27
-- **Operador:** SAMUEL DEV LTDA, na condição de operadora dos dados tratados por conta do
-  escritório contratante, que é o controlador.
-- **Exigida por:** ADR-012, que condiciona o primeiro provedor real de IA à existência desta
-  lista, versionada e publicada **antes** — não depois.
+- **Versão:** 2 · **Vigente desde:** 2026-08-28
+- **Exigida por:** ADR-012
+- **Escopo:** fornecedores que efetivamente hospedam ou recebem dados da instalação do LEX OS.
 
-Suboperador é todo terceiro que trata dados pessoais por nossa conta. Estar nesta lista não é
-demérito: é o que permite ao encarregado de dados do escritório saber por onde o acervo dele
-passa. O que seria grave é um suboperador **fora** dela.
+Esta lista descreve o que está ligado, não o que se pretende contratar. Serviço configurado no
+repositório, mas sem implantação comprovada, não entra como suboperador ativo.
 
 ---
 
 ## 1. Suboperadores em uso
 
-| #   | Suboperador         | Serviço                                                                      | O que ele alcança                                                                                             | País do tratamento |
-| --- | ------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------ |
-| 1   | Railway Corporation | Hospedagem da aplicação, banco PostgreSQL, Redis e armazenamento de objetos  | **Todo o conteúdo**: documentos originais, texto extraído, dados de pessoas e casos, e-mails na fila de saída | Estados Unidos     |
-| 2   | Vercel Inc.         | Hospedagem da interface web (arquivos estáticos e proxy das chamadas de API) | Não armazena conteúdo. Os dados atravessam o proxy em trânsito, cifrados                                      | Estados Unidos     |
+| #   | Suboperador         | Serviço                                                              | O que ele alcança                                                                                           | Localização comprovada ou declarada                                                                                | Uso permitido hoje                  |
+| --- | ------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
+| 1   | Railway Corporation | API, worker, PostgreSQL, Redis, MinIO e interface web de homologação | Todo o acervo hospedado: originais, derivados, pessoas, casos, auditoria e filas                            | Réplicas e volumes em Amsterdam, Países Baixos (`europe-west4-drams3a`); o DPA declara operações primárias nos EUA | Somente acervo fictício             |
+| 2   | Anthropic, PBC      | API de modelo de linguagem para respostas fundamentadas              | Pergunta e até cinco trechos autorizados recuperados do caso; nunca recebe arquivo inteiro por este caminho | Armazenamento declarado nos EUA e processamento que pode ocorrer nos EUA, Europa, Ásia e Austrália                 | Somente acervo fictício, por código |
 
-**Nenhum outro.** Em especial, e por decisão registrada:
+Verificação operacional feita em 2026-08-28 nos ambientes `staging` e `production` da Railway:
 
-- **Nenhum provedor de modelo de linguagem, OCR ou embeddings.** Todos são simulações
-  determinísticas que rodam dentro da própria aplicação e não fazem chamada externa. O primeiro
-  provedor real depende desta lista ser atualizada antes de ser ligado.
-- **Nenhum serviço de antivírus externo.** A verificação de arquivos é interna.
-- **Nenhum relay de e-mail de produção.** O adaptador de e-mail existe e, fora de
-  desenvolvimento, recusa subir sem um servidor configurado. Quando um for contratado, entra
-  nesta lista antes de ser ligado.
-- **Nenhuma ferramenta de análise, telemetria de produto ou rastreamento na interface.**
+- API, worker, PostgreSQL, Redis e MinIO têm uma réplica em `europe-west4-drams3a`;
+- a interface web existe na Railway em `staging`; não há serviço `web` ativo em `production`;
+- API e worker declaram `CASE_ARCHIVE=fictional`, `AI_LANGUAGE_MODEL_PROVIDER=anthropic` e
+  `AI_LANGUAGE_MODEL_NAME=claude-sonnet-5` nos dois ambientes;
+- o SMTP aponta para `127.0.0.1:1025`; não há relay de e-mail externo de produção;
+- a conta Vercel conectada nesta máquina não contém projeto, e o GitHub não registra deployment
+  da Vercel. O arquivo `apps/web/vercel.json` é configuração possível, não prova de uso. Por isso
+  a Vercel saiu da lista ativa nesta versão.
 
-## 2. Residência dos dados
+O uso de Anthropic sobre fixture fictícia não transforma o conteúdo em dado de cliente, mas a
+integração precisa constar porque está ligada e porque sua habilitação sobre acervo real é um
+portão separado.
 
-O ADR-012 exige **uma região documentada, sem cópias em outra região, inclusive backups**.
+## 2. Residência e transferência internacional
 
-Hoje a instalação demonstrativa roda em região dos Estados Unidos na Railway. **Isso é adequado
-para material fictício e não é adequado para acervo de cliente brasileiro** sem que o escritório
-contratante seja informado e concorde, por escrito, com a transferência internacional — e sem que
-a base legal dessa transferência esteja no contrato de tratamento.
+O ADR-012 exige uma região documentada e nenhuma cópia em outra região, inclusive backup. A
+seleção de Amsterdam na Railway prova onde as réplicas e os volumes do projeto rodam; ela **não
+prova** que toda operação de suporte, telemetria, backup ou subcontratação permaneça nessa região.
 
-Esta é uma pendência aberta, não uma conformidade alcançada. Ela está registrada em
-[`termos-de-tratamento.md`](./termos-de-tratamento.md), seção 6.
+Há duas incompatibilidades abertas com a redação atual do ADR:
 
-## 3. A regra que restringe a escolha do provedor de IA
+1. o DPA público da Railway informa operações primárias nos Estados Unidos e descreve backups
+   entre múltiplos locais e regiões;
+2. a Anthropic informa armazenamento nos Estados Unidos e roteamento padrão por múltiplas regiões.
 
-Do ADR-012, e ela não é negociável por preço:
+Assim, cláusulas-padrão da ANPD são necessárias para a transferência internacional, mas **não
+bastam** para satisfazer a regra interna de região única. Antes de acervo real, a sociedade deve
+escolher e registrar uma das duas rotas:
 
-> **Nenhum fornecedor que treine com o conteúdo enviado é elegível**, independentemente do preço.
+- contratar compromissos específicos dos fornecedores que limitem armazenamento, cópias,
+  processamento e backups a uma única região documentada; ou
+- aprovar um novo ADR que substitua conscientemente a regra de região única por uma política de
+  transferências autorizadas, com países, subprocessadores, retenção e salvaguardas registrados.
 
-Antes de qualquer provedor entrar nesta lista, três coisas precisam estar por escrito e guardadas:
+Até uma dessas rotas ser executada, `CASE_ARCHIVE=fictional` continua obrigatório.
 
-1. Que o conteúdo enviado **não é usado para treinar** modelo nenhum, do fornecedor ou de
-   terceiro.
-2. **Por quanto tempo** o fornecedor retém o conteúdo enviado, e se há retenção zero disponível.
-3. Em **que país** o tratamento ocorre, e quais suboperadores o próprio fornecedor usa.
+## 3. Fornecedor de IA
 
-A declaração pública do fornecedor não basta: é preciso a cláusula contratual ou o adendo de
-tratamento de dados assinado, guardado junto a este documento.
+Os [Termos Comerciais da Anthropic](https://www.anthropic.com/legal/commercial-terms) dizem que a
+Anthropic não pode treinar modelos com o conteúdo do cliente. A regra material de não treinamento,
+portanto, existe no contrato padrão. Isso só vale como evidência do LEX OS quando:
+
+1. a organização comercial da Anthropic estiver em nome da **SAMUEL DEV LTDA**;
+2. um representante com poderes aceitar os Termos Comerciais e o DPA pela empresa;
+3. a adesão ao _Development Partner Program_ permanecer desativada;
+4. a organização, a data de aceite e as versões dos termos forem guardadas no dossiê contratual.
+
+A chave de API não prova quem contratou nem quem tinha poderes para aceitar os termos. Ela é
+segredo operacional e nunca entra no repositório.
+
+A retenção padrão publicada para a API é de até 30 dias, com exceções de política de uso e
+obrigação legal. Retenção zero depende de acordo e de modelo elegível. Mesmo com retenção zero, a
+localização padrão descrita pelo fornecedor permanece incompatível com a regra de região única
+enquanto não houver acordo específico ou novo ADR.
 
 ## 4. Como esta lista muda
 
-Suboperador novo **entra aqui antes de ser ligado**, nunca depois. A ordem importa: uma lista
-atualizada depois do fato documenta um vazamento de escopo em vez de preveni-lo.
+Suboperador novo entra aqui **antes** de ser ligado. Cada mudança:
 
-Cada alteração sobe a versão no topo, mantém a anterior no histórico do Git, e é comunicada aos
-escritórios contratantes com antecedência razoável antes de entrar em vigor — prazo que o
-contrato de tratamento fixa.
+1. sobe a versão no topo;
+2. registra ambiente, finalidade, categorias de dados, países e retenção;
+3. anexa ou referencia o contrato de tratamento e o mecanismo de transferência aplicável;
+4. é comunicada aos controladores no prazo contratual;
+5. mantém o histórico anterior no Git.
 
-## 5. Histórico
+## 5. Fontes verificadas
 
-| Versão | Data       | Mudança                                                                                       |
-| ------ | ---------- | --------------------------------------------------------------------------------------------- |
-| 1      | 2026-08-27 | Primeira versão. Railway e Vercel. Nenhum provedor de IA, nenhum relay de e-mail de produção. |
+- [Railway — Regions](https://docs.railway.com/deployments/regions)
+- [Railway — Data Processing Addendum](https://railway.com/legal/dpa)
+- [Railway — Backups](https://docs.railway.com/volumes/backups)
+- [Anthropic — Commercial Terms](https://www.anthropic.com/legal/commercial-terms)
+- [Anthropic — Data Processing Addendum](https://www.anthropic.com/legal/data-processing-addendum)
+- [Anthropic — localização de processamento e armazenamento](https://privacy.claude.com/pt/articles/7996890-onde-seus-servidores-estao-localizados-voce-hospeda-seus-modelos-na-ue)
+- [Anthropic — retenção da API](https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data)
+
+## 6. Histórico
+
+| Versão | Data       | Mudança                                                                                                                                    |
+| ------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2      | 2026-08-28 | Inventário conferido; Railway corrigida para Amsterdam; Anthropic incluída; Vercel sem uso comprovado removida; conflito regional exposto. |
+| 1      | 2026-08-27 | Primeira versão, então registrando Railway e Vercel e nenhum provedor de IA.                                                               |

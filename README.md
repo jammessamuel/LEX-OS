@@ -192,11 +192,11 @@ Estes itens estão registrados de propósito. Nenhum deles autoriza dado real de
 - um reverse proxy confiável (IP real, TLS, `Secure` no cookie de refresh) é obrigatório antes de exposição à internet;
 - ZIP está desabilitado; a allowlist é PDF, JPEG, PNG e texto UTF-8, 25 MiB e 10 arquivos por requisição;
 - scanner, OCR, classificação, extração e embedding são mocks determinísticos e recusam `NODE_ENV=production`;
-- o modelo de linguagem tem adaptador real atrás da porta, mas ele se recusa a existir enquanto `CASE_ARCHIVE` não for `fictional`: falta a cláusula assinada de que o fornecedor não treina com o conteúdo enviado;
+- o modelo de linguagem tem adaptador real atrás da porta, mas ele se recusa a existir enquanto `CASE_ARCHIVE` não for `fictional`: o contrato padrão do fornecedor já proíbe treinamento, porém faltam o aceite empresarial comprovado, a transferência/região e os demais portões do ADR-012;
 - upload duplicado é vinculado dentro do tenant, mas o segundo objeto continua armazenado até existir política aprovada de retenção e deduplicação;
 - a reconciliação relata objeto ausente, quarentena velha e órfão sem apagar nada: prova jurídica não se remove automaticamente;
 - ingestão por e-mail saiu do MVP pelo ADR-016; o adaptador de notificação interna (ADR-013) existe, com caixa de saída, despachante e os três gatilhos ligados;
-- do ADR-012, retenção e legal hold estão construídos; o que ainda bloqueia dado real de cliente é a hospedagem nos Estados Unidos sem transferência internacional consentida e a ausência de responsável nomeado pelo atendimento a titular;
+- do ADR-012, retenção e legal hold estão construídos; workload e volumes estão em Amsterdam, mas os contratos padrão ainda admitem operações, armazenamento ou backups em outras regiões. Faltam mecanismo brasileiro de transferência, decisão regional e responsável nomeado pelo atendimento a titular;
 - o ensaio de recuperação prova mecânica, e só isso: não é política de backup de produção, nem define RPO, RTO, residência regional ou legal hold, e roda apenas sobre fixture fictício;
 - busca vetorial é exata, sem índice ANN, até um modelo/dimensão de produção ser escolhido;
 - os hooks de Git rodam formato e lint antes do commit e aplicam a política de mensagem; os demais gates obrigatórios rodam na CI;

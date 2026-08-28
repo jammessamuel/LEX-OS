@@ -11,7 +11,9 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
  * decide se um prompt em rascunho pode rodar é isto, não `environment`.
  *
  * Não tem valor padrão de propósito. Uma instalação sem `CASE_ARCHIVE` não sobe — e falhar na
- * partida é o único jeito de a omissão não passar despercebida.
+ * partida é o único jeito de a omissão não passar despercebida. O valor `real` continua no tipo
+ * para expressar o estado futuro, mas a versão atual o recusa até os portões externos terem
+ * evidência e uma entrega própria remover a guarda.
  */
 export type CaseArchive = 'fictional' | 'real';
 
@@ -19,9 +21,10 @@ export type CaseArchive = 'fictional' | 'real';
  * Quem responde as perguntas fundamentadas.
  *
  * `mock` é o determinístico que não faz chamada externa. `anthropic` fala com um modelo de
- * verdade — e, por decisão do ADR-012, só é aceito sobre acervo fictício enquanto não houver
- * cláusula assinada de que o fornecedor não treina com o conteúdo enviado. A validação disso
- * está no adaptador, que se recusa a existir na combinação proibida.
+ * verdade — e, por decisão dos ADR-012 e ADR-016, só é aceito sobre acervo fictício enquanto o
+ * pacote de governança não estiver completo. O contrato padrão já contém compromisso de
+ * não-treinamento; ainda faltam evidência de aceite pela empresa, transferência, região,
+ * responsável e revisão jurídica. A validação está no adaptador, que recusa a combinação.
  */
 export type LanguageModelProviderName = 'mock' | 'anthropic';
 
@@ -282,6 +285,23 @@ function validateProduction(config: RuntimeConfig): void {
   assertProductionSecret('OBJECT_STORAGE_SECRET_KEY', config.objectStorage.secretKey);
 }
 
+/**
+ * Nenhuma instalação desta versão recebe acervo real.
+ *
+ * A guarda por prompt impede rascunho de rodar, mas não impediria upload, armazenamento ou uma
+ * área desconhecida cair num prompt genérico. O portão pertence, portanto, à raiz de configuração:
+ * API e worker falham antes de abrir qualquer entrada. Remover esta recusa exige evidência dos
+ * ADR-012/016 e uma entrega deliberada; uma variável não assina contrato.
+ */
+function assertArchiveGovernance(config: RuntimeConfig): void {
+  if (config.caseArchive === 'real') {
+    throw new Error(
+      'CASE_ARCHIVE=real is disabled until the ADR-012 and ADR-016 governance evidence is ' +
+        'completed and an approved delivery removes this startup guard.',
+    );
+  }
+}
+
 export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): RuntimeConfig {
   const config: RuntimeConfig = {
     environment: oneOf(env, 'NODE_ENV', environments),
@@ -359,6 +379,7 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
     },
   };
 
+  assertArchiveGovernance(config);
   validateProduction(config);
 
   return config;

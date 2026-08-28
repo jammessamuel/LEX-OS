@@ -75,6 +75,15 @@ describe('loadRuntimeConfig', () => {
     ]);
   });
 
+  it('refuses every real archive until the external governance evidence is complete', () => {
+    // A guarda no prompt não alcança upload e armazenamento. O processo inteiro precisa falhar
+    // antes de abrir uma entrada; trocar uma variável não pode fingir contrato nem assinatura.
+    assert.throws(
+      () => loadRuntimeConfig(validEnvironment({ CASE_ARCHIVE: 'real' })),
+      /CASE_ARCHIVE=real is disabled/u,
+    );
+  });
+
   it('refuses the sample second-factor key in production', () => {
     // A chave chega em base64: o espaço reservado só aparece depois de decodificar, e um
     // guarda que olhasse apenas a string crua deixaria a chave de exemplo ir para produção.

@@ -178,19 +178,21 @@ describe('biblioteca de prompts', () => {
     }
   });
 
-  it('registra a revisão de advogada sem inscrição ativa, e continua barrando acervo real', () => {
-    // Situação real em 2026-08-27: as três faixas foram lidas e aprovadas por advogada cuja
-    // inscrição não está ativa — atividade policial é incompatível com a advocacia, art. 28, V
-    // da Lei 8.906/94. O registro guarda quem leu, e a guarda continua de pé. As duas coisas
-    // são verdadeiras ao mesmo tempo, e o registro não finge o contrário.
+  it('mantém os quinze prompts especializados como rascunho até a atestação válida', () => {
+    // ADR-016: leitura preliminar sem inscrição ativa não é atestação jurídica. Guardar o nome
+    // dentro de `review` enquanto o status dizia REVIEWED contava duas histórias diferentes — a
+    // guarda recusava, mas o catálogo parecia aprovado. O estado agora é único e inequívoco.
     const especialidade = library.promptLibrary.filter((p) => p.specialty !== null);
     assert.equal(especialidade.length, 15);
     for (const prompt of especialidade) {
-      assert.equal(prompt.reviewStatus, 'REVIEWED', prompt.identifier);
-      assert.equal(prompt.review.capacity, 'LAWYER', prompt.identifier);
-      assert.equal(prompt.review.oab, null, prompt.identifier);
-      assert.match(prompt.review.standing, /incompat/iu, prompt.identifier);
-      assert.match(library.reviewGapFor(prompt), /no bar registration/u, prompt.identifier);
+      assert.equal(prompt.reviewStatus, 'DRAFT', prompt.identifier);
+      assert.equal(prompt.review, null, prompt.identifier);
+      assert.match(library.reviewGapFor(prompt), /still a draft/u, prompt.identifier);
+      assert.throws(
+        () => library.assertUsableIn(prompt, 'real'),
+        library.UnreviewedPromptError,
+        prompt.identifier,
+      );
     }
   });
 

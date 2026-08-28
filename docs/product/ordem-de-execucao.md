@@ -12,28 +12,29 @@ Estado verificado no código em 2026-08-28, não deduzido dos ADRs.
 
 ## 1. Onde estamos, ADR por ADR
 
-| ADR     | Decisão                        | Construído                                                            | Aberto                                                                  |
-| ------- | ------------------------------ | --------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                 | —                                                                       |
-| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 19 migrações                 | —                                                                       |
-| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                | —                                                                       |
-| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos      | —                                                                       |
-| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                              | —                                                                       |
-| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real atrás da porta      | Recusa existir sobre acervo real — falta a cláusula de não-treino (012) |
-| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP              | —                                                                       |
-| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                            | —                                                                       |
-| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada, citação obrigatória                   | — Teto de 5 fontes mantido deliberadamente pelo ADR-016                 |
-| **010** | Canais de entrada              | ✅ Upload                                                             | Superado pelo ADR-016; e-mail passou a conector futuro                  |
-| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos | —                                                                       |
-| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                       | Transferência internacional e responsável nomeado                       |
-| **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos    | —                                                                       |
-| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código | Itens 4–7 adiados **por decisão**, não por esquecimento                 |
-| **015** | Biblioteca de prompts          | ✅ Itens 1, 3, 4, 5, 6, 7 · ✅ Item 2 (mecanismo)                     | 15 dos 20 prompts seguem `DRAFT` — falta quem assina                    |
-| **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                   | Condições externas permanecem falhando fechado                          |
+| ADR     | Decisão                        | Construído                                                            | Aberto                                                                           |
+| ------- | ------------------------------ | --------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                 | —                                                                                |
+| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 19 migrações                 | —                                                                                |
+| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                | —                                                                                |
+| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos      | —                                                                                |
+| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                              | —                                                                                |
+| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real atrás da porta      | Contrato padrão proíbe treino; aceite empresarial e demais portões do 012 pendem |
+| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP              | —                                                                                |
+| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                            | —                                                                                |
+| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada, citação obrigatória                   | — Teto de 5 fontes mantido deliberadamente pelo ADR-016                          |
+| **010** | Canais de entrada              | ✅ Upload                                                             | Superado pelo ADR-016; e-mail passou a conector futuro                           |
+| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos | —                                                                                |
+| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                       | Transferência, região única e responsável nomeado                                |
+| **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos    | —                                                                                |
+| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código | Itens 4–7 adiados **por decisão**, não por esquecimento                          |
+| **015** | Biblioteca de prompts          | ✅ Itens 1, 3, 4, 5, 6, 7 · ✅ Item 2 (mecanismo)                     | 15 dos 20 prompts seguem `DRAFT` — falta quem assina                             |
+| **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                   | Condições externas permanecem falhando fechado                                   |
 
 **Leitura rápida:** a fila de engenharia do MVP fechou. O que sobra não é código disfarçado:
-contrato e transferência internacional (012), responsável por titulares (012) e assinatura
-profissional dos prompts (015). Conectores futuros exigem novo incremento.
+aceite empresarial e transferência internacional (012), decisão sobre região única (012),
+responsável por titulares (012) e assinatura profissional dos prompts (015). Conectores futuros
+exigem novo incremento.
 
 ---
 
@@ -86,9 +87,10 @@ dizer qual prompt de fato rodou.
 **A1. Guarda de rascunho pelo dado, não pelo ambiente** — ADR-015 item 4 · **FEITO 2026-08-26**
 `assertUsableIn` recusava `DRAFT` só quando `NODE_ENV === 'production'`. O nome do processo não
 mede risco: um laptop apontado para a base de um cliente roda como `development` e passava
-inteiro. Agora a condição é `CASE_ARCHIVE`, com dois valores — `fictional` ou `real` — e
-**sem padrão**: instalação que não declara não sobe. Omitir, errar o valor ou passar o nome de um
-ambiente conta como acervo real, e rascunho é recusado.
+inteiro. Agora a condição é `CASE_ARCHIVE`, com vocabulário explícito — `fictional` ou `real` — e
+**sem padrão**. Como os portões externos continuam abertos, a versão atual vai além: o carregador
+recusa `real` em qualquer ambiente antes de abrir API ou worker. A guarda independente do pacote
+de prompts continua testada para a futura liberação.
 
 Ganhou alcance junto com o A0: antes a guarda cobria uma das cinco tarefas, agora cobre as cinco.
 
@@ -108,7 +110,8 @@ de juntadas entraram na cronologia. E saiu do bloco comum a exceção da verdade
 criminal e ocupava a linha das inversões cíveis que aparecem toda semana.
 
 **A3. `REVIEWED` com nome, OAB e data** — ADR-015 item 2 · **MECANISMO FEITO 2026-08-26**
-Vinte de vinte estão `DRAFT`. Sem isso, promover é trocar uma palavra.
+Quinze dos vinte estão `DRAFT`; os cinco genéricos permanecem `REVIEWED` somente para descrever
+o comportamento determinístico do mock. Sem essa separação, promover seria trocar uma palavra.
 O registro existe e a guarda o usa. Toda atestação carrega quem assinou, em que qualidade —
 advogado ou dono —, com qual inscrição, em que data e **contra qual versão do texto**. Esse
 último campo é o que mais trabalha: alterar um prompt sobe a versão, a atestação deixa de casar,
@@ -133,23 +136,25 @@ recebe o catálogo que mandava respeitar. Com isso os quatro P0 estão fechados.
 Os controles técnicos e os registros internos foram fechados. O adaptador pode ser exercitado
 com acervo fictício; acervo real continua bloqueado pelas condições externas do ADR-012.
 
-**B1. Lista de suboperadores versionada** — ADR-012 · **FEITO 2026-08-27**
-[`docs/legal/suboperadores.md`](../legal/suboperadores.md). Hoje são dois: Railway e Vercel.
-Nenhum provedor de modelo, nenhum antivírus externo, nenhum relay de e-mail de produção — e a
-regra que restringe a escolha do provedor está escrita ali: fornecedor que treina com o conteúdo
-enviado não é elegível, a qualquer preço.
+**B1. Lista de suboperadores versionada** — ADR-012 · **REVISADA 2026-08-28**
+[`docs/legal/suboperadores.md`](../legal/suboperadores.md). Os dois efetivamente ligados são
+Railway e Anthropic, ambos apenas sobre acervo fictício. A Vercel saiu da lista ativa por não haver
+deployment comprovado. Railway roda o projeto em Amsterdam; os contratos padrão ainda declaram
+operações, armazenamento ou backups em outras regiões.
 
 **B2. Termos de tratamento registrados** — ADR-011, verificação 4 · **FEITO 2026-08-27**
 [`docs/legal/termos-de-tratamento.md`](../legal/termos-de-tratamento.md). Não é o contrato: é o
 registro técnico do que o sistema faz, para quem redigir o contrato saber o que está descrevendo.
-Ele abre duas pendências que ninguém tinha escrito: **a hospedagem está nos Estados Unidos**, o
-que não serve a acervo de cliente brasileiro sem transferência internacional consentida, e **não
-há responsável nomeado** pelo atendimento a titular.
+Ele registra a localização real e separa duas exigências que antes estavam misturadas: a
+transferência precisa de base legal e mecanismo da ANPD, e a regra interna de região única exige
+compromisso adicional dos fornecedores ou novo ADR. Também não há responsável nomeado pelo
+atendimento a titular.
 **B3. Agregação de custo por organização, provedor e modelo** — ADR-011, v. 3 · **FEITO 2026-08-27**
-O teto por caso já existe e é enforçado (`Case.processingCostLimitAmount`, verificado em
-`cases.repository.ts:272`). Falta somar por organização e abrir por provedor e modelo.
+`GET /processing-costs` soma somente execuções concluídas da organização no período e abre o
+resultado por provedor, modelo, tipo de job ou caso, sempre dentro do tenant.
 **B4. Custo do assistente debitando o orçamento do caso** — ADR-011 · **FEITO 2026-08-27**
-Hoje calcula e audita, não desconta.
+Cada resposta concluída debita o valor exato no caso. Ao alcançar o teto, o caso entra em
+`LIMIT_REACHED` e a pergunta seguinte é recusada antes de novo gasto; a transição é auditada.
 **B5. Legal hold** — ADR-012 · **FEITO 2026-08-27**
 
 A marca vive no caso, e a guarda que de fato impede está no **filtro do repositório**, não no
@@ -164,8 +169,8 @@ falha fechada — caso que não pôde ser lido conta como retido.
 Na tela, o botão de excluir continua à vista, desabilitado, com o motivo na dica. Sumir com
 ele não explicaria nada a quem procura por que não consegue excluir.
 
-**Migração escrita à mão** por não haver banco nesta máquina; ela nunca foi aplicada. O job de
-integração da CI é a primeira execução real.
+Migração aplicada e validada localmente e na Railway em 2026-08-28; a suíte de integração cobre a
+restrição de banco e os caminhos de exclusão.
 
 **Ordem interna:** B1 e B2 são documento, não código, e destravam a conversa comercial — vêm
 primeiro. B3 e B4 são o mesmo trabalho de agregação. B5 é o maior e o mais tarde, mas nada do
@@ -232,19 +237,22 @@ os gates de integração voltam a ser obrigatórios também localmente.
 ## 4. O que decide a próxima sessão
 
 As três perguntas que esta seção fazia foram todas respondidas. A Fila A fechou em 26/08, a
-Fila B em 27/08, o C1 em 27/08. **A fila de código está vazia** — e isso não é figura de
+Fila B foi conferida novamente em 28/08, e o C1 fechou em 27/08. **A fila de código está vazia** — e isso não é figura de
 linguagem: não sobrou item nesta lista que uma sessão consiga executar sozinha.
 
 O que resta exige ato externo verificável; autorização genérica de engenharia não o substitui:
 
-| O que falta                                                                                    | ADR      | Quem decide            | O que destrava                           |
-| ---------------------------------------------------------------------------------------------- | -------- | ---------------------- | ---------------------------------------- |
-| Cláusula de não-treino assinada com o fornecedor                                               | 012      | Sociedade, comercial   | O adaptador real sobre acervo de cliente |
-| Transferência internacional consentida (host nos EUA)                                          | 012      | Sociedade, jurídico    | Qualquer acervo de cliente brasileiro    |
-| Responsável nomeado pelo atendimento a titular                                                 | 012      | Sociedade              | Conformidade de titular na LGPD          |
-| Assinatura dos 15 prompts de especialidade                                                     | 015, i.2 | Advogado com inscrição | A biblioteca deixar de ser rascunho      |
-| `CASE_ARCHIVE=fictional` continua obrigatório em API e worker, local e Railway. A configuração |
-| é uma trava operacional, não autorização para inserir acervo real.                             |
+| O que falta                                                                        | ADR      | Quem decide          | O que destrava                        |
+| ---------------------------------------------------------------------------------- | -------- | -------------------- | ------------------------------------- |
+| Aceite dos termos/DPA em organização da SAMUEL DEV LTDA e configuração de retenção | 012      | Sociedade, comercial | Evidência contratual do provedor      |
+| Cláusulas-padrão da ANPD e decisão sobre a incompatibilidade com região única      | 012      | Sociedade, jurídico  | Qualquer acervo de cliente brasileiro |
+| Responsável e canal público nomeados para atendimento a titular                    | 012      | Sociedade            | Procedimento de titular completo      |
+| Assinatura das 15 versões por advogado com OAB ativa                               | 015, i.2 | Advogado             | A biblioteca deixar de ser rascunho   |
+
+O pacote de execução e as minutas estão em
+[`docs/legal/pacote-liberacao-acervo-real.md`](../legal/pacote-liberacao-acervo-real.md).
+`CASE_ARCHIVE=fictional` continua obrigatório em API e worker, local e Railway. A configuração é
+uma trava operacional, não autorização para inserir acervo real.
 
 **A ordem mudou porque a lista acabou.** Enquanto nenhuma dessas decisões cair, o que sobra para
 uma sessão é manutenção de documento e dívida que ninguém levantou ainda. Vale mais dizer isso do

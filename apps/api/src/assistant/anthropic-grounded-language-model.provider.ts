@@ -18,10 +18,11 @@ import type {
  * prompt é o serviço, quem valida a resposta é o serviço, e o que sai daqui é o mesmo objeto
  * que o mock devolve.
  *
- * **Ele se recusa a existir sobre acervo real.** O ADR-012 condiciona o primeiro provedor real
- * a cláusula assinada de que o fornecedor não treina com o conteúdo enviado, e a cláusula não
- * existe. Recusar na construção — e não na chamada — faz a instalação errada falhar na partida,
- * em vez de descobrir o problema com um documento de cliente já enviado.
+ * **Ele se recusa a existir sobre acervo real.** O compromisso padrão de não treinamento já foi
+ * verificado, mas o pacote dos ADR-012 e ADR-016 continua sem aceite empresarial comprovado,
+ * mecanismo de transferência, compatibilidade regional, responsável e atestação dos prompts.
+ * Recusar na construção — e não na chamada — faz a instalação errada falhar na partida, em vez
+ * de descobrir o problema com um documento de cliente já enviado.
  */
 
 const ENDPOINT = 'https://api.anthropic.com/v1/messages';
@@ -112,8 +113,8 @@ export class AnthropicGroundedLanguageModelProvider implements GroundedLanguageM
     if (config.caseArchive !== 'fictional') {
       throw new Error(
         'The real language model provider is only allowed over a fictional case archive. ' +
-          'ADR-012 requires a signed clause that the vendor does not train on submitted content ' +
-          'before any client archive reaches a third party.',
+          'The ADR-012 and ADR-016 governance evidence must be completed before any client ' +
+          'archive reaches a third party.',
       );
     }
     if (config.languageModel.apiKey === '') {
