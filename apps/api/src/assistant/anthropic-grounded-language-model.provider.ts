@@ -109,13 +109,15 @@ export class AnthropicGroundedLanguageModelProvider implements GroundedLanguageM
   readonly #config: RuntimeConfig;
 
   constructor(@Inject(RUNTIME_CONFIG) config: RuntimeConfig) {
-    if (config.caseArchive !== 'fictional') {
-      throw new Error(
-        'The real language model provider is only allowed over a fictional case archive. ' +
-          'ADR-012 requires a signed clause that the vendor does not train on submitted content ' +
-          'before any client archive reaches a third party.',
-      );
-    }
+    // Esta classe já se recusou a existir quando `CASE_ARCHIVE` não era `fictional`, para
+    // cumprir a condição do ADR-012: nenhum acervo de cliente chega a terceiro antes da
+    // cláusula assinada de que o fornecedor não treina com o conteúdo enviado.
+    //
+    // A trava foi removida por decisão do dono em 2026-08-28, com a cláusula ainda pendente
+    // de comprovação. A consequência está registrada e não é sutil: com `CASE_ARCHIVE=real`,
+    // material de processo — inclusive nome de parte contrária, testemunha e terceiro que
+    // nunca usou o sistema — passa a sair para a Anthropic sem base contratual comprovada.
+    // Ver a seção 0.3 do CLAUDE.md e a Fila E do ordem-de-execucao.
     if (config.languageModel.apiKey === '') {
       throw new Error('AI_LANGUAGE_MODEL_API_KEY is required when the provider is not the mock.');
     }

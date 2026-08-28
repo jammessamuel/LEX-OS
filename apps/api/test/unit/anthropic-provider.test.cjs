@@ -37,14 +37,18 @@ function resposta(corpo) {
 }
 
 describe('AnthropicGroundedLanguageModelProvider', () => {
-  it('recusa existir sobre acervo real, e diz por quê', async () => {
+  it('sobe sobre acervo real, porque a trava do ADR-012 foi removida por decisão do dono', async () => {
     ({ AnthropicGroundedLanguageModelProvider } =
       await import('../../dist/assistant/anthropic-grounded-language-model.provider.js'));
-    // A recusa é na construção e não na chamada: assim a instalação errada falha na partida,
-    // em vez de descobrir o problema com um documento de cliente já enviado.
-    assert.throws(
+    // Este caso já afirmava o contrário: a classe se recusava a existir sobre acervo real,
+    // para nenhum documento de cliente alcançar terceiro antes da cláusula de não-treino.
+    // A trava saiu em 2026-08-28 por decisão do dono, com a cláusula ainda pendente.
+    //
+    // O caso continua aqui, invertido, de propósito: o dia em que a cláusula for assinada e
+    // alguém quiser a guarda de volta, este é o teste que muda — e a mudança fica visível no
+    // diff, em vez de a proteção reaparecer ou sumir sem ninguém notar.
+    assert.doesNotThrow(
       () => new AnthropicGroundedLanguageModelProvider(config({ caseArchive: 'real' })),
-      /fictional case archive/u,
     );
   });
 

@@ -190,7 +190,7 @@ Estes itens estão registrados de propósito. Nenhum deles autoriza dado real de
 - um reverse proxy confiável (IP real, TLS, `Secure` no cookie de refresh) é obrigatório antes de exposição à internet;
 - ZIP está desabilitado; a allowlist é PDF, JPEG, PNG e texto UTF-8, 25 MiB e 10 arquivos por requisição;
 - scanner, OCR, classificação, extração e embedding são mocks determinísticos e recusam `NODE_ENV=production`;
-- o modelo de linguagem tem adaptador real atrás da porta, mas ele se recusa a existir enquanto `CASE_ARCHIVE` não for `fictional`: falta a cláusula assinada de que o fornecedor não treina com o conteúdo enviado;
+- o modelo de linguagem tem adaptador real e **não há mais trava de código impedindo-o de rodar sobre acervo real**: a guarda por `CASE_ARCHIVE` foi removida por decisão do dono em 2026-08-28, com a cláusula de não-treino do fornecedor ainda pendente de comprovação. Enquanto ela não estiver arquivada, apontar esta instalação para acervo de cliente envia conteúdo de processo a terceiro sem base contratual comprovada;
 - upload duplicado é vinculado dentro do tenant, mas o segundo objeto continua armazenado até existir política aprovada de retenção e deduplicação;
 - a reconciliação relata objeto ausente, quarentena velha e órfão sem apagar nada: prova jurídica não se remove automaticamente;
 - não há adaptador de e-mail de ingestão (ADR-010); o de notificação interna (ADR-013) existe, com caixa de saída, despachante e os três gatilhos ligados;

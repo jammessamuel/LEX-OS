@@ -69,9 +69,15 @@ automated research, are born `DRAFT`.
 behind the existing port, and the ADR-013 notification triggers — all three now wired: terminal
 document failure, task assigned, and the daily preparation digest. The ADR-011 and ADR-012 gates
 that blocked the provider are now written — subprocessor list, processing terms, cost aggregation
-per organization, assistant cost debiting the case budget, legal hold. The adapter still refuses to be constructed unless `CASE_ARCHIVE`
-is `fictional`, because the no-training clause does not exist. The accepted checkpoint stays
-Delivery 15 until CI is green on this work.
+per organization, assistant cost debiting the case budget, legal hold. The accepted checkpoint
+stays Delivery 15 until CI is green on this work.
+
+**The `CASE_ARCHIVE` guard on the real adapter was removed by owner decision on 2026-08-28**,
+with the no-training clause still unproven. Until that clause is on file, ADR-012's condition is
+stated but not enforced in code: with `CASE_ARCHIVE=real`, case material reaches the vendor —
+including opposing parties, witnesses and third parties who never used the system. This is a
+recorded deviation, not a resolved item; reversing it means restoring the constructor check in
+`anthropic-grounded-language-model.provider.ts` and its test.
 
 Out of scope, and still requiring separate authorization: any real-archive case text leaving to
 a third party, court integration, docket movements, published-notice capture, WebAuthn, SMS,

@@ -12,23 +12,23 @@ Estado verificado no código em 2026-08-28, não deduzido dos ADRs.
 
 ## 1. Onde estamos, ADR por ADR
 
-| ADR     | Decisão                        | Construído                                                            | Aberto                                                                  |
-| ------- | ------------------------------ | --------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                 | —                                                                       |
-| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 17 migrações                 | —                                                                       |
-| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                | —                                                                       |
-| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos      | —                                                                       |
-| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                              | —                                                                       |
-| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real atrás da porta      | Recusa existir sobre acervo real — falta a cláusula de não-treino (012) |
-| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP              | —                                                                       |
-| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                            | —                                                                       |
-| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada, citação obrigatória                   | Teto de recuperação em 5 trechos limita pergunta ampla                  |
-| **010** | Canais de entrada              | ✅ Upload                                                             | ❌ **Canal de e-mail nunca foi construído** — zero no código            |
-| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos | —                                                                       |
-| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                       | Transferência internacional e responsável nomeado                       |
-| **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos    | —                                                                       |
-| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código | Itens 4–7 adiados **por decisão**, não por esquecimento                 |
-| **015** | Biblioteca de prompts          | ✅ Itens 1, 3, 4, 5, 6, 7 · ✅ Item 2 (mecanismo)                     | 15 dos 20 prompts seguem `DRAFT` — falta quem assina                    |
+| ADR     | Decisão                        | Construído                                                            | Aberto                                                       |
+| ------- | ------------------------------ | --------------------------------------------------------------------- | ------------------------------------------------------------ |
+| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                 | —                                                            |
+| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 17 migrações                 | —                                                            |
+| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                | —                                                            |
+| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos      | —                                                            |
+| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                              | —                                                            |
+| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real, sem trava          | ⚠️ Cláusula de não-treino pendente, e a guarda saiu — ver E3 |
+| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP              | —                                                            |
+| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                            | —                                                            |
+| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada, citação obrigatória                   | Teto de recuperação em 5 trechos limita pergunta ampla       |
+| **010** | Canais de entrada              | ✅ Upload                                                             | ❌ **Canal de e-mail nunca foi construído** — zero no código |
+| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos | —                                                            |
+| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                       | Transferência internacional e responsável nomeado            |
+| **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos    | —                                                            |
+| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código | Itens 4–7 adiados **por decisão**, não por esquecimento      |
+| **015** | Biblioteca de prompts          | ✅ Itens 1, 3, 4, 5, 6, 7 · ✅ Item 2 (mecanismo)                     | 15 dos 20 prompts seguem `DRAFT` — falta quem assina         |
 
 **Leitura rápida:** dos quinze, dez estão inteiramente de pé. O que sobra se concentra em três
 lugares — os portões que liberam o provedor real (011, 012), o que promete aviso e não avisa
@@ -227,6 +227,21 @@ afirmava que o cliente nunca guarda senha, o que era falso desde que a caixa exi
 descreve o comportamento real, o custo e esta pendência. Não reabrir sem fato novo: a decisão já
 foi tomada duas vezes com o custo à vista.
 
+**E3. A guarda do provedor real foi removida com a cláusula pendente** — decisão do dono, 2026-08-28
+O construtor do adaptador da Anthropic recusava existir quando `CASE_ARCHIVE` não era `fictional`,
+cumprindo a condição do ADR-012: nenhum acervo de cliente alcança terceiro antes da cláusula
+assinada de que o fornecedor não treina com o conteúdo enviado. A linha saiu por decisão do dono,
+com a cláusula ainda pendente de comprovação.
+
+O ADR-012 não foi alterado — ele continua dizendo o que dizia. O que mudou é que a condição dele
+deixou de ser cumprida em código. **Isso é um desvio registrado, não um item resolvido**, e
+formalmente pede um ADR novo alterando a condição, ou a guarda de volta.
+
+Consequência prática, para não depender de memória: com `CASE_ARCHIVE=real`, material de processo
+sai para a Anthropic — inclusive nome de parte contrária, testemunha e terceiro que nunca usou o
+sistema. O teste que afirmava a recusa continua no lugar, invertido, para o retorno da guarda
+aparecer no diff.
+
 **E2. `pnpm test:integration` não roda nesta máquina** — não há Docker instalado. A suíte que
 cobre escrita de checklist, seed e fila só é exercida no CI. Não é defeito do código, mas
 muda o que se pode afirmar localmente.
@@ -243,7 +258,7 @@ O que resta são decisões, e cada uma tem dono diferente do engenheiro:
 
 | O que falta                                           | ADR      | Quem decide            | O que destrava                           |
 | ----------------------------------------------------- | -------- | ---------------------- | ---------------------------------------- |
-| Cláusula de não-treino assinada com o fornecedor      | 012      | Sociedade, comercial   | O adaptador real sobre acervo de cliente |
+| Cláusula de não-treino assinada com o fornecedor      | 012      | Sociedade, comercial   | Nada mais em código — a guarda saiu (E3) |
 | Transferência internacional consentida (host nos EUA) | 012      | Sociedade, jurídico    | Qualquer acervo de cliente brasileiro    |
 | Responsável nomeado pelo atendimento a titular        | 012      | Sociedade              | Conformidade de titular na LGPD          |
 | Assinatura dos 15 prompts de especialidade            | 015, i.2 | Advogado com inscrição | A biblioteca deixar de ser rascunho      |
