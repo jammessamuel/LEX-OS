@@ -221,6 +221,12 @@ Não fazer nada aqui é a decisão correta até a condição mudar. Registrado p
 **E1. Senha guardada em `localStorage`** no front. Decidida pelo dono depois de objeção
 registrada. **Bloqueio de produção**, não pendência de backlog.
 
+Reaberto e **reafirmado pelo dono em 2026-08-28**, com as duas saídas na mesa — tirar a opção, ou
+torná-la decisão por escritório. A opção fica. O que mudou foi a documentação: `authentication.md`
+afirmava que o cliente nunca guarda senha, o que era falso desde que a caixa existe, e agora
+descreve o comportamento real, o custo e esta pendência. Não reabrir sem fato novo: a decisão já
+foi tomada duas vezes com o custo à vista.
+
 **E2. `pnpm test:integration` não roda nesta máquina** — não há Docker instalado. A suíte que
 cobre escrita de checklist, seed e fila só é exercida no CI. Não é defeito do código, mas
 muda o que se pode afirmar localmente.
