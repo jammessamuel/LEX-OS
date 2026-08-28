@@ -181,24 +181,24 @@ Use `pnpm db:migrate:dev --name <nome_descritivo>` apenas para criar uma migraç
 
 ## Limitações atuais e bloqueios de produção
 
-Estes itens estão registrados de propósito. Nenhum deles autoriza a Entrega 12 nem um provedor real.
+Estes itens estão registrados de propósito. Nenhum deles autoriza dado real de cliente.
 
-- o login exige o UUID da organização; descoberta pública e onboarding de organizações estão adiados;
-- administração de usuários, convites e papéis não têm rota; existe só a lista mínima de atribuíveis;
+- descoberta pública de escritório e autocadastro estão adiados; a entrada pede o nome curto do escritório, não o UUID;
 - identificadores de pessoa saem mascarados até existir permissão específica para dado sensível;
 - remoção/atualização de participantes e titularidade da equipe do caso seguem adiadas;
 - o throttle genérico do NestJS é local ao processo; a força bruta do login vive no Redis;
 - um reverse proxy confiável (IP real, TLS, `Secure` no cookie de refresh) é obrigatório antes de exposição à internet;
 - ZIP está desabilitado; a allowlist é PDF, JPEG, PNG e texto UTF-8, 25 MiB e 10 arquivos por requisição;
-- scanner, OCR, classificação, extração, embedding e modelo de linguagem são mocks determinísticos e recusam `NODE_ENV=production`;
+- scanner, OCR, classificação, extração e embedding são mocks determinísticos e recusam `NODE_ENV=production`;
+- o modelo de linguagem tem adaptador real atrás da porta, mas ele se recusa a existir enquanto `CASE_ARCHIVE` não for `fictional`: falta a cláusula assinada de que o fornecedor não treina com o conteúdo enviado;
 - upload duplicado é vinculado dentro do tenant, mas o segundo objeto continua armazenado até existir política aprovada de retenção e deduplicação;
 - a reconciliação relata objeto ausente, quarentena velha e órfão sem apagar nada: prova jurídica não se remove automaticamente;
-- não há adaptador de e-mail de ingestão (ADR-010) nem de notificação interna (ADR-013), apesar do Mailpit local;
-- retenção, legal hold, expurgo e procedimentos de titular (ADR-012) bloqueiam dado real de cliente;
+- não há adaptador de e-mail de ingestão (ADR-010); o de notificação interna (ADR-013) existe, com caixa de saída, despachante e os três gatilhos ligados;
+- do ADR-012, retenção e legal hold estão construídos; o que ainda bloqueia dado real de cliente é a hospedagem nos Estados Unidos sem transferência internacional consentida e a ausência de responsável nomeado pelo atendimento a titular;
 - o ensaio de recuperação prova mecânica, e só isso: não é política de backup de produção, nem define RPO, RTO, residência regional ou legal hold, e roda apenas sobre fixture fictício;
 - busca vetorial é exata, sem índice ANN, até um modelo/dimensão de produção ser escolhido;
 - os hooks de Git rodam formato e lint antes do commit e aplicam a política de mensagem; os demais gates obrigatórios rodam na CI;
 - a tela de entrada oferece guardar a senha neste dispositivo, e ela fica em texto puro no armazenamento do navegador; antes de dado real de cliente essa opção precisa sair ou virar decisão por escritório;
 - o demo hospedado contém somente dados fictícios; não é ambiente de produção jurídica.
 
-O marco aceito continua a **Entrega 10** até a matriz completa da Entrega 11 passar na `main`. A matriz de verificação está em [`docs/operations/delivery-11-verification-matrix.md`](./docs/operations/delivery-11-verification-matrix.md), o quadro de trabalho em [`docs/product/backlog.md`](./docs/product/backlog.md), e os bloqueios operacionais também no [runbook](./docs/operations/runbook.md).
+O marco aceito é a **Entrega 15 — o caso carrega o número do processo**, aceita em 2026-08-25. A Entrega 16 (biblioteca de prompts por especialidade) e, depois dela, o adaptador de modelo real e os três gatilhos do ADR-013 estão autorizados e em andamento, ainda não aceitos: o marco só avança quando a CI fechar verde sobre eles. A fronteira de escopo vigente está na seção 0.3 do [`CLAUDE.md`](./CLAUDE.md), o estado por ADR e a ordem do que falta em [`docs/product/ordem-de-execucao.md`](./docs/product/ordem-de-execucao.md), o quadro de trabalho em [`docs/product/backlog.md`](./docs/product/backlog.md), e os bloqueios operacionais também no [runbook](./docs/operations/runbook.md).

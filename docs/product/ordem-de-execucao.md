@@ -1,12 +1,12 @@
 # Ordem de execução — estado por ADR e o que vem a seguir
 
-**Data:** 2026-08-27
+**Data:** 2026-08-28
 **Para que serve:** não se perder. Quinze ADRs decidiram coisas ao longo de meses; algumas
 viraram código, outras esperam, e algumas esperam sem que ninguém lembre por quê. Este
 documento diz, de cada uma, o que está de pé — e monta **uma** ordem de execução que atravessa
 todas.
 
-Estado verificado no código em 2026-08-27, não deduzido dos ADRs.
+Estado verificado no código em 2026-08-28, não deduzido dos ADRs.
 
 ---
 
@@ -235,15 +235,28 @@ muda o que se pode afirmar localmente.
 
 ## 4. O que decide a próxima sessão
 
-Se a pergunta é **"o que faz a biblioteca valer para o cliente?"** — Fila B, e dentro dela B1 e
-B2, que são documento.
+As três perguntas que esta seção fazia foram todas respondidas. A Fila A fechou em 26/08, a
+Fila B em 27/08, o C1 em 27/08. **A fila de código está vazia** — e isso não é figura de
+linguagem: não sobrou item nesta lista que uma sessão consiga executar sozinha.
 
-Se a pergunta é **"o que faz o produto parecer vivo?"** — C1, os três gatilhos. A fundação está
-pronta desde a Entrega 13.
+O que resta são decisões, e cada uma tem dono diferente do engenheiro:
 
-Se a pergunta é **"o que está inconsistente agora?"** — A1 e A2.
+| O que falta                                           | ADR      | Quem decide            | O que destrava                           |
+| ----------------------------------------------------- | -------- | ---------------------- | ---------------------------------------- |
+| Cláusula de não-treino assinada com o fornecedor      | 012      | Sociedade, comercial   | O adaptador real sobre acervo de cliente |
+| Transferência internacional consentida (host nos EUA) | 012      | Sociedade, jurídico    | Qualquer acervo de cliente brasileiro    |
+| Responsável nomeado pelo atendimento a titular        | 012      | Sociedade              | Conformidade de titular na LGPD          |
+| Assinatura dos 15 prompts de especialidade            | 015, i.2 | Advogado com inscrição | A biblioteca deixar de ser rascunho      |
+| Canal de entrada por e-mail: reabrir ou executar      | 010      | Dono                   | O C2 — adiado pelo dono em 28/08         |
+| Teto de recuperação acima de 5 trechos                | 009      | Dono, custo e contexto | Pergunta ampla no assistente             |
 
-As três respostas são legítimas e mutuamente exclusivas em ordem. A escolha é do dono.
+Duas pendências operacionais, que são de máquina e não de decisão: `CASE_ARCHIVE=fictional`
+precisa existir nos serviços da Railway antes do próximo deploy — sem ela o processo falha na
+partida, de propósito — e o E2 segue de pé, sem Docker nesta máquina.
+
+**A ordem mudou porque a lista acabou.** Enquanto nenhuma dessas decisões cair, o que sobra para
+uma sessão é manutenção de documento e dívida que ninguém levantou ainda. Vale mais dizer isso do
+que inventar fila.
 
 ---
 
