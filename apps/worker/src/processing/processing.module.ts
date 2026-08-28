@@ -5,6 +5,7 @@ import { MockProcessingProvider, PROCESSING_PROVIDER } from './mock-processing.p
 import { MockProcessingCostPolicy, PROCESSING_COST_POLICY } from './processing-cost-policy.js';
 import { EMBEDDING_PROVIDER, MockEmbeddingProvider } from './mock-embedding.provider.js';
 import { PipelineProcessorService } from './pipeline-processor.service.js';
+import { PreparationDigestService } from './preparation-digest.service.js';
 import { ProcessingNotificationsService } from './processing-notifications.service.js';
 import { ProcessingQueuePublisher } from './processing-queue.publisher.js';
 import { ProcessingReconcilerService } from './processing-reconciler.service.js';
@@ -27,6 +28,7 @@ import {
     { provide: TIMELINE_PROVIDER, useExisting: MockReviewProcessingProvider },
     { provide: CHECKLIST_ANALYSIS_PROVIDER, useExisting: MockReviewProcessingProvider },
     PipelineProcessorService,
+    PreparationDigestService,
     ProcessingQueuePublisher,
     ProcessingReconcilerService,
     ProcessingRepository,

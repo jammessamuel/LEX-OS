@@ -66,11 +66,10 @@ The five generic prompts are `REVIEWED` by owner decision; specialty prompts, co
 automated research, are born `DRAFT`.
 
 **Authorized and in progress, not yet accepted** (owner, 2026-08-27): the real model adapter
-behind the existing port, and the ADR-013 notification triggers. Terminal document failure and
-task assigned are wired; the daily preparation digest is not, and needs a repeatable worker job
-that does not exist. The ADR-011 and ADR-012 gates that blocked the provider are now written —
-subprocessor list, processing terms, cost aggregation per organization, assistant cost debiting
-the case budget, legal hold. The adapter still refuses to be constructed unless `CASE_ARCHIVE`
+behind the existing port, and the ADR-013 notification triggers — all three now wired: terminal
+document failure, task assigned, and the daily preparation digest. The ADR-011 and ADR-012 gates
+that blocked the provider are now written — subprocessor list, processing terms, cost aggregation
+per organization, assistant cost debiting the case budget, legal hold. The adapter still refuses to be constructed unless `CASE_ARCHIVE`
 is `fictional`, because the no-training clause does not exist. The accepted checkpoint stays
 Delivery 15 until CI is green on this work.
 
