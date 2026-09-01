@@ -341,6 +341,35 @@ describe('Delivery 9 authorized text and semantic search', () => {
     }).expect(400);
   });
 
+  it('responde à pergunta escrita como pergunta, e não só a palavras-chave', async () => {
+    // O defeito: `websearch_to_tsquery` exige todos os termos, então a pergunta inteira —
+    // que é o que o assistente manda — não casava com nada. O trecho fixado diz "Contrato
+    // fictício com cláusula rescisória exclusiva da Entrega Nove"; a pergunta abaixo tem
+    // "qual", "é" e "diz", que não aparecem em lugar nenhum.
+    const pergunta = await search({
+      query: 'Qual é a cláusula rescisória que o contrato diz?',
+      mode: 'LEXICAL',
+    }).expect(200);
+    assert.equal(pergunta.body.status, 'RESULTS');
+    assert.equal(pergunta.body.results[0].citation.documentId, standardSource.documentId);
+
+    // E a abertura não pode custar a precisão de quem escreve termo exato: com todos os termos
+    // presentes, a busca estrita responde e o relaxamento nem chega a rodar.
+    const exata = await search({ query: 'cláusula rescisória', mode: 'LEXICAL' }).expect(200);
+    assert.equal(exata.body.results[0].citation.documentId, standardSource.documentId);
+  });
+
+  it('não inventa resultado quando nenhum termo da pergunta existe no acervo', async () => {
+    // O relaxamento é para "algum termo", não para "qualquer coisa". Pergunta sem nenhuma
+    // palavra em comum com o acervo continua devolvendo nada — senão o assistente passaria a
+    // receber trecho irrelevante e a gastar as cinco vagas de fonte com ruído.
+    const nada = await search({
+      query: 'palavraabsolutamenteausente outrapalavraausente',
+      mode: 'LEXICAL',
+    }).expect(200);
+    assert.equal(nada.body.results.length, 0);
+  });
+
   it('returns lexical, semantic, and hybrid results with resolvable citations', async () => {
     const lexical = await search({ query: 'cláusula rescisória', mode: 'LEXICAL' }).expect(200);
     assert.equal(lexical.body.status, 'RESULTS');

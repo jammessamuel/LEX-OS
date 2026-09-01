@@ -102,20 +102,56 @@ const resultColumns = Prisma.sql`
 export class SearchRepository {
   constructor(private readonly database: DatabaseService) {}
 
-  lexical(query: string, scope: SearchScope, take: number): Promise<SearchDatabaseRow[]> {
+  /**
+   * Busca textual com abertura em dois tempos.
+   *
+   * `websearch_to_tsquery` exige **todos** os termos. Isso serve para quem digita palavra-chave
+   * e quebra para quem digita pergunta: "Qual é o número do contrato e quando ele foi celebrado?"
+   * vira `qual & número & contrato & celebrado`, e um documento que diz "Contrato fictício
+   * LEX-2026-0001, celebrado em 05/08/2026" não casa — porque não contém "qual" nem "número".
+   *
+   * O assistente manda a pergunta inteira como consulta, então na prática ele só entendia
+   * palavra-chave. E o modo híbrido não salvava: o provedor de embeddings ainda é o
+   * determinístico de desenvolvimento, então o lado semântico é ruído.
+   *
+   * A abertura é sequencial e não simultânea de propósito. Quem escreve termos precisos merece a
+   * precisão do `E`; só quando ela não devolve nada é que vale relaxar para `OU`, ordenado por
+   * relevância. Trocar tudo por `OU` sempre encheria a resposta de trecho fraco quando havia
+   * trecho forte, e o teto de cinco fontes do ADR-016 gastaria as vagas com o pior material.
+   */
+  async lexical(query: string, scope: SearchScope, take: number): Promise<SearchDatabaseRow[]> {
+    const estrito = await this.#lexicalWith(
+      Prisma.sql`websearch_to_tsquery('portuguese', ${query})`,
+      scope,
+      take,
+    );
+    if (estrito.length > 0) {
+      return estrito;
+    }
+    return this.#lexicalWith(
+      // `plainto_tsquery` normaliza e descarta as palavras vazias do português; trocar o `&`
+      // pelo `|` no resultado transforma "todos os termos" em "qualquer termo", sem precisar
+      // manter uma lista de palavras vazias nossa que envelheceria contra a do PostgreSQL.
+      Prisma.sql`replace(plainto_tsquery('portuguese', ${query})::text, ' & ', ' | ')::tsquery`,
+      scope,
+      take,
+    );
+  }
+
+  #lexicalWith(
+    tsquery: Prisma.Sql,
+    scope: SearchScope,
+    take: number,
+  ): Promise<SearchDatabaseRow[]> {
     const where = authorizedScopeSql(scope);
     return this.database.client.$queryRaw<SearchDatabaseRow[]>(Prisma.sql`
       SELECT
         ${resultColumns},
-        ts_rank_cd(
-          kc."search_vector",
-          websearch_to_tsquery('portuguese', ${query}),
-          32
-        )::double precision AS "score"
+        ts_rank_cd(kc."search_vector", ${tsquery}, 32)::double precision AS "score"
       FROM "knowledge_chunks" kc
       ${sourceJoins}
       WHERE ${where}
-        AND kc."search_vector" @@ websearch_to_tsquery('portuguese', ${query})
+        AND kc."search_vector" @@ ${tsquery}
       ORDER BY "score" DESC, kc."id" ASC
       LIMIT ${take}
     `);
