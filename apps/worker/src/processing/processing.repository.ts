@@ -55,6 +55,10 @@ const jobTargetSelect = {
           id: true,
           organizationId: true,
           mimeType: true,
+          // Onde o arquivo está. A extração de texto precisa abri-lo, e até 2026-09-01 ela
+          // inventava o conteúdo por não ter como chegar nele.
+          storageBucket: true,
+          storageKey: true,
           status: true,
           virusScanStatus: true,
           deletedAt: true,

@@ -8,6 +8,7 @@ import { UnrecoverableError } from 'bullmq';
 
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
 import { ProcessingNotificationsService } from './processing-notifications.service.js';
+import { TextExtractionService } from './text-extraction.service.js';
 import { PROCESSING_PROVIDER, type ProcessingProvider } from './mock-processing.provider.js';
 import { EMBEDDING_PROVIDER } from './mock-embedding.provider.js';
 import { PermanentProcessingError, RetryableProcessingError } from './processing-error.js';
@@ -52,6 +53,7 @@ export class PipelineProcessorService {
     private readonly publisher: ProcessingQueuePublisher,
     @Inject(RUNTIME_CONFIG) private readonly config: RuntimeConfig,
     private readonly notifications: ProcessingNotificationsService,
+    private readonly textExtraction: TextExtractionService,
   ) {}
 
   /**
@@ -163,16 +165,27 @@ export class PipelineProcessorService {
           'O serviço de verificação antivírus está temporariamente indisponível.',
         );
       case 'OCR': {
-        const result = this.provider.extractText(job.document.file.mimeType);
+        const result = await this.textExtraction.extract(job.document.file);
+        const lido = result.provider === 'lex-os-text-reader';
         return {
           provider: result.provider,
           modelName: result.modelName,
-          outputMetadata: { stage: 'OCR', progress: 50 },
+          outputMetadata: {
+            stage: 'OCR',
+            progress: 50,
+            characters: result.rawText.length,
+            truncated: result.truncated,
+          },
           extraction: {
             type: 'OCR',
-            executionId: `mock-v1:${job.id}`,
+            executionId: `${lido ? 'read' : 'mock'}-v1:${job.id}`,
             rawText: result.rawText,
-            structuredData: { source: 'DETERMINISTIC_MOCK' },
+            // A procedência diz se o texto veio do arquivo ou de simulação. Quem revisa uma
+            // extração precisa saber qual dos dois está lendo.
+            structuredData: {
+              source: lido ? 'FILE_CONTENT' : 'DETERMINISTIC_MOCK',
+              truncated: result.truncated,
+            },
             confidenceScore: result.confidence,
             processingTimeMs: 1,
           },
