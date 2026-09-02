@@ -6,6 +6,7 @@ import type { ActorContext } from '../auth/actor-context.js';
 import { CasesService } from '../cases/cases.service.js';
 import { DatabaseService } from '../database/database.service.js';
 import { ApiException } from '../http/api-exception.js';
+import { parseCalendarDate } from '../http/calendar-date.js';
 import {
   createTimestampIdCursorParser,
   decodeCursor,
@@ -148,7 +149,9 @@ export class DocumentsService {
         ? {}
         : {
             documentDate:
-              input.documentDate === null ? null : new Date(`${input.documentDate}T00:00:00.000Z`),
+              input.documentDate === null
+                ? null
+                : parseCalendarDate(input.documentDate, 'documentDate'),
           }),
       ...(input.issuer === undefined ? {} : { issuer: input.issuer }),
       ...(input.recipient === undefined ? {} : { recipient: input.recipient }),

@@ -7,6 +7,7 @@ import { CasesService } from '../cases/cases.service.js';
 import type { PersonCaseListResponseDto } from '../cases/dto/person-case-response.dto.js';
 import { DatabaseService } from '../database/database.service.js';
 import { ApiException } from '../http/api-exception.js';
+import { parseCalendarDate } from '../http/calendar-date.js';
 import {
   createTimestampIdCursorParser,
   decodeCursor,
@@ -34,7 +35,7 @@ function asDate(value: string | null | undefined): Date | null | undefined {
   if (value === undefined || value === null) {
     return value;
   }
-  return new Date(`${value}T00:00:00.000Z`);
+  return parseCalendarDate(value, 'birthDate');
 }
 
 function mapPerson(person: PersonRecord): PersonResponseDto {
@@ -184,7 +185,7 @@ export class PersonsService {
         ? {}
         : {
             birthDate:
-              input.birthDate === null ? null : new Date(`${input.birthDate}T00:00:00.000Z`),
+              input.birthDate === null ? null : parseCalendarDate(input.birthDate, 'birthDate'),
           }),
       ...(input.email === undefined ? {} : { email: input.email }),
       ...(input.phone === undefined ? {} : { phone: input.phone }),
