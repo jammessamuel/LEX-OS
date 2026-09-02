@@ -1,2 +1,5 @@
 .vercel
 .env*
+
+# Fotos da vistoria pre-apresentacao: produto de execucao, mudam a cada rodada.
+vistoria/
