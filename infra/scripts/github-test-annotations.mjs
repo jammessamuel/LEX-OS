@@ -63,8 +63,15 @@ export default async function* githubTestAnnotations(source) {
   let failures = 0;
   /** Por arquivo: { matched: linhas com cara de erro, tail: últimas linhas não vazias }. */
   const capturedByFile = new Map();
+  // O evento de falha e o de stderr podem trazer o MESMO arquivo com grafias diferentes —
+  // relativo numa ponta, absoluto na outra, separador de outra plataforma. Chavear pelo nome
+  // base é o que faz os dois lados se encontrarem.
+  const keyOf = (file) => {
+    const value = String(file ?? '');
+    return value === '' ? '' : (value.split(/[\\/]/u).pop() ?? '');
+  };
   const bucketOf = (file) => {
-    const key = file ?? '';
+    const key = keyOf(file);
     let bucket = capturedByFile.get(key);
     if (bucket === undefined) {
       bucket = { matched: [], tail: [] };
@@ -108,7 +115,7 @@ export default async function* githubTestAnnotations(source) {
       // Se nenhuma linha teve cara de erro (processo morto por sinal, saída truncada), as
       // últimas linhas cruas ainda dizem mais que nada. O balde sem arquivo cobre eventos
       // que chegam sem essa marcação.
-      const own = capturedByFile.get(event.data.file ?? '');
+      const own = capturedByFile.get(keyOf(event.data.file));
       const loose = capturedByFile.get('');
       const captured =
         [own?.matched, loose?.matched, own?.tail, loose?.tail].find(

@@ -1,10 +1,15 @@
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
+const path = require('node:path');
 const { after, before, describe, it } = require('node:test');
 
 const { NestFactory } = require('@nestjs/core');
 const { Pool } = require('pg');
 const request = require('supertest');
+
+// Como nos irmãos deste diretório: ninguém exporta ambiente na esteira — é este carregamento
+// que leva o `.env` até o processo. Sem ele, a guarda logo abaixo estoura na carga do módulo.
+process.loadEnvFile(path.resolve(__dirname, '../../../../.env'));
 
 /**
  * A retenção obrigatória alcança todo caminho de exclusão (ADR-012).
