@@ -59,6 +59,59 @@ async function waitFor(load, predicate, description, timeoutMs = 15_000) {
   throw new Error(`Timed out waiting for ${description}.`);
 }
 
+/**
+ * Sobe o conteúdo fictício do arquivo para o armazenamento de verdade.
+ *
+ * O texto menciona contrato, celebração e uma data de propósito: a cronologia e a busca dos
+ * testes seguintes trabalham em cima do que está escrito aqui, não mais de uma constante.
+ */
+const objetosEnviados = [];
+
+async function putFixtureObject(key) {
+  const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+  const client = new S3Client({
+    endpoint: process.env.OBJECT_STORAGE_ENDPOINT,
+    forcePathStyle: true,
+    region: process.env.OBJECT_STORAGE_REGION,
+    credentials: {
+      accessKeyId: process.env.OBJECT_STORAGE_ACCESS_KEY,
+      secretAccessKey: process.env.OBJECT_STORAGE_SECRET_KEY,
+    },
+  });
+  await client.send(
+    new PutObjectCommand({
+      Bucket: process.env.OBJECT_STORAGE_BUCKET,
+      Key: key,
+      Body: 'Contrato fictício LEX-2026-0001, celebrado em 05/08/2026. Conteúdo exclusivo para desenvolvimento.',
+      ContentType: 'text/plain',
+    }),
+  );
+  objetosEnviados.push(key);
+  client.destroy();
+}
+
+async function removeFixtureObjects() {
+  if (objetosEnviados.length === 0) {
+    return;
+  }
+  const { S3Client, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+  const client = new S3Client({
+    endpoint: process.env.OBJECT_STORAGE_ENDPOINT,
+    forcePathStyle: true,
+    region: process.env.OBJECT_STORAGE_REGION,
+    credentials: {
+      accessKeyId: process.env.OBJECT_STORAGE_ACCESS_KEY,
+      secretAccessKey: process.env.OBJECT_STORAGE_SECRET_KEY,
+    },
+  });
+  for (const key of objetosEnviados.splice(0)) {
+    await client.send(
+      new DeleteObjectCommand({ Bucket: process.env.OBJECT_STORAGE_BUCKET, Key: key }),
+    );
+  }
+  client.destroy();
+}
+
 async function createFixture(
   jobType,
   inputMetadata = {},
@@ -71,12 +124,16 @@ async function createFixture(
   fileIds.push(fileId);
   documentIds.push(documentId);
 
+  // O conteúdo existe de verdade no armazenamento desde que a extração passou a ler o
+  // arquivo em vez de inventá-lo. Fixture que só insere a linha no banco descreve um
+  // arquivo que não existe — e agora isso quebra, como deve.
+  await putFixtureObject(`delivery-8/${fileId}`);
   await database.client.storedFile.create({
     data: {
       id: fileId,
       organizationId,
       storageProvider: 'integration-test',
-      storageBucket: 'integration-test',
+      storageBucket: process.env.OBJECT_STORAGE_BUCKET,
       storageKey: `delivery-8/${fileId}`,
       originalFilename: 'documento-ficticio.txt',
       mimeType: 'text/plain',
@@ -178,6 +235,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await removeFixtureObjects();
   if (database !== undefined && documentIds.length > 0) {
     await database.client.auditLog.deleteMany({
       where: { processingJob: { documentId: { in: documentIds } } },
@@ -379,7 +437,19 @@ describe('Delivery 8 persistent processing pipeline', () => {
       'OCR',
       'TIMELINE_ANALYSIS',
     ]);
-    expect(extractions.every((item) => item.provider.startsWith('lex-os-mock'))).toBe(true);
+    // O OCR agora lê o arquivo — o provedor dele é o leitor, não um mock, e a procedência
+    // diz de onde o texto veio. As outras quatro etapas seguem determinísticas.
+    const porTipo = new Map(extractions.map((item) => [item.extractionType, item]));
+    expect(porTipo.get('OCR').provider).toBe('lex-os-text-reader');
+    expect(porTipo.get('OCR').structuredData).toMatchObject({
+      source: 'FILE_CONTENT',
+      truncated: false,
+    });
+    expect(
+      extractions
+        .filter((item) => item.extractionType !== 'OCR')
+        .every((item) => item.provider.startsWith('lex-os-mock')),
+    ).toBe(true);
     expect(
       extractions.find((item) => item.extractionType === 'ENTITY_EXTRACTION').extractedEntities,
     ).toHaveLength(2);

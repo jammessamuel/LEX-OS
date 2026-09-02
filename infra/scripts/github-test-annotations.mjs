@@ -34,9 +34,13 @@ function messageOf(error) {
   if (error === undefined || error === null) {
     return 'Falha sem detalhe.';
   }
-  // Erro de asserção guarda o detalhe em `cause`; o de cima costuma ser genérico.
-  const cause = error.cause;
-  const detail = cause instanceof Error ? cause.message : '';
+  // Erro de asserção guarda o detalhe em `cause` — e ele chega DESSERIALIZADO quando o
+  // node:test roda o arquivo em outro processo, então `instanceof Error` falhava e o detalhe
+  // sumia: a anotação dizia só "test failed", que não diagnostica nada. Lê a forma, não a
+  // classe, e desce mais um nível, porque falha de hook embrulha duas vezes.
+  const messageLike = (valor) =>
+    typeof valor?.message === 'string' && valor.message !== '' ? valor.message : '';
+  const detail = messageLike(error.cause) || messageLike(error.cause?.cause);
   const own = typeof error.message === 'string' ? error.message : String(error);
   return detail === '' || own.includes(detail) ? own : `${own} — ${detail}`;
 }

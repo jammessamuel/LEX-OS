@@ -14,6 +14,8 @@ export async function login(page: Page): Promise<void> {
   await page.getByLabel('E-mail').fill(adminEmail);
   await page.getByLabel('Senha', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Entrar' }).click();
-  await expect(page).toHaveURL(/\/$/u);
+  // A lista de casos ganhou caminho próprio quando o realce da navegação foi consertado —
+  // a raiz agora redireciona, e o pós-login aterrissa em /casos.
+  await expect(page).toHaveURL(/\/casos$/u);
   await expect(page.getByRole('heading', { name: 'Casos' })).toBeVisible();
 }
