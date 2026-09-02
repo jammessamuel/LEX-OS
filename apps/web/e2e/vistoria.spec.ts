@@ -38,6 +38,13 @@ test.describe('vistoria da jornada de apresentação', () => {
     const pasta = test.info().project.name;
     const foto = async (nome: string) => {
       await page.waitForLoadState('networkidle');
+      // O esqueleto de carregamento fica em aria-busy: fotografar antes de ele sumir
+      // renderia a vistoria cega para a tela de verdade.
+      await page
+        .locator('[aria-busy="true"]')
+        .first()
+        .waitFor({ state: 'hidden', timeout: 15_000 })
+        .catch(() => {});
       await page.screenshot({ path: `vistoria/${pasta}/${nome}.png`, fullPage: true });
     };
 
@@ -63,7 +70,7 @@ test.describe('vistoria da jornada de apresentação', () => {
     await foto('04-caso');
 
     // O documento com o cartão de ponto é o que carrega a divergência da demonstração.
-    const documento = page.getByText('02-cartao-de-ponto-marco').first();
+    const documento = page.getByText('Cartão de ponto — março/2026').first();
     if (await documento.isVisible().catch(() => false)) {
       await documento.click();
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });

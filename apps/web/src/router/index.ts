@@ -73,9 +73,17 @@ export const router = createRouter({
           meta: { permissions: ['tasks.read'] },
         },
         {
+          // A lista de casos morava na raiz, e o realce da navegação marca por prefixo — "/" é
+          // prefixo de toda URL, então "Casos" ficava aceso em toda página, junto com a seção
+          // verdadeira. Com caminho próprio, o realce volta a dizer a verdade; a raiz
+          // redireciona para não quebrar o hábito de quem entra por "/".
+          path: '',
+          redirect: { name: 'cases' },
+        },
+        {
           component: CasesView,
           name: 'cases',
-          path: '',
+          path: 'casos',
           meta: { permissions: ['cases.read'] },
         },
         {
