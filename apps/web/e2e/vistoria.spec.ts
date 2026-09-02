@@ -10,13 +10,24 @@ import { organizationSlug } from './session.js';
  * e para isso é preciso olhar, não só conferir que a rota devolve 200.
  *
  * Roda contra a instalação implantada, e por isso não semeia nem apaga nada — ele lê o caso que
- * já existe. Rode com `E2E_BASE_URL` apontando para o demo e `SEED_ADMIN_PASSWORD` no ambiente.
+ * já existe. Rode assim:
+ *
+ *   VISTORIA=1 E2E_BASE_URL=https://lex-os-web-theta.vercel.app SEED_ADMIN_PASSWORD=… \
+ *     pnpm exec playwright test e2e/vistoria.spec.ts
  */
 
 const CASO = 'RT-2026-0007';
 
 test.describe('vistoria da jornada de apresentação', () => {
   test.describe.configure({ mode: 'serial' });
+
+  // A esteira sobe um banco recém-semeado, onde o caso curado do demo não existe — a vistoria
+  // lá só produziria vermelho sem informação. Ela é ferramenta de véspera de apresentação,
+  // ligada de propósito, nunca por arrasto.
+  test.skip(
+    process.env.VISTORIA !== '1',
+    'Vistoria fotográfica roda contra o demo implantado — ligue com VISTORIA=1.',
+  );
 
   test('percorre e fotografa a jornada inteira', async ({ page }) => {
     test.setTimeout(180_000);

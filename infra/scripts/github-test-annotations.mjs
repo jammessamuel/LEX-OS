@@ -45,9 +45,37 @@ function messageOf(error) {
   return detail === '' || own.includes(detail) ? own : `${own} — ${detail}`;
 }
 
+/**
+ * As linhas de stderr que parecem o começo de um erro, por arquivo.
+ *
+ * Erro no carregamento do módulo e rejeição solta não chegam no evento de falha: o node marca o
+ * arquivo com a mensagem literal "test failed" e manda o erro verdadeiro como `test:stderr`. Uma
+ * rodada inteira de diagnóstico foi gasta contra uma anotação que só dizia isso — o conserto é o
+ * relator juntar as duas metades que o node separa.
+ */
+function looksLikeError(line) {
+  return /^[A-Za-z.]*Error[:\s]|^AssertionError|error TS\d|^Unhandled|throw |^PrismaClient/u.test(
+    line.trim(),
+  );
+}
+
 export default async function* githubTestAnnotations(source) {
   let failures = 0;
+  const stderrByFile = new Map();
   for await (const event of source) {
+    // A rejeição solta chega como diagnóstico ("A resource generated asynchronous
+    // activity…"), não como stderr — os dois canais entram no mesmo balde.
+    if (event.type === 'test:stderr' || event.type === 'test:diagnostic') {
+      const file = event.data.file ?? '';
+      const lines = stderrByFile.get(file) ?? [];
+      for (const line of String(event.data.message ?? '').split(NEWLINE)) {
+        if (looksLikeError(line) && lines.length < 3) {
+          lines.push(line.trim());
+        }
+      }
+      stderrByFile.set(file, lines);
+      continue;
+    }
     if (event.type !== 'test:fail') {
       continue;
     }
@@ -59,7 +87,14 @@ export default async function* githubTestAnnotations(source) {
     failures += 1;
     const name = escape(event.data.name);
     const origin = originOf(event.data.details?.error);
-    const message = escape(messageOf(event.data.details?.error));
+    let message = messageOf(event.data.details?.error);
+    if (message === 'test failed') {
+      const captured = stderrByFile.get(event.data.file ?? '') ?? [];
+      if (captured.length > 0) {
+        message = `${message} — ${captured.join(' · ')}`;
+      }
+    }
+    message = escape(message);
     yield `::error title=${name}::${message}${origin === '' ? '' : ` %0A${escape(origin)}`}\n`;
   }
   if (failures > 0) {
