@@ -357,7 +357,12 @@ export class CasesRepository {
     if (result.count !== 1) {
       return null;
     }
-    return this.findById(organizationId, id);
+    // A releitura precisa vir da própria transação: o cliente base enxerga o banco de antes
+    // do commit, e a resposta sairia dizendo que a retenção não foi posta — ela foi.
+    return transaction.case.findFirst({
+      where: { id, organizationId, deletedAt: null },
+      select: caseSelect,
+    });
   }
 
   /**

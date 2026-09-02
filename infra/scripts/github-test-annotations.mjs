@@ -61,19 +61,35 @@ function looksLikeError(line) {
 
 export default async function* githubTestAnnotations(source) {
   let failures = 0;
-  const stderrByFile = new Map();
+  /** Por arquivo: { matched: linhas com cara de erro, tail: últimas linhas não vazias }. */
+  const capturedByFile = new Map();
+  const bucketOf = (file) => {
+    const key = file ?? '';
+    let bucket = capturedByFile.get(key);
+    if (bucket === undefined) {
+      bucket = { matched: [], tail: [] };
+      capturedByFile.set(key, bucket);
+    }
+    return bucket;
+  };
   for await (const event of source) {
     // A rejeição solta chega como diagnóstico ("A resource generated asynchronous
     // activity…"), não como stderr — os dois canais entram no mesmo balde.
     if (event.type === 'test:stderr' || event.type === 'test:diagnostic') {
-      const file = event.data.file ?? '';
-      const lines = stderrByFile.get(file) ?? [];
-      for (const line of String(event.data.message ?? '').split(NEWLINE)) {
-        if (looksLikeError(line) && lines.length < 3) {
-          lines.push(line.trim());
+      const bucket = bucketOf(event.data.file);
+      for (const raw of String(event.data.message ?? '').split(NEWLINE)) {
+        const line = raw.trim();
+        if (line === '') {
+          continue;
+        }
+        if (looksLikeError(line) && bucket.matched.length < 3) {
+          bucket.matched.push(line);
+        }
+        bucket.tail.push(line);
+        if (bucket.tail.length > 5) {
+          bucket.tail.shift();
         }
       }
-      stderrByFile.set(file, lines);
       continue;
     }
     if (event.type !== 'test:fail') {
@@ -89,7 +105,15 @@ export default async function* githubTestAnnotations(source) {
     const origin = originOf(event.data.details?.error);
     let message = messageOf(event.data.details?.error);
     if (message === 'test failed') {
-      const captured = stderrByFile.get(event.data.file ?? '') ?? [];
+      // Se nenhuma linha teve cara de erro (processo morto por sinal, saída truncada), as
+      // últimas linhas cruas ainda dizem mais que nada. O balde sem arquivo cobre eventos
+      // que chegam sem essa marcação.
+      const own = capturedByFile.get(event.data.file ?? '');
+      const loose = capturedByFile.get('');
+      const captured =
+        [own?.matched, loose?.matched, own?.tail, loose?.tail].find(
+          (lines) => lines !== undefined && lines.length > 0,
+        ) ?? [];
       if (captured.length > 0) {
         message = `${message} — ${captured.join(' · ')}`;
       }
