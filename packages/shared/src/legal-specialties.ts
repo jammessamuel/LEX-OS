@@ -241,6 +241,118 @@ export const legalSpecialties: readonly LegalSpecialty[] = [
       { code: 'LIVRAMENTO_CONDICIONAL', name: 'Execução penal: livramento condicional' },
     ],
   },
+  {
+    code: 'PREVIDENCIARIO',
+    name: 'Direito previdenciário',
+    aliases: ['DIREITO_PREVIDENCIARIO', 'PREVIDENCIA', 'INSS'],
+    caseTypes: [
+      { code: 'APOSENTADORIA_POR_IDADE', name: 'Aposentadoria por idade' },
+      {
+        code: 'APOSENTADORIA_POR_TEMPO_DE_CONTRIBUICAO',
+        name: 'Aposentadoria por tempo de contribuição',
+      },
+      {
+        code: 'APOSENTADORIA_ESPECIAL',
+        name: 'Aposentadoria especial por exposição a agente nocivo',
+      },
+      {
+        code: 'APOSENTADORIA_POR_INCAPACIDADE_PERMANENTE',
+        name: 'Aposentadoria por incapacidade permanente',
+      },
+      { code: 'AUXILIO_POR_INCAPACIDADE_TEMPORARIA', name: 'Auxílio por incapacidade temporária' },
+      { code: 'AUXILIO_ACIDENTE', name: 'Auxílio-acidente' },
+      {
+        code: 'BENEFICIO_DE_PRESTACAO_CONTINUADA',
+        name: 'Benefício de prestação continuada (BPC/LOAS)',
+      },
+      { code: 'PENSAO_POR_MORTE', name: 'Pensão por morte' },
+      { code: 'SALARIO_MATERNIDADE', name: 'Salário-maternidade' },
+      {
+        code: 'APOSENTADORIA_RURAL_POR_IDADE',
+        name: 'Aposentadoria rural por idade e segurado especial',
+      },
+      {
+        code: 'AVERBACAO_E_RECONHECIMENTO_DE_TEMPO',
+        name: 'Averbação e reconhecimento de tempo de contribuição',
+      },
+      { code: 'CONVERSAO_DE_TEMPO_ESPECIAL', name: 'Conversão de tempo especial em comum' },
+      {
+        code: 'REVISAO_DE_BENEFICIO',
+        name: 'Revisão de renda mensal inicial e de benefício concedido',
+      },
+      {
+        code: 'RESTABELECIMENTO_DE_BENEFICIO_CESSADO',
+        name: 'Restabelecimento de benefício cessado',
+      },
+      {
+        code: 'CONCESSAO_APOS_INDEFERIMENTO_ADMINISTRATIVO',
+        name: 'Concessão após indeferimento administrativo',
+      },
+      {
+        code: 'CERTIDAO_DE_TEMPO_DE_CONTRIBUICAO',
+        name: 'Certidão de tempo de contribuição e contagem recíproca',
+      },
+      {
+        code: 'DESAPOSENTACAO_E_REAFIRMACAO_DER',
+        name: 'Reafirmação da DER e revisão do requerimento',
+      },
+      { code: 'BENEFICIO_ACIDENTARIO', name: 'Benefício acidentário e nexo técnico' },
+    ],
+  },
+  {
+    code: 'TRIBUTARIO',
+    name: 'Direito tributário',
+    aliases: ['DIREITO_TRIBUTARIO', 'FISCAL', 'TRIBUTOS'],
+    caseTypes: [
+      { code: 'EXECUCAO_FISCAL', name: 'Execução fiscal' },
+      { code: 'EMBARGOS_A_EXECUCAO_FISCAL', name: 'Embargos à execução fiscal' },
+      { code: 'EXCECAO_DE_PRE_EXECUTIVIDADE', name: 'Exceção de pré-executividade' },
+      { code: 'ANULATORIA_DE_DEBITO_FISCAL', name: 'Ação anulatória de débito fiscal' },
+      {
+        code: 'DECLARATORIA_DE_INEXISTENCIA_DE_RELACAO_TRIBUTARIA',
+        name: 'Ação declaratória de inexistência de relação jurídico-tributária',
+      },
+      { code: 'REPETICAO_DE_INDEBITO_TRIBUTARIO', name: 'Repetição de indébito tributário' },
+      {
+        code: 'MANDADO_DE_SEGURANCA_TRIBUTARIO',
+        name: 'Mandado de segurança em matéria tributária',
+      },
+      {
+        code: 'IMPUGNACAO_DE_AUTO_DE_INFRACAO',
+        name: 'Impugnação de auto de infração no contencioso administrativo',
+      },
+      {
+        code: 'RECURSO_ADMINISTRATIVO_FISCAL',
+        name: 'Recurso no contencioso administrativo fiscal',
+      },
+      { code: 'PARCELAMENTO_E_EXCLUSAO', name: 'Parcelamento tributário e exclusão do programa' },
+      {
+        code: 'CERTIDAO_NEGATIVA_DE_DEBITOS',
+        name: 'Obtenção de certidão negativa ou positiva com efeito de negativa',
+      },
+      { code: 'COMPENSACAO_TRIBUTARIA', name: 'Compensação tributária e sua homologação' },
+      {
+        code: 'REDIRECIONAMENTO_AO_SOCIO',
+        name: 'Redirecionamento da execução ao sócio ou administrador',
+      },
+      {
+        code: 'ISS_ICMS_CONFLITO_DE_COMPETENCIA',
+        name: 'Conflito de competência entre ISS e ICMS',
+      },
+      { code: 'ITBI_E_ITCMD', name: 'ITBI e ITCMD: base de cálculo e lançamento' },
+      { code: 'IPTU_E_TAXAS_MUNICIPAIS', name: 'IPTU e taxas municipais' },
+      {
+        code: 'CONTRIBUICOES_PREVIDENCIARIAS_PATRONAIS',
+        name: 'Contribuições previdenciárias patronais e verbas de natureza indenizatória',
+      },
+      { code: 'PIS_COFINS_BASE_DE_CALCULO', name: 'PIS e COFINS: base de cálculo e créditos' },
+      { code: 'IRPJ_CSLL_LUCRO', name: 'IRPJ e CSLL: apuração e glosa de despesas' },
+      {
+        code: 'PENHORA_E_GARANTIA_DO_JUIZO',
+        name: 'Penhora, garantia do juízo e substituição da garantia',
+      },
+    ],
+  },
 ];
 
 const byCode = new Map<string, LegalSpecialty>();

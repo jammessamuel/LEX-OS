@@ -120,6 +120,31 @@ const documentTypes = [
   ['RELATORIO_ASSINATURA', 'Relatório de assinatura eletrônica', 'PROBATORIO'],
   ['CRLV', 'Documento do veículo', 'IDENTIFICACAO'],
   ['NOTIFICACAO_EXTRAJUDICIAL', 'Notificação extrajudicial', 'COMUNICACAO'],
+  // Tributário e previdenciário entraram na biblioteca de prompts em 2026-09-03, e a
+  // classificação promete respeitar este catálogo. Sem estes códigos, todo auto de infração e
+  // todo CNIS cairiam em OUTRO, e nenhum item de checklist dessas duas áreas fecharia — o
+  // mesmo defeito que a P0.3 registrou quando o exemplo do prompt usava MATRICULA antes de
+  // MATRICULA existir aqui.
+  ['AUTO_INFRACAO_TRIBUTARIO', 'Auto de infração e imposição de multa', 'TRIBUTARIO'],
+  ['NOTIFICACAO_LANCAMENTO', 'Notificação de lançamento', 'TRIBUTARIO'],
+  ['TERMO_INICIO_FISCALIZACAO', 'Termo de início de fiscalização', 'TRIBUTARIO'],
+  ['CERTIDAO_DIVIDA_ATIVA', 'Certidão de dívida ativa', 'TRIBUTARIO'],
+  ['DECISAO_ADMINISTRATIVA_FISCAL', 'Decisão em processo administrativo fiscal', 'TRIBUTARIO'],
+  ['DESPACHO_DECISORIO', 'Despacho decisório de compensação', 'TRIBUTARIO'],
+  ['TERMO_ADESAO_PARCELAMENTO', 'Termo de adesão a parcelamento', 'TRIBUTARIO'],
+  ['CERTIDAO_DEBITOS_TRIBUTARIOS', 'Certidão de débitos tributários', 'TRIBUTARIO'],
+  ['GUIA_RECOLHIMENTO_TRIBUTARIO', 'Guia de recolhimento de tributo', 'TRIBUTARIO'],
+  ['ESCRITURACAO_FISCAL', 'Escrituração e declaração fiscal', 'TRIBUTARIO'],
+  ['CNIS', 'Extrato do CNIS', 'PREVIDENCIARIO'],
+  ['PPP', 'Perfil profissiográfico previdenciário', 'PREVIDENCIARIO'],
+  ['LTCAT', 'Laudo técnico das condições ambientais do trabalho', 'PREVIDENCIARIO'],
+  ['CARTA_CONCESSAO', 'Carta de concessão de benefício', 'PREVIDENCIARIO'],
+  ['COMUNICACAO_DECISAO_INSS', 'Comunicação de decisão do INSS', 'PREVIDENCIARIO'],
+  ['LAUDO_PERICIA_ADMINISTRATIVA', 'Laudo de perícia médica administrativa', 'PREVIDENCIARIO'],
+  ['CTC', 'Certidão de tempo de contribuição', 'PREVIDENCIARIO'],
+  ['CAT', 'Comunicação de acidente de trabalho', 'PREVIDENCIARIO'],
+  ['GUIA_CONTRIBUICAO_PREVIDENCIARIA', 'Guia de contribuição previdenciária', 'PREVIDENCIARIO'],
+  ['PROVA_ATIVIDADE_RURAL', 'Documento de comprovação de atividade rural', 'PREVIDENCIARIO'],
 ] as const;
 
 function loadRootEnvironment(): void {

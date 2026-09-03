@@ -39,15 +39,16 @@ import {
  * calibragem de confiança, a regra de não corrigir grafia de nome e o critério de entidade
  * nascer não confirmada — todos presentes nos genéricos. Estão de volta.
  *
- * Quatro achados eram de contrato, não de texto. Dois foram atendidos em 2026-08-26: o status
- * ILEGIVEL — a análise agora propõe cinco dos oito estados do banco, incluindo ilegível,
- * inválido e vencido — e o teto de citações, que subiu de três para cinco, o mesmo teto da
- * recuperação. Dois continuam abertos e estão em
- * `docs/product/pendencias-biblioteca-de-prompts.md`: a cobertura de período no checklist (a
- * saída aceita só `templateItemId` e `status`) e a recusa de cronologia vazia
- * (`events.length === 0` falha, o que força inventar evento).
+ * Quatro achados eram de contrato, não de texto. Três já foram atendidos: o status ILEGIVEL — a
+ * análise propõe cinco dos oito estados do banco, incluindo ilegível, inválido e vencido — e o
+ * teto de citações, que subiu de três para cinco, ambos em 2026-08-26; e a recusa de cronologia
+ * vazia, em 2026-09-03, quando a saída ganhou `outcome` e passou a aceitar lista vazia, de modo
+ * que documento sem fato datado deixou de obrigar a inventar um evento. Continua aberta, em
+ * `docs/product/pendencias-biblioteca-de-prompts.md`, a cobertura de período no checklist: a
+ * saída aceita só `templateItemId` e `status`.
  *
- * Todos `DRAFT`: saíram de pesquisa automatizada e nenhum advogado revisou.
+ * Revisados por Thais Regina Farrapo Moreira em 2026-08-27. A inscrição não está ativa, então a
+ * atestação registra a leitura sem liberar acervo real — `reviewGapFor` continua recusando.
  */
 
 const TRABALHISTA_BASE = `${ACERVO_JUDICIAL}

@@ -31,6 +31,8 @@ export { SOURCE_TEXT_LIMIT } from './prompts/contratos.js';
 
 export { civelPrompts } from './prompts/civel.js';
 export { criminalPrompts } from './prompts/criminal.js';
+export { previdenciarioPrompts } from './prompts/previdenciario.js';
+export { tributarioPrompts } from './prompts/tributario.js';
 
 export {
   assertUsableIn,

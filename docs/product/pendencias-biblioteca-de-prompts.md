@@ -12,6 +12,52 @@ Ordenado por prioridade de conserto. Cada item diz onde está, por que dói, e o
 
 ---
 
+## Atualização de 2026-09-03 — duas faixas novas e o que elas reabriram
+
+A biblioteca foi a **30 prompts, cinco tarefas × seis faixas**: entraram previdenciário e
+tributário, escritos por pesquisa automatizada e submetidos a uma revisão adversarial cada.
+
+**Fechado nesta data.** O P1.7 — cronologia vazia — deixou de existir: a saída ganhou
+`outcome` (`ANALYZED` ou `UNREADABLE`) e aceita lista vazia, então documento sem fato datado e
+página ilegível deixaram de ter como única saída válida um evento inventado.
+
+**A revisão adversarial não achou citação fabricada em nenhuma das duas faixas** — o padrão de
+2026-08-26, três citações falsas numa faixa, não se repetiu. O previdenciário cita um único
+dispositivo no arquivo inteiro; o tributário cita treze, todos conferidos um a um. A política de
+descrever a regra pelo conteúdo e omitir o número quando há dúvida é o que produziu isso, e ela
+tem um custo próprio, registrado abaixo.
+
+**O P0.3 tinha voltado, e agora tem teste.** As duas faixas nasceram citando códigos de tipo
+documental que o catálogo não tinha, e a revisão encontrou o mesmo defeito **vivo no criminal**,
+faixa já atestada: `AUTO_FLAGRANTE`, quando o catálogo semeia `AUTO_PRISAO_FLAGRANTE`. Ninguém
+acusava, porque nenhum teste comparava as duas listas. Agora existe
+`apps/worker/test/prompt-catalog-drift.spec.cjs`, e o catálogo ganhou vinte tipos das duas áreas.
+Corrigir os exemplos não invalidou a atestação de Thais: o caderno de revisão é gerado de
+`template`, e `examples` não vão ao modelo.
+
+**Continua aberto, e alcança as seis faixas.** São lacunas de contrato, não de texto:
+
+- **Entidades não tem onde qualificar um valor.** `ENTITIES_OUTPUT` aceita `normalizedValue` e
+  `originalValue`; rubrica, competência e peça de origem não têm campo. "R$ 148.320,55" sozinho
+  não identifica nada num processo tributário, e o prompt pede quatro atributos que a saída não
+  comporta.
+- **`EXPIRED` é inalcançável por construção.** `CHECKLIST_INPUT` é `additionalProperties: false`
+  e não tem data de referência; `SEM_DATA_DE_HOJE` proíbe — com razão — julgar vigência sem ela.
+  O estado existe no enum e nenhum caminho honesto chega nele.
+- **O grounded pede página e a entrada não traz página.** `GROUNDED_INPUT.sources` carrega
+  `chunkId` e `content`. Herdado do trabalhista.
+- **Arquivo composto não tem onde ser registrado.** `CLASSIFICATION_OUTPUT` é `code` e
+  `confidence`; a instrução manda registrar que o arquivo reúne vários documentos.
+- **Cobertura de período no checklist**, o item que já estava aberto desde 2026-08-26.
+- **Os `examples` não validam contra os próprios schemas**, em todas as faixas: nenhum teste os
+  confere, e por isso a divergência nunca dói — até o dia em que alguém os usar como fixture.
+
+**Nenhuma das seis faixas alcança acervo real.** As três lidas por Thais são recusadas por
+falta de inscrição ativa; as duas novas, por serem rascunho. Três testes em
+`packages/ai-prompts/test/prompt-library.test.cjs` prendem as duas metades e a soma delas.
+
+---
+
 ## P0 — Defeitos de contrato. Enquanto existirem, a qualidade do texto do prompt não importa
 
 Estes quatro não se consertam escrevendo melhor. O prompt pode estar perfeito e continuar

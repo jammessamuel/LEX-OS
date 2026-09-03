@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "deps:audit": "corepack pnpm audit --prod --audit-level high",
+    "deps:audit": "node infra/scripts/audit-production-dependencies.mjs",
     "dev": "turbo run dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

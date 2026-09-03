@@ -12,24 +12,24 @@ Estado verificado no código em 2026-08-28, não deduzido dos ADRs.
 
 ## 1. Onde estamos, ADR por ADR
 
-| ADR     | Decisão                        | Construído                                                            | Aberto                                                                           |
-| ------- | ------------------------------ | --------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                 | —                                                                                |
-| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 19 migrações                 | —                                                                                |
-| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                | —                                                                                |
-| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos      | —                                                                                |
-| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                              | —                                                                                |
-| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real atrás da porta      | Contrato padrão proíbe treino; aceite empresarial e demais portões do 012 pendem |
-| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP              | —                                                                                |
-| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                            | —                                                                                |
-| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada, citação obrigatória                   | — Teto de 5 fontes mantido deliberadamente pelo ADR-016                          |
-| **010** | Canais de entrada              | ✅ Upload                                                             | Superado pelo ADR-016; e-mail passou a conector futuro                           |
-| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos | —                                                                                |
-| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                       | Transferência, região única e responsável nomeado                                |
-| **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos    | —                                                                                |
-| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código | Itens 4–7 adiados **por decisão**, não por esquecimento                          |
-| **015** | Biblioteca de prompts          | ✅ Todos os itens · ✅ 20 de 20 `REVIEWED` (15 por Thais, 5 do dono)  | Acervo real segue recusado: a atestação de advogada não carrega inscrição ativa  |
-| **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                   | Condições externas permanecem falhando fechado                                   |
+| ADR     | Decisão                        | Construído                                                                | Aberto                                                                                          |
+| ------- | ------------------------------ | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                     | —                                                                                               |
+| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 19 migrações                     | —                                                                                               |
+| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                    | —                                                                                               |
+| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos          | —                                                                                               |
+| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                                  | —                                                                                               |
+| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real atrás da porta          | Contrato padrão proíbe treino; aceite empresarial e demais portões do 012 pendem                |
+| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP                  | —                                                                                               |
+| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                                | —                                                                                               |
+| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada, citação obrigatória                       | — Teto de 5 fontes mantido deliberadamente pelo ADR-016                                         |
+| **010** | Canais de entrada              | ✅ Upload                                                                 | Superado pelo ADR-016; e-mail passou a conector futuro                                          |
+| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos     | —                                                                                               |
+| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                           | Transferência, região única e responsável nomeado                                               |
+| **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos        | —                                                                                               |
+| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código     | Itens 4–7 adiados **por decisão**, não por esquecimento                                         |
+| **015** | Biblioteca de prompts          | ✅ Todos os itens · ✅ 30 prompts em 6 faixas (20 atestados, 10 rascunho) | Acervo real segue recusado em todas as faixas: sem inscrição ativa, e as duas novas sem leitura |
+| **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                       | Condições externas permanecem falhando fechado                                                  |
 
 **Leitura rápida:** a fila de engenharia do MVP fechou. O que sobra não é código disfarçado:
 aceite empresarial e transferência internacional (012), decisão sobre região única (012),

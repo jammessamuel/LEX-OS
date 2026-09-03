@@ -184,9 +184,12 @@ describe('biblioteca de prompts', () => {
     // 2026-08-27 fica gravada com nome e versão, e a lacuna — inscrição não ativa, art. 28, V,
     // da Lei 8.906/94 — continua recusando estas instruções sobre acervo de cliente. Quem quiser
     // liberar acervo real não mexe aqui: registra uma atestação com inscrição ativa.
-    const especialidade = library.promptLibrary.filter((p) => p.specialty !== null);
-    assert.equal(especialidade.length, 15);
-    for (const prompt of especialidade) {
+    const LIDAS_POR_THAIS = ['TRABALHISTA', 'CIVEL', 'CRIMINAL'];
+    const atestadas = library.promptLibrary.filter(
+      (p) => p.specialty !== null && LIDAS_POR_THAIS.includes(p.specialty),
+    );
+    assert.equal(atestadas.length, 15);
+    for (const prompt of atestadas) {
       assert.equal(prompt.reviewStatus, 'REVIEWED', prompt.identifier);
       assert.equal(prompt.review?.name, 'Thais Regina Farrapo Moreira', prompt.identifier);
       assert.equal(prompt.review?.capacity, 'LAWYER', prompt.identifier);
@@ -202,6 +205,43 @@ describe('biblioteca de prompts', () => {
     }
   });
 
+  it('faixa que ninguém leu nasce rascunho, e a atestação de uma não empresta para a outra', () => {
+    // Previdenciário e tributário entraram em 2026-09-03 escritos por pesquisa automatizada.
+    // Thais leu trabalhista, cível e criminal em 2026-08-27 e não leu estas — carimbar o nome
+    // dela aqui seria falsificar atestação de advogada. O teste existe porque a tentação é
+    // exatamente essa: copiar o bloco de revisão junto com o resto do arquivo ao criar a faixa
+    // seguinte.
+    const NAO_LIDAS = ['PREVIDENCIARIO', 'TRIBUTARIO'];
+    const rascunhos = library.promptLibrary.filter(
+      (p) => p.specialty !== null && NAO_LIDAS.includes(p.specialty),
+    );
+    assert.equal(rascunhos.length, 10);
+    for (const prompt of rascunhos) {
+      assert.equal(prompt.reviewStatus, 'DRAFT', prompt.identifier);
+      assert.equal(prompt.review, null, prompt.identifier);
+      assert.match(library.reviewGapFor(prompt), /still a draft/u, prompt.identifier);
+      assert.throws(
+        () => library.assertUsableIn(prompt, 'real'),
+        library.UnreviewedPromptError,
+        prompt.identifier,
+      );
+    }
+  });
+
+  it('nenhum prompt de especialidade alcança acervo real, seja qual for a faixa', () => {
+    // A soma das duas garantias acima, dita uma vez só: enquanto não houver assinatura com
+    // inscrição ativa, especialidade nenhuma roda sobre acervo de cliente. Uma faixa nova que
+    // nasça já liberada quebra aqui, mesmo que ninguém lembre de vir atualizar os dois testes
+    // anteriores.
+    for (const prompt of library.promptLibrary.filter((p) => p.specialty !== null)) {
+      assert.throws(
+        () => library.assertUsableIn(prompt, 'real'),
+        library.UnreviewedPromptError,
+        prompt.identifier,
+      );
+    }
+  });
+
   it('mantém aprovados os cinco genéricos, que descrevem o comportamento determinístico', () => {
     // Decisão do dono em 2026-08-25. Prompt de especialidade, vindo de pesquisa automatizada,
     // continua nascendo rascunho.
@@ -212,7 +252,7 @@ describe('biblioteca de prompts', () => {
 
   it('resolve as cinco tarefas em cada faixa, que é o que o worker agora pede', () => {
     const tarefas = ['CLASSIFICATION', 'ENTITIES', 'TIMELINE', 'CHECKLIST', 'GROUNDED_ANSWER'];
-    for (const area of ['TRABALHISTA', 'CIVEL', 'CRIMINAL']) {
+    for (const area of ['TRABALHISTA', 'CIVEL', 'CRIMINAL', 'PREVIDENCIARIO', 'TRIBUTARIO']) {
       for (const tarefa of tarefas) {
         const escolhido = library.promptFor(tarefa, area, { caseArchive: 'fictional' });
         assert.equal(escolhido.task, tarefa);

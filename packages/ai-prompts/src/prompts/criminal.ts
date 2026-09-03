@@ -246,7 +246,10 @@ ${RESPONDA_SO_JSON}`,
   outputSchema: CHECKLIST_OUTPUT,
   examples: [
     {
-      input: { documentTypeCode: 'AUTO_FLAGRANTE', itemDocumentTypeCode: 'AUTO_FLAGRANTE' },
+      input: {
+        documentTypeCode: 'AUTO_PRISAO_FLAGRANTE',
+        itemDocumentTypeCode: 'AUTO_PRISAO_FLAGRANTE',
+      },
       output: { status: 'AWAITING_VALIDATION' },
     },
   ],
@@ -372,7 +375,7 @@ ${RESPONDA_SO_JSON}`,
   outputSchema: CLASSIFICATION_OUTPUT,
   examples: [
     {
-      input: { availableTypeCodes: ['AUTO_FLAGRANTE', 'BOLETIM_OCORRENCIA', 'OUTRO'] },
+      input: { availableTypeCodes: ['AUTO_PRISAO_FLAGRANTE', 'BOLETIM_OCORRENCIA', 'OUTRO'] },
       output: { code: 'BOLETIM_OCORRENCIA', confidence: 0.84 },
     },
   ],
