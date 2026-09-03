@@ -34,8 +34,12 @@ test('jornada completa termina com cronologia confirmada e trilha de auditoria',
   await page.getByLabel('Selecionar arquivos para envio').setInputFiles({
     name: 'contrato-ficticio.txt',
     mimeType: 'text/plain',
+    // A data faz parte da fixture desde que a cronologia passou a ler o documento em vez de
+    // devolver sempre o mesmo evento: peça sem data nenhuma produz — corretamente — cronologia
+    // vazia, e a jornada não teria evento para confirmar. Documento de processo tem data; a
+    // fixture que não tinha é que descrevia um acervo que não existe.
     buffer: Buffer.from(
-      'Contrato ficticio da jornada de verificacao ponta a ponta. Sem dados reais.',
+      'Contrato ficticio da jornada de verificacao ponta a ponta, celebrado em 05/08/2026. Sem dados reais.',
       'utf-8',
     ),
   });
