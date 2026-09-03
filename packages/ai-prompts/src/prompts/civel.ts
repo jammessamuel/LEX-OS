@@ -155,8 +155,17 @@ ${LOCALIZADOR_PJE}
 Todo evento nasce NÃO CONFIRMADO para revisão humana. Sem localizador, é descartado.
 
 ${RESPONDA_SO_JSON}`,
-  reviewStatus: 'DRAFT',
-  review: null,
+  reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'LAWYER',
+    name: 'Thais Regina Farrapo Moreira',
+    oab: null,
+    standing:
+      'Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.',
+    date: '2026-08-27',
+    reviewedVersion: 'timeline-civel-v1',
+    note: 'Leitura integral do caderno de revisão da faixa cível, gerado da própria biblioteca em 2026-08-27. Aprovado sem ressalvas registradas. Não cobre a conferência um a um de números de artigo e súmula, que segue com as lentes automatizadas. Sem inscrição ativa, a atestação não libera acervo real — e é para não liberar.',
+  },
   inputSchema: TIMELINE_INPUT,
   outputSchema: TIMELINE_OUTPUT,
   examples: [
@@ -258,8 +267,17 @@ sobrescreva item já revisado. Devolva cada item recebido exatamente uma vez, co
 que veio na entrada.
 
 ${RESPONDA_SO_JSON}`,
-  reviewStatus: 'DRAFT',
-  review: null,
+  reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'LAWYER',
+    name: 'Thais Regina Farrapo Moreira',
+    oab: null,
+    standing:
+      'Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.',
+    date: '2026-08-27',
+    reviewedVersion: 'checklist-civel-v1',
+    note: 'Leitura integral do caderno de revisão da faixa cível, gerado da própria biblioteca em 2026-08-27. Aprovado sem ressalvas registradas. Não cobre a conferência um a um de números de artigo e súmula, que segue com as lentes automatizadas. Sem inscrição ativa, a atestação não libera acervo real — e é para não liberar.',
+  },
   inputSchema: CHECKLIST_INPUT,
   outputSchema: CHECKLIST_OUTPUT,
   examples: [
@@ -317,8 +335,17 @@ Não emita parecer, não recomende conduta, não afirme desfecho.
 ${RESPONDA_SO_JSON}
 
 ${QUEBRE_A_AFIRMACAO}`,
-  reviewStatus: 'DRAFT',
-  review: null,
+  reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'LAWYER',
+    name: 'Thais Regina Farrapo Moreira',
+    oab: null,
+    standing:
+      'Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.',
+    date: '2026-08-27',
+    reviewedVersion: 'grounded-answer-civel-v1',
+    note: 'Leitura integral do caderno de revisão da faixa cível, gerado da própria biblioteca em 2026-08-27. Aprovado sem ressalvas registradas. Não cobre a conferência um a um de números de artigo e súmula, que segue com as lentes automatizadas. Sem inscrição ativa, a atestação não libera acervo real — e é para não liberar.',
+  },
   inputSchema: GROUNDED_INPUT,
   outputSchema: GROUNDED_OUTPUT,
   examples: [
@@ -392,8 +419,17 @@ Sem correspondência clara, OUTRO com confiança baixa. Forçar tipo plausível 
 admitir que não deu.
 
 ${RESPONDA_SO_JSON}`,
-  reviewStatus: 'DRAFT',
-  review: null,
+  reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'LAWYER',
+    name: 'Thais Regina Farrapo Moreira',
+    oab: null,
+    standing:
+      'Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.',
+    date: '2026-08-27',
+    reviewedVersion: 'classification-civel-v1',
+    note: 'Leitura integral do caderno de revisão da faixa cível, gerado da própria biblioteca em 2026-08-27. Aprovado sem ressalvas registradas. Não cobre a conferência um a um de números de artigo e súmula, que segue com as lentes automatizadas. Sem inscrição ativa, a atestação não libera acervo real — e é para não liberar.',
+  },
   inputSchema: CLASSIFICATION_INPUT,
   outputSchema: CLASSIFICATION_OUTPUT,
   examples: [
@@ -485,8 +521,17 @@ nasce NÃO CONFIRMADA. Quando o mesmo dado divergir entre documentos, extraia as
 com seus localizadores — a divergência costuma ser o objeto do pedido.
 
 ${RESPONDA_SO_JSON}`,
-  reviewStatus: 'DRAFT',
-  review: null,
+  reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'LAWYER',
+    name: 'Thais Regina Farrapo Moreira',
+    oab: null,
+    standing:
+      'Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.',
+    date: '2026-08-27',
+    reviewedVersion: 'entities-civel-v1',
+    note: 'Leitura integral do caderno de revisão da faixa cível, gerado da própria biblioteca em 2026-08-27. Aprovado sem ressalvas registradas. Não cobre a conferência um a um de números de artigo e súmula, que segue com as lentes automatizadas. Sem inscrição ativa, a atestação não libera acervo real — e é para não liberar.',
+  },
   inputSchema: ENTITIES_INPUT,
   outputSchema: ENTITIES_OUTPUT,
   examples: [

@@ -135,8 +135,17 @@ ${LOCALIZADOR_PJE}
 Todo evento nasce NÃO CONFIRMADO para revisão humana. Sem localizador, é descartado.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
-  reviewStatus: 'DRAFT',
-  review: null,
+  reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'LAWYER',
+    name: 'Thais Regina Farrapo Moreira',
+    oab: null,
+    standing:
+      'Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.',
+    date: '2026-08-27',
+    reviewedVersion: 'timeline-trabalhista-v1',
+    note: 'Leitura integral do caderno de revisão da faixa trabalhista, gerado da própria biblioteca em 2026-08-27. Aprovado sem ressalvas registradas. Não cobre a conferência um a um de números de artigo e súmula, que segue com as lentes automatizadas. Sem inscrição ativa, a atestação não libera acervo real — e é para não liberar.',
+  },
   inputSchema: TIMELINE_INPUT,
   outputSchema: TIMELINE_OUTPUT,
   examples: [
@@ -216,8 +225,17 @@ Deixar de marcar custa uma conferência; marcar errado custa o prazo.
 Devolva cada item recebido exatamente uma vez, com o identificador que veio na entrada.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
-  reviewStatus: 'DRAFT',
-  review: null,
+  reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'LAWYER',
+    name: 'Thais Regina Farrapo Moreira',
+    oab: null,
+    standing:
+      'Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.',
+    date: '2026-08-27',
+    reviewedVersion: 'checklist-trabalhista-v1',
+    note: 'Leitura integral do caderno de revisão da faixa trabalhista, gerado da própria biblioteca em 2026-08-27. Aprovado sem ressalvas registradas. Não cobre a conferência um a um de números de artigo e súmula, que segue com as lentes automatizadas. Sem inscrição ativa, a atestação não libera acervo real — e é para não liberar.',
+  },
   inputSchema: CHECKLIST_INPUT,
   outputSchema: CHECKLIST_OUTPUT,
   examples: [
@@ -272,8 +290,17 @@ isto é insumo do trabalho dele.
 Responda somente com o JSON do contrato de saída, sem texto ao redor.
 
 ${QUEBRE_A_AFIRMACAO}`,
-  reviewStatus: 'DRAFT',
-  review: null,
+  reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'LAWYER',
+    name: 'Thais Regina Farrapo Moreira',
+    oab: null,
+    standing:
+      'Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.',
+    date: '2026-08-27',
+    reviewedVersion: 'grounded-answer-trabalhista-v1',
+    note: 'Leitura integral do caderno de revisão da faixa trabalhista, gerado da própria biblioteca em 2026-08-27. Aprovado sem ressalvas registradas. Não cobre a conferência um a um de números de artigo e súmula, que segue com as lentes automatizadas. Sem inscrição ativa, a atestação não libera acervo real — e é para não liberar.',
+  },
   inputSchema: GROUNDED_INPUT,
   outputSchema: GROUNDED_OUTPUT,
   examples: [
@@ -325,8 +352,17 @@ Sem correspondência clara, classifique como OUTRO com confiança baixa. Forçar
 é pior do que admitir que não deu.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
-  reviewStatus: 'DRAFT',
-  review: null,
+  reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'LAWYER',
+    name: 'Thais Regina Farrapo Moreira',
+    oab: null,
+    standing:
+      'Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.',
+    date: '2026-08-27',
+    reviewedVersion: 'classification-trabalhista-v1',
+    note: 'Leitura integral do caderno de revisão da faixa trabalhista, gerado da própria biblioteca em 2026-08-27. Aprovado sem ressalvas registradas. Não cobre a conferência um a um de números de artigo e súmula, que segue com as lentes automatizadas. Sem inscrição ativa, a atestação não libera acervo real — e é para não liberar.',
+  },
   inputSchema: CLASSIFICATION_INPUT,
   outputSchema: CLASSIFICATION_OUTPUT,
   examples: [
@@ -396,8 +432,17 @@ Quando o mesmo dado aparecer em documentos diferentes com valores diferentes, ex
 ocorrências com seus localizadores. A divergência costuma ser o próprio objeto do pedido.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
-  reviewStatus: 'DRAFT',
-  review: null,
+  reviewStatus: 'REVIEWED',
+  review: {
+    capacity: 'LAWYER',
+    name: 'Thais Regina Farrapo Moreira',
+    oab: null,
+    standing:
+      'Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.',
+    date: '2026-08-27',
+    reviewedVersion: 'entities-trabalhista-v1',
+    note: 'Leitura integral do caderno de revisão da faixa trabalhista, gerado da própria biblioteca em 2026-08-27. Aprovado sem ressalvas registradas. Não cobre a conferência um a um de números de artigo e súmula, que segue com as lentes automatizadas. Sem inscrição ativa, a atestação não libera acervo real — e é para não liberar.',
+  },
   inputSchema: ENTITIES_INPUT,
   outputSchema: ENTITIES_OUTPUT,
   examples: [

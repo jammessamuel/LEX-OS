@@ -62,8 +62,9 @@ hold are implemented.
 
 **No Delivery 17 is authorized.** ADR-016 closes the MVP and records the deliberate stops: upload
 is the only inbound channel, grounded retrieval stays at five sources until a measured evaluation,
-specialty prompts stay `DRAFT` until a named lawyer signs them, and the application never stores a
-password. External legal conditions from ADR-012 remain fail-closed and cannot be completed by
+specialty prompts carry Thais Regina Farrapo Moreira's 2026-08-27 attestation but stay blocked
+over real archives until a lawyer with an active bar registration signs, and the application
+never stores a password. External legal conditions from ADR-012 remain fail-closed and cannot be completed by
 engineering.
 
 Out of scope, and still requiring separate authorization: any real-archive case text leaving to

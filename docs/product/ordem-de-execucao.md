@@ -28,7 +28,7 @@ Estado verificado no código em 2026-08-28, não deduzido dos ADRs.
 | **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                       | Transferência, região única e responsável nomeado                                |
 | **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos    | —                                                                                |
 | **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código | Itens 4–7 adiados **por decisão**, não por esquecimento                          |
-| **015** | Biblioteca de prompts          | ✅ Itens 1, 3, 4, 5, 6, 7 · ✅ Item 2 (mecanismo)                     | 15 dos 20 prompts seguem `DRAFT` — falta quem assina                             |
+| **015** | Biblioteca de prompts          | ✅ Todos os itens · ✅ 20 de 20 `REVIEWED` (15 por Thais, 5 do dono)  | Acervo real segue recusado: a atestação de advogada não carrega inscrição ativa  |
 | **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                   | Condições externas permanecem falhando fechado                                   |
 
 **Leitura rápida:** a fila de engenharia do MVP fechou. O que sobra não é código disfarçado:
@@ -109,18 +109,19 @@ extração; disponibilização × publicação, certidão de fato negativo, óbi
 de juntadas entraram na cronologia. E saiu do bloco comum a exceção da verdade, que é peça
 criminal e ocupava a linha das inversões cíveis que aparecem toda semana.
 
-**A3. `REVIEWED` com nome, OAB e data** — ADR-015 item 2 · **MECANISMO FEITO 2026-08-26**
-Quinze dos vinte estão `DRAFT`; os cinco genéricos permanecem `REVIEWED` somente para descrever
-o comportamento determinístico do mock. Sem essa separação, promover seria trocar uma palavra.
-O registro existe e a guarda o usa. Toda atestação carrega quem assinou, em que qualidade —
-advogado ou dono —, com qual inscrição, em que data e **contra qual versão do texto**. Esse
-último campo é o que mais trabalha: alterar um prompt sobe a versão, a atestação deixa de casar,
-e o prompt volta sozinho a precisar de revisão. Uma assinatura não cobre um texto reescrito
-depois dela.
+**A3. `REVIEWED` com nome, OAB e data** — ADR-015 item 2 · **FEITO 2026-08-27, restaurado 2026-09-03**
+Os vinte estão `REVIEWED`. Toda atestação carrega quem assinou, em que qualidade — advogado ou
+dono —, com qual inscrição, em que data e **contra qual versão do texto**. Esse último campo é o
+que mais trabalha: alterar um prompt sobe a versão, a atestação deixa de casar, e o prompt volta
+sozinho a precisar de revisão. Uma assinatura não cobre um texto reescrito depois dela.
 
-Os cinco genéricos ficaram registrados pelo que são: aprovados pelo dono por descreverem o
-comportamento do mock, com `oab: null` e a situação declarada — o registro não finge inscrição
-que não existe. As quinze de especialidade continuam `DRAFT` porque falta o nome de quem assina.
+Os cinco genéricos são do dono, por descreverem o comportamento do mock. As quinze de
+especialidade foram lidas na íntegra por **Thais Regina Farrapo Moreira em 2026-08-27** —
+advogada com inscrição não ativa (Polícia Militar, art. 28, V, da Lei 8.906/94), com a situação
+declarada no registro em vez de inscrição fingida. Sem inscrição ativa, `reviewGapFor` continua
+recusando estas instruções sobre acervo real — a atestação registra quem leu; a liberação de
+acervo de cliente segue exigindo assinatura com inscrição ativa. A atestação original
+(`42bbf7b`) foi removida sem intenção na integração `1054272` e restaurada em 2026-09-03.
 
 **A4. Contrato de entrada do checklist** — ADR-015 item 3 · **FEITO 2026-08-26**
 A entrada é `{ documentTypeCode, items: [{ id, documentTypeCode }] }`. Não vai o enunciado da

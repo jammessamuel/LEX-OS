@@ -1,6 +1,6 @@
 # Revisão jurídica — direito civil e processo civil
 
-> **Este documento foi gerado a partir do código em 2026-08-27.**
+> **Este documento foi gerado a partir do código em 2026-09-03.**
 > Não o edite: as correções voltam como anotação, e quem altera o texto é quem mexe na
 > biblioteca. Regenerar com `node infra/scripts/gera-revisao-juridica.mjs`.
 
@@ -14,9 +14,9 @@ Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em po
 modelo junto com o documento. As cinco instruções de direito civil e processo civil estão abaixo, na íntegra e
 exatamente como o sistema as usa — **8.213 palavras**.
 
-**Revisadas por Thais Regina Farrapo Moreira em 2026-08-27**, **sem número de inscrição registrado** — Advogada. Atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94), então a inscrição não está ativa. Número não informado..
+**Revisadas por Thais Regina Farrapo Moreira em 2026-08-27**, **sem número de inscrição registrado** — Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado..
 
-Leitura integral do caderno de revisão desta faixa, gerado a partir da própria biblioteca. Aprovado sem ressalvas registradas. Não cobre a conferência de número de artigo e súmula um a um, que continua sendo trabalho das lentes automatizadas.
+Leitura integral do caderno de revisão da faixa cível, gerado da própria biblioteca em 2026-08-27. Aprovado sem ressalvas registradas. Não cobre a conferência um a um de números de artigo e súmula, que segue com as lentes automatizadas. Sem inscrição ativa, a atestação não libera acervo real — e é para não liberar.
 
 As instruções também passaram por três revisões adversariais automatizadas, que acharam erros
 graves antes desta leitura — inclusive três citações legais **fabricadas** numa das faixas.
