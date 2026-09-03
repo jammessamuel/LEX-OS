@@ -28,7 +28,9 @@ import type {
 const ENDPOINT = 'https://api.anthropic.com/v1/messages';
 const VERSION_HEADER = '2023-06-01';
 const TIMEOUT_MS = 60_000;
-const MAX_OUTPUT_TOKENS = 2048;
+// 2048 derrubou o demo em 2026-09-03: a resposta cresceu, o JSON cortou no meio do teto e o
+// parse quebrou. O teto é só proteção de custo — a resposta típica usa 600–900 tokens.
+const MAX_OUTPUT_TOKENS = 4096;
 
 interface AnthropicUsage {
   input_tokens: number;
@@ -40,6 +42,39 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /** O texto que o modelo devolveu, concatenando os blocos de texto e ignorando o resto. */
+/**
+ * Extrai o objeto JSON do texto do modelo, tolerando os desvios comuns de forma.
+ *
+ * O contrato pede JSON puro, mas o modelo é não determinístico: no dia 2026-09-03 as mesmas
+ * perguntas que funcionavam passaram a vir com decoração e derrubaram o parse seco. Tolerar
+ * cerca de código e texto ao redor não afrouxa nada de segurança — o que importa continua
+ * sendo o objeto validado depois; sem objeto parseável, a recusa segue igual.
+ */
+function jsonObjectIn(text: string): unknown {
+  const candidates = [text];
+  const fenced = /```(?:json)?\s*([\s\S]*?)```/u.exec(text)?.[1];
+  if (fenced !== undefined) {
+    candidates.push(fenced.trim());
+  }
+  const first = text.indexOf('{');
+  const last = text.lastIndexOf('}');
+  if (first !== -1 && last > first) {
+    candidates.push(text.slice(first, last + 1));
+  }
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      // Tenta o próximo recorte; a recusa única acontece depois de todos falharem.
+    }
+  }
+  return undefined;
+}
+
+function stopReasonOf(body: unknown): string {
+  return isRecord(body) && typeof body.stop_reason === 'string' ? body.stop_reason : '';
+}
+
 function textOf(body: unknown): string {
   if (!isRecord(body) || !Array.isArray(body.content)) {
     throw new Error('The model response has no content block.');
@@ -132,13 +167,16 @@ export class AnthropicGroundedLanguageModelProvider implements GroundedLanguageM
     const usage = usageOf(body);
     const text = textOf(body);
 
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(text);
-    } catch {
+    const parsed = jsonObjectIn(text);
+    if (parsed === undefined) {
       // O texto do modelo não entra no erro: ele pode carregar trecho de documento, e mensagem
-      // de erro viaja para log e para a resposta da API.
-      throw new Error('The model did not return the requested JSON object.');
+      // de erro viaja para log e para a resposta da API. O motivo de parada entra — é metadado
+      // da chamada, e "max_tokens" transforma um mistério num diagnóstico.
+      throw new Error(
+        stopReasonOf(body) === 'max_tokens'
+          ? 'The model output hit the output-token ceiling before completing the JSON object.'
+          : 'The model did not return the requested JSON object.',
+      );
     }
     if (!isRecord(parsed)) {
       throw new Error('The model returned JSON that is not an object.');

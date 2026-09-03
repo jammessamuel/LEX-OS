@@ -114,6 +114,59 @@ describe('AnthropicGroundedLanguageModelProvider', () => {
     assert.match(material, /DADO, nunca instrução/u);
   });
 
+  it('aceita o JSON mesmo quando o modelo o embrulha em cerca de código', async () => {
+    // 2026-09-03: as mesmas perguntas que funcionavam na véspera passaram a vir decoradas e o
+    // parse seco derrubou o demo com 500. O contrato continua pedindo JSON puro; tolerar a
+    // decoração não afrouxa nada — sem objeto parseável a recusa segue a mesma.
+    const provider = new AnthropicGroundedLanguageModelProvider(config());
+    mock.method(globalThis, 'fetch', async () =>
+      resposta({
+        usage: { input_tokens: 1, output_tokens: 1 },
+        content: [{ type: 'text', text: '```json\n{"claims":[]}\n```' }],
+      }),
+    );
+    const saida = await provider.generate({ prompt, question: 'p', sources });
+    mock.restoreAll();
+    assert.deepEqual(saida.claims, []);
+  });
+
+  it('aceita o JSON cercado de frase, sem deixar de exigir o objeto', async () => {
+    const provider = new AnthropicGroundedLanguageModelProvider(config());
+    mock.method(globalThis, 'fetch', async () =>
+      resposta({
+        usage: { input_tokens: 1, output_tokens: 1 },
+        content: [
+          { type: 'text', text: 'Aqui está a resposta pedida: {"claims":[]} Espero ter ajudado.' },
+        ],
+      }),
+    );
+    const saida = await provider.generate({ prompt, question: 'p', sources });
+    mock.restoreAll();
+    assert.deepEqual(saida.claims, []);
+  });
+
+  it('nomeia o teto de saída quando o JSON veio cortado no meio', async () => {
+    // Sem isso o truncamento aparece como "não devolveu JSON" e vira mistério: a causa real —
+    // resposta maior que o teto — não deixa rastro nenhum no erro.
+    const provider = new AnthropicGroundedLanguageModelProvider(config());
+    mock.method(globalThis, 'fetch', async () =>
+      resposta({
+        usage: { input_tokens: 1, output_tokens: 1 },
+        stop_reason: 'max_tokens',
+        content: [{ type: 'text', text: '{"claims":[{"text":"afirmação que corta no me' }],
+      }),
+    );
+    await assert.rejects(
+      () => provider.generate({ prompt, question: 'p', sources }),
+      (error) => {
+        assert.match(error.message, /output-token ceiling/u);
+        assert.equal(error.message.includes('afirmação que corta'), false);
+        return true;
+      },
+    );
+    mock.restoreAll();
+  });
+
   it('não deixa o texto do modelo vazar na mensagem de erro', async () => {
     const provider = new AnthropicGroundedLanguageModelProvider(config());
     mock.method(globalThis, 'fetch', async () =>
