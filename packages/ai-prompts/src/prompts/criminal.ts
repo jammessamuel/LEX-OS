@@ -4,6 +4,7 @@ import {
   CALIBRAGEM_CRONOLOGIA,
   CINCO_ESTADOS,
   CRONOLOGIA_PODE_SER_VAZIA,
+  DATA_DE_REFERENCIA_DO_CHECKLIST,
   ENUNCIADO_MANDA,
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
@@ -108,7 +109,7 @@ da verdade a polaridade inverte. Extraia o papel da peça concreta.`;
 
 export const timelineCriminalV1 = {
   identifier: 'lex-os.timeline.criminal',
-  version: 'timeline-criminal-v1',
+  version: 'timeline-criminal-v2',
   purpose: 'Extract dated criminal-case facts with verifiable provenance.',
   specialty: 'CRIMINAL',
   task: 'TIMELINE',
@@ -199,7 +200,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const checklistCriminalV1 = {
   identifier: 'lex-os.checklist.criminal',
-  version: 'checklist-criminal-v1',
+  version: 'checklist-criminal-v2',
   purpose: 'Match received documents against criminal-case documentary requirements.',
   specialty: 'CRIMINAL',
   task: 'CHECKLIST',
@@ -223,6 +224,8 @@ ${ENUNCIADO_MANDA}
 ${TEXTO_PODE_VIR_CORTADO}
 
 ${SEM_DATA_DE_HOJE}
+
+${DATA_DE_REFERENCIA_DO_CHECKLIST}
 
 ${CINCO_ESTADOS}
 

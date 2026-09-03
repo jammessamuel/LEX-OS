@@ -108,6 +108,14 @@ export interface ChecklistAnalysisProvider {
   analyze(input: {
     documentTypeCode: string | null;
     sourceText: SourceText | null;
+    /**
+     * O dia contra o qual a validade se afere, no formato ISO de data.
+     *
+     * O modelo não sabe que dia é hoje, e o prompt proíbe supor. Sem este campo o estado
+     * VENCIDO era inalcançável por construção: existia no enum e nenhum caminho honesto
+     * chegava nele. Quem sabe a data é este processo, no instante da análise.
+     */
+    referenceDate: string;
     items: readonly ChecklistRequirement[];
     prompt: PromptSpecification;
   }): ChecklistAnalysisOutputV1;
@@ -337,6 +345,9 @@ export class MockReviewProcessingProvider implements TimelineProvider, Checklist
   analyze(input: {
     documentTypeCode: string | null;
     sourceText: SourceText | null;
+    // O mock é determinístico e não julga validade, então não usa a data — mas a recebe, para
+    // que a porta seja a mesma dos dois lados e um provedor real não precise de outra.
+    referenceDate: string;
     items: readonly ChecklistRequirement[];
     prompt: PromptSpecification;
   }): ChecklistAnalysisOutputV1 {

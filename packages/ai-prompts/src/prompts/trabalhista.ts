@@ -4,6 +4,7 @@ import {
   CALIBRAGEM_CRONOLOGIA,
   CINCO_ESTADOS,
   CRONOLOGIA_PODE_SER_VAZIA,
+  DATA_DE_REFERENCIA_DO_CHECKLIST,
   ENUNCIADO_MANDA,
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
@@ -77,7 +78,7 @@ de cada fato e sinaliza quando o período discutido cruzar 11/11/2017.`;
 
 export const timelineTrabalhistaV1 = {
   identifier: 'lex-os.timeline.trabalhista',
-  version: 'timeline-trabalhista-v1',
+  version: 'timeline-trabalhista-v2',
   purpose: 'Extract dated labour-law facts with the provenance a lawyer can re-check.',
   specialty: 'TRABALHISTA',
   task: 'TIMELINE',
@@ -173,7 +174,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
 
 export const checklistTrabalhistaV1 = {
   identifier: 'lex-os.checklist.trabalhista',
-  version: 'checklist-trabalhista-v1',
+  version: 'checklist-trabalhista-v2',
   purpose: 'Match received documents against labour-case documentary requirements.',
   specialty: 'TRABALHISTA',
   task: 'CHECKLIST',
@@ -218,6 +219,8 @@ lacuna. Encerrada a vigência, a cláusula não adere ao contrato.
 ${ENUNCIADO_MANDA}
 
 ${TEXTO_PODE_VIR_CORTADO}
+
+${DATA_DE_REFERENCIA_DO_CHECKLIST}
 
 ${CINCO_ESTADOS}
 

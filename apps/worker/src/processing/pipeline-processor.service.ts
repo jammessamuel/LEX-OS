@@ -315,6 +315,9 @@ export class PipelineProcessorService {
         const result = this.checklistAnalysisProvider.analyze({
           documentTypeCode: job.document.documentType?.code ?? null,
           sourceText: checklistText === null ? null : sourceTextFrom(checklistText),
+          // Só a parte da data: o prompt afere validade por dia, e a hora do processamento não
+          // é fato do caso. `toISOString` fixa UTC, que é o fuso de todo carimbo do sistema.
+          referenceDate: new Date().toISOString().slice(0, 10),
           items: template.items,
           prompt: this.#promptFor('CHECKLIST', job),
         });

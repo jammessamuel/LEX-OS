@@ -127,7 +127,18 @@ describe('biblioteca de prompts', () => {
       assert.ok(['LAWYER', 'OWNER'].includes(r.capacity), prompt.identifier);
       assert.ok(r.name.length > 3, prompt.identifier);
       assert.match(r.date, /^\d{4}-\d{2}-\d{2}$/u, prompt.identifier);
-      assert.equal(r.reviewedVersion, prompt.version, `${prompt.identifier}: revisão envelhecida.`);
+      // Revisão envelhecida não é defeito: é o mecanismo funcionando. Alterar o texto sobe a
+      // versão, e a atestação, que continua nomeando o que foi lido, deixa de casar. O que não
+      // se admite é ela envelhecer sem consequência — se a versão diverge, a lacuna tem de
+      // aparecer e barrar o acervo real.
+      assert.ok(r.reviewedVersion.length > 0, `${prompt.identifier}: atestação sem versão.`);
+      if (r.reviewedVersion !== prompt.version) {
+        assert.match(
+          library.reviewGapFor(prompt),
+          /attestation covers version/u,
+          `${prompt.identifier}: revisão envelhecida sem consequência.`,
+        );
+      }
       assert.ok(r.note.length > 20, `${prompt.identifier}: atestação sem escopo declarado.`);
       // Inscrição ausente exige dizer por quê, para o registro não fingir o que não há.
       if (r.oab === null) {
@@ -194,8 +205,15 @@ describe('biblioteca de prompts', () => {
       assert.equal(prompt.review?.name, 'Thais Regina Farrapo Moreira', prompt.identifier);
       assert.equal(prompt.review?.capacity, 'LAWYER', prompt.identifier);
       assert.equal(prompt.review?.oab, null, prompt.identifier);
-      assert.equal(prompt.review?.reviewedVersion, prompt.version, prompt.identifier);
-      assert.match(library.reviewGapFor(prompt), /bar registration/u, prompt.identifier);
+      // A atestação nomeia a versão que foi lida; quando o texto muda depois dela, as duas
+      // deixam de casar e é isso que faz a revisão envelhecer sozinha em vez de em silêncio.
+      // As duas lacunas recusam acervo real, e o diagnóstico diz qual delas é.
+      const lacuna = library.reviewGapFor(prompt);
+      if (prompt.review?.reviewedVersion === prompt.version) {
+        assert.match(lacuna, /bar registration/u, prompt.identifier);
+      } else {
+        assert.match(lacuna, /attestation covers version/u, prompt.identifier);
+      }
       assert.throws(
         () => library.assertUsableIn(prompt, 'real'),
         library.UnreviewedPromptError,
@@ -226,6 +244,39 @@ describe('biblioteca de prompts', () => {
         prompt.identifier,
       );
     }
+  });
+
+  it('atestação que não cobre a versão vigente recusa, e diz que é a versão', () => {
+    // Em 2026-09-03 eu mudei quatro templates de cronologia sem subir a versão. O texto passou a
+    // ser outro, a versão continuou a mesma, e a assinatura de 2026-08-27 nominalmente cobria
+    // texto que ninguém leu — duas extrações com procedências diferentes carimbadas igual. O
+    // mecanismo já existia e não tinha teste; este é o teste. Ele não olha o estado atual da
+    // biblioteca: constrói o caso, para continuar valendo quando tudo estiver casado de novo.
+    const lido = {
+      identifier: 'lex-os.teste.sintetico',
+      version: 'sintetico-v2',
+      specialty: 'TESTE',
+      task: 'TIMELINE',
+      template: 'texto fictício reescrito depois da leitura',
+      reviewStatus: 'REVIEWED',
+      review: {
+        capacity: 'LAWYER',
+        name: 'Revisora Fictícia',
+        oab: 'OAB/SP 000000',
+        standing: null,
+        date: '2026-01-01',
+        reviewedVersion: 'sintetico-v1',
+        note: 'Leitura fictícia para o teste do mecanismo de versão.',
+      },
+    };
+    assert.match(library.reviewGapFor(lido), /covers version sintetico-v1, not sintetico-v2/u);
+    assert.throws(() => library.assertUsableIn(lido, 'real'), library.UnreviewedPromptError);
+
+    // A mesma atestação, casando a versão e com inscrição ativa, libera — senão o teste acima
+    // passaria por qualquer motivo e não provaria que é a versão que está barrando.
+    const casado = { ...lido, review: { ...lido.review, reviewedVersion: 'sintetico-v2' } };
+    assert.equal(library.reviewGapFor(casado), null);
+    assert.doesNotThrow(() => library.assertUsableIn(casado, 'real'));
   });
 
   it('nenhum prompt de especialidade alcança acervo real, seja qual for a faixa', () => {

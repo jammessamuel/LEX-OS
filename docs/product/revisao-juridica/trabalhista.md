@@ -12,14 +12,16 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito e processo do trabalho estão abaixo, na íntegra e
-exatamente como o sistema as usa — **6.243 palavras**.
+exatamente como o sistema as usa — **6.476 palavras**.
 
-**Revisadas por Thais Regina Farrapo Moreira em 2026-08-27**, **sem número de inscrição registrado** — Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado..
+**Revisadas por Thais Regina Farrapo Moreira em 2026-08-27**, **sem número de inscrição registrado** — Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.
 
 Leitura integral do caderno de revisão da faixa trabalhista, gerado da própria biblioteca em 2026-08-27. Aprovado sem ressalvas registradas. Não cobre a conferência um a um de números de artigo e súmula, que segue com as lentes automatizadas. Sem inscrição ativa, a atestação não libera acervo real — e é para não liberar.
 
-As instruções também passaram por três revisões adversariais automatizadas, que acharam erros
-graves antes desta leitura — inclusive três citações legais **fabricadas** numa das faixas.
+Antes desta leitura, as instruções também passaram por revisão automatizada.
+Foram três revisões adversariais automatizadas, que acharam erros
+graves — inclusive três citações legais **fabricadas** numa delas, corrigidas antes desta
+versão.
 
 Enquanto a atestação não carregar inscrição ativa, o sistema continua recusando estas instruções
 sobre acervo de cliente e as libera apenas sobre material fictício. Isso é intencional: a marca
@@ -133,7 +135,7 @@ laudo pericial; ata de audiência, termo de acordo e sentença homologatória; c
 procuração e substabelecimento; holerite e recibo de férias; CCT e ACT. Procure o traço que
 separa o documento do vizinho — quem emite, quem assina, que campos são obrigatórios.
 
-Escolha somente entre os códigos que vierem na entrada. Não invente código, não devolva mais de
+**[COMUM]** Escolha somente entre os códigos que vierem na entrada. Não invente código, não devolva mais de
 um, não devolva variação de grafia.
 
 **[COMUM]** Confiança mede a legibilidade e o rótulo do campo lido, não a
@@ -289,7 +291,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Montar a cronologia do caso
 
-`timeline-trabalhista-v1` · identificador `lex-os.timeline.trabalhista`
+`timeline-trabalhista-v2` · identificador `lex-os.timeline.trabalhista`
 
 ### A instrução
 
@@ -433,6 +435,17 @@ identificador da peça e página impressa dela —, registre os dois junto com a
 Autos eletrônicos vêm como PDF único e são reexportados a cada juntada: página de arquivo
 isolada deixa de resolver em duas semanas.
 
+**[COMUM]** DOCUMENTO SEM FATO DATADO É RESPOSTA, NÃO FALHA.
+Procuração, comprovante de endereço, cópia de identidade e página em branco costumam não trazer
+nenhum fato com data. Devolva ANALYZED com a lista de eventos vazia. Não force um evento a
+partir da data de emissão, do carimbo do sistema ou do rodapé só para não devolver nada:
+inventar um marco processual é pior que não achar nenhum.
+
+**[COMUM]** Quando a página não puder ser lida — imagem ilegível, texto ausente, digitalização cortada —,
+devolva UNREADABLE com a lista vazia, e nada mais. UNREADABLE com evento é contradição: quem não
+conseguiu ler não tem o que registrar. Se leu parte e não leu o resto, o desfecho é ANALYZED com
+o que você efetivamente leu.
+
 **[COMUM]** Todo evento nasce NÃO CONFIRMADO para revisão humana. Sem localizador, é descartado.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.
@@ -455,7 +468,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Conferir as exigências documentais
 
-`checklist-trabalhista-v1` · identificador `lex-os.checklist.trabalhista`
+`checklist-trabalhista-v2` · identificador `lex-os.checklist.trabalhista`
 
 ### A instrução
 
@@ -569,6 +582,15 @@ estar na parte que faltou, diga isso em vez de concluir: o documento inteiro exi
 não o viu. Silenciar sobre o corte transforma "não encontrei" em "não há", e as duas coisas
 levam a decisões opostas.
 
+**[COMUM]** A ENTRADA TRAZ A DATA DE REFERÊNCIA, e é
+contra ela — nunca contra uma data que você suponha — que se afere validade. Documento com prazo
+de validade impresso já vencido nessa data é VENCIDO, e é assim que se diz ao escritório que o
+documento chegou e precisa ser renovado, não que ele nunca chegou. Documento sem data legível,
+ou exigência cuja validade não se afere por data, continua fora desse juízo: aí valem os outros
+estados. Não calcule prazo processual a partir dela — a data de referência serve para validade
+de documento, não para contagem de prazo, que depende de dias úteis e suspensões que você
+desconhece.
+
 **[COMUM]** CINCO ESTADOS, E A DIFERENÇA ENTRE ELES É O PEDIDO QUE O
 ESCRITÓRIO VAI FAZER. Não atendido é o item para o qual nenhum documento apareceu — e chega ao
 advogado como "não recebemos". Aguardando validação é o documento que corresponde à exigência e
@@ -587,9 +609,9 @@ seus. Na dúvida entre dois estados, escolha o que descreve o que você viu, nã
 Sua saída é PROPOSTA. Uma pessoa revisa antes de valer, e o sistema recusa proposta que
 sobrescreva item já revisado por humano.
 
-Deixar de marcar custa uma conferência; marcar errado custa o prazo.
+**[COMUM]** Deixar de marcar custa uma conferência; marcar errado custa o prazo.
 
-Devolva cada item recebido exatamente uma vez, com o identificador que veio na entrada.
+**[COMUM]** Devolva cada item recebido exatamente uma vez, com o identificador que veio na entrada.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.
 
@@ -688,7 +710,7 @@ aplicável a cada trecho do contrato e do critério de correção e juros vigent
 mudou mais de uma vez desde 2020 e que não se lê do documento — errar por
 pouco num número que o advogado leva à audiência é pior do que não responder.
 
-Não emita parecer, não recomende conduta processual e não afirme desfecho. Quem lê é advogado, e
+**[COMUM]** Não emita parecer, não recomende conduta processual e não afirme desfecho. Quem lê é advogado, e
 isto é insumo do trabalho dele.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.

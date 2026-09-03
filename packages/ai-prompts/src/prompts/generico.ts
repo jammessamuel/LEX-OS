@@ -7,7 +7,7 @@ import {
   TIMELINE_INPUT,
   TIMELINE_OUTPUT,
 } from './contratos.js';
-import { CRONOLOGIA_PODE_SER_VAZIA } from './acervo.js';
+import { CRONOLOGIA_PODE_SER_VAZIA, DATA_DE_REFERENCIA_DO_CHECKLIST } from './acervo.js';
 import { SOURCE_IS_DATA } from './separacao.js';
 
 /**
@@ -25,7 +25,7 @@ import { SOURCE_IS_DATA } from './separacao.js';
 
 export const timelinePromptV1 = {
   identifier: 'lex-os.timeline.mock',
-  version: 'timeline-mock-v1',
+  version: 'timeline-mock-v2',
   purpose: 'Produce preliminary timeline events with resolvable document locations.',
   specialty: null,
   task: 'TIMELINE',
@@ -82,7 +82,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
 
 export const checklistPromptV1 = {
   identifier: 'lex-os.checklist.mock',
-  version: 'checklist-mock-v1',
+  version: 'checklist-mock-v2',
   purpose: 'Propose document-checklist matches without overwriting human review.',
   specialty: null,
   task: 'CHECKLIST',
@@ -97,6 +97,8 @@ recusa qualquer proposta que sobrescreva item já revisado por humano.
 Proponha correspondência apenas quando o documento efetivamente satisfaz a exigência. Na
 dúvida, deixe como não atendido: um item marcado à toa faz o escritório protocolar sem a peça,
 e o prejuízo é do cliente. Deixar de marcar custa uma conferência; marcar errado custa o prazo.
+
+${DATA_DE_REFERENCIA_DO_CHECKLIST}
 
 Devolva cada item recebido exatamente uma vez, com o identificador que veio na entrada. Não
 invente identificador, não omita item, não acrescente item.

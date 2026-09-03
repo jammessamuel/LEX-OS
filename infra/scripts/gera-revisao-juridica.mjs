@@ -24,6 +24,8 @@ const AREAS = [
   ['TRABALHISTA', 'direito e processo do trabalho'],
   ['CIVEL', 'direito civil e processo civil'],
   ['CRIMINAL', 'direito penal e processo penal'],
+  ['PREVIDENCIARIO', 'direito previdenciário'],
+  ['TRIBUTARIO', 'direito tributário'],
 ];
 
 const TAREFAS = new Map([
@@ -71,27 +73,65 @@ const compartilhados = paragrafosCompartilhados();
 const destino = `${raiz}docs/product/revisao-juridica`;
 mkdirSync(destino, { recursive: true });
 
+/**
+ * O histórico de revisão automatizada, por faixa.
+ *
+ * Este parágrafo era um texto só para todas, e passou a mentir quando as faixas de 2026-09-03
+ * entraram: dizia "três revisões adversariais" e mencionava as três citações fabricadas, que são
+ * o achado de OUTRA faixa. Num caderno que vai a advogado para assinar, descrever a revisão que
+ * o texto não teve é o defeito mais caro possível — quem assina calibra a própria leitura pelo
+ * que já foi conferido antes dela.
+ */
+const REVISAO_AUTOMATIZADA = new Map([
+  [
+    'PREVIDENCIARIO',
+    `Passaram por **uma** revisão adversarial automatizada, em 2026-09-03, dedicada a caçar
+citação legal inventada, erro de direito e trecho que empurre o modelo a concluir o que o
+documento não sustenta. Ela **não encontrou citação fabricada** — o arquivo cita um único
+dispositivo, a Emenda Constitucional 103 —, e encontrou seis erros de conteúdo, todos corrigidos
+antes desta versão. Onde havia dúvida sobre um número, a regra foi descrita pelo conteúdo e o
+número, omitido: prazos, fatores de conversão e critérios de renda não aparecem numerados de
+propósito.`,
+  ],
+  [
+    'TRIBUTARIO',
+    `Passaram por **uma** revisão adversarial automatizada, em 2026-09-03, dedicada a caçar
+citação legal inventada, erro de direito e trecho que empurre o modelo a concluir o que o
+documento não sustenta. Ela **não encontrou citação fabricada**: os treze dispositivos citados
+foram conferidos um a um, e duas descrições erradas ao lado de números certos foram corrigidas.
+Encontrou ainda oito erros de conteúdo, todos corrigidos antes desta versão. Nenhuma súmula,
+tema repetitivo ou verbete administrativo é citado — onde havia dúvida, a regra foi descrita
+pelo conteúdo, sem número.`,
+  ],
+]);
+
+const REVISAO_PADRAO = `Passaram por três revisões adversariais automatizadas, que acharam erros
+graves — inclusive três citações legais **fabricadas** numa delas, corrigidas antes desta
+versão.`;
+
 /** O estado da revisão desta faixa, lido das atestações e não de memória. */
-function estadoDaRevisao(prompts) {
+function estadoDaRevisao(prompts, area) {
   const atestacoes = prompts.map((p) => p.review).filter((r) => r !== null);
   if (atestacoes.length === 0) {
-    return `Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada
-e passaram por três revisões adversariais, também automatizadas, que acharam erros graves —
-inclusive três citações legais **fabricadas** numa das faixas. É por isso que este caderno existe:
-enquanto ninguém assinar, estas instruções só rodam sobre material fictício, e o sistema recusa
-usá-las sobre acervo de cliente.`;
+    return `Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
+
+${REVISAO_AUTOMATIZADA.get(area) ?? REVISAO_PADRAO}
+
+É por isso que este caderno existe: enquanto ninguém assinar, estas instruções só rodam sobre
+material fictício, e o sistema recusa usá-las sobre acervo de cliente.`;
   }
   const r = atestacoes[0];
   const inscricao =
     r.oab === null
       ? `**sem número de inscrição registrado** — ${r.standing ?? 'situação não declarada'}`
       : `inscrição ${r.oab}`;
-  return `**Revisadas por ${r.name} em ${r.date}**, ${inscricao}.
+  // A situação da inscrição já vem pontuada da atestação; acrescentar ponto produzia "..".
+  return `**Revisadas por ${r.name} em ${r.date}**, ${inscricao.replace(/\.$/u, '')}.
 
 ${r.note}
 
-As instruções também passaram por três revisões adversariais automatizadas, que acharam erros
-graves antes desta leitura — inclusive três citações legais **fabricadas** numa das faixas.
+Antes desta leitura, as instruções também passaram por revisão automatizada.
+${(REVISAO_AUTOMATIZADA.get(area) ?? REVISAO_PADRAO).replace(/^Passaram por/u, 'Foram')}
 
 Enquanto a atestação não carregar inscrição ativa, o sistema continua recusando estas instruções
 sobre acervo de cliente e as libera apenas sobre material fictício. Isso é intencional: a marca
@@ -214,7 +254,7 @@ ${contratoLegivel(prompt.outputSchema)}
   const arquivo = `${destino}/${area.toLowerCase()}.md`;
   writeFileSync(
     arquivo,
-    `${ABERTURA(area, materia, palavras.toLocaleString('pt-BR'), estadoDaRevisao(prompts))}${secoes.join('\n---\n\n')}${ENCERRAMENTO(materia)}`,
+    `${ABERTURA(area, materia, palavras.toLocaleString('pt-BR'), estadoDaRevisao(prompts, area))}${secoes.join('\n---\n\n')}${ENCERRAMENTO(materia)}`,
     'utf8',
   );
   process.stdout.write(`${arquivo} · ${prompts.length} tarefas · ${palavras} palavras

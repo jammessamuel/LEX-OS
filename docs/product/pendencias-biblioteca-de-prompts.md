@@ -41,9 +41,10 @@ Corrigir os exemplos não invalidou a atestação de Thais: o caderno de revisã
   `originalValue`; rubrica, competência e peça de origem não têm campo. "R$ 148.320,55" sozinho
   não identifica nada num processo tributário, e o prompt pede quatro atributos que a saída não
   comporta.
-- **`EXPIRED` é inalcançável por construção.** `CHECKLIST_INPUT` é `additionalProperties: false`
-  e não tem data de referência; `SEM_DATA_DE_HOJE` proíbe — com razão — julgar vigência sem ela.
-  O estado existe no enum e nenhum caminho honesto chega nele.
+- ~~**`EXPIRED` é inalcançável por construção.**~~ **Fechado em 2026-09-03.** A entrada do
+  checklist ganhou `referenceDate`, informada pelo worker no instante da análise, e um bloco
+  novo diz ao modelo que a data está ali e serve para validade de documento — não para contar
+  prazo processual, que depende de dias úteis e suspensões que ele desconhece.
 - **O grounded pede página e a entrada não traz página.** `GROUNDED_INPUT.sources` carrega
   `chunkId` e `content`. Herdado do trabalhista.
 - **Arquivo composto não tem onde ser registrado.** `CLASSIFICATION_OUTPUT` é `code` e
@@ -55,6 +56,26 @@ Corrigir os exemplos não invalidou a atestação de Thais: o caderno de revisã
 **Nenhuma das seis faixas alcança acervo real.** As três lidas por Thais são recusadas por
 falta de inscrição ativa; as duas novas, por serem rascunho. Três testes em
 `packages/ai-prompts/test/prompt-library.test.cjs` prendem as duas metades e a soma delas.
+
+### Oito prompts precisam de nova leitura, e é o mecanismo funcionando
+
+Ao fechar o P1.7 eu alterei quatro templates de cronologia **sem subir a versão**. O texto passou
+a ser outro, a versão continuou a mesma, e a assinatura de 2026-08-27 nominalmente cobria texto
+que ninguém leu — duas procedências diferentes carimbadas igual, num sistema cuja promessa é
+justamente a procedência. Foi defeito meu, e o mecanismo que deveria acusá-lo existia sem teste.
+
+Corrigido: as versões subiram para `v2` nos oito templates alterados depois de atestados — as
+cronologias e os checklists de genérico, trabalhista, cível e criminal. As atestações **não**
+foram tocadas: continuam nomeando a `v1`, que é o que foi lido. Com isso `reviewGapFor` passa a
+dizer "a atestação cobre a versão X, não a Y", e os oito voltam sozinhos a precisar de revisão.
+
+Previdenciário e tributário seguem em `v1`: nunca produziram extração nenhuma e não têm
+atestação, então não há procedência nem assinatura a proteger.
+
+Efeito prático: **12 prompts com atestação casando a versão, 8 com atestação envelhecida, 10 em
+rascunho.** Nenhum deles alcançava acervo real antes e nenhum alcança agora — o que mudou é que
+o registro parou de afirmar cobertura que não tinha. Para os oito, a nova leitura é barata: o
+caderno é gerado do próprio código, e o que mudou é um bloco em cada.
 
 ---
 

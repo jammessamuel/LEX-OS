@@ -4,6 +4,7 @@ import {
   CALIBRAGEM_CRONOLOGIA,
   CINCO_ESTADOS,
   CRONOLOGIA_PODE_SER_VAZIA,
+  DATA_DE_REFERENCIA_DO_CHECKLIST,
   ENUNCIADO_MANDA,
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
@@ -95,7 +96,7 @@ concreta, não do hábito — e se a peça não tiver polos, não invente polos.
 
 export const timelineCivelV1 = {
   identifier: 'lex-os.timeline.civel',
-  version: 'timeline-civel-v1',
+  version: 'timeline-civel-v2',
   purpose: 'Extract dated civil-case facts with verifiable provenance.',
   specialty: 'CIVEL',
   task: 'TIMELINE',
@@ -192,7 +193,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const checklistCivelV1 = {
   identifier: 'lex-os.checklist.civel',
-  version: 'checklist-civel-v1',
+  version: 'checklist-civel-v2',
   purpose: 'Match received documents against civil-case documentary requirements.',
   specialty: 'CIVEL',
   task: 'CHECKLIST',
@@ -262,6 +263,8 @@ ${ENUNCIADO_MANDA}
 ${TEXTO_PODE_VIR_CORTADO}
 
 ${SEM_DATA_DE_HOJE}
+
+${DATA_DE_REFERENCIA_DO_CHECKLIST}
 
 ${CINCO_ESTADOS}
 

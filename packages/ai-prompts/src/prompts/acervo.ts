@@ -89,6 +89,24 @@ legível no documento, a exigência está pendente de informação: não a dê p
 vencida por estimativa, e nunca suponha a data corrente. Chutar hoje é a alucinação mais
 silenciosa que existe, porque o resultado parece razoável.`;
 
+/**
+ * A contrapartida do bloco acima, para a tarefa que passou a receber a data.
+ *
+ * Enquanto a entrada do checklist não trazia data de referência, o estado VENCIDO existia no
+ * enum de saída e nenhum caminho honesto chegava nele: o prompt mandava conferir prazo de
+ * validade e proibia — com razão — supor o dia corrente. A entrada ganhou `referenceDate`, e a
+ * instrução precisa dizer que ela existe; senão a proibição continua valendo sobre um dado que
+ * agora está ali, e o estado segue morto por obediência.
+ */
+export const DATA_DE_REFERENCIA_DO_CHECKLIST = `A ENTRADA TRAZ A DATA DE REFERÊNCIA, e é
+contra ela — nunca contra uma data que você suponha — que se afere validade. Documento com prazo
+de validade impresso já vencido nessa data é VENCIDO, e é assim que se diz ao escritório que o
+documento chegou e precisa ser renovado, não que ele nunca chegou. Documento sem data legível,
+ou exigência cuja validade não se afere por data, continua fora desse juízo: aí valem os outros
+estados. Não calcule prazo processual a partir dela — a data de referência serve para validade
+de documento, não para contagem de prazo, que depende de dias úteis e suspensões que você
+desconhece.`;
+
 export const CALIBRAGEM_CRONOLOGIA = `IMPORTÂNCIA É CONSEQUÊNCIA PROCESSUAL, NÃO INTERESSE
 DO FATO. Alta para o que abre ou fecha prazo, decide pedido, altera valor ou muda a fase do
 processo. Baixa para o que só compõe contexto. Um fato comovente que não produz efeito nenhum é

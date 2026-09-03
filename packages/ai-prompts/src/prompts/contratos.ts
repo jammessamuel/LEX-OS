@@ -103,10 +103,19 @@ export const TIMELINE_OUTPUT = {
 export const CHECKLIST_INPUT = {
   type: 'object',
   additionalProperties: false,
-  required: ['documentTypeCode', 'sourceText', 'items'],
+  required: ['documentTypeCode', 'sourceText', 'referenceDate', 'items'],
   properties: {
     documentTypeCode: { type: ['string', 'null'] },
     sourceText: { oneOf: [SOURCE_TEXT, { type: 'null' }] },
+    /**
+     * O dia contra o qual a validade é aferida.
+     *
+     * O estado VENCIDO existia no enum de saída e era inalcançável: `SEM_DATA_DE_HOJE` proíbe
+     * — com razão — julgar vigência sem data de referência, e a entrada não trazia nenhuma. O
+     * prompt mandava conferir prazo de validade e o modelo só podia obedecer chutando que dia
+     * era hoje. Quem sabe a data é o worker, no instante da análise, e agora ele a informa.
+     */
+    referenceDate: { type: 'string', format: 'date' },
     items: {
       type: 'array',
       minItems: 1,

@@ -30,10 +30,13 @@ describe('provedores determinísticos de revisão', () => {
       prompt: promptDe('TIMELINE'),
     });
 
+    // A versão vem do prompt resolvido, não de um literal: o que este teste garante é que o
+    // provedor carimba a procedência que recebeu. Fixar a string aqui só faria o teste quebrar
+    // a cada revisão de texto, ensinando a atualizar o número sem olhar o que mudou.
     expect(result).toMatchObject({
       schemaVersion: 1,
       provider: 'lex-os-mock-timeline',
-      promptVersion: 'timeline-mock-v1',
+      promptVersion: promptDe('TIMELINE').version,
     });
     expect(result.events).toHaveLength(1);
     expect(result.events[0].sourceLocator).toEqual({
@@ -75,6 +78,10 @@ describe('provedores determinísticos de revisão', () => {
     const result = provider.analyze({
       documentTypeCode: 'OUTRO',
       sourceText: textoDe('Documento ficticio para conferencia.'),
+      // A data contra a qual a validade se afere. O mock não julga vigência e não a usa, mas a
+      // fixture monta a chamada real: entrada incompleta aqui descreveria um contrato que o
+      // worker não faz, e é assim que um teste passa enquanto a produção quebra.
+      referenceDate: '2026-09-03',
       items: [
         {
           id: 'item-a',
