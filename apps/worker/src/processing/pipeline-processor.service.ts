@@ -264,6 +264,7 @@ export class PipelineProcessorService {
             stage: 'TIMELINE_GENERATION',
             progress: 85,
             eventCount: result.events.length,
+            outcome: result.outcome,
           },
           extraction: {
             type: 'TIMELINE_ANALYSIS',
@@ -272,8 +273,18 @@ export class PipelineProcessorService {
               schemaVersion: result.schemaVersion,
               sourceExtractionId: sourceExtraction.id,
               eventCount: result.events.length,
+              // O desfecho fica gravado na procedência: "não havia fato datado" e "não consegui
+              // ler" produzem a mesma lista vazia e significam coisas opostas para quem revisa.
+              outcome: result.outcome,
             },
-            confidenceScore: Math.min(...result.events.map((event) => event.confidenceScore)),
+            // Sem evento não há confiança a relatar — `Math.min` de lista vazia é `Infinity`, e
+            // gravar isso, ou um número inventado no lugar, seria pior que não gravar nada. A
+            // coluna aceita nulo justamente para este caso, então o campo simplesmente não vai.
+            ...(result.events.length === 0
+              ? {}
+              : {
+                  confidenceScore: Math.min(...result.events.map((event) => event.confidenceScore)),
+                }),
             processingTimeMs: 1,
             promptVersion: result.promptVersion,
           },

@@ -34,6 +34,7 @@ function timelineOutput() {
     provider: 'p',
     modelName: 'm',
     promptVersion: 'v',
+    outcome: 'ANALYZED',
     events: [timelineEvent()],
   };
 }
@@ -130,6 +131,29 @@ describe('divergência schema × validador', () => {
       output.events[0].importance = grau;
       expect(() => parsers.parseTimelineProviderOutputV1(output, 100)).not.toThrow();
     }
+  });
+
+  it('aceita cronologia vazia e recusa a contradição de não ter lido e mesmo assim registrar', () => {
+    // Enquanto a lista exigia um item, procuração sem fato datado e página ilegível só cabiam
+    // no contrato como um evento inventado. As duas saídas honestas passam a valer, e a única
+    // combinação recusada é a que se contradiz.
+    const vazio = { ...timelineOutput(), events: [] };
+    expect(() => parsers.parseTimelineProviderOutputV1(vazio, 100)).not.toThrow();
+    expect(() =>
+      parsers.parseTimelineProviderOutputV1({ ...vazio, outcome: 'UNREADABLE' }, 100),
+    ).not.toThrow();
+    expect(() =>
+      parsers.parseTimelineProviderOutputV1({ ...timelineOutput(), outcome: 'UNREADABLE' }, 100),
+    ).toThrow();
+    expect(() =>
+      parsers.parseTimelineProviderOutputV1({ ...vazio, outcome: 'TALVEZ' }, 100),
+    ).toThrow();
+
+    // O schema e o validador precisam listar os mesmos desfechos, ou um deles aceita o que o
+    // outro recusa e a divergência só aparece com documento de cliente na frente.
+    expect(new Set(prompts.timelinePromptV1.outputSchema.properties.outcome.enum)).toEqual(
+      new Set(parsers.timelineOutcomes),
+    );
   });
 
   it('recusa precisão e importância fora do catálogo', () => {

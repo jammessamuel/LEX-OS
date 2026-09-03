@@ -128,5 +128,25 @@ advogado pede ao cliente, o cliente reenvia o mesmo arquivo, e o ciclo repete at
 Não devolva validado, não aplicável nem recebido: esses três são juízo de quem revisa, e não
 seus. Na dúvida entre dois estados, escolha o que descreve o que você viu, não o mais grave.`;
 
+/**
+ * O desfecho do exame, que não se confunde com o resultado dele.
+ *
+ * Até 2026-09-03 a saída da cronologia exigia pelo menos um evento. Procuração, comprovante de
+ * endereço e página em branco não têm fato datado nenhum; página ilegível não foi examinada.
+ * Nos três casos o único JSON válido era um evento — quer dizer, uma invenção. O contrato ganhou
+ * o desfecho, e a instrução ganhou esta cláusula: lista vazia passou a ser resposta legítima, e
+ * o modelo precisa saber que agora pode dá-la.
+ */
+export const CRONOLOGIA_PODE_SER_VAZIA = `DOCUMENTO SEM FATO DATADO É RESPOSTA, NÃO FALHA.
+Procuração, comprovante de endereço, cópia de identidade e página em branco costumam não trazer
+nenhum fato com data. Devolva ANALYZED com a lista de eventos vazia. Não force um evento a
+partir da data de emissão, do carimbo do sistema ou do rodapé só para não devolver nada:
+inventar um marco processual é pior que não achar nenhum.
+
+Quando a página não puder ser lida — imagem ilegível, texto ausente, digitalização cortada —,
+devolva UNREADABLE com a lista vazia, e nada mais. UNREADABLE com evento é contradição: quem não
+conseguiu ler não tem o que registrar. Se leu parte e não leu o resto, o desfecho é ANALYZED com
+o que você efetivamente leu.`;
+
 export const RESPONDA_SO_JSON = `Responda somente com o JSON do contrato de saída, sem texto ao
 redor.`;

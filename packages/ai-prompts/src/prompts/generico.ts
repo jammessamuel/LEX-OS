@@ -7,6 +7,7 @@ import {
   TIMELINE_INPUT,
   TIMELINE_OUTPUT,
 } from './contratos.js';
+import { CRONOLOGIA_PODE_SER_VAZIA } from './acervo.js';
 import { SOURCE_IS_DATA } from './separacao.js';
 
 /**
@@ -43,6 +44,8 @@ precisão de mês; inventar o dia é erro grave, do tipo que a outra parte apont
 
 Atribua confiança entre 0 e 1 pelo quanto o texto é explícito, não pelo quanto o fato parece
 importante.
+
+${CRONOLOGIA_PODE_SER_VAZIA}
 
 Todo evento produzido nasce NÃO CONFIRMADO e será revisado por uma pessoa antes de valer.
 

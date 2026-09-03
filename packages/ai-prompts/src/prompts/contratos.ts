@@ -47,12 +47,16 @@ export const TIMELINE_INPUT = {
 export const TIMELINE_OUTPUT = {
   type: 'object',
   additionalProperties: false,
-  required: ['schemaVersion', 'provider', 'modelName', 'promptVersion', 'events'],
+  required: ['schemaVersion', 'provider', 'modelName', 'promptVersion', 'outcome', 'events'],
   properties: {
     schemaVersion: { const: 1 },
+    // Enquanto a lista exigia um item, "não há fato datado neste documento" e "não consegui ler
+    // esta página" não cabiam no contrato: a única saída válida era inventar um evento. O
+    // desfecho separa as duas, e `UNREADABLE` obriga lista vazia.
+    outcome: { enum: ['ANALYZED', 'UNREADABLE'] },
     events: {
       type: 'array',
-      minItems: 1,
+      minItems: 0,
       items: {
         type: 'object',
         additionalProperties: false,

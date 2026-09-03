@@ -38,11 +38,25 @@ export interface SourceLocatorV1 {
   endOffset: number;
 }
 
+/**
+ * O que aconteceu com o exame do documento, separado do que ele produziu.
+ *
+ * Sem isto o contrato exigia pelo menos um evento, e as duas situações honestas não tinham como
+ * ser ditas: procuração e comprovante de endereço não carregam fato datado nenhum, e página
+ * ilegível não foi examinada. Nos dois casos o modelo era obrigado a devolver um evento — quer
+ * dizer, a inventar um. Um sistema que promete procedência não pode ter, no contrato, um caminho
+ * cuja única saída é a invenção.
+ */
+export const timelineOutcomes = ['ANALYZED', 'UNREADABLE'] as const;
+export type TimelineOutcome = (typeof timelineOutcomes)[number];
+
 export interface TimelineProviderOutputV1 {
   schemaVersion: 1;
   provider: string;
   modelName: string;
   promptVersion: string;
+  /** `UNREADABLE` obriga lista vazia: quem não conseguiu ler não tem o que registrar. */
+  outcome: TimelineOutcome;
   events: readonly {
     eventType: string;
     title: string;
@@ -121,7 +135,14 @@ export function parseTimelineProviderOutputV1(
 ): TimelineProviderOutputV1 {
   if (
     !isRecord(value) ||
-    !hasOnlyKeys(value, ['schemaVersion', 'provider', 'modelName', 'promptVersion', 'events']) ||
+    !hasOnlyKeys(value, [
+      'schemaVersion',
+      'provider',
+      'modelName',
+      'promptVersion',
+      'outcome',
+      'events',
+    ]) ||
     value.schemaVersion !== 1 ||
     typeof value.provider !== 'string' ||
     value.provider.length === 0 ||
@@ -132,8 +153,12 @@ export function parseTimelineProviderOutputV1(
     typeof value.promptVersion !== 'string' ||
     value.promptVersion.length === 0 ||
     value.promptVersion.length > 80 ||
+    typeof value.outcome !== 'string' ||
+    !(timelineOutcomes as readonly string[]).includes(value.outcome) ||
     !Array.isArray(value.events) ||
-    value.events.length === 0
+    // Lista vazia agora é resposta legítima — mas quem diz que não conseguiu ler não pode, na
+    // mesma resposta, registrar o que leu. As duas metades têm de contar a mesma história.
+    (value.outcome === 'UNREADABLE' && value.events.length > 0)
   ) {
     throw new Error('Invalid timeline provider output.');
   }
@@ -214,6 +239,7 @@ export function parseTimelineProviderOutputV1(
     provider: value.provider,
     modelName: value.modelName,
     promptVersion: value.promptVersion,
+    outcome: value.outcome as TimelineOutcome,
     events,
   };
 }
@@ -290,6 +316,7 @@ export class MockReviewProcessingProvider implements TimelineProvider, Checklist
         provider: 'lex-os-mock-timeline',
         modelName: 'deterministic-v1',
         promptVersion: input.prompt.version,
+        outcome: 'ANALYZED',
         events: [
           {
             eventType: 'CONTRACT_DATE',

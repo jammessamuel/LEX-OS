@@ -51,6 +51,7 @@ describe('provedores determinísticos de revisão', () => {
           provider: 'fixture',
           modelName: 'v1',
           promptVersion: 'v1',
+          outcome: 'ANALYZED',
           events: [
             {
               eventType: 'DATE',
