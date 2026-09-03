@@ -252,9 +252,31 @@ export function formatEventDate(iso: string | null, precision: DatePrecision): s
   }
 }
 
-/** Tipos de evento são texto livre do provedor; nunca vazam em MAIÚSCULA_COM_UNDERSCORE. */
+/**
+ * Tipos de evento são texto livre do provedor; nunca vazam em MAIÚSCULA_COM_UNDERSCORE.
+ *
+ * Os códigos são gravados em inglês, como toda identificação técnica do sistema, e até aqui a
+ * tela só trocava o sublinhado por espaço — um advogado brasileiro lia "Contract date" na
+ * cronologia do próprio caso. Os conhecidos ganham nome em português; o desconhecido continua
+ * caindo no humanizador, porque provedor novo pode trazer um código que ninguém cadastrou e a
+ * tela não pode quebrar por isso.
+ */
+const EVENT_TYPE_LABELS: Readonly<Record<string, string>> = {
+  CONTRACT_DATE: 'Data do contrato',
+  DATE_READ_FROM_DOCUMENT: 'Data lida do documento',
+  DOCUMENT_DATE: 'Data do documento',
+  HEARING: 'Audiência',
+  DEADLINE: 'Prazo',
+  FILING: 'Protocolo',
+  DECISION: 'Decisão',
+  PAYMENT: 'Pagamento',
+  NOTIFICATION: 'Notificação',
+  ADMISSION: 'Admissão',
+  TERMINATION: 'Rescisão',
+};
+
 export function eventTypeLabel(eventType: string): string {
-  return humanizeCode(eventType);
+  return EVENT_TYPE_LABELS[eventType] ?? humanizeCode(eventType);
 }
 
 /**

@@ -35,14 +35,29 @@ test.describe('vistoria da jornada de apresentação', () => {
     expect(senha, 'SEED_ADMIN_PASSWORD precisa estar no ambiente').toBeTruthy();
 
     const problemas: string[] = [];
+    /**
+     * O 401 da restauração de sessão é o caminho correto, não um defeito.
+     *
+     * A aplicação tenta reconstruir a sessão a partir de um cookie que o JavaScript não pode
+     * ler, então a única forma de descobrir que não há sessão é pedir e receber 401 — e o
+     * navegador registra isso no console, sem que a página possa evitar. Enquanto a vistoria
+     * contava os dois como problema, ela relatava dois falsos a cada execução; um relatório
+     * que sempre acusa algo conhecido ensina a ignorar o relatório inteiro, que é o oposto do
+     * que ele existe para fazer.
+     */
+    const esperado = (texto: string): boolean =>
+      texto.includes('/auth/refresh') ||
+      (texto.includes('Failed to load resource') && texto.includes('401'));
+
     page.on('console', (msg) => {
-      if (msg.type() === 'error') {
+      if (msg.type() === 'error' && !esperado(msg.text())) {
         problemas.push(`console: ${msg.text().slice(0, 160)}`);
       }
     });
     page.on('response', (res) => {
-      if (res.status() >= 400 && res.url().includes('/api/v1/')) {
-        problemas.push(`HTTP ${res.status()} ${res.url().split('/api/v1')[1]}`);
+      const rota = res.url().split('/api/v1')[1] ?? '';
+      if (res.status() >= 400 && res.url().includes('/api/v1/') && !esperado(rota)) {
+        problemas.push(`HTTP ${res.status()} ${rota}`);
       }
     });
 
@@ -89,16 +104,27 @@ test.describe('vistoria da jornada de apresentação', () => {
       await page.goBack();
     }
 
+    // As três telas que mostram o trabalho da máquina — é por elas que um escritório julga o
+    // produto. A versão anterior sondava com `isVisible()` logo depois do `goBack()`, sem dar
+    // tempo de a página assentar, e seguia adiante calada quando o link ainda não existia: a
+    // vistoria vinha "sem problemas" justamente por não ter olhado. Agora espera, volta ao caso
+    // entre uma aba e outra — clicar navega para fora —, e reclama alto se alguma faltar.
+    const urlDoCaso = page.url();
     for (const [aba, nome] of [
       ['Cronologia', '06-cronologia'],
       ['Checklist', '07-checklist'],
       ['Tarefas', '08-tarefas'],
     ] as const) {
+      await page.goto(urlDoCaso);
       const link = page.getByRole('link', { name: aba }).first();
-      if (await link.isVisible().catch(() => false)) {
-        await link.click();
-        await foto(nome);
+      try {
+        await link.waitFor({ state: 'visible', timeout: 15_000 });
+      } catch {
+        problemas.push(`aba "${aba}" não apareceu na tela do caso`);
+        continue;
       }
+      await link.click();
+      await foto(nome);
     }
 
     for (const [secao, nome] of [

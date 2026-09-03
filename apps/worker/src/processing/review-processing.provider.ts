@@ -305,6 +305,129 @@ export function parseChecklistAnalysisOutputV1(
   };
 }
 
+/** Quantos eventos o extrator determinístico devolve, no máximo. */
+const MAX_EVENTOS_DETERMINISTICOS = 12;
+
+/**
+ * As duas formas em que documento brasileiro imprime data.
+ *
+ * `dd/mm/aaaa` domina campo de formulário — holerite, TRCT, espelho de ponto. Contrato,
+ * procuração e notificação escrevem por extenso, e é a forma que fecha a peça: "São Bernardo do
+ * Campo, 03 de fevereiro de 2020." Varrer só a primeira faria o extrator devolver zero evento
+ * justamente no contrato, que é onde a cronologia começa.
+ */
+const DATA_NUMERICA = /\b(\d{2})\/(\d{2})\/(\d{4})\b/gu;
+
+const MESES = [
+  'janeiro',
+  'fevereiro',
+  'março',
+  'abril',
+  'maio',
+  'junho',
+  'julho',
+  'agosto',
+  'setembro',
+  'outubro',
+  'novembro',
+  'dezembro',
+];
+
+// Acento cai com frequência em texto extraído de digitalização — "marco" por "março" —, então a
+// varredura aceita as duas grafias em vez de perder a data.
+const DATA_POR_EXTENSO = new RegExp(
+  String.raw`\b(\d{1,2})\s+de\s+(${MESES.join('|')}|marco)\s+de\s+(\d{4})\b`,
+  'giu',
+);
+
+/**
+ * A frase em volta da data, para o evento dizer de que ele é.
+ *
+ * Recorta pelo fim de linha antes do trecho e pelo ponto depois: um documento é lido em linhas,
+ * e a linha é o que dá sentido ao número. Corta em 120 caracteres porque o título é rótulo, não
+ * transcrição.
+ */
+function frasePerto(texto: string, inicio: number, fim: number): string {
+  const abre = Math.max(texto.lastIndexOf('\n', inicio), 0);
+  const fecha = texto.indexOf('\n', fim);
+  const linha = texto.slice(abre, fecha === -1 ? texto.length : fecha).trim();
+  const limpa = linha.replace(/\s+/gu, ' ');
+  return limpa.length > 120 ? `${limpa.slice(0, 117)}…` : limpa;
+}
+
+/**
+ * As datas que o documento realmente imprime, cada uma com o seu lugar no texto.
+ *
+ * Antes disto o provedor determinístico devolvia SEMPRE o mesmo evento — "Celebração do contrato
+ * fictício", em 05/08/2026, com o localizador fixo em 47–57. Duas consequências: a cronologia do
+ * caso virava uma parede de linhas idênticas, e o localizador apontava para um pedaço de texto
+ * que não era a data, porque as posições vinham de uma fixture antiga. Procedência que aponta
+ * para o lugar errado é pior que procedência nenhuma: ela convida a conferir e mente na conferência.
+ *
+ * Isto não é inteligência e não finge ser: é uma varredura de datas. O tipo do evento diz apenas
+ * que a data foi lida do documento, o título é a própria linha em que ela aparece, e o
+ * localizador são os deslocamentos reais do trecho. Documento sem data nenhuma devolve lista
+ * vazia — o que passou a ser resposta legítima quando a cronologia ganhou desfecho.
+ */
+function datasNoTexto(conteudo: string): {
+  eventType: string;
+  title: string;
+  description: string;
+  occurredAt: string;
+  datePrecision: string;
+  importance: string;
+  sourceLocator: { pageNumber: number; startOffset: number; endOffset: number };
+  confidenceScore: number;
+}[] {
+  const achados = [
+    ...conteudo.matchAll(DATA_NUMERICA),
+    ...conteudo.matchAll(DATA_POR_EXTENSO),
+  ].sort((a, b) => a.index - b.index);
+
+  const vistos = new Set<string>();
+  const eventos = [];
+  for (const achado of achados) {
+    if (eventos.length >= MAX_EVENTOS_DETERMINISTICOS) {
+      break;
+    }
+    const inicio = achado.index;
+    const [, primeiro, segundo, ano] = achado;
+    if (primeiro === undefined || segundo === undefined || ano === undefined) {
+      continue;
+    }
+    const escrito = segundo.toLowerCase();
+    const mesEscrito = MESES.indexOf(escrito === 'marco' ? 'março' : escrito);
+    const dia = primeiro.padStart(2, '0');
+    const mes = mesEscrito === -1 ? segundo : String(mesEscrito + 1).padStart(2, '0');
+    const iso = `${ano}-${mes}-${dia}T00:00:00.000Z`;
+    // Data impossível — 31/02 — é erro de leitura, não fato do caso: descarta em vez de
+    // deixar o `Date` deslizar para o mês seguinte em silêncio.
+    const conferida = new Date(iso);
+    if (Number.isNaN(conferida.getTime()) || conferida.getUTCDate() !== Number(dia)) {
+      continue;
+    }
+    const chave = `${iso}#${inicio}`;
+    if (vistos.has(chave)) {
+      continue;
+    }
+    vistos.add(chave);
+    const fim = inicio + achado[0].length;
+    eventos.push({
+      eventType: 'DATE_READ_FROM_DOCUMENT',
+      title: frasePerto(conteudo, inicio, fim),
+      description: 'Data lida do documento por varredura determinística, sem interpretação.',
+      occurredAt: iso,
+      datePrecision: 'DAY',
+      importance: 'NORMAL',
+      sourceLocator: { pageNumber: 1, startOffset: inicio, endOffset: fim },
+      // O provedor determinístico lê o que está escrito; a confiança é na leitura, e o que ela
+      // significa para o caso continua sendo juízo de quem revisa.
+      confidenceScore: 1,
+    });
+  }
+  return eventos;
+}
+
 @Injectable()
 export class MockReviewProcessingProvider implements TimelineProvider, ChecklistAnalysisProvider {
   constructor(@Inject(RUNTIME_CONFIG) config: RuntimeConfig) {
@@ -325,18 +448,7 @@ export class MockReviewProcessingProvider implements TimelineProvider, Checklist
         modelName: 'deterministic-v1',
         promptVersion: input.prompt.version,
         outcome: 'ANALYZED',
-        events: [
-          {
-            eventType: 'CONTRACT_DATE',
-            title: 'Celebração do contrato fictício',
-            description: 'Data contratual identificada no documento fictício processado.',
-            occurredAt: '2026-08-05T00:00:00.000Z',
-            datePrecision: 'DAY',
-            importance: 'NORMAL',
-            sourceLocator: { pageNumber: 1, startOffset: 47, endOffset: 57 },
-            confidenceScore: 0.98,
-          },
-        ],
+        events: datasNoTexto(input.sourceText.content),
       },
       input.sourceTextLength,
     );
