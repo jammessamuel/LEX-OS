@@ -27,7 +27,14 @@ export interface CursorPage<T> {
   };
 }
 
-export function encodeCursor(value: Readonly<Record<string, string>>): string {
+/**
+ * `null` é valor legítimo de cursor, não ausência.
+ *
+ * A cronologia ordena pela data do fato, que o evento pode não ter: sem data ele fica no fim da
+ * lista e precisa ser paginável como qualquer outro. Recusar `null` aqui obrigaria a inventar um
+ * valor de sentinela, e sentinela em cursor é o tipo de combinação que só falha na segunda página.
+ */
+export function encodeCursor(value: Readonly<Record<string, string | null>>): string {
   return Buffer.from(JSON.stringify(value), 'utf8').toString('base64url');
 }
 

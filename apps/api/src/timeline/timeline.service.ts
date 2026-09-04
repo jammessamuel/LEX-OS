@@ -6,12 +6,9 @@ import type { ActorContext } from '../auth/actor-context.js';
 import { CasesService } from '../cases/cases.service.js';
 import { DatabaseService } from '../database/database.service.js';
 import { ApiException } from '../http/api-exception.js';
-import {
-  createTimestampIdCursorParser,
-  decodeCursor,
-  encodeCursor,
-  type CursorPage,
-} from '../http/pagination.js';
+import { isUuidV4 } from '@lex-os/shared';
+
+import { decodeCursor, encodeCursor, type CursorPage } from '../http/pagination.js';
 import type { ListTimelineEventsQueryDto } from './dto/list-timeline-events-query.dto.js';
 import type { TimelineEventResponseDto } from './dto/timeline-event-response.dto.js';
 import {
@@ -20,8 +17,29 @@ import {
   type TimelineEventRecord,
 } from './timeline.repository.js';
 
-const parseCursor: (value: unknown) => TimelineEventCursor | undefined =
-  createTimestampIdCursorParser('createdAt');
+/**
+ * O cursor da cronologia carrega a data do fato, que pode não existir.
+ *
+ * O leitor genérico exige um carimbo válido, e aqui `null` é resposta legítima — evento sem
+ * data ocupa o fim da lista e precisa ser paginável como qualquer outro. Cursor inválido
+ * devolve `undefined`, que a chamada trata como primeira página.
+ */
+function parseCursor(value: unknown): TimelineEventCursor | undefined {
+  if (value === null || typeof value !== 'object') {
+    return undefined;
+  }
+  const candidate = value as Record<string, unknown>;
+  if (!isUuidV4(candidate.id)) {
+    return undefined;
+  }
+  if (candidate.occurredAt === null) {
+    return { occurredAt: null, id: candidate.id };
+  }
+  if (typeof candidate.occurredAt !== 'string' || Number.isNaN(Date.parse(candidate.occurredAt))) {
+    return undefined;
+  }
+  return { occurredAt: new Date(candidate.occurredAt), id: candidate.id };
+}
 
 function mapTimelineEvent(record: TimelineEventRecord): TimelineEventResponseDto {
   return {
@@ -90,7 +108,10 @@ export class TimelineService {
         hasNextPage,
         nextCursor:
           hasNextPage && last !== undefined
-            ? encodeCursor({ createdAt: last.createdAt.toISOString(), id: last.id })
+            ? encodeCursor({
+                occurredAt: last.occurredAt === null ? null : last.occurredAt.toISOString(),
+                id: last.id,
+              })
             : null,
       },
     };

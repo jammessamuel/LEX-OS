@@ -552,6 +552,89 @@ describe('Delivery 8 timeline, checklist and task review', () => {
     assert.ok(response.body.paths['/api/v1/agenda']?.get);
   });
 
+  it('ordena a cronologia pela data do fato, e pagina sem perder nem repetir evento', async () => {
+    // A consulta ordenava por `createdAt`: processados no mesmo minuto, os eventos saíam
+    // agrupados por documento, e a admissão de 2020 vinha depois da rescisão de 2026 numa tela
+    // que promete "na ordem dos fatos". Evento sem data não tem lugar na sequência e vai para o
+    // fim — o cursor precisa atravessar as duas metades sem pular nem repetir.
+    const base = {
+      organizationId: ORGANIZATION_ID,
+      caseId: DEMO_CASE_ID,
+      eventType: 'DATE_READ_FROM_DOCUMENT',
+      description: 'Fixture de ordenação.',
+      datePrecision: 'DAY',
+      importance: 'NORMAL',
+      sourceType: 'DOCUMENT',
+      sourceId: STANDARD_DOCUMENT_ID,
+      sourceLocator: { pageNumber: 1, startOffset: 0, endOffset: 5 },
+      extractionId: STANDARD_EXTRACTION_ID,
+      confidenceScore: 1,
+      createdByActorType: 'AI',
+    };
+    // Inseridos na ordem inversa da cronológica de propósito: se a consulta usasse a ordem de
+    // gravação, a asserção passaria por coincidência.
+    const ordenacao = [
+      { id: '66000000-0000-4000-8000-000000000001', title: 'Sem data', occurredAt: null },
+      {
+        id: '66000000-0000-4000-8000-000000000002',
+        title: 'Rescisão',
+        occurredAt: new Date('2026-05-15T00:00:00.000Z'),
+      },
+      {
+        id: '66000000-0000-4000-8000-000000000003',
+        title: 'Admissão',
+        occurredAt: new Date('2020-02-03T00:00:00.000Z'),
+      },
+    ];
+    for (const evento of ordenacao) {
+      await database.client.timelineEvent.create({ data: { ...base, ...evento } });
+    }
+
+    try {
+      const todos = await authorized(
+        internToken,
+        'get',
+        `/api/v1/cases/${DEMO_CASE_ID}/timeline-events?limit=50`,
+      ).expect(200);
+      const datas = todos.body.data.map((e) => e.occurredAt);
+      const comData = datas.filter((d) => d !== null);
+      assert.deepEqual(
+        comData,
+        [...comData].sort(),
+        'a lista precisa sair em ordem crescente de data do fato.',
+      );
+      assert.equal(datas.at(-1), null, 'evento sem data ocupa o fim da lista.');
+
+      // Página a página, com limite 1: o conjunto tem de sair inteiro e sem repetição.
+      const vistos = [];
+      let cursor;
+      for (let i = 0; i < 12; i += 1) {
+        const url =
+          `/api/v1/cases/${DEMO_CASE_ID}/timeline-events?limit=1` +
+          (cursor === undefined ? '' : `&cursor=${encodeURIComponent(cursor)}`);
+        const pagina = await authorized(internToken, 'get', url).expect(200);
+        for (const item of pagina.body.data) {
+          vistos.push(item.id);
+        }
+        if (!pagina.body.pageInfo.hasNextPage) {
+          break;
+        }
+        cursor = pagina.body.pageInfo.nextCursor;
+      }
+      assert.equal(new Set(vistos).size, vistos.length, 'a paginação repetiu um evento.');
+      assert.equal(vistos.length, todos.body.data.length, 'a paginação perdeu um evento.');
+      assert.deepEqual(
+        vistos,
+        todos.body.data.map((e) => e.id),
+        'a paginação entregou outra ordem que a listagem inteira.',
+      );
+    } finally {
+      await database.client.timelineEvent.deleteMany({
+        where: { id: { in: ordenacao.map((e) => e.id) } },
+      });
+    }
+  });
+
   it('returns a sourced, unconfirmed event and confirms it without mutating its extraction', async () => {
     const beforeExtraction = await database.client.documentExtraction.findUnique({
       where: { id: STANDARD_EXTRACTION_ID },

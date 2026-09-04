@@ -16,7 +16,15 @@ import { organizationSlug } from './session.js';
  *     pnpm exec playwright test e2e/vistoria.spec.ts
  */
 
-const CASO = 'RT-2026-0007';
+/**
+ * O caso da apresentação.
+ *
+ * Era o RT-2026-0007 até 2026-09-03. Ele carrega treze eventos produzidos pelo extrator que
+ * inventava sempre o mesmo, e extração é append-only por decisão: não há como removê-los, e não
+ * deveria haver. O RT-2026-0008 tem os mesmos cinco documentos, preparados pelo pipeline que lê
+ * o arquivo, e por isso é o que se mostra.
+ */
+const CASO = 'RT-2026-0008';
 
 test.describe('vistoria da jornada de apresentação', () => {
   test.describe.configure({ mode: 'serial' });
@@ -97,7 +105,7 @@ test.describe('vistoria da jornada de apresentação', () => {
     await foto('03-lista-de-casos');
 
     await page
-      .getByRole('link', { name: /0009999-84/u })
+      .getByRole('link', { name: /0010101-16/u })
       .first()
       .click();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });

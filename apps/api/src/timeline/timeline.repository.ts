@@ -39,9 +39,36 @@ export type TimelineEventRecord = Prisma.TimelineEventGetPayload<{
   select: typeof timelineEventSelect;
 }>;
 
+/**
+ * A posição na cronologia, que é a data do fato — não a de quando a linha foi gravada.
+ *
+ * `occurredAt` é anulável: evento pode existir sem data determinável, e a interface o mostra
+ * como "Data não identificada". Sem data ele não tem lugar na sequência, então vai para o fim,
+ * e o cursor precisa saber em qual das duas metades está.
+ */
 export interface TimelineEventCursor {
-  createdAt: Date;
+  occurredAt: Date | null;
   id: string;
+}
+
+/**
+ * O que vem depois do cursor, numa ordenação ascendente com os sem data no fim.
+ *
+ * Sem data, o evento está na metade final: dali em diante só há outros sem data, desempatados
+ * pelo identificador. Com data, vem quem tem data maior, quem tem a mesma data e identificador
+ * maior, e todos os sem data — que sortam depois de qualquer data.
+ */
+function afterCursor(cursor: TimelineEventCursor): Prisma.TimelineEventWhereInput {
+  if (cursor.occurredAt === null) {
+    return { occurredAt: null, id: { gt: cursor.id } };
+  }
+  return {
+    OR: [
+      { occurredAt: { gt: cursor.occurredAt } },
+      { occurredAt: cursor.occurredAt, id: { gt: cursor.id } },
+      { occurredAt: null },
+    ],
+  };
 }
 
 @Injectable()
@@ -58,16 +85,13 @@ export class TimelineRepository {
       where: {
         organizationId,
         caseId,
-        ...(cursor === undefined
-          ? {}
-          : {
-              OR: [
-                { createdAt: { lt: cursor.createdAt } },
-                { createdAt: cursor.createdAt, id: { lt: cursor.id } },
-              ],
-            }),
+        ...(cursor === undefined ? {} : afterCursor(cursor)),
       },
-      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      // A tela promete "na ordem dos fatos" e a consulta entregava a ordem da gravação: com
+      // todos os eventos processados no mesmo minuto, a lista saía agrupada por documento, e a
+      // admissão de 2020 aparecia depois da rescisão de 2026. Cronologia fora de ordem não é
+      // cronologia. O índice `[organizationId, caseId, occurredAt]` já existia para isto.
+      orderBy: [{ occurredAt: { sort: 'asc', nulls: 'last' } }, { id: 'asc' }],
       take,
       select: timelineEventSelect,
     });
