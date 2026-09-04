@@ -603,13 +603,18 @@ describe('Delivery 8 timeline, checklist and task review', () => {
     ).expect(200);
     assert.equal(templates.body.length, 1);
     assert.equal(templates.body[0].version, 1);
-    assert.equal(templates.body[0].items.length, 3);
+    // O que este teste verifica é o retrato: a instância guarda uma linha por exigência do
+    // template e sobrevive à desativação dele. O número de exigências é dado do seed e muda
+    // quando a lista muda — escrito aqui, viraria um número a atualizar sem pensar, e o teste
+    // deixaria de verificar a regra que existe para verificar.
+    const exigencias = templates.body[0].items.length;
+    assert.ok(exigencias > 0, 'o template semeado precisa ter exigências.');
     await authorized(adminToken, 'post', `/api/v1/cases/${DEMO_CASE_ID}/checklists`)
       .send({ templateId: TEMPLATE_ID })
       .expect(201)
       .then((response) => {
         assert.equal(response.body.templateVersion, 1);
-        assert.equal(response.body.items.length, 3);
+        assert.equal(response.body.items.length, exigencias);
       });
     await authorized(internToken, 'post', `/api/v1/cases/${DEMO_CASE_ID}/checklists`)
       .send({ templateId: TEMPLATE_ID })
@@ -624,7 +629,7 @@ describe('Delivery 8 timeline, checklist and task review', () => {
       'get',
       `/api/v1/cases/${DEMO_CASE_ID}/checklists`,
     ).expect(200);
-    assert.equal(persisted.body[0].items.length, 3);
+    assert.equal(persisted.body[0].items.length, exigencias);
     assert.equal(persisted.body[0].items[0].title, 'Documento de identificação');
     await database.client.checklistTemplate.update({
       where: { id: TEMPLATE_ID },
