@@ -69,8 +69,11 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Production dependency audit
-        run: pnpm deps:audit
+      # A auditoria de dependências vive só no job "Dependency review". Ela rodava também aqui,
+      # como segunda etapa, e uma indisponibilidade do banco de advisories do npm — que ocorreu
+      # duas vezes em 2026-09-03 — derrubava este job antes de format, lint, typecheck, testes e
+      # build produzirem qualquer sinal. O gate continua fechado no job próprio; o que muda é que
+      # uma queda externa deixa de apagar a informação de todo o resto.
 
       - name: Format check
         run: pnpm format:check
@@ -287,4 +290,4 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Audit production dependencies
-        run: pnpm audit --prod --audit-level high
+        run: pnpm deps:audit

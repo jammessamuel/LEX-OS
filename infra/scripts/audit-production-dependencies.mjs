@@ -27,6 +27,22 @@ const INDISPONIBILIDADE = [
   'request to https://registry.npmjs.org',
 ];
 
+function indisponivelEm(texto) {
+  return INDISPONIBILIDADE.some((marca) => texto.includes(marca));
+}
+
+/**
+ * Uma execução só, de propósito.
+ *
+ * Cheguei a envolver isto num laço de novas tentativas espaçadas, e medi: o `pnpm` já tenta três
+ * vezes por dentro, com esperas de dez e sessenta segundos, então um piscar curto do banco de
+ * advisories já está coberto. O laço externo só alcançava a janela entre um e cinco minutos, e
+ * em troca fazia uma indisponibilidade real levar dez minutos para ser reportada. Ficou pior
+ * para o caso comum a fim de melhorar o raro.
+ *
+ * O que resolve a queda externa não é insistir: é o job de auditoria viver sozinho — assim
+ * format, lint, typecheck, testes e build continuam dando sinal quando o registro do npm cai.
+ */
 const resultado = spawnSync('corepack', ['pnpm', 'audit', '--prod', '--audit-level', 'high'], {
   encoding: 'utf8',
   shell: process.platform === 'win32',
@@ -39,8 +55,7 @@ if (resultado.status === 0) {
   process.exit(0);
 }
 
-const indisponivel = INDISPONIBILIDADE.some((marca) => saida.includes(marca));
-if (indisponivel) {
+if (indisponivelEm(saida)) {
   process.stderr.write(
     '\n::error title=Banco de advisories inacessível::' +
       'A auditoria não conseguiu consultar o registro do npm, então nada foi verificado. ' +
