@@ -18,6 +18,16 @@ const IDS = {
   laborChecklistIdentification: '00000000-0000-4000-8000-000000000402',
   laborChecklistRepresentation: '00000000-0000-4000-8000-000000000403',
   laborChecklistInitialEvidence: '00000000-0000-4000-8000-000000000404',
+  // As exigências que uma reclamação trabalhista realmente pede. As três acima servem a
+  // qualquer atendimento; sozinhas, faziam a tela responder "o que falta para protocolar" com
+  // uma lista que não é do caso — e é essa a pergunta que o checklist existe para responder.
+  laborChecklistContract: '00000000-0000-4000-8000-000000000405',
+  laborChecklistWorkCard: '00000000-0000-4000-8000-000000000406',
+  laborChecklistPayslips: '00000000-0000-4000-8000-000000000407',
+  laborChecklistTermination: '00000000-0000-4000-8000-000000000408',
+  laborChecklistTimeRecords: '00000000-0000-4000-8000-000000000409',
+  laborChecklistFgts: '00000000-0000-4000-8000-00000000040a',
+  laborChecklistCollectiveNorm: '00000000-0000-4000-8000-00000000040b',
 } as const;
 
 const permissions = [
@@ -486,6 +496,62 @@ async function main(): Promise<void> {
             title: 'Documento inicial para análise',
             description: 'Material inicial fictício que fundamenta a triagem do caso.',
             sortOrder: 3,
+          },
+          {
+            id: IDS.laborChecklistContract,
+            documentTypeCode: 'CONTRATO',
+            title: 'Contrato de trabalho',
+            description:
+              'Instrumento de admissão, com jornada contratada, função e salário. É contra ele que se afere o que o holerite pagou.',
+            sortOrder: 4,
+          },
+          {
+            id: IDS.laborChecklistWorkCard,
+            documentTypeCode: 'CTPS',
+            title: 'CTPS ou extrato do registro',
+            description:
+              'Anotação de admissão, função, salário e saída. Divergência entre a anotação e a data real de início é pedido próprio.',
+            sortOrder: 5,
+          },
+          {
+            id: IDS.laborChecklistPayslips,
+            documentTypeCode: 'HOLERITE',
+            title: 'Holerites do período discutido',
+            description:
+              'Todos os meses do período, não apenas os últimos: rubrica paga a menor só aparece na série.',
+            sortOrder: 6,
+          },
+          {
+            id: IDS.laborChecklistTermination,
+            documentTypeCode: 'TRCT',
+            title: 'Termo de rescisão e comprovante de pagamento',
+            description:
+              'O termo traz três datas coladas — último dia trabalhado, desligamento e projeção do aviso. O comprovante diz se e quando foi pago.',
+            sortOrder: 7,
+          },
+          {
+            id: IDS.laborChecklistTimeRecords,
+            documentTypeCode: 'CARTAO_PONTO',
+            title: 'Controle de jornada do período',
+            description:
+              'Espelho de ponto do período discutido. Ausência de controle é fato a registrar, não item a ignorar.',
+            sortOrder: 8,
+          },
+          {
+            id: IDS.laborChecklistFgts,
+            documentTypeCode: 'EXTRATO_FGTS',
+            title: 'Extrato analítico do FGTS',
+            description:
+              'O extrato analítico mostra depósito por competência; o sintético esconde justamente o mês que falta.',
+            sortOrder: 9,
+          },
+          {
+            id: IDS.laborChecklistCollectiveNorm,
+            documentTypeCode: 'NORMA_COLETIVA',
+            title: 'Instrumento coletivo vigente no período',
+            description:
+              'Convenção ou acordo da categoria, com a vigência que alcance o período discutido. Fora da vigência, a cláusula não se aplica.',
+            sortOrder: 10,
           },
         ] as const;
 

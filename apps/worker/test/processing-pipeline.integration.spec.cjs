@@ -472,7 +472,13 @@ describe('Delivery 8 persistent processing pipeline', () => {
     });
     expect(checklist).not.toBeNull();
     expect(checklist.templateVersion).toBe(1);
-    expect(checklist.items).toHaveLength(3);
+    // A instância recebe uma linha por exigência do template. Contar contra o template, e não
+    // contra um número escrito aqui, é o que faz este teste continuar verificando a regra
+    // quando o template ganhar exigência — e não virar um número para atualizar sem pensar.
+    const exigencias = await database.client.checklistTemplateItem.count({
+      where: { templateId: checklistTemplateId },
+    });
+    expect(checklist.items).toHaveLength(exigencias);
     expect(checklist.items.some((item) => item.status === 'AWAITING_VALIDATION')).toBe(true);
 
     const chunks = await database.client.knowledgeChunk.findMany({
