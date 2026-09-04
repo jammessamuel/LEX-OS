@@ -8,6 +8,7 @@ import {
   participantRoleLabels,
   participantSideLabels,
   priorityLabels,
+  providerLabel,
 } from '../domain/vocabulary.js';
 
 /**
@@ -35,4 +36,22 @@ describe('vocabulário da interface e do dossiê', () => {
       expect(doDossie).toEqual({ ...daTela });
     });
   }
+
+  it('chama cada etapa pelo que ela faz, e não esconde o que é simulado', () => {
+    // A tela de custo listava "Lex-os-mock-entities" ao escritório e a procedência de um evento
+    // dizia "lex-os-mock-timeline" ao advogado que ia confirmá-lo. O mapa vive no pacote
+    // compartilhado porque a mesma palavra sai na tela e no PDF; aqui se garante o que ele não
+    // pode perder: nenhum identificador interno vaza, e a etapa simulada continua dizendo que é.
+    for (const [codigo, rotulo] of Object.entries(shared.providerLabels)) {
+      expect(rotulo).not.toMatch(/lex-os|mock/iu);
+      if (codigo.includes('mock')) {
+        expect(rotulo).toMatch(/simulad|determinístic/iu);
+      }
+    }
+    expect(providerLabel('lex-os-mock-timeline')).toBe('Cronologia (determinística)');
+    // Provedor que ninguém cadastrou não pode quebrar a tela, e também não pode sumir: o código
+    // cru aparecendo é o sinal de que o mapa ficou para trás.
+    expect(providerLabel('provedor-novo-sem-rotulo')).toBe('Provedor novo sem rotulo');
+    expect(providerLabel('provedor-novo-sem-rotulo')).not.toContain('-');
+  });
 });

@@ -20,6 +20,7 @@ import {
   formatBytes,
   formatConfidence,
   formatDateTime,
+  providerLabel,
 } from '../domain/vocabulary.js';
 import { useSessionStore } from '../stores/session.js';
 
@@ -248,7 +249,7 @@ function sourceLines(entity: ExtractedEntity): string[] {
   }
 
   if (extraction) {
-    lines.push(`${extraction.provider} · ${extraction.modelName}`);
+    lines.push(`${providerLabel(extraction.provider)} · ${extraction.modelName}`);
   }
   lines.push(`confiança ${formatConfidence(entity.confidenceScore)}`);
 
@@ -529,7 +530,7 @@ onMounted(() => {
                   {{ extractionTypeLabels[extraction.extractionType] }}
                 </span>
                 <span class="trail__who data">
-                  {{ extraction.provider }} · {{ extraction.modelName }}
+                  {{ providerLabel(extraction.provider) }} · {{ extraction.modelName }}
                 </span>
                 <span class="trail__when data">
                   {{ formatDateTime(extraction.createdAt) }} · confiança

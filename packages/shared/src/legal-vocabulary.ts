@@ -69,6 +69,30 @@ export const checklistItemStatusLabels: Readonly<Record<string, string>> = {
 };
 
 /**
+ * Quem executou cada etapa, dito para quem lê a tela e o dossiê.
+ *
+ * O identificador do provedor é procedência e continua gravado como está — na extração, na
+ * auditoria e na exportação. O que ele não pode é aparecer cru: a supervisão de custo mostrava
+ * "Lex-os-mock-entities" ao escritório, e a procedência de um evento dizia "lex-os-mock-timeline"
+ * ao advogado que ia confirmá-lo.
+ *
+ * O "(simulada)" fica. O cliente precisa saber qual etapa ainda não é feita por modelo, e
+ * apagar isso para a tela ficar apresentável seria vender o que não existe. Vive aqui, e não em
+ * cada aplicação, porque a mesma palavra tem de sair na tela e no PDF — duas cópias divergem em
+ * silêncio, e a divergência aparece com o cliente comparando os dois.
+ */
+export const providerLabels: Readonly<Record<string, string>> = {
+  'lex-os-validator': 'Validação do arquivo',
+  'lex-os-text-reader': 'Leitura do texto',
+  'lex-os-mock-classifier': 'Classificação (simulada)',
+  'lex-os-mock-entities': 'Extração de dados (simulada)',
+  'lex-os-mock-timeline': 'Cronologia (determinística)',
+  'lex-os-mock-checklist': 'Checklist (simulado)',
+  'lex-os-mock-embedding': 'Indexação para busca (simulada)',
+  anthropic: 'Anthropic',
+};
+
+/**
  * Nome legível de um código, ou o próprio código quando ele não estiver no mapa.
  *
  * Devolver o código cru é feio, mas é honesto: some do documento a informação, e não o

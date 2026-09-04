@@ -12,6 +12,7 @@ import {
   formatDateTime,
   formatEventDate,
   importanceLabels,
+  providerLabel,
 } from '../domain/vocabulary.js';
 import { useSessionStore } from '../stores/session.js';
 
@@ -96,7 +97,10 @@ async function confirm(event: TimelineEvent): Promise<void> {
 function sourceLines(event: TimelineEvent): string[] {
   const lines: string[] = [];
   if (event.extraction) {
-    lines.push(`${event.extraction.provider} · ${event.extraction.modelName}`);
+    // O identificador exato do provedor segue gravado na extração, na auditoria e no dossiê
+    // exportado. Aqui vale o nome legível: quem confirma um evento precisa saber o que o
+    // produziu, e "lex-os-mock-timeline" não diz isso a um advogado.
+    lines.push(`${providerLabel(event.extraction.provider)} · ${event.extraction.modelName}`);
   }
   lines.push(`confiança ${formatConfidence(event.confidenceScore)}`);
   const page = event.sourceLocator?.pageNumber;

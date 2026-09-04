@@ -15,6 +15,7 @@ import type {
   TaskStatus,
   UserStatus,
 } from '../api/types.js';
+import { providerLabels } from '@lex-os/shared/legal-vocabulary';
 
 /**
  * Tradução dos códigos da API para o vocabulário do usuário.
@@ -277,6 +278,20 @@ const EVENT_TYPE_LABELS: Readonly<Record<string, string>> = {
 
 export function eventTypeLabel(eventType: string): string {
   return EVENT_TYPE_LABELS[eventType] ?? humanizeCode(eventType);
+}
+
+/**
+ * Nome legível de quem executou a etapa.
+ *
+ * O mapa vive em `@lex-os/shared` porque a mesma palavra sai na tela e no dossiê em PDF, que é
+ * montado pelo worker: mantê-lo aqui criaria a segunda cópia que o teste de deriva existe para
+ * impedir. Provedor desconhecido cai no humanizador — modelo novo pode trazer identificador que
+ * ninguém cadastrou, e a tela não pode quebrar por isso.
+ */
+export function providerLabel(provider: string): string {
+  // O humanizador comum troca sublinhado, que é a forma dos códigos de domínio. Identificador de
+  // provedor é separado por hífen, e sem tratá-lo o desconhecido saía "Provedor-novo-sem-rotulo".
+  return providerLabels[provider] ?? humanizeCode(provider.replace(/-/gu, '_'));
 }
 
 /**

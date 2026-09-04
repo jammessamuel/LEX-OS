@@ -85,7 +85,11 @@ describe('CaseTimelineView', () => {
 
     const mark = wrapper.get('.prov');
     const tooltip = wrapper.get(`[id="${mark.attributes('aria-describedby')}"]`).text();
-    expect(tooltip).toContain('lex-os-review');
+    // A procedência mostra a etapa pelo nome, não pelo identificador interno: quem confirma um
+    // evento precisa saber o que o produziu, e "lex-os-review" não diz isso a um advogado. O
+    // identificador exato continua gravado na extração e na auditoria.
+    expect(tooltip).toContain('Lex os review');
+    expect(tooltip).not.toContain('lex-os-review');
     expect(tooltip).toContain('confiança 91%');
     expect(tooltip).toContain('página 2');
 

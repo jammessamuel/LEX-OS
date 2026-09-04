@@ -6,6 +6,7 @@ import {
   participantRoleLabels,
   participantSideLabels,
   priorityLabels,
+  providerLabels,
 } from '@lex-os/shared';
 
 /**
@@ -204,7 +205,9 @@ function provenance(doc: Doc, source: DossierProvenance): void {
     .filter((part): part is string => part !== null)
     .join(', ');
   const technical = [
-    source.provider,
+    // O identificador segue gravado na extração e na auditoria; no documento que chega ao
+    // cliente, a etapa se chama pelo que faz. Mesma palavra que a tela usa, do mesmo mapa.
+    source.provider === null ? null : labelFor(providerLabels, source.provider),
     [source.model, source.modelVersion].filter(Boolean).join(' '),
     confidenceLabel(source.confidence),
   ]

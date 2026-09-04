@@ -35,6 +35,7 @@ export {
   participantRoleLabels,
   participantSideLabels,
   priorityLabels,
+  providerLabels,
 } from './legal-vocabulary.js';
 export { cnjSegmentName, isValidCnj, normalizeCnj, parseCnj } from './cnj.js';
 export type { CnjParts } from './cnj.js';

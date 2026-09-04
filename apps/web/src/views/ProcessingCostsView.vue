@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 
 import { ApiError, request } from '../api/client.js';
 import type { ProcessingCostSummary } from '../api/types.js';
-import { humanizeCode } from '../domain/vocabulary.js';
+import { humanizeCode, providerLabel } from '../domain/vocabulary.js';
 
 /**
  * Quanto o escritório gastou com preparo de documentos.
@@ -63,7 +63,12 @@ function rotuloDe(chave: string | null): string {
   if (chave === null) {
     return 'Sem registro';
   }
-  return recorte.value === 'case' ? chave : humanizeCode(chave);
+  if (recorte.value === 'case') {
+    return chave;
+  }
+  // Provedor é identificador de procedência, não texto de tela: cru, ele mostrava
+  // "Lex-os-mock-entities" a quem abre a supervisão de gastos.
+  return recorte.value === 'provider' ? providerLabel(chave) : humanizeCode(chave);
 }
 
 async function load(): Promise<void> {
