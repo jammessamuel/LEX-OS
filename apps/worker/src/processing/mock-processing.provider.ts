@@ -64,7 +64,7 @@ export const PROCESSING_PROVIDER = Symbol('PROCESSING_PROVIDER');
 const PADROES: readonly {
   tipo: string;
   expressao: RegExp;
-  normaliza?: (bruto: string) => string;
+  normaliza?: (bruto: string) => string | null;
 }[] = [
   { tipo: 'CNPJ', expressao: /\b\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}\b/gu },
   { tipo: 'CPF', expressao: /\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/gu },
@@ -80,7 +80,17 @@ const PADROES: readonly {
     expressao: /\b(\d{2})\/(\d{2})\/(\d{4})\b/gu,
     normaliza: (bruto) => {
       const [dia, mes, ano] = bruto.split('/');
-      return `${ano}-${mes}-${dia}`;
+      const iso = `${ano}-${mes}-${dia}`;
+      const parsed = new Date(`${iso}T00:00:00.000Z`);
+      if (
+        Number.isNaN(parsed.getTime()) ||
+        parsed.getUTCFullYear() !== Number(ano) ||
+        parsed.getUTCMonth() + 1 !== Number(mes) ||
+        parsed.getUTCDate() !== Number(dia)
+      ) {
+        return null;
+      }
+      return iso;
     },
   },
 ];
@@ -101,9 +111,15 @@ function dadosNoTexto(conteudo: string): {
   for (const { tipo, expressao, normaliza } of PADROES) {
     for (const achado of conteudo.matchAll(expressao)) {
       const bruto = achado[0];
+      const normalizedValue = normaliza === undefined ? bruto : normaliza(bruto);
+      // Forma de data sem data válida — por exemplo 31/02 — é ruído de leitura, não entidade
+      // pronta para uma pessoa confirmar.
+      if (normalizedValue === null) {
+        continue;
+      }
       achados.push({
         entityType: tipo,
-        normalizedValue: normaliza === undefined ? bruto : normaliza(bruto),
+        normalizedValue,
         originalValue: bruto,
         pageNumber: 1,
         startOffset: achado.index,

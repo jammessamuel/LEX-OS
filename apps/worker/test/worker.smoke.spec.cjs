@@ -1,12 +1,14 @@
 let WorkerService;
 let MockProcessingProvider;
 let MockReviewProcessingProvider;
+let readBodyAtMost;
 
 beforeAll(async () => {
   ({ WorkerService } = await import('../dist/worker.service.js'));
   ({ MockProcessingProvider } = await import('../dist/processing/mock-processing.provider.js'));
   ({ MockReviewProcessingProvider } =
     await import('../dist/processing/review-processing.provider.js'));
+  ({ readBodyAtMost } = await import('../dist/storage/s3-object-reader.js'));
 });
 
 describe('WorkerService', () => {
@@ -64,5 +66,42 @@ describe('dados identificados no documento', () => {
       sourceText: textoDe('Procuracao ficticia sem numero, sem data e sem valor.'),
     });
     expect(entities).toEqual([]);
+  });
+
+  it('descarta data impossível em vez de oferecer uma normalização falsa para confirmação', () => {
+    const provider = new MockProcessingProvider({ environment: 'test' });
+    const { entities } = provider.extractEntities({
+      sourceText: textoDe('Vencimento impossível em 31/02/2026.'),
+    });
+    expect(entities).toEqual([]);
+  });
+});
+
+describe('leitura limitada do objeto', () => {
+  async function* blocos(...values) {
+    for (const value of values) {
+      yield Buffer.from(value);
+    }
+  }
+
+  it('não declara corte quando o objeto termina exatamente no teto', async () => {
+    const result = await readBodyAtMost(blocos('ab', 'cd'), 4);
+
+    expect(result.body.toString('utf8')).toBe('abcd');
+    expect(result.truncated).toBe(false);
+  });
+
+  it('detecta conteúdo depois de um bloco que terminou exatamente no teto', async () => {
+    const result = await readBodyAtMost(blocos('abcd', 'ef'), 4);
+
+    expect(result.body.toString('utf8')).toBe('abcd');
+    expect(result.truncated).toBe(true);
+  });
+
+  it('corta um bloco maior sem ultrapassar o limite entregue ao chamador', async () => {
+    const result = await readBodyAtMost(blocos('abcdef'), 4);
+
+    expect(result.body.toString('utf8')).toBe('abcd');
+    expect(result.truncated).toBe(true);
   });
 });

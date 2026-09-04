@@ -5,6 +5,44 @@ import type { RuntimeConfig } from '@lex-os/config';
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
 import type { ObjectReader, ReadObjectInput, ReadObjectResult } from './object-reader.js';
 
+/**
+ * Lê até o teto e usa um único byte adicional para provar se houve corte.
+ *
+ * Comparar apenas o tamanho do último bloco não basta: o bloco pode terminar exatamente no teto
+ * e ainda existir conteúdo depois dele. O byte de prova mantém a memória limitada e não depende
+ * do tamanho dos blocos escolhido pelo cliente S3.
+ */
+export async function readBodyAtMost(
+  stream: AsyncIterable<Uint8Array>,
+  maxBytes: number,
+): Promise<ReadObjectResult> {
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 1 || !Number.isSafeInteger(maxBytes + 1)) {
+    throw new Error('The object read limit must be a positive safe integer.');
+  }
+
+  const proofLimit = maxBytes + 1;
+  const parts: Buffer[] = [];
+  let bytesRead = 0;
+
+  for await (const chunk of stream) {
+    const remaining = proofLimit - bytesRead;
+    const accepted = chunk.subarray(0, remaining);
+    if (accepted.length > 0) {
+      parts.push(Buffer.from(accepted));
+      bytesRead += accepted.length;
+    }
+    if (bytesRead === proofLimit) {
+      break;
+    }
+  }
+
+  const read = Buffer.concat(parts, bytesRead);
+  return {
+    body: read.subarray(0, maxBytes),
+    truncated: read.length > maxBytes,
+  };
+}
+
 @Injectable()
 export class S3ObjectReader implements ObjectReader {
   readonly #client: S3Client;
@@ -39,19 +77,6 @@ export class S3ObjectReader implements ObjectReader {
       throw new Error('The stored object has no body.');
     }
 
-    const partes: Buffer[] = [];
-    let lidos = 0;
-    let truncated = false;
-    for await (const chunk of stream as AsyncIterable<Uint8Array>) {
-      const restante = input.maxBytes - lidos;
-      if (chunk.length >= restante) {
-        partes.push(Buffer.from(chunk.subarray(0, restante)));
-        truncated = chunk.length > restante;
-        break;
-      }
-      partes.push(Buffer.from(chunk));
-      lidos += chunk.length;
-    }
-    return { body: Buffer.concat(partes), truncated };
+    return readBodyAtMost(stream as AsyncIterable<Uint8Array>, input.maxBytes);
   }
 }

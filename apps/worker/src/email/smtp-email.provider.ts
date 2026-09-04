@@ -53,34 +53,62 @@ function encodeBody(text: string): string {
 
 class SmtpSession {
   #buffer = '';
-  #pending: { resolve: (reply: string) => void; reject: (error: Error) => void } | null = null;
+  #pending: {
+    resolve: (reply: string) => void;
+    reject: (error: Error) => void;
+    timeout: ReturnType<typeof setTimeout>;
+  } | null = null;
 
   constructor(private readonly socket: Socket) {
     socket.setEncoding('utf8');
     socket.on('data', (chunk: string) => this.#consume(chunk));
-    socket.on('error', (error) => this.#pending?.reject(error));
-    socket.on('close', () => this.#pending?.reject(new Error('SMTP connection closed early.')));
+    socket.on('error', (error) => this.#reject(error));
+    socket.on('close', () => this.#reject(new Error('SMTP connection closed early.')));
+  }
+
+  #reject(error: Error): void {
+    const pending = this.#pending;
+    if (pending === null) {
+      return;
+    }
+    clearTimeout(pending.timeout);
+    this.#pending = null;
+    pending.reject(error);
   }
 
   /** Uma resposta termina na linha cujo quarto caractere é espaço; as com hífen continuam. */
   #consume(chunk: string): void {
     this.#buffer += chunk;
+    this.#resolveBufferedReply();
+  }
+
+  #resolveBufferedReply(): void {
     const lines = this.#buffer.split('\r\n');
     const last = lines.at(-2);
     if (last === undefined || last.charAt(3) === '-') {
       return;
     }
+    const pending = this.#pending;
+    if (pending === null) {
+      // O banner pode chegar entre a criação do socket e a chamada de `read`. Conservá-lo evita
+      // perder uma resposta válida apenas porque a rede foi mais rápida que o chamador.
+      return;
+    }
     const reply = this.#buffer;
     this.#buffer = '';
-    const pending = this.#pending;
+    clearTimeout(pending.timeout);
     this.#pending = null;
-    pending?.resolve(reply);
+    pending.resolve(reply);
   }
 
   read(): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.#pending = { resolve, reject };
-      setTimeout(() => this.#pending?.reject(new Error('SMTP reply timed out.')), REPLY_TIMEOUT_MS);
+      const timeout = setTimeout(
+        () => this.#reject(new Error('SMTP reply timed out.')),
+        REPLY_TIMEOUT_MS,
+      );
+      this.#pending = { resolve, reject, timeout };
+      this.#resolveBufferedReply();
     });
   }
 
