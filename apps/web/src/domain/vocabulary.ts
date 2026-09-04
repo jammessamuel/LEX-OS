@@ -288,6 +288,88 @@ export function eventTypeLabel(eventType: string): string {
  * impedir. Provedor desconhecido cai no humanizador — modelo novo pode trazer identificador que
  * ninguém cadastrou, e a tela não pode quebrar por isso.
  */
+/**
+ * O que cada registro de auditoria significa, em português.
+ *
+ * Esta é a tela que um escritório abre para provar controle — a um cliente, a um sócio, a quem
+ * audita. Ela listava `case.confidential.read` e `auth.refresh.succeeded`: identificador técnico,
+ * em inglês, sobre a operação de um escritório brasileiro. Quem precisa responder "quem abriu
+ * este caso sigiloso e quando" não deveria ter de traduzir o sistema antes.
+ *
+ * O código continua visível abaixo do rótulo e continua sendo o que o filtro aceita: ele é o
+ * registro, e é por ele que se procura. O rótulo é o que se lê.
+ */
+const AUDIT_ACTION_LABELS: Readonly<Record<string, string>> = {
+  'assistant.answer.generated': 'Resposta do assistente gerada',
+  'assistant.answer.refused': 'Assistente recusou responder',
+  'audit.log.listed': 'Trilha de auditoria consultada',
+  'auth.login.blocked': 'Entrada bloqueada',
+  'auth.login.failed': 'Tentativa de entrada malsucedida',
+  'auth.login.succeeded': 'Entrada realizada',
+  'auth.logout.succeeded': 'Saída realizada',
+  'auth.password.reset.completed': 'Redefinição de senha concluída',
+  'auth.password.reset.requested': 'Redefinição de senha solicitada',
+  'auth.refresh.replayed': 'Reuso de credencial de renovação detectado',
+  'auth.refresh.revoked': 'Credencial de renovação revogada',
+  'auth.refresh.succeeded': 'Sessão renovada',
+  'auth.second_factor.activated': 'Segundo fator ativado',
+  'auth.second_factor.disabled': 'Segundo fator desativado',
+  'auth.second_factor.enrolled': 'Segundo fator cadastrado',
+  'auth.second_factor.recovery_used': 'Código de recuperação usado',
+  'auth.second_factor.rejected': 'Segundo fator recusado',
+  'case.confidential.read': 'Caso sigiloso aberto',
+  'case.created': 'Caso criado',
+  'case.deleted': 'Caso excluído',
+  'case.export.downloaded': 'Dossiê baixado',
+  'case.export.generated': 'Dossiê gerado',
+  'case.export.requested': 'Dossiê solicitado',
+  'case.legal_hold.placed': 'Retenção obrigatória posta',
+  'case.legal_hold.released': 'Retenção obrigatória retirada',
+  'case.processing_budget.updated': 'Teto de custo do caso alterado',
+  'case.updated': 'Caso alterado',
+  'case_participant.created': 'Parte vinculada ao caso',
+  'checklist.analysis.completed': 'Análise do checklist concluída',
+  'checklist.applied': 'Checklist aplicado ao caso',
+  'checklist_item.updated': 'Exigência do checklist atualizada',
+  'document.deleted': 'Documento excluído',
+  'document.reprocessed': 'Documento reprocessado',
+  'document.updated': 'Documento alterado',
+  'extracted_entity.confirmed': 'Dado extraído confirmado',
+  'file.download_url.created': 'Link de download emitido',
+  'file.duplicate.detected': 'Arquivo duplicado identificado',
+  'file.upload.quarantined': 'Arquivo enviado para quarentena',
+  'file.upload.rejected': 'Envio de arquivo recusado',
+  'file.uploaded': 'Arquivo enviado',
+  'knowledge.document.indexed': 'Documento indexado para busca',
+  'knowledge.search.executed': 'Busca no acervo executada',
+  'person.created': 'Pessoa cadastrada',
+  'person.deleted': 'Pessoa excluída',
+  'person.updated': 'Pessoa alterada',
+  'processing.budget.limit_reached': 'Teto de custo atingido',
+  'processing.cost.summarised': 'Custo de preparo consultado',
+  'processing.extraction.created': 'Extração registrada',
+  'processing.job.cancelled': 'Preparo cancelado',
+  'processing.job.completed': 'Preparo concluído',
+  'task.created': 'Tarefa criada',
+  'task.updated': 'Tarefa atualizada',
+  'timeline.event.confirmed': 'Evento da cronologia confirmado',
+  'timeline.event.created': 'Evento da cronologia registrado',
+  'user.assignable.listed': 'Responsáveis disponíveis consultados',
+  'user.blocked': 'Pessoa da equipe bloqueada',
+  'user.invitation.accepted': 'Convite aceito',
+  'user.invitation.revoked': 'Convite revogado',
+  'user.invited': 'Convite enviado',
+  'user.listed': 'Equipe consultada',
+  'user.notifications.updated': 'Preferências de notificação alteradas',
+  'user.reactivated': 'Pessoa da equipe reativada',
+  'user.roles.replaced': 'Papéis da pessoa alterados',
+};
+
+/** Ação sem rótulo aparece pelo código: é o sinal de que o mapa ficou para trás. */
+export function auditActionLabel(action: string): string {
+  return AUDIT_ACTION_LABELS[action] ?? action;
+}
+
 export function providerLabel(provider: string): string {
   // O humanizador comum troca sublinhado, que é a forma dos códigos de domínio. Identificador de
   // provedor é separado por hífen, e sem tratá-lo o desconhecido saía "Provedor-novo-sem-rotulo".

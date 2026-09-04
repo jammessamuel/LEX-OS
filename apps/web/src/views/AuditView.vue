@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue';
 
 import { ApiError, request } from '../api/client.js';
 import type { AuditLog, CursorPage } from '../api/types.js';
-import { formatDateTime, humanizeCode } from '../domain/vocabulary.js';
+import { auditActionLabel, formatDateTime, humanizeCode } from '../domain/vocabulary.js';
 
 const entries = ref<AuditLog[]>([]);
 const nextCursor = ref<string | null>(null);
@@ -131,7 +131,10 @@ onMounted(() => void load());
                   humanizeCode(entry.actorType)
                 }}</span>
               </td>
-              <td class="data">{{ entry.action }}</td>
+              <td>
+                {{ auditActionLabel(entry.action) }}
+                <span class="rows__meta data">{{ entry.action }}</span>
+              </td>
               <td>
                 {{ humanizeCode(entry.entityType) }}
                 <span v-if="entry.entityId" class="rows__meta data">{{ entry.entityId }}</span>
