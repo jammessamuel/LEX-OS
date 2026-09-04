@@ -49,6 +49,77 @@ export interface ProcessingProvider {
 
 export const PROCESSING_PROVIDER = Symbol('PROCESSING_PROVIDER');
 
+/**
+ * Os dados que o documento realmente traz, cada um no seu lugar no texto.
+ *
+ * Antes disto o extrator determinístico não recebia o texto sequer: devolvia sempre um contrato
+ * "LEX-2026-0001" e a data "05/08/2026", com deslocamentos fixos. Num cartão de ponto de março a
+ * tela mostrava as duas como "dados identificados", com botão de confirmar ao lado — e confirmar
+ * é ato humano que vale. O sistema pedia a um advogado que assinasse embaixo de dado inventado.
+ *
+ * A varredura reconhece o que tem forma inequívoca em documento brasileiro. Não infere, não
+ * completa e não adivinha: cada achado é um recorte literal do texto, com o intervalo exato.
+ * Documento sem nenhum desses devolve lista vazia, que é a resposta certa.
+ */
+const PADROES: readonly {
+  tipo: string;
+  expressao: RegExp;
+  normaliza?: (bruto: string) => string;
+}[] = [
+  { tipo: 'CNPJ', expressao: /\b\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}\b/gu },
+  { tipo: 'CPF', expressao: /\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/gu },
+  { tipo: 'CASE_NUMBER', expressao: /\b\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}\b/gu },
+  {
+    tipo: 'MONETARY_VALUE',
+    expressao: /R\$\s?\d{1,3}(?:\.\d{3})*,\d{2}/gu,
+    // Forma canônica do valor: só os dígitos e o separador decimal, para somar sem reparsear.
+    normaliza: (bruto) => bruto.replace(/[^\d,]/gu, '').replace(',', '.'),
+  },
+  {
+    tipo: 'DATE',
+    expressao: /\b(\d{2})\/(\d{2})\/(\d{4})\b/gu,
+    normaliza: (bruto) => {
+      const [dia, mes, ano] = bruto.split('/');
+      return `${ano}-${mes}-${dia}`;
+    },
+  },
+];
+
+/** Quantos dados o extrator determinístico devolve, no máximo. */
+const MAX_ENTIDADES = 20;
+
+function dadosNoTexto(conteudo: string): {
+  entityType: string;
+  normalizedValue: string;
+  originalValue: string;
+  pageNumber: number;
+  startOffset: number;
+  endOffset: number;
+  confidenceScore: number;
+}[] {
+  const achados = [];
+  for (const { tipo, expressao, normaliza } of PADROES) {
+    for (const achado of conteudo.matchAll(expressao)) {
+      const bruto = achado[0];
+      achados.push({
+        entityType: tipo,
+        normalizedValue: normaliza === undefined ? bruto : normaliza(bruto),
+        originalValue: bruto,
+        pageNumber: 1,
+        startOffset: achado.index,
+        endOffset: achado.index + bruto.length,
+        // A varredura lê o que está escrito; o que o dado significa para o caso continua sendo
+        // juízo de quem revisa, e por isso a entidade nasce não confirmada.
+        confidenceScore: 1,
+      });
+    }
+  }
+  // Na ordem em que aparecem no documento, que é como quem confere lê. O corte vem depois da
+  // ordenação: as primeiras páginas são as que identificam o documento.
+  achados.sort((a, b) => a.startOffset - b.startOffset);
+  return achados.slice(0, MAX_ENTIDADES);
+}
+
 @Injectable()
 export class MockProcessingProvider implements ProcessingProvider {
   constructor(@Inject(RUNTIME_CONFIG) config: RuntimeConfig) {
@@ -81,7 +152,7 @@ export class MockProcessingProvider implements ProcessingProvider {
     };
   }
 
-  extractEntities(): {
+  extractEntities(input: { sourceText: SourceText }): {
     provider: string;
     modelName: string;
     entities: readonly {
@@ -97,26 +168,7 @@ export class MockProcessingProvider implements ProcessingProvider {
     return {
       provider: 'lex-os-mock-entities',
       modelName: 'deterministic-v1',
-      entities: [
-        {
-          entityType: 'CONTRACT_NUMBER',
-          normalizedValue: 'LEX-2026-0001',
-          originalValue: 'LEX-2026-0001',
-          pageNumber: 1,
-          startOffset: 19,
-          endOffset: 32,
-          confidenceScore: 0.99,
-        },
-        {
-          entityType: 'DATE',
-          normalizedValue: '2026-08-05',
-          originalValue: '05/08/2026',
-          pageNumber: 1,
-          startOffset: 47,
-          endOffset: 57,
-          confidenceScore: 0.98,
-        },
-      ],
+      entities: dadosNoTexto(input.sourceText.content),
     };
   }
 }
