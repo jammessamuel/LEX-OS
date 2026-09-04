@@ -191,6 +191,35 @@ and production are `fictional` today. Do not change the value to admit a client 
 approved delivery removes the startup guard only after the evidence package of ADR-012/016 is
 complete.
 
+## Preparar o demo para uma apresentação
+
+Implantar o código não basta: o que o escritório vê são os registros já gravados no banco do
+demo, e eles ficam com a forma do dia em que foram produzidos. Duas correções de 2026-09-03 — a
+cronologia lendo as datas do documento e os dados identificados vindo do texto — só aparecem
+depois de reprocessar. A ordem importa.
+
+1. **Implante o worker antes do api.** Quem reprocessa é o worker; o api só recebe o pedido.
+   O `railway.json` versionado é a variante do api: troque para a do worker (`worker/dist/main.js`,
+   sem `preDeployCommand` e sem healthcheck), rode `railway up --service worker --environment
+production --detach` e **restaure o arquivo imediatamente** — deixá-lo trocado faz o próximo
+   deploy do api subir o worker.
+2. **Implante o api:** `railway up --service api --environment production --detach`. O pre-deploy
+   aplica migrações pendentes.
+3. **Reprocesse os documentos do caso da apresentação.** Pela API, `POST /documents/{id}/reprocess`
+   em cada um. Sem isto a cronologia continua mostrando os eventos antigos: extração é
+   append-only, e o reprocessamento acrescenta a leitura nova preservando a anterior.
+4. **Confira a cronologia na tela.** O sinal de que deu certo é a lista deixar de repetir a mesma
+   linha e passar a trazer as datas de cada documento — admissão, pagamento, aviso prévio.
+
+**Não rode `pnpm db:seed` contra o demo para "atualizar" o checklist.** O seed reescreve o
+`slug` da organização e derruba o login que está nos seus atalhos. Exigência nova de checklist
+entra por API, ou o slug volta na mão depois.
+
+**Reveja as datas antes de apresentar.** Os prazos do demo são fixos e envelhecem: a agenda hoje
+mostra três prazos vencidos e nada nos próximos sete dias, o que conta uma história pior do que a
+verdadeira. Um escritório se reconhece numa agenda com algo vencido **e** algo à frente — remarque
+as tarefas pela tela antes da conversa.
+
 ## Remaining production blockers
 
 - real malware scanner and production OCR/embedding adapters;
