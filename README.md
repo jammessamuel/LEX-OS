@@ -115,15 +115,22 @@ O `infra:down` omite `--volumes` de propósito; os dados de PostgreSQL, Redis e 
 
 ## Preview de staging na Railway
 
-O repositório mantém arquivos separados de configuração como código da Railway para os três processos de aplicação:
+O projeto inteiro da Railway é descrito em `.railway/railway.ts`, que substitui os antigos
+arquivos Config as Code por serviço. A configuração preserva os ambientes existentes: API e
+worker rodam em staging e produção, enquanto o serviço web existe somente em staging. Valores de
+variáveis permanecem na Railway por meio de `preserve()` e nunca são copiados para o repositório.
 
-| Serviço | Arquivo de configuração      |
-| ------- | ---------------------------- |
-| API     | `/infra/railway/api.json`    |
-| Worker  | `/infra/railway/worker.json` |
-| Web     | `/infra/railway/web.json`    |
+Antes de alterar infraestrutura, selecione o ambiente e revise o plano de modo somente leitura:
 
-Configure em cada serviço a opção **Railway Config File** apontando para o caminho absoluto correspondente no repositório. A configuração da API executa as migrações forward revisadas como etapa de pré-deploy; o worker nunca executa migrações. Um deploy de staging a partir de um CLI autenticado e vinculado usa então:
+```bash
+railway environment staging
+railway config plan
+railway config apply
+```
+
+Aplique somente um plano sem exclusões ou alterações inesperadas. O arquivo da API executa as
+migrações forward revisadas como etapa de pré-deploy; o worker nunca executa migrações. O deploy do
+código continua sendo uma operação separada:
 
 ```bash
 railway up --service api --environment staging

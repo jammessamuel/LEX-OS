@@ -162,9 +162,11 @@ deterministic/mock stack to production.
 
 - Front: `vercel build --cwd apps/web --prod --yes` then
   `vercel deploy --cwd apps/web --prebuilt --prod --yes`.
+- Infrastructure: select the target environment, run `railway config plan`, review it, and run
+  `railway config apply` only when the plan contains no unexpected deletion or replacement.
 - Backend: `railway up --service api --detach` and `railway up --service worker --detach`
-  from the repository root; the API pre-deploy runs `pnpm db:migrate:deploy`. The worker
-  never runs migrations.
+  from the repository root. `.railway/railway.ts` gives the API its
+  `pnpm db:migrate:deploy` pre-deploy command; the worker never runs migrations.
 - CI performs no deploy, by design.
 
 **A new required variable goes to the platform before the code that reads it.** The config
@@ -198,17 +200,17 @@ demo, e eles ficam com a forma do dia em que foram produzidos. Duas correções 
 cronologia lendo as datas do documento e os dados identificados vindo do texto — só aparecem
 depois de reprocessar. A ordem importa.
 
-1. **Implante o worker antes do api.** Quem reprocessa é o worker; o api só recebe o pedido.
-   O `railway.json` versionado é a variante do api: troque para a do worker (`worker/dist/main.js`,
-   sem `preDeployCommand` e sem healthcheck), rode `railway up --service worker --environment
-production --detach` e **restaure o arquivo imediatamente** — deixá-lo trocado faz o próximo
-   deploy do api subir o worker.
-2. **Implante o api:** `railway up --service api --environment production --detach`. O pre-deploy
+1. **Confirme a infraestrutura antes do código.** Se `.railway/railway.ts` mudou, selecione
+   `production`, execute `railway config plan` e aplique somente o plano revisado. O arquivo único
+   já mantém comandos separados para API e worker; não troque arquivos de configuração à mão.
+2. **Implante o worker antes do api.** Quem reprocessa é o worker; o api só recebe o pedido:
+   `railway up --service worker --environment production --detach`.
+3. **Implante o api:** `railway up --service api --environment production --detach`. O pre-deploy
    aplica migrações pendentes.
-3. **Reprocesse os documentos do caso da apresentação.** Pela API, `POST /documents/{id}/reprocess`
+4. **Reprocesse os documentos do caso da apresentação.** Pela API, `POST /documents/{id}/reprocess`
    em cada um. Sem isto a cronologia continua mostrando os eventos antigos: extração é
    append-only, e o reprocessamento acrescenta a leitura nova preservando a anterior.
-4. **Confira a cronologia na tela.** O sinal de que deu certo é a lista deixar de repetir a mesma
+5. **Confira a cronologia na tela.** O sinal de que deu certo é a lista deixar de repetir a mesma
    linha e passar a trazer as datas de cada documento — admissão, pagamento, aviso prévio.
 
 **Não rode `pnpm db:seed` contra o demo para "atualizar" o checklist.** O seed reescreve o
