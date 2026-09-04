@@ -82,9 +82,17 @@ test.describe('vistoria da jornada de apresentação', () => {
     await page.getByRole('button', { name: /entrar/iu }).click();
 
     await expect(page.getByRole('link', { name: 'Casos' })).toBeVisible({ timeout: 30_000 });
+
+    // O pós-login aterrissa em /casos desde que o realce da navegação foi consertado, então
+    // fotografar aqui produzia a lista de casos com o nome de painel — e o painel, que é a
+    // primeira tela que o escritório vê de verdade, nunca aparecia na vistoria.
+    await page.getByRole('link', { name: 'Painel' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
     await foto('02-painel');
 
-    await page.getByRole('link', { name: 'Casos' }).click();
+    // Pela barra de navegação, e não por nome: o painel tem um atalho "Ver casos" que também
+    // leva a /casos, e o seletor por papel encontrava os dois.
+    await page.getByRole('link', { name: 'Casos', exact: true }).click();
     await expect(page.getByText(CASO)).toBeVisible({ timeout: 20_000 });
     await foto('03-lista-de-casos');
 
@@ -97,11 +105,14 @@ test.describe('vistoria da jornada de apresentação', () => {
 
     // O documento com o cartão de ponto é o que carrega a divergência da demonstração.
     const documento = page.getByText('Cartão de ponto — março/2026').first();
-    if (await documento.isVisible().catch(() => false)) {
+    if (await documento.isVisible({ timeout: 15_000 }).catch(() => false)) {
       await documento.click();
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
       await foto('05-documento');
       await page.goBack();
+    } else {
+      // Pular calado é o que fez a vistoria vir "sem problemas" sem ter olhado as abas.
+      problemas.push('documento "Cartão de ponto — março/2026" não apareceu no caso');
     }
 
     // As três telas que mostram o trabalho da máquina — é por elas que um escritório julga o
