@@ -450,9 +450,18 @@ describe('Delivery 8 persistent processing pipeline', () => {
         .filter((item) => item.extractionType !== 'OCR')
         .every((item) => item.provider.startsWith('lex-os-mock')),
     ).toBe(true);
-    expect(
-      extractions.find((item) => item.extractionType === 'ENTITY_EXTRACTION').extractedEntities,
-    ).toHaveLength(2);
+    // Os dados identificados são os que estão no arquivo, e o localizador tem de recortá-los de
+    // volta. Enquanto o extrator devolvia um par fixo, este teste conferia dois e passava sobre
+    // conteúdo que o documento não tinha — a asserção de quantidade não distinguia leitura de
+    // invenção. A fixture traz uma data e nenhum número com forma reconhecível.
+    const identificados = extractions.find(
+      (item) => item.extractionType === 'ENTITY_EXTRACTION',
+    ).extractedEntities;
+    const textoDoArquivo = extractions.find((item) => item.extractionType === 'OCR').rawText;
+    expect(identificados.map((e) => e.entityType)).toEqual(['DATE']);
+    for (const dado of identificados) {
+      expect(textoDoArquivo.slice(dado.startOffset, dado.endOffset)).toBe(dado.originalValue);
+    }
 
     const timeline = await database.client.timelineEvent.findMany({
       where: { organizationId, caseId, sourceId: fixture.documentId },
