@@ -55,16 +55,14 @@ jobs:
       FILE_INTAKE_MAX_FILES_PER_REQUEST: '10'
       FILE_INTAKE_ALLOWED_MIME_TYPES: application/pdf,image/jpeg,image/png,text/plain
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/setup@v2
         with:
           version: ${{ env.PNPM_VERSION }}
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
+          runtime: node@${{ env.NODE_VERSION }}
+          install: false
+          cache: true
 
       - name: Install
         run: pnpm install --frozen-lockfile
@@ -104,7 +102,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -132,16 +130,14 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/setup@v2
         with:
           version: ${{ env.PNPM_VERSION }}
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
+          runtime: node@${{ env.NODE_VERSION }}
+          install: false
+          cache: true
 
       - name: Install
         run: pnpm install --frozen-lockfile
@@ -193,16 +189,14 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/setup@v2
         with:
           version: ${{ env.PNPM_VERSION }}
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
+          runtime: node@${{ env.NODE_VERSION }}
+          install: false
+          cache: true
 
       - name: Install
         run: pnpm install --frozen-lockfile
@@ -249,7 +243,7 @@ jobs:
 
       - name: Playwright artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-artifacts
           path: |
@@ -271,23 +265,21 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Em pull request, o GitHub compara as dependências alteradas com o banco de
       # vulnerabilidades; em push, a auditoria do lockfile cobre o estado inteiro.
       - name: Review changed dependencies
         if: github.event_name == 'pull_request'
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: high
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/setup@v2
         with:
           version: ${{ env.PNPM_VERSION }}
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+          runtime: node@${{ env.NODE_VERSION }}
+          install: false
 
       - name: Audit production dependencies
         run: pnpm deps:audit
