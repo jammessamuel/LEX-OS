@@ -635,6 +635,97 @@ describe('Delivery 8 timeline, checklist and task review', () => {
     }
   });
 
+  it('tira da cronologia o evento cuja fonte foi excluída, sem apagar o registro', async () => {
+    // O evento carrega um localizador para dentro do documento. Excluído o documento, quem
+    // revisa não consegue mais abrir a origem, e um fato com procedência irresolvível é o que a
+    // citação obrigatória existe para impedir. A linha permanece no banco — o ADR-012 manda
+    // preservar —, e é a tela que para de afirmar o fato.
+    const DOC = '67000000-0000-4000-8000-000000000001';
+    const EVENTO = '67000000-0000-4000-8000-000000000002';
+    const EXTRACAO = '67000000-0000-4000-8000-000000000003';
+    await database.client.document.create({
+      data: {
+        id: DOC,
+        organizationId: ORGANIZATION_ID,
+        caseId: DEMO_CASE_ID,
+        fileId: STANDARD_FILE_ID,
+        title: 'Documento fictício a excluir',
+        processingStatus: 'NEEDS_REVIEW',
+      },
+    });
+    // Evento de IA exige extração pela restrição `timeline_events_ai_source_required`: sem ela,
+    // o fato não teria de onde ter vindo. A fixture monta a cadeia inteira porque é ela que o
+    // filtro percorre.
+    await database.client.documentExtraction.create({
+      data: {
+        id: EXTRACAO,
+        organizationId: ORGANIZATION_ID,
+        documentId: DOC,
+        extractionType: 'TIMELINE_ANALYSIS',
+        provider: 'lex-os-mock-timeline',
+        modelName: 'deterministic-v1',
+        modelVersion: '1',
+        executionId: `fixture:${EVENTO}`,
+        status: 'COMPLETED',
+        confidenceScore: 1,
+        processingTimeMs: 1,
+        promptVersion: 'timeline-mock-v2',
+      },
+    });
+    await database.client.timelineEvent.create({
+      data: {
+        id: EVENTO,
+        organizationId: ORGANIZATION_ID,
+        caseId: DEMO_CASE_ID,
+        eventType: 'DATE_READ_FROM_DOCUMENT',
+        title: 'Fato de documento que será excluído',
+        description: 'Fixture de origem excluída.',
+        occurredAt: new Date('2026-07-07T00:00:00.000Z'),
+        datePrecision: 'DAY',
+        importance: 'NORMAL',
+        sourceType: 'DOCUMENT',
+        sourceId: DOC,
+        sourceLocator: { pageNumber: 1, startOffset: 0, endOffset: 5 },
+        extractionId: EXTRACAO,
+        confidenceScore: 1,
+        createdByActorType: 'AI',
+      },
+    });
+
+    try {
+      const antes = await authorized(
+        internToken,
+        'get',
+        `/api/v1/cases/${DEMO_CASE_ID}/timeline-events?limit=50`,
+      ).expect(200);
+      assert.ok(
+        antes.body.data.some((e) => e.id === EVENTO),
+        'com o documento ativo, o evento aparece.',
+      );
+
+      await authorized(adminToken, 'delete', `/api/v1/documents/${DOC}`).expect(204);
+
+      const depois = await authorized(
+        internToken,
+        'get',
+        `/api/v1/cases/${DEMO_CASE_ID}/timeline-events?limit=50`,
+      ).expect(200);
+      assert.equal(
+        depois.body.data.some((e) => e.id === EVENTO),
+        false,
+        'excluído o documento, o evento sai da cronologia.',
+      );
+
+      // E continua gravado: preservar é a regra, esconder é a consequência.
+      const preservado = await database.client.timelineEvent.findUnique({ where: { id: EVENTO } });
+      assert.ok(preservado, 'o registro do evento não pode ser apagado.');
+    } finally {
+      await database.client.timelineEvent.deleteMany({ where: { id: EVENTO } });
+      await database.client.documentExtraction.deleteMany({ where: { id: EXTRACAO } });
+      await database.client.document.deleteMany({ where: { id: DOC } });
+    }
+  });
+
   it('returns a sourced, unconfirmed event and confirms it without mutating its extraction', async () => {
     const beforeExtraction = await database.client.documentExtraction.findUnique({
       where: { id: STANDARD_EXTRACTION_ID },

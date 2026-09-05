@@ -85,7 +85,13 @@ export class TimelineRepository {
       where: {
         organizationId,
         caseId,
+        // Evento cuja fonte foi excluída sai da cronologia — a linha permanece no banco, como
+        // manda o ADR-012, mas a tela para de exibi-la. O fato extraído carrega um localizador
+        // que aponta para um documento que a pessoa não abre mais: continuar mostrando é afirmar
+        // um fato com procedência irresolvível, que é justamente o que a citação existe para
+        // impedir. Evento sem documento de origem — lançado à mão — não é alcançado.
         ...(cursor === undefined ? {} : afterCursor(cursor)),
+        NOT: { sourceDocument: { is: { deletedAt: { not: null } } } },
       },
       // A tela promete "na ordem dos fatos" e a consulta entregava a ordem da gravação: com
       // todos os eventos processados no mesmo minuto, a lista saía agrupada por documento, e a
