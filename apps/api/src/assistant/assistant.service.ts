@@ -28,6 +28,28 @@ interface ParsedProviderOutput {
   claims: readonly { text: string; sourceChunkIds: readonly string[] }[];
 }
 
+/**
+ * Quanto uma única resposta pode custar, no pior caso, com os preços configurados.
+ *
+ * O custo real só existe depois de a resposta existir, e a restrição do banco exige o gasto
+ * dentro do teto: com folga menor que uma resposta, a despesa acontece e não pode ser gravada.
+ * Exigir esta folga antes de chamar o modelo transforma o teto em teto de verdade.
+ *
+ * O teto de saída é conhecido — o próprio adaptador o envia. A entrada é limitada pelo prompt
+ * mais cinco trechos recuperados; o valor abaixo é uma cota generosa dela, porque errar para
+ * mais aqui recusa uma pergunta a mais, e errar para menos deixa o gasto furar o teto.
+ */
+const TETO_TOKENS_DE_SAIDA = 4096;
+const COTA_TOKENS_DE_ENTRADA = 32_000;
+
+function custoMaximoDeUmaResposta(config: RuntimeConfig): string {
+  const entrada =
+    (COTA_TOKENS_DE_ENTRADA * Number(config.languageModel.inputCostPerMillionTokens)) / 1_000_000;
+  const saida =
+    (TETO_TOKENS_DE_SAIDA * Number(config.languageModel.outputCostPerMillionTokens)) / 1_000_000;
+  return (entrada + saida).toFixed(6);
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
@@ -194,8 +216,14 @@ export class AssistantService {
     const legalArea = await this.cases.legalAreaFor(actor, input.caseId);
 
     // O teto do caso passa a valer para a pergunta manual. Aqui é o último ponto em que
-    // recusar ainda evita a despesa: logo abaixo o modelo é chamado.
-    await this.cases.assertAssistantBudgetAvailable(actor.organizationId, input.caseId);
+    // recusar ainda evita a despesa: logo abaixo o modelo é chamado. Exigir folga para uma
+    // resposta inteira, e não folga qualquer, é o que impede o teto de ser ultrapassado
+    // justamente na última pergunta — o custo só se conhece depois de a resposta existir.
+    await this.cases.assertAssistantBudgetAvailable(
+      actor.organizationId,
+      input.caseId,
+      custoMaximoDeUmaResposta(this.config),
+    );
     const prompt = promptFor('GROUNDED_ANSWER', legalArea, {
       caseArchive: this.config.caseArchive,
     });

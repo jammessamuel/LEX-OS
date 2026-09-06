@@ -37,6 +37,39 @@ import {
   type UpdateCaseData,
 } from './cases.repository.js';
 
+/**
+ * O teto de custo com que um caso nasce, em reais.
+ *
+ * A coluna nasce em zero, e zero é teto zero: o caso criado pela interface não autorizava
+ * consulta nenhuma ao modelo. O ADR-011 exige que o teto exista antes da despesa, não que ele
+ * seja intransponível de fábrica — um caso que nasce inutilizável não cumpre a decisão, só a
+ * cumpre no papel.
+ *
+ * O valor é generoso e limitado ao mesmo tempo: a resposta medida do assistente custa cerca de
+ * treze centavos, então isto comporta perto de duas mil perguntas num caso. Quem precisar de
+ * mais ajusta pelo próprio caso, em `PATCH /cases/{id}/processing-budget`, e o ajuste fica na
+ * auditoria. Escolhido em 2026-09-06 por não haver ainda um padrão por escritório — quando
+ * houver, ele passa a mandar aqui.
+ */
+const TETO_DE_CUSTO_INICIAL = '250.000000';
+
+/**
+ * O caso comporta mais uma resposta?
+ *
+ * Exposta como função pura porque é a decisão que importa e não havia como exercitá-la: com o
+ * provedor determinístico os preços são zero, a folga exigida é zero, e a recusa fica
+ * inalcançável pela API — o gasto que ela evita só existe com provedor pago. Aqui a aritmética
+ * é conferida sem depender de preço configurado nem de banco.
+ */
+export function semFolgaParaResposta(input: {
+  limite: Prisma.Decimal;
+  gasto: Prisma.Decimal;
+  reservado: Prisma.Decimal;
+  folgaExigida: Prisma.Decimal;
+}): boolean {
+  return input.gasto.add(input.reservado).add(input.folgaExigida).greaterThan(input.limite);
+}
+
 const parseCaseCursor: (value: unknown) => CaseCursor | undefined =
   createTimestampIdCursorParser('updatedAt');
 
@@ -292,6 +325,7 @@ export class CasesService {
           priority: input.priority ?? 'NORMAL',
           confidentialityLevel,
           responsibleUserId: input.responsibleUserId ?? null,
+          processingCostLimitAmount: new Prisma.Decimal(TETO_DE_CUSTO_INICIAL),
           openedAt,
           closedAt,
         });
@@ -487,7 +521,15 @@ export class CasesService {
    * O teto do caso passa a valer para a pergunta manual, não só para o processamento
    * automático. Recusar antes é o único momento em que a recusa evita a despesa.
    */
-  async assertAssistantBudgetAvailable(organizationId: string, caseId: string): Promise<void> {
+  /**
+   * @param folgaExigida quanto o caso precisa ter livre para autorizar a chamada. Quem sabe
+   * quanto uma resposta pode custar é quem vai chamar o modelo; aqui só se compara.
+   */
+  async assertAssistantBudgetAvailable(
+    organizationId: string,
+    caseId: string,
+    folgaExigida = '0',
+  ): Promise<void> {
     const record = await this.repository.findById(organizationId, caseId);
     if (record === null) {
       throw this.#notFound();
@@ -504,14 +546,19 @@ export class CasesService {
     // existia, e só então o banco recusava gravá-la: o escritório recebia erro interno depois
     // de o dinheiro ter sido gasto. Recusar antes de chamar o modelo é o que o ADR-011 pede
     // quando manda o teto existir por caso.
-    const committed = record.processingCostSpentAmount.add(record.processingCostReservedAmount);
-    if (committed.greaterThanOrEqualTo(record.processingCostLimitAmount)) {
+    const semFolga = semFolgaParaResposta({
+      limite: record.processingCostLimitAmount,
+      gasto: record.processingCostSpentAmount,
+      reservado: record.processingCostReservedAmount,
+      folgaExigida: new Prisma.Decimal(folgaExigida),
+    });
+    if (semFolga) {
       throw new ApiException(
         HttpStatus.CONFLICT,
         'CASE_PROCESSING_BUDGET_REACHED',
         record.processingCostLimitAmount.isZero()
           ? 'O caso ainda não tem teto de custo definido, e sem teto nenhuma consulta ao modelo é autorizada. Defina o teto do caso para usar o assistente.'
-          : 'O caso atingiu o teto de custo de processamento. Ajuste o teto para continuar.',
+          : 'O caso não tem folga suficiente no teto de custo para mais uma resposta. Ajuste o teto para continuar.',
       );
     }
   }

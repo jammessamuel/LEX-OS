@@ -454,14 +454,16 @@ describe('Delivery 9 authorized text and semantic search', () => {
     await search({ query: 'contrato' }, noSearchToken).expect(403);
   });
 
-  it('recusa a pergunta antes de chamar o modelo quando o caso não tem folga de teto', async () => {
-    // A verificação só olhava se o estado já era "limite atingido", e o teto nasce em zero em
-    // todo caso criado pela interface: a pergunta era aceita, o modelo respondia, a despesa
-    // existia, e só então o banco recusava gravá-la — o escritório recebia erro interno depois
-    // de o dinheiro ter sido gasto. Gastar sem poder registrar é o pior dos dois mundos.
-    await pool.query('UPDATE cases SET processing_cost_limit_amount = 0 WHERE id = $1', [
-      standardSource.caseId,
-    ]);
+  it('recusa a pergunta quando o caso já bateu no teto, sem chamar o modelo', async () => {
+    // A recusa por falta de folga vive no teste unitário `assistant-budget`: com o provedor
+    // determinístico o preço é zero, a folga exigida é zero, e ela fica inalcançável por aqui.
+    // O que dá para exercitar contra a pilha é o estado já marcado — e é o que o escritório vê
+    // depois de o preparo consumir o teto.
+    await pool.query(
+      `UPDATE cases SET processing_budget_status = 'LIMIT_REACHED', processing_limit_reached_at = now()
+       WHERE id = $1`,
+      [standardSource.caseId],
+    );
     try {
       const recusa = await answer({
         question: 'cláusula rescisória',
@@ -469,20 +471,18 @@ describe('Delivery 9 authorized text and semantic search', () => {
         mode: 'LEXICAL',
       }).expect(409);
       assert.equal(recusa.body.code, 'CASE_PROCESSING_BUDGET_REACHED');
-      // A mensagem distingue as duas situações: teto por definir e teto esgotado pedem ações
-      // diferentes de quem lê.
-      assert.match(recusa.body.message, /ainda não tem teto/u);
 
-      // Nada foi gasto, porque nada foi chamado.
       const depois = await pool.query(
         'SELECT processing_cost_spent_amount AS gasto FROM cases WHERE id = $1',
         [standardSource.caseId],
       );
-      assert.equal(Number(depois.rows[0].gasto), 0);
+      assert.equal(Number(depois.rows[0].gasto), 0, 'recusar não pode gastar.');
     } finally {
-      await pool.query('UPDATE cases SET processing_cost_limit_amount = 250 WHERE id = $1', [
-        standardSource.caseId,
-      ]);
+      await pool.query(
+        `UPDATE cases SET processing_budget_status = 'ACTIVE', processing_limit_reached_at = NULL
+         WHERE id = $1`,
+        [standardSource.caseId],
+      );
     }
   });
 

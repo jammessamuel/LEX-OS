@@ -347,7 +347,11 @@ describe('Delivery 5 people, cases, and participants', () => {
     });
     assert.equal('email' in created.body.responsible, false);
     assert.equal('status' in created.body.responsible, false);
-    assert.equal(created.body.processingCostLimitAmount, '0.000000');
+    // O caso nasce com teto. Nascia em zero, e zero é teto zero em todas as camadas: o caso
+    // criado pela interface não autorizava consulta nenhuma ao modelo, e a primeira pergunta
+    // voltava como erro interno depois de a despesa já existir. O ADR-011 exige que o teto
+    // exista antes da despesa, não que o caso nasça inutilizável.
+    assert.equal(created.body.processingCostLimitAmount, '250.000000');
     assert.equal(created.body.processingCostSpentAmount, '0.000000');
     assert.equal(created.body.processingCostReservedAmount, '0.000000');
     assert.equal(created.body.processingCostCurrency, 'BRL');

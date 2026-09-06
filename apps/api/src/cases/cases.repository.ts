@@ -81,6 +81,8 @@ export interface CreateCaseData {
   priority: PriorityCode;
   confidentialityLevel: ConfidentialityLevelCode;
   responsibleUserId: string | null;
+  /** O teto de custo com que o caso nasce. Zero deixaria o caso sem consulta ao modelo. */
+  processingCostLimitAmount: Prisma.Decimal;
   openedAt: Date;
   closedAt: Date | null;
 }
