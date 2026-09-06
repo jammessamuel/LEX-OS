@@ -206,7 +206,12 @@ export const GROUNDED_OUTPUT = {
     schemaVersion: { const: 1 },
     claims: {
       type: 'array',
-      minItems: 1,
+      // Zero é resposta: significa que o modelo leu os trechos e nenhum sustenta a pergunta.
+      // Exigir uma afirmação obrigava a inventar — e o que se inventa numa resposta fundamentada
+      // é uma frase dizendo "os trechos não dizem", que a tela então exibe como se fosse achado,
+      // com citação ao lado. A instrução sempre mandou devolver lista vazia; era o contrato que
+      // não deixava.
+      minItems: 0,
       items: {
         type: 'object',
         additionalProperties: false,

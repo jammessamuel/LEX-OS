@@ -42,7 +42,13 @@ export class MockGroundedLanguageModelProvider implements GroundedLanguageModelP
       executionId: randomUUID(),
       costAmount: '0.000000',
       costCurrency: 'BRL',
-      claims: input.sources.slice(0, 3).map(claimFor),
+      // A pergunta que declara não ter resposta nos trechos devolve lista vazia — é o caminho
+      // que o contrato sempre mandou usar e que o parser recusava, obrigando o modelo real a
+      // embrulhar a recusa numa afirmação. O mock precisa saber percorrê-lo para o teste
+      // conseguir exercitá-lo sem provedor pago.
+      claims: input.question.toLowerCase().includes('sem sustentação')
+        ? []
+        : input.sources.slice(0, 3).map(claimFor),
     });
   }
 }

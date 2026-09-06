@@ -454,6 +454,35 @@ describe('Delivery 9 authorized text and semantic search', () => {
     await search({ query: 'contrato' }, noSearchToken).expect(403);
   });
 
+  it('recusa quando o modelo leu os trechos e nenhum sustenta a resposta', async () => {
+    // A recusa só existia quando a recuperação não trazia nada — e ela quase sempre traz alguma
+    // coisa, porque a busca casa por proximidade. O contrato manda "sem sustentação nos trechos,
+    // devolva claims vazio", e o parser recusava exatamente isso: o modelo que obedecesse
+    // derrubava a chamada, e o que funcionava era o que desobedecia, embrulhando a recusa numa
+    // afirmação que a tela exibia como resposta fundamentada, com citação ao lado. Um eval
+    // contra o caso da demonstração encontrou três perguntas nesse estado.
+    const recusa = await answer({
+      question: 'cláusula rescisória sem sustentação nos trechos',
+      caseId: standardSource.caseId,
+      mode: 'LEXICAL',
+    }).expect(200);
+
+    assert.equal(recusa.body.status, 'INSUFFICIENT_EVIDENCE');
+    assert.equal(recusa.body.answer, null);
+    assert.deepEqual(recusa.body.claims, []);
+    // A procedência acompanha a recusa: quem pergunta depois precisa saber qual instrução e qual
+    // modelo concluíram que não havia resposta.
+    assert.ok(recusa.body.model.promptVersion);
+
+    const trilha = await pool.query(
+      `SELECT action FROM audit_logs
+       WHERE organization_id = $1 AND action = 'assistant.answer.refused'
+       ORDER BY created_at DESC LIMIT 1`,
+      [ORGANIZATION_ID],
+    );
+    assert.equal(trilha.rows[0]?.action, 'assistant.answer.refused');
+  });
+
   it('recusa a pergunta quando o caso já bateu no teto, sem chamar o modelo', async () => {
     // A recusa por falta de folga vive no teste unitário `assistant-budget`: com o provedor
     // determinístico o preço é zero, a folga exigida é zero, e ela fica inalcançável por aqui.

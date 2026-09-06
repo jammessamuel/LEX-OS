@@ -100,7 +100,12 @@ function parseProviderOutput(
     !/^(0|[1-9]\d{0,11})(\.\d{1,6})?$/u.test(value.costAmount) ||
     value.costCurrency !== 'BRL' ||
     !Array.isArray(value.claims) ||
-    value.claims.length === 0 ||
+    // Lista vazia é resposta, não saída inválida. O contrato de saída manda, com todas as
+    // letras, "sem sustentação nos trechos, devolva claims vazio" — e este parser recusava
+    // exatamente isso. O modelo que obedecia derrubava a chamada; o que funcionava era o que
+    // desobedecia, embrulhando a recusa numa afirmação, e a tela então a exibia como resposta
+    // fundamentada, com citação ao lado. Um eval sobre o caso da demonstração encontrou três
+    // perguntas assim.
     value.claims.length > 5
   ) {
     throw invalidOutput();
@@ -238,6 +243,40 @@ export class AssistantService {
     const parsed = parseProviderOutput(rawOutput, new Set(sources.keys()));
     const claims = parsed.claims.map((claim) => mapClaim(claim, sources));
     const sourceChunkIds = [...new Set(parsed.claims.flatMap((claim) => claim.sourceChunkIds))];
+
+    // O modelo leu os trechos e nenhum sustenta a resposta. Até aqui a recusa só existia quando
+    // a recuperação não trazia nada — e ela quase sempre traz alguma coisa, porque a busca casa
+    // por proximidade. Sem este caminho, "os trechos não dizem" chegava ao escritório como
+    // resposta fundamentada. O custo é debitado do mesmo jeito: o modelo rodou.
+    if (claims.length === 0) {
+      await this.audit.recordDomain({
+        organizationId: actor.organizationId,
+        userId: actor.userId,
+        entityId: null,
+        entityType: 'assistant_answer',
+        action: 'assistant.answer.refused',
+        newData: {
+          caseId: input.caseId,
+          questionLength: input.question.length,
+          status: 'INSUFFICIENT_EVIDENCE',
+          ...parsed.model,
+        },
+        ...metadata,
+      });
+      await this.cases.chargeAssistantCost(
+        actor.organizationId,
+        input.caseId,
+        parsed.model.costAmount,
+      );
+      return {
+        status: 'INSUFFICIENT_EVIDENCE',
+        machineGenerated: true,
+        disclaimer,
+        answer: null,
+        claims: [],
+        model: parsed.model,
+      };
+    }
 
     await this.audit.recordDomain({
       organizationId: actor.organizationId,
