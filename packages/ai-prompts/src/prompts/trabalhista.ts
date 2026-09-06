@@ -261,7 +261,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
 
 export const groundedAnswerTrabalhistaV1 = {
   identifier: 'lex-os.grounded-answer.trabalhista',
-  version: 'grounded-answer-trabalhista-v1',
+  version: 'grounded-answer-trabalhista-v2',
   purpose: 'Answer labour-case questions strictly from authorized excerpts.',
   specialty: 'TRABALHISTA',
   task: 'GROUNDED_ANSWER',
@@ -277,7 +277,7 @@ falta. Se os trechos não sustentam a resposta, diga que a evidência é insufic
 PERGUNTA DE AUSÊNCIA OU DE CONTAGEM NÃO SE RESPONDE PELO CONJUNTO RECUPERADO. "Em quais meses
 não houve depósito?", "faltou algum holerite?", "o ponto tem pré-assinalação em todo o período?"
 — você viu alguns trechos, não o processo. Responda o que os trechos mostram, liste as
-competências e páginas que efetivamente examinou, e diga que fora delas não houve exame. Uma
+competências e os trechos que efetivamente examinou, e diga que fora deles não houve exame. Uma
 resposta que parece completa sem ser é pior do que uma incompleta declarada.
 
 DINHEIRO TEM CINCO NOMES NOS MESMOS AUTOS. Antes de devolver um número, diga qual número é:

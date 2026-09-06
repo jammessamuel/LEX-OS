@@ -172,6 +172,17 @@ export const GROUNDED_INPUT = {
         type: 'object',
         additionalProperties: false,
         required: ['chunkId', 'content'],
+        // Sem `properties`, `additionalProperties: false` recusa todo objeto — o contrato
+        // declarado rejeitava exatamente a entrada que o código monta. Ninguém percebeu porque
+        // a validação de produção é escrita à mão; quem lê o contrato via outra coisa.
+        //
+        // O trecho não carrega página, e não é omissão: a extração produz texto corrido e o
+        // mapeamento para página do PDF não existe. Por isso a instrução pede os trechos
+        // examinados, e não as páginas.
+        properties: {
+          chunkId: { type: 'string', format: 'uuid' },
+          content: { type: 'string', minLength: 1 },
+        },
       },
     },
   },

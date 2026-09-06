@@ -1,12 +1,12 @@
 # Ordem de execução — estado por ADR e o que vem a seguir
 
-**Data:** 2026-08-28
+**Data:** 2026-09-06
 **Para que serve:** não se perder. Dezesseis ADRs decidiram coisas ao longo de meses; algumas
 viraram código, outras esperam, e algumas esperam sem que ninguém lembre por quê. Este
 documento diz, de cada uma, o que está de pé — e monta **uma** ordem de execução que atravessa
 todas.
 
-Estado verificado no código em 2026-08-28, não deduzido dos ADRs.
+Estado verificado no código em 2026-09-06, não deduzido dos ADRs.
 
 ---
 
@@ -31,7 +31,7 @@ Estado verificado no código em 2026-08-28, não deduzido dos ADRs.
 | **015** | Biblioteca de prompts          | ✅ Todos os itens · ✅ 30 prompts em 6 faixas (20 atestados, 10 rascunho) | Acervo real segue recusado em todas as faixas: sem inscrição ativa, e as duas novas sem leitura |
 | **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                       | Condições externas permanecem falhando fechado                                                  |
 
-**Leitura rápida:** a fila de engenharia do MVP fechou. O que sobra não é código disfarçado:
+**Leitura rápida:** a fila do MVP fechou em 28/08, e o uso real reabriu uma fila curta em 01-06/09 — a Fila F da seção 3, com cinco itens vivos. O que continua fora do alcance de engenharia:
 aceite empresarial e transferência internacional (012), decisão sobre região única (012),
 responsável por titulares (012) e assinatura profissional dos prompts (015). Conectores futuros
 exigem novo incremento.
@@ -235,11 +235,56 @@ os gates de integração voltam a ser obrigatórios também localmente.
 
 ---
 
+### Fila F — o que a inspeção visual e o uso real abriram (01/09 a 06/09)
+
+Esta fila não existia porque o método que a produziu não existia: olhar a tela e usar o produto
+pelo caminho do cliente. Cada item abaixo foi encontrado assim, e nenhum era visível pela suíte
+de API — ela conferia a forma da saída, nunca se a saída correspondia à entrada.
+
+**Fechados nesta rodada:**
+
+| O que estava errado                                             | Como se via                                                 |
+| --------------------------------------------------------------- | ----------------------------------------------------------- |
+| Cronologia repetia o mesmo evento para todo documento           | 13 linhas idênticas na tela do caso                         |
+| Localizador da citação apontava para trecho que não era a data  | clicar na fonte abria o lugar errado                        |
+| Dados identificados eram fabricados                             | "Confirmar" sobre dado que não está no arquivo              |
+| Cronologia ordenada pela gravação, não pelo fato                | admissão de 2020 depois da rescisão de 2026                 |
+| Fato de documento excluído permanecia na lista                  | procedência irresolvível afirmada como fato                 |
+| Checklist trabalhista com três exigências genéricas             | "o que falta para protocolar" respondia o que não é do caso |
+| `VENCIDO` inalcançável por falta de data de referência          | estado no enum sem caminho honesto até ele                  |
+| Cronologia obrigada a devolver ao menos um evento               | documento sem data forçava inventar um                      |
+| Identificador interno na tela: "Lex-os-mock-…", "Contract date" | o cliente lia que a etapa é simulada, em inglês             |
+| Trilha de auditoria em código técnico e inglês                  | `case.confidential.read` na tela que prova controle         |
+| Assistente gastava e só então falhava ao registrar              | erro interno depois de o modelo ter sido pago               |
+| Caso novo nascia sem teto e, portanto, sem assistente           | primeira pergunta de qualquer caso criado pela interface    |
+| Previdenciário e tributário ausentes da biblioteca              | duas áreas que um escritório atende todo dia                |
+
+**Abertos, e todos da mesma família: o prompt promete o que o contrato não comporta.**
+
+| Item                                                                   | Onde                    | Custo de conserto |
+| ---------------------------------------------------------------------- | ----------------------- | ----------------- |
+| Entidade não tem onde qualificar um valor (rubrica, competência, peça) | `ENTITIES_OUTPUT`       | contrato + parser |
+| Grounded pede a página examinada, e a entrada não traz página          | `GROUNDED_INPUT`        | texto do prompt   |
+| Classificação manda registrar arquivo composto, sem campo para isso    | `CLASSIFICATION_OUTPUT` | texto ou contrato |
+| Cobertura de período no checklist                                      | `CHECKLIST_OUTPUT`      | contrato          |
+| `examples` não validam contra os próprios schemas, nas seis faixas     | todas as especificações | teste + correção  |
+
+Detalhe de cada um em [`pendencias-biblioteca-de-prompts.md`](pendencias-biblioteca-de-prompts.md).
+
+**Leitura pendente, que é de gente e não de código:** oito prompts tiveram a versão subida depois
+da atestação de 2026-08-27 e voltaram a precisar de leitura; previdenciário e tributário nunca
+foram lidos. Os cadernos das seis faixas estão gerados em `docs/product/revisao-juridica/`.
+
+---
+
 ## 4. O que decide a próxima sessão
 
-As três perguntas que esta seção fazia foram todas respondidas. A Fila A fechou em 26/08, a
-Fila B foi conferida novamente em 28/08, e o C1 fechou em 27/08. **A fila de código está vazia** — e isso não é figura de
-linguagem: não sobrou item nesta lista que uma sessão consiga executar sozinha.
+A Fila A fechou em 26/08, a Fila B foi conferida em 28/08 e o C1 fechou em 27/08. A Fila F,
+acima, foi aberta pelo uso real entre 01/09 e 06/09 e tem cinco itens de código vivos — todos da
+mesma família, e todos executáveis por uma sessão.
+
+O que **não** é executável por uma sessão continua sendo o de sempre, e é o que decide se o
+produto sai do fictício:
 
 O que resta exige ato externo verificável; autorização genérica de engenharia não o substitui:
 
@@ -255,9 +300,13 @@ O pacote de execução e as minutas estão em
 `CASE_ARCHIVE=fictional` continua obrigatório em API e worker, local e Railway. A configuração é
 uma trava operacional, não autorização para inserir acervo real.
 
-**A ordem mudou porque a lista acabou.** Enquanto nenhuma dessas decisões cair, o que sobra para
-uma sessão é manutenção de documento e dívida que ninguém levantou ainda. Vale mais dizer isso do
-que inventar fila.
+**A lista tinha acabado, e voltou a existir — por um motivo que vale registrar.** Em 28/08 este
+documento dizia que nenhuma sessão conseguia executar mais nada sozinha, e estava certo diante do
+que se sabia. O que abriu a Fila F não foi um ADR novo: foi olhar a tela e usar o produto pelo
+caminho do cliente. Treze defeitos apareceram assim, nenhum deles visível pela suíte de API.
+
+Fica a conclusão de método, mais útil que a fila em si: **quando a lista de código esvaziar de
+novo, o próximo passo não é esperar decisão externa — é usar o produto e olhar o que ele mostra.**
 
 ---
 

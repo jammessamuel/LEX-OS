@@ -1,6 +1,6 @@
 # Revisão jurídica — direito civil e processo civil
 
-> **Este documento foi gerado a partir do código em 2026-09-03.**
+> **Este documento foi gerado a partir do código em 2026-09-06.**
 > Não o edite: as correções voltam como anotação, e quem altera o texto é quem mexe na
 > biblioteca. Regenerar com `node infra/scripts/gera-revisao-juridica.mjs`.
 

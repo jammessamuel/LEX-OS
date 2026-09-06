@@ -3,6 +3,7 @@ import { classificationPromptV1, entitiesPromptV1 } from './generico-extracao.js
 import {
   CHECKLIST_INPUT,
   CHECKLIST_OUTPUT,
+  GROUNDED_INPUT,
   GROUNDED_OUTPUT,
   TIMELINE_INPUT,
   TIMELINE_OUTPUT,
@@ -163,23 +164,10 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
     reviewedVersion: 'grounded-answer-mock-v1',
     note: 'Aprovado por descrever o comportamento determinístico do provedor mock, não por revisão de conteúdo jurídico. Um provedor real usando o prompt genérico exige revisão de advogado.',
   },
-  inputSchema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['question', 'sources'],
-    properties: {
-      question: { type: 'string', minLength: 2, maxLength: 500 },
-      sources: {
-        type: 'array',
-        minItems: 1,
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['chunkId', 'content'],
-        },
-      },
-    },
-  },
+  // Era a única entrada declarada em duplicata, e a cópia envelheceu: quando o contrato
+  // compartilhado ganhou `properties`, esta ficou para trás e o teste de deriva acusou duas
+  // entradas para a mesma tarefa. Uma tarefa, um contrato.
+  inputSchema: GROUNDED_INPUT,
   outputSchema: GROUNDED_OUTPUT,
   examples: [
     {

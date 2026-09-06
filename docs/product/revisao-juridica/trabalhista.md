@@ -1,6 +1,6 @@
 # Revisão jurídica — direito e processo do trabalho
 
-> **Este documento foi gerado a partir do código em 2026-09-03.**
+> **Este documento foi gerado a partir do código em 2026-09-06.**
 > Não o edite: as correções voltam como anotação, e quem altera o texto é quem mexe na
 > biblioteca. Regenerar com `node infra/scripts/gera-revisao-juridica.mjs`.
 
@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito e processo do trabalho estão abaixo, na íntegra e
-exatamente como o sistema as usa — **6.476 palavras**.
+exatamente como o sistema as usa — **6.477 palavras**.
 
 **Revisadas por Thais Regina Farrapo Moreira em 2026-08-27**, **sem número de inscrição registrado** — Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.
 
@@ -627,7 +627,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-trabalhista-v1` · identificador `lex-os.grounded-answer.trabalhista`
+`grounded-answer-trabalhista-v2` · identificador `lex-os.grounded-answer.trabalhista`
 
 ### A instrução
 
@@ -696,7 +696,7 @@ falta. Se os trechos não sustentam a resposta, diga que a evidência é insufic
 PERGUNTA DE AUSÊNCIA OU DE CONTAGEM NÃO SE RESPONDE PELO CONJUNTO RECUPERADO. "Em quais meses
 não houve depósito?", "faltou algum holerite?", "o ponto tem pré-assinalação em todo o período?"
 — você viu alguns trechos, não o processo. Responda o que os trechos mostram, liste as
-competências e páginas que efetivamente examinou, e diga que fora delas não houve exame. Uma
+competências e os trechos que efetivamente examinou, e diga que fora deles não houve exame. Uma
 resposta que parece completa sem ser é pior do que uma incompleta declarada.
 
 DINHEIRO TEM CINCO NOMES NOS MESMOS AUTOS. Antes de devolver um número, diga qual número é:

@@ -499,7 +499,14 @@ describe('Delivery 9 authorized text and semantic search', () => {
     assert.ok(grounded.body.claims.length > 0);
     // O caso é TRABALHISTA, então a instrução que governou a chamada tem de ser a da
     // especialidade — não a genérica. É isto que faz a biblioteca por área valer alguma coisa.
-    assert.equal(grounded.body.model.promptVersion, 'grounded-answer-trabalhista-v1');
+    // A versão vem da própria biblioteca: escrita aqui, viraria um número a atualizar sem olhar
+    // o que mudou a cada revisão de texto.
+    const { promptFor } = await import('@lex-os/ai-prompts');
+    assert.equal(
+      grounded.body.model.promptVersion,
+      promptFor('GROUNDED_ANSWER', 'TRABALHISTA', { caseArchive: 'fictional' }).version,
+    );
+    assert.match(grounded.body.model.promptVersion, /trabalhista/u);
     assert.equal(
       grounded.body.claims.every((claim) => claim.citations.length > 0),
       true,
