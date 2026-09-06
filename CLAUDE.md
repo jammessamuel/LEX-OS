@@ -206,6 +206,13 @@ Condensed from `AGENTS.md`. These are the ones a change is most likely to violat
 11. **Fictional data only** in seeds, tests, fixtures, examples, and screenshots.
 12. **Add a tenant-isolation negative test** for every new tenant-owned module: list,
     direct ID, relation traversal, mutation, search, and download paths.
+13. **Read the whole list before adding to it.** Catalogues, enums, seed arrays, vocabulary
+    maps and prompt registries already contain more than the section you are editing. Grep
+    the file for each entry you intend to add and confirm it is absent, then add it. On
+    2026-09-06 nine document types were appended that already existed under a different
+    category; the codes are unique, so `db:seed` broke and only CI — which reseeds — saw it,
+    after unit and both integration suites had passed. When the duplicate is a permission,
+    it is worse: identifiers derive from array position.
 
 ---
 
@@ -221,6 +228,7 @@ before reporting completion. Do not report "done" on an unrun gate — say what 
 | Formatting-visible edit      | `pnpm format:check`                                                            |
 | Any API/worker/domain logic  | `pnpm test`                                                                    |
 | Schema, repositories, queue  | `pnpm db:validate` + `pnpm test:integration` (needs `pnpm infra:dependencies`) |
+| `prisma/seed.ts`             | `pnpm db:seed` — CI reseeds, so a broken seed clears every other gate          |
 | Compose, Dockerfile, env     | `pnpm infra:config`                                                            |
 | Closing a delivery           | All of the above + `pnpm build`                                                |
 
