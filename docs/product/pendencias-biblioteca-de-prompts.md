@@ -37,19 +37,33 @@ Corrigir os exemplos não invalidou a atestação de Thais: o caderno de revisã
 
 **Continua aberto, e alcança as seis faixas.** São lacunas de contrato, não de texto:
 
-- **Entidades não tem onde qualificar um valor.** `ENTITIES_OUTPUT` aceita `normalizedValue` e
-  `originalValue`; rubrica, competência e peça de origem não têm campo. "R$ 148.320,55" sozinho
-  não identifica nada num processo tributário, e o prompt pede quatro atributos que a saída não
-  comporta.
+- ~~**Entidades não tem onde qualificar um valor.**~~ **Fechado em 2026-09-06.** A saída ganhou
+  um campo só, que recebe a frase do documento — quatro campos fixos serviriam ao tributário e
+  errariam nas outras faixas, porque o que qualifica um número muda por área. O intervalo de
+  deslocamentos continua recortando só o valor, e é essa separação que mantém a conferência
+  possível.
 - ~~**`EXPIRED` é inalcançável por construção.**~~ **Fechado em 2026-09-03.** A entrada do
   checklist ganhou `referenceDate`, informada pelo worker no instante da análise, e um bloco
   novo diz ao modelo que a data está ali e serve para validade de documento — não para contar
   prazo processual, que depende de dias úteis e suspensões que ele desconhece.
-- **O grounded pede página e a entrada não traz página.** `GROUNDED_INPUT.sources` carrega
-  `chunkId` e `content`. Herdado do trabalhista.
-- **Arquivo composto não tem onde ser registrado.** `CLASSIFICATION_OUTPUT` é `code` e
-  `confidence`; a instrução manda registrar que o arquivo reúne vários documentos.
-- **Cobertura de período no checklist**, o item que já estava aberto desde 2026-08-26.
+- ~~**O grounded pede página e a entrada não traz página.**~~ **Fechado em 2026-09-06.** Passa a
+  pedir os trechos examinados. Página não existe porque a extração produz texto corrido e não há
+  mapeamento para página do PDF — pedir o que a entrada não tem só podia ser cumprido inventando.
+- ~~**Arquivo composto não tem onde ser registrado.**~~ **Fechado em 2026-09-06.** A saída ganhou
+  o campo, e ele distingue "confira o tipo" de "separe o arquivo antes de conferir" — as duas
+  chegavam iguais como OUTRO com confiança baixa.
+- ~~**Cobertura de período no checklist.**~~ **Reclassificado em 2026-09-06: não é lacuna de
+  contrato, é funcionalidade que não existe.** A análise vê um documento por vez, e três dos
+  prompts já dizem isso corretamente — "a soma dos intervalos é do sistema, não sua". O
+  trabalhista se contradizia: proibia decidir cobertura e, dois parágrafos depois, mandava
+  verificar se os instrumentos somados cobrem o período sem lacuna. A contradição foi removida;
+  o modelo registra a vigência que o instrumento à sua frente declara e para aí.
+
+  O que falta é o sistema somar, e isso pede uma capacidade que não existe: guardar o intervalo
+  que cada documento cobre e comparar a união deles com o período do caso. Acrescentar o campo
+  agora seria criar contrato sem consumidor. Quando a soma virar trabalho autorizado, o campo
+  nasce junto dela.
+
 - **Os `examples` não validam contra os próprios schemas**, em todas as faixas: nenhum teste os
   confere, e por isso a divergência nunca dói — até o dia em que alguém os usar como fixture.
 

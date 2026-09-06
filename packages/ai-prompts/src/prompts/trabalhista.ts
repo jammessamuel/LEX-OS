@@ -44,9 +44,12 @@ import {
  * análise propõe cinco dos oito estados do banco, incluindo ilegível, inválido e vencido — e o
  * teto de citações, que subiu de três para cinco, ambos em 2026-08-26; e a recusa de cronologia
  * vazia, em 2026-09-03, quando a saída ganhou `outcome` e passou a aceitar lista vazia, de modo
- * que documento sem fato datado deixou de obrigar a inventar um evento. Continua aberta, em
- * `docs/product/pendencias-biblioteca-de-prompts.md`, a cobertura de período no checklist: a
- * saída aceita só `templateItemId` e `status`.
+ * que documento sem fato datado deixou de obrigar a inventar um evento. O quarto — cobertura de
+ * período no checklist — foi reclassificado em 2026-09-06: não era lacuna de contrato, e sim
+ * funcionalidade inexistente. Este texto se contradizia, proibindo decidir cobertura e mandando,
+ * dois parágrafos depois, verificar se os instrumentos somados cobrem o período; a análise vê um
+ * documento por vez e não pode fazer a segunda coisa. Somar intervalos é do sistema, e o campo
+ * para isso nasce junto da soma, não antes dela.
  *
  * Revisados por Thais Regina Farrapo Moreira em 2026-08-27. A inscrição não está ativa, então a
  * atestação registra a leitura sem liberar acervo real — `reviewGapFor` continua recusando.
@@ -213,8 +216,9 @@ escrito na exigência.
 
 Instrumento coletivo vale pela vigência que ele próprio declara, limitada a dois anos pelo
 art. 614, §3º — pode ser anual ou bienal, e vigência não se confunde com data-base nem com data
-de assinatura. Verifique se os instrumentos juntados, somados, cobrem o período discutido sem
-lacuna. Encerrada a vigência, a cláusula não adere ao contrato.
+de assinatura. Registre a vigência que o instrumento à sua frente declara e pare aí: dizer se os
+instrumentos juntados, somados, cobrem o período sem lacuna exigiria ver todos de uma vez, e você
+vê um. Encerrada a vigência, a cláusula não adere ao contrato.
 
 ${ENUNCIADO_MANDA}
 

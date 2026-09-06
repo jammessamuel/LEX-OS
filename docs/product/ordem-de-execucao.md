@@ -259,15 +259,25 @@ de API — ela conferia a forma da saída, nunca se a saída correspondia à ent
 | Caso novo nascia sem teto e, portanto, sem assistente           | primeira pergunta de qualquer caso criado pela interface    |
 | Previdenciário e tributário ausentes da biblioteca              | duas áreas que um escritório atende todo dia                |
 
-**Abertos, e todos da mesma família: o prompt promete o que o contrato não comporta.**
+**A família que sobrou: o prompt promete o que o contrato não comporta.** Quatro dos cinco
+fecharam em 06/09 — três estendendo o contrato ou corrigindo o texto, um por deixar de ser lacuna
+de contrato.
 
-| Item                                                                   | Onde                    | Custo de conserto |
-| ---------------------------------------------------------------------- | ----------------------- | ----------------- |
-| Entidade não tem onde qualificar um valor (rubrica, competência, peça) | `ENTITIES_OUTPUT`       | contrato + parser |
-| Grounded pede a página examinada, e a entrada não traz página          | `GROUNDED_INPUT`        | texto do prompt   |
-| Classificação manda registrar arquivo composto, sem campo para isso    | `CLASSIFICATION_OUTPUT` | texto ou contrato |
-| Cobertura de período no checklist                                      | `CHECKLIST_OUTPUT`      | contrato          |
-| `examples` não validam contra os próprios schemas, nas seis faixas     | todas as especificações | teste + correção  |
+| Item                                                               | Onde                    | Estado                    |
+| ------------------------------------------------------------------ | ----------------------- | ------------------------- |
+| Grounded pedia a página examinada, e a entrada não traz página     | `GROUNDED_INPUT`        | ✅ fechado 06/09          |
+| Classificação sem campo para registrar arquivo composto            | `CLASSIFICATION_OUTPUT` | ✅ fechado 06/09          |
+| Entidade sem onde qualificar um valor                              | `ENTITIES_OUTPUT`       | ✅ fechado 06/09          |
+| Cobertura de período no checklist                                  | `CHECKLIST_OUTPUT`      | reclassificado: ver baixo |
+| `examples` não validam contra os próprios schemas, nas seis faixas | todas as especificações | aberto                    |
+
+**A cobertura de período saiu da lista por não ser lacuna de contrato.** A análise vê um
+documento por vez, e três prompts já diziam isso corretamente — "a soma dos intervalos é do
+sistema, não sua". O trabalhista se contradizia: proibia decidir cobertura e, dois parágrafos
+depois, mandava verificar se os instrumentos somados cobrem o período sem lacuna. A contradição
+saiu. O que falta é o sistema somar, e isso é funcionalidade: guardar o intervalo que cada
+documento cobre e comparar a união com o período do caso. O campo nasce junto da soma, não antes
+dela — contrato sem consumidor é dívida disfarçada de progresso.
 
 Detalhe de cada um em [`pendencias-biblioteca-de-prompts.md`](pendencias-biblioteca-de-prompts.md).
 
