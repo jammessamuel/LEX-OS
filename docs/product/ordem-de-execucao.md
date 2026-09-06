@@ -1,7 +1,7 @@
 # Ordem de execução — estado por ADR e o que vem a seguir
 
 **Data:** 2026-09-06
-**Para que serve:** não se perder. Dezesseis ADRs decidiram coisas ao longo de meses; algumas
+**Para que serve:** não se perder. Dezessete ADRs decidiram coisas ao longo de meses; algumas
 viraram código, outras esperam, e algumas esperam sem que ninguém lembre por quê. Este
 documento diz, de cada uma, o que está de pé — e monta **uma** ordem de execução que atravessa
 todas.
@@ -22,14 +22,15 @@ Estado verificado no código em 2026-09-06, não deduzido dos ADRs.
 | **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real atrás da porta                  | Contrato padrão proíbe treino; aceite empresarial e demais portões do 012 pendem                |
 | **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP                          | —                                                                                               |
 | **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                                        | —                                                                                               |
-| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada e sem sustentação nos trechos, citação obrigatória | — Teto de 5 fontes mantido pelo ADR-016; a avaliação de 06/09 mostra 1 resposta fora dele       |
+| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada e sem sustentação nos trechos, citação obrigatória | — Teto de 8 fontes pelo ADR-017, medido em 06/09                                                |
 | **010** | Canais de entrada              | ✅ Upload                                                                         | Superado pelo ADR-016; e-mail passou a conector futuro                                          |
 | **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos             | —                                                                                               |
 | **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                                   | Transferência, região única e responsável nomeado                                               |
 | **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos                | —                                                                                               |
 | **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código             | Itens 4–7 adiados **por decisão**, não por esquecimento                                         |
 | **015** | Biblioteca de prompts          | ✅ Todos os itens · ✅ 30 prompts em 6 faixas (20 atestados, 10 rascunho)         | Acervo real segue recusado em todas as faixas: sem inscrição ativa, e as duas novas sem leitura |
-| **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                               | Condições externas permanecem falhando fechado                                                  |
+| **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                               | Condições externas permanecem falhando fechado; decisão 1 superada pelo ADR-017                 |
+| **017** | Recuperação em oito trechos    | ✅ Teto e padrão em oito · ✅ avaliação versionada e repetível                    | Latência em oito ainda não medida — entra na próxima execução da avaliação                      |
 
 **Leitura rápida:** a fila do MVP fechou em 28/08; o uso real reabriu uma fila curta entre 01 e
 06/09 — a Fila F da seção 3 — e ela fechou no mesmo dia 06. O que continua fora do alcance de
@@ -225,7 +226,7 @@ Não fazer nada aqui é a decisão correta até a condição mudar. Registrado p
 | Troca de nome curto            | 014, 6 | Sem custo em esperar              |
 | Pessoa em dois escritórios     | 014, 7 | Demanda real de cliente           |
 | Conectores de e-mail/WhatsApp  | 016    | Novo incremento e demanda real    |
-| Teto de recuperação acima de 5 | 016    | ADR novo — a avaliação já existe  |
+| Teto de recuperação acima de 8 | 017    | Medir de novo antes de opinar     |
 
 ### Fila E — dívida fora de ADR
 
@@ -289,13 +290,14 @@ provada no acervo e cinco sem nenhuma. O registro completo está em
 [`avaliacao-recuperacao.md`](avaliacao-recuperacao.md); o instrumento é
 `infra/scripts/avalia-recuperacao.mjs` e repete a medida.
 
-| O que estava errado                                               | Como se via                                        | Estado                  |
-| ----------------------------------------------------------------- | -------------------------------------------------- | ----------------------- |
-| Recusa não cabia na saída: `claims` exigia ao menos uma afirmação | "os trechos não contêm" exibido como fundamentação | ✅ fechado 06/09        |
-| Padrão de três trechos contra os cinco que o ADR-016 fixou        | dois dos seis fatos pedidos não saíam na resposta  | ✅ fechado 06/09        |
-| A resposta que existe no TRCT cai na posição seis do ranking      | data de pagamento nunca alcançada                  | aberto — exige ADR novo |
-| Limiar de 0,65 fixo no SQL como se fosse universal                | busca semântica devolve zero                       | aberto                  |
-| `HYBRID` entrega lexical e se apresenta como híbrida              | nada na tela distingue as duas                     | aberto                  |
+| O que estava errado                                               | Como se via                                        | Estado            |
+| ----------------------------------------------------------------- | -------------------------------------------------- | ----------------- |
+| Recusa não cabia na saída: `claims` exigia ao menos uma afirmação | "os trechos não contêm" exibido como fundamentação | ✅ fechado 06/09  |
+| Padrão de três trechos contra os cinco que o ADR-016 fixou        | dois dos seis fatos pedidos não saíam na resposta  | ✅ fechado 06/09  |
+| A resposta que existe no TRCT cai na posição seis do ranking      | data de pagamento nunca alcançada                  | ✅ ADR-017, 06/09 |
+| Limiar de 0,65 fixo no SQL como se fosse universal                | busca semântica devolve zero                       | ✅ fechado 06/09  |
+| `HYBRID` entrega lexical e se apresenta como híbrida              | nada na tela distingue as duas                     | ✅ fechado 06/09  |
+| As duas recusas mostravam o mesmo texto na tela                   | "nenhuma fonte autorizada" com cinco fontes lidas  | ✅ fechado 06/09  |
 
 **A recusa é a mesma família dos outros três, e é a mais séria delas.** A instrução mandava,
 com todas as letras, devolver lista vazia sem sustentação; o contrato de saída recusava lista
@@ -304,11 +306,22 @@ embrulhando a recusa numa afirmação — que a tela então exibia como resposta
 citação ao lado. Num produto cuja promessa central é não afirmar o que não está nos autos, esse
 era o defeito que negava a promessa.
 
-**Os três abertos não são de engenharia sozinha.** Subir o teto de cinco para oito reabre
-decisão aceita e exige ADR novo — a medida diz que oito cobriria 6/6 por R$ 0,2217 contra 5/6
-por R$ 0,1424, e essa troca é do dono. Os outros dois vivem enquanto o embedding for o mock: o
-conserto honesto é o limiar virar propriedade do descritor de embedding, e a resposta dizer o
-que cada metade da busca contribuiu.
+**Os três que estavam abertos fecharam no mesmo dia, e um deles por decisão do dono.** O teto de
+cinco foi para oito pelo [ADR-017](../decisions/decisoes.md#adr-017-ampliar-a-recuperação-do-assistente-para-oito-trechos),
+com a avaliação medida servindo de argumento: R$ 0,2217 por resposta contra R$ 0,1424, para
+alcançar um TRCT que o sistema já indexava e não entregava.
+
+Os outros dois eram consequência do embedding ser mock, mas cada um tinha defeito próprio. O
+limiar de 0,65 morava fixo no SQL como se similaridade significasse a mesma coisa em qualquer
+espaço vetorial — virou propriedade do descritor, e um teste guarda a medida de 0,505 para que
+ninguém "conserte" a busca semântica baixando o número sem medir. E a tela passou a dizer como
+cada trecho foi encontrado; o dado já existia em `matchedBy` e chegava ao front sem ser exibido.
+
+**Uma quarta entrada nasceu do próprio conserto, e vale registrar por honestidade.** Ao criar a
+recusa por trechos sem sustentação, a tela passou a mostrar "nenhuma fonte autorizada" num caso em
+que havia cinco fontes lidas. As duas recusas mandam o leitor a lugares opostos — uma diz que o
+assunto não está no acervo, a outra que está e a pergunta é que não encontra apoio —, e o motivo
+passou a vir explícito no contrato em vez de deduzido de `model` ser nulo.
 
 **Leitura pendente, que é de gente e não de código:** oito prompts tiveram a versão subida depois
 da atestação de 2026-08-27 e voltaram a precisar de leitura; previdenciário e tributário nunca

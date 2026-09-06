@@ -164,7 +164,7 @@ fits, read `AGENTS.md` section headings only, then the one section that applies.
 | Operations, backup, incidents              | `docs/operations/runbook.md` — backup/restore procedure, rehearsal script, and hosted-demo deploy steps                                                                                                                                |
 | Module boundaries, layering                | `docs/decisions/decisoes.md#adr-001-start-with-a-modular-monolith`; `docs/architecture/system-overview.md`                                                                                                                             |
 
-**The ADRs live in one file.** `docs/decisions/decisoes.md` consolidates all fifteen — 1,316
+**The ADRs live in one file.** `docs/decisions/decisoes.md` consolidates all seventeen — 1,510
 lines. The rows above link to the section anchor: **read that section, not the file.**
 A new ADR is a new `##` section at the end, plus a line in its index. Never rewrite an accepted
 decision — record the reversal as a new one and mark the old superseded, naming which.
