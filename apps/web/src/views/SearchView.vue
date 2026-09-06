@@ -90,7 +90,9 @@ async function ask(): Promise<void> {
   try {
     answer.value = await request<GroundedAnswerResponse>('/assistant/answers', {
       method: 'POST',
-      body: { question: query.value.trim(), caseId: caseId.value, mode: mode.value, limit: 3 },
+      // O limite fica com a API. Repeti-lo aqui punha a mesma política em dois lugares, e os
+      // dois já discordavam do ADR-016: tela e DTO diziam três, a decisão aceita diz cinco.
+      body: { question: query.value.trim(), caseId: caseId.value, mode: mode.value },
     });
   } catch (error) {
     failure.value = apiError(error, 'Não foi possível produzir a resposta ancorada.');

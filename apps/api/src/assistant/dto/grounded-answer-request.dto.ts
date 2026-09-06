@@ -40,11 +40,20 @@ export class GroundedAnswerRequestDto {
   @IsIn(searchModes, { message: 'Informe um modo de recuperação válido.' })
   mode?: SearchMode;
 
-  @ApiPropertyOptional({ minimum: 1, maximum: 5, default: 3 })
+  /**
+   * Quantos trechos sustentam a resposta.
+   *
+   * Cinco é o teto que o ADR-016 fixou, e passa a ser também o padrão. O padrão era três, e a
+   * avaliação de 2026-09-06 mediu o que isso custava: de seis perguntas cujas respostas estão
+   * comprovadamente no acervo, três trechos alcançavam três, e cinco alcançam cinco. O que se
+   * economizava eram R$ 0,023 por resposta; o que se perdia era um terço dos fatos que o
+   * escritório pediu. Num produto jurídico o fato que falta é o erro que importa.
+   */
+  @ApiPropertyOptional({ minimum: 1, maximum: 5, default: 5 })
   @Type(() => Number)
   @IsOptional()
   @IsInt({ message: 'O limite deve ser um número inteiro.' })
   @Min(1, { message: 'O limite deve ser pelo menos 1.' })
   @Max(5, { message: 'O limite não pode exceder 5.' })
-  limit = 3;
+  limit = 5;
 }
