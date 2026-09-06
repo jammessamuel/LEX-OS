@@ -100,6 +100,12 @@ tokens com hash em 16 dimensões, e o filtro da busca exige similaridade de coss
 sobre trechos com a cara dos documentos do caso, a maior similaridade que uma pergunta alcança é
 **0,505** — só texto praticamente idêntico passa do limiar.
 
+Não é dedução: cada resultado carrega `matchedBy`, que diz por qual metade ele foi encontrado.
+Nas seis consultas em modo híbrido, **73 dos 74 trechos vieram só do léxico** e um único veio
+das duas metades — enquanto a resposta continuava declarando `mode: HYBRID`, que é apenas o eco
+do que foi pedido. O dado que denuncia a degradação já existe no contrato; ninguém o mostra. A
+tela recebe `matchedBy` em `apps/web/src/api/types.ts` e não o exibe em lugar nenhum.
+
 Isso é consequência do mock, e o mock é a decisão vigente. O defeito não é o valor baixo: é que
 o limiar de 0,65 está fixo no SQL como se fosse universal, quando similaridade só significa algo
 dentro de um espaço vetorial específico. E é que a interface oferece "híbrida" e entrega lexical

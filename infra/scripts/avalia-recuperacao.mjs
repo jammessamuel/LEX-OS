@@ -158,6 +158,10 @@ async function autenticar() {
 async function faseRecuperacao() {
   linha('\n=== 1. RECUPERAÇÃO — posição do trecho que contém a resposta\n');
   const posicoes = [];
+  // Cada resultado carrega por qual metade da busca foi encontrado. Contar isso é o que separa
+  // "a busca híbrida está funcionando" de "ela se apresenta como híbrida e entrega lexical": a
+  // resposta declara o modo pedido, não o que de fato contribuiu.
+  const porMetade = new Map();
   for (const item of RESPONDIVEIS) {
     const resposta = await call('POST', '/search', {
       query: item.pergunta,
@@ -166,6 +170,10 @@ async function faseRecuperacao() {
       limit: 25,
     });
     const resultados = resposta.body?.results ?? [];
+    for (const resultado of resultados) {
+      const metade = resultado.matchedBy ?? 'desconhecida';
+      porMetade.set(metade, (porMetade.get(metade) ?? 0) + 1);
+    }
     const indice = resultados.findIndex((resultado) => item.achado.test(resultado.excerpt ?? ''));
     const posicao = indice === -1 ? null : indice + 1;
     posicoes.push(posicao);
@@ -180,6 +188,17 @@ async function faseRecuperacao() {
     const alcancadas = posicoes.filter((posicao) => posicao !== null && posicao <= limite).length;
     const nota = limite === 5 ? '   <- teto do ADR-016' : '';
     linha(`    limite ${String(limite).padStart(2)}: ${alcancadas}/${posicoes.length}${nota}`);
+  }
+
+  const totalTrechos = [...porMetade.values()].reduce((total, quantos) => total + quantos, 0);
+  if (totalTrechos > 0) {
+    linha('\n  como cada trecho foi encontrado, com o modo híbrido pedido:');
+    for (const [metade, quantos] of [...porMetade].sort((a, b) => b[1] - a[1])) {
+      linha(`    ${metade.padEnd(9)} ${quantos}/${totalTrechos}`);
+    }
+    if ((porMetade.get('SEMANTIC') ?? 0) + (porMetade.get('HYBRID') ?? 0) === 0) {
+      linha('    a metade semântica não contribuiu com trecho nenhum.');
+    }
   }
   return posicoes;
 }
