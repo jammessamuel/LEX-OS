@@ -99,7 +99,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   outputSchema: ENTITIES_OUTPUT,
   examples: [
     {
-      input: { sourceTextLength: 100 },
+      input: { sourceText: { totalLength: 100, truncated: false } },
       output: {
         entityType: 'CONTRACT_NUMBER',
         originalValue: 'LEX-2026-0001',

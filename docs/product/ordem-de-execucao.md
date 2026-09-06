@@ -31,7 +31,9 @@ Estado verificado no código em 2026-09-06, não deduzido dos ADRs.
 | **015** | Biblioteca de prompts          | ✅ Todos os itens · ✅ 30 prompts em 6 faixas (20 atestados, 10 rascunho) | Acervo real segue recusado em todas as faixas: sem inscrição ativa, e as duas novas sem leitura |
 | **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                       | Condições externas permanecem falhando fechado                                                  |
 
-**Leitura rápida:** a fila do MVP fechou em 28/08, e o uso real reabriu uma fila curta em 01-06/09 — a Fila F da seção 3, com cinco itens vivos. O que continua fora do alcance de engenharia:
+**Leitura rápida:** a fila do MVP fechou em 28/08; o uso real reabriu uma fila curta entre 01 e
+06/09 — a Fila F da seção 3 — e ela fechou no mesmo dia 06. O que continua fora do alcance de
+engenharia:
 aceite empresarial e transferência internacional (012), decisão sobre região única (012),
 responsável por titulares (012) e assinatura profissional dos prompts (015). Conectores futuros
 exigem novo incremento.
@@ -259,17 +261,17 @@ de API — ela conferia a forma da saída, nunca se a saída correspondia à ent
 | Caso novo nascia sem teto e, portanto, sem assistente           | primeira pergunta de qualquer caso criado pela interface    |
 | Previdenciário e tributário ausentes da biblioteca              | duas áreas que um escritório atende todo dia                |
 
-**A família que sobrou: o prompt promete o que o contrato não comporta.** Quatro dos cinco
-fecharam em 06/09 — três estendendo o contrato ou corrigindo o texto, um por deixar de ser lacuna
-de contrato.
+**A família inteira fechou em 06/09: o prompt prometia o que o contrato não comportava.** Três
+consertos estenderam o contrato ou corrigiram o texto, um deixou de ser lacuna de contrato, e o
+último era o inverso — o exemplo documentava campo que o contrato nunca teve.
 
-| Item                                                               | Onde                    | Estado                    |
-| ------------------------------------------------------------------ | ----------------------- | ------------------------- |
-| Grounded pedia a página examinada, e a entrada não traz página     | `GROUNDED_INPUT`        | ✅ fechado 06/09          |
-| Classificação sem campo para registrar arquivo composto            | `CLASSIFICATION_OUTPUT` | ✅ fechado 06/09          |
-| Entidade sem onde qualificar um valor                              | `ENTITIES_OUTPUT`       | ✅ fechado 06/09          |
-| Cobertura de período no checklist                                  | `CHECKLIST_OUTPUT`      | reclassificado: ver baixo |
-| `examples` não validam contra os próprios schemas, nas seis faixas | todas as especificações | aberto                    |
+| Item                                                           | Onde                    | Estado                    |
+| -------------------------------------------------------------- | ----------------------- | ------------------------- |
+| Grounded pedia a página examinada, e a entrada não traz página | `GROUNDED_INPUT`        | ✅ fechado 06/09          |
+| Classificação sem campo para registrar arquivo composto        | `CLASSIFICATION_OUTPUT` | ✅ fechado 06/09          |
+| Entidade sem onde qualificar um valor                          | `ENTITIES_OUTPUT`       | ✅ fechado 06/09          |
+| Cobertura de período no checklist                              | `CHECKLIST_OUTPUT`      | reclassificado: ver baixo |
+| `examples` citavam campo que o schema não tem                  | todas as especificações | ✅ fechado 06/09          |
 
 **A cobertura de período saiu da lista por não ser lacuna de contrato.** A análise vê um
 documento por vez, e três prompts já diziam isso corretamente — "a soma dos intervalos é do

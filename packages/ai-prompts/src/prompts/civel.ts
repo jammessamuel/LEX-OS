@@ -288,7 +288,10 @@ ${RESPONDA_SO_JSON}`,
   outputSchema: CHECKLIST_OUTPUT,
   examples: [
     {
-      input: { documentTypeCode: 'CONTRATO', itemDocumentTypeCode: 'CONTRATO' },
+      input: {
+        documentTypeCode: 'CONTRATO',
+        items: [{ documentTypeCode: 'CONTRATO', isRequired: true }],
+      },
       output: { status: 'AWAITING_VALIDATION' },
     },
   ],
@@ -541,7 +544,7 @@ ${RESPONDA_SO_JSON}`,
   outputSchema: ENTITIES_OUTPUT,
   examples: [
     {
-      input: { sourceTextLength: 100 },
+      input: { sourceText: { totalLength: 100, truncated: false } },
       output: {
         entityType: 'VALOR_PRINCIPAL',
         originalValue: 'R$ 12.000,00',

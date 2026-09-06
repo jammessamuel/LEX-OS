@@ -64,8 +64,13 @@ Corrigir os exemplos não invalidou a atestação de Thais: o caderno de revisã
   agora seria criar contrato sem consumidor. Quando a soma virar trabalho autorizado, o campo
   nasce junto dela.
 
-- **Os `examples` não validam contra os próprios schemas**, em todas as faixas: nenhum teste os
-  confere, e por isso a divergência nunca dói — até o dia em que alguém os usar como fixture.
+- ~~**Os `examples` não validam contra os próprios schemas.**~~ **Fechado em 2026-09-06, e o
+  diagnóstico estava meio errado.** Os exemplos são fragmentos ilustrativos de propósito: mostram
+  a forma do evento ou do item, sem repetir o envelope de transporte, porque é a parte que decide
+  que quem revisa quer ver. O que não podia é citar campo inexistente, e citavam dois —
+  `itemDocumentTypeCode` no checklist das seis faixas e `sourceTextLength` nas entidades das
+  seis. Os dois documentavam um contrato imaginário, e exemplo é a primeira coisa que se copia ao
+  escrever um provedor real. passa a conferir.
 
 **Nenhuma das seis faixas alcança acervo real.** As três lidas por Thais são recusadas por
 falta de inscrição ativa; as duas novas, por serem rascunho. Três testes em

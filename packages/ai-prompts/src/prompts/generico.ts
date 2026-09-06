@@ -119,7 +119,10 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   outputSchema: CHECKLIST_OUTPUT,
   examples: [
     {
-      input: { documentTypeCode: 'OUTRO', itemDocumentTypeCode: 'OUTRO' },
+      input: {
+        documentTypeCode: 'OUTRO',
+        items: [{ documentTypeCode: 'OUTRO', isRequired: true }],
+      },
       output: { status: 'AWAITING_VALIDATION' },
     },
   ],

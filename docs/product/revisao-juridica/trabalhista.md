@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito e processo do trabalho estão abaixo, na íntegra e
-exatamente como o sistema as usa — **6.482 palavras**.
+exatamente como o sistema as usa — **6.504 palavras**.
 
 **Revisadas por Thais Regina Farrapo Moreira em 2026-08-27**, **sem número de inscrição registrado** — Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.
 
@@ -562,8 +562,9 @@ escrito na exigência.
 
 Instrumento coletivo vale pela vigência que ele próprio declara, limitada a dois anos pelo
 art. 614, §3º — pode ser anual ou bienal, e vigência não se confunde com data-base nem com data
-de assinatura. Verifique se os instrumentos juntados, somados, cobrem o período discutido sem
-lacuna. Encerrada a vigência, a cláusula não adere ao contrato.
+de assinatura. Registre a vigência que o instrumento à sua frente declara e pare aí: dizer se os
+instrumentos juntados, somados, cobrem o período sem lacuna exigiria ver todos de uma vez, e você
+vê um. Encerrada a vigência, a cláusula não adere ao contrato.
 
 **[COMUM]** VOCÊ RECEBE O ENUNCIADO DE CADA EXIGÊNCIA — o título, a descrição
 quando houver, se ela é obrigatória, e o código de tipo documental que ela espera — mais o tipo

@@ -336,7 +336,7 @@ ${RESPONDA_SO_JSON}`,
     {
       input: {
         documentTypeCode: 'CERTIDAO_DIVIDA_ATIVA',
-        itemDocumentTypeCode: 'CERTIDAO_DIVIDA_ATIVA',
+        items: [{ documentTypeCode: 'CERTIDAO_DIVIDA_ATIVA', isRequired: true }],
       },
       output: { status: 'AWAITING_VALIDATION' },
     },
@@ -561,7 +561,7 @@ ${RESPONDA_SO_JSON}`,
   outputSchema: ENTITIES_OUTPUT,
   examples: [
     {
-      input: { sourceTextLength: 100 },
+      input: { sourceText: { totalLength: 100, truncated: false } },
       output: {
         entityType: 'MULTA_DE_OFICIO',
         originalValue: 'R$ 148.320,55',

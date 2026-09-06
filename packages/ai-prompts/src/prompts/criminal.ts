@@ -251,7 +251,7 @@ ${RESPONDA_SO_JSON}`,
     {
       input: {
         documentTypeCode: 'AUTO_PRISAO_FLAGRANTE',
-        itemDocumentTypeCode: 'AUTO_PRISAO_FLAGRANTE',
+        items: [{ documentTypeCode: 'AUTO_PRISAO_FLAGRANTE', isRequired: true }],
       },
       output: { status: 'AWAITING_VALIDATION' },
     },
@@ -449,7 +449,7 @@ ${RESPONDA_SO_JSON}`,
   outputSchema: ENTITIES_OUTPUT,
   examples: [
     {
-      input: { sourceTextLength: 100 },
+      input: { sourceText: { totalLength: 100, truncated: false } },
       output: {
         entityType: 'CAPITULACAO',
         originalValue: 'art. 157, § 2º-A, I',

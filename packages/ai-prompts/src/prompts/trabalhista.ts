@@ -251,7 +251,10 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   outputSchema: CHECKLIST_OUTPUT,
   examples: [
     {
-      input: { documentTypeCode: 'TRCT', itemDocumentTypeCode: 'TRCT' },
+      input: {
+        documentTypeCode: 'TRCT',
+        items: [{ documentTypeCode: 'TRCT', isRequired: true }],
+      },
       output: { status: 'AWAITING_VALIDATION' },
     },
   ],
@@ -459,7 +462,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
   outputSchema: ENTITIES_OUTPUT,
   examples: [
     {
-      input: { sourceTextLength: 100 },
+      input: { sourceText: { totalLength: 100, truncated: false } },
       output: {
         entityType: 'SALARIO_BASE',
         originalValue: 'R$ 2.500,00',

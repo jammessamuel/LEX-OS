@@ -324,7 +324,10 @@ ${RESPONDA_SO_JSON}`,
   outputSchema: CHECKLIST_OUTPUT,
   examples: [
     {
-      input: { documentTypeCode: 'CNIS', itemDocumentTypeCode: 'CNIS' },
+      input: {
+        documentTypeCode: 'CNIS',
+        items: [{ documentTypeCode: 'CNIS', isRequired: true }],
+      },
       output: { status: 'AWAITING_VALIDATION' },
     },
   ],
@@ -560,7 +563,7 @@ ${RESPONDA_SO_JSON}`,
   outputSchema: ENTITIES_OUTPUT,
   examples: [
     {
-      input: { sourceTextLength: 120 },
+      input: { sourceText: { totalLength: 100, truncated: false } },
       output: {
         entityType: 'SALARIO_DE_CONTRIBUICAO',
         originalValue: 'R$ 2.310,55',
