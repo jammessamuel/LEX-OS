@@ -31,6 +31,7 @@
 | [ADR-014](#adr-014-fronteira-de-identidade-e-acesso)                                         | Fronteira de identidade e acesso                                         | Aceito   | 2026-08-20 |
 | [ADR-015](#adr-015-biblioteca-de-prompts-e-pesquisa-por-agentes)                             | Biblioteca de prompts e pesquisa por agentes                             | Aceito   | 2026-08-26 |
 | [ADR-016](#adr-016-encerrar-o-mvp-sem-fabricar-as-condições-externas)                        | Encerrar o MVP sem fabricar as condições externas                        | Aceito   | 2026-08-28 |
+| [ADR-017](#adr-017-ampliar-a-recuperação-do-assistente-para-oito-trechos)                    | Ampliar a recuperação do assistente para oito trechos                    | Aceito   | 2026-09-06 |
 
 ## Estado de execução
 
@@ -1412,3 +1413,98 @@ preencher a credencial sem expô-la ao JavaScript da aplicação.
 
 Reabrir qualquer uma das cinco decisões exige novo ADR. Implementar o conector de e-mail ou
 permitir acervo real é um novo incremento vertical, não manutenção da Entrega 16.
+
+> **Superada em parte pelo [ADR-017](#adr-017-ampliar-a-recuperação-do-assistente-para-oito-trechos).**
+> A decisão 1 — teto de cinco trechos — foi reaberta em 2026-09-06 pela avaliação medida que este
+> próprio ADR exigiu como condição. As outras quatro continuam vigentes.
+
+---
+
+## ADR-017: Ampliar a recuperação do assistente para oito trechos
+
+- **Status:** Aceito — decidido pelo dono em 2026-09-06
+- **Data:** 2026-09-06
+- **Decisor:** Samuel James Sousa Barreto, em nome da SAMUEL DEV LTDA
+- **Trava:** quantos trechos sustentam uma resposta fundamentada
+- **Supera:** somente a decisão 1 do ADR-016 — o teto de cinco trechos. As outras quatro decisões
+  daquele registro continuam vigentes e inalteradas
+
+### Decisão (2026-09-06)
+
+A recuperação do assistente passa de cinco para **oito trechos**, valor que é ao mesmo tempo o
+teto e o padrão. Nada mais do ADR-016 muda.
+
+### Por que agora, e não por intuição
+
+O ADR-016 não disse "cinco para sempre". Disse cinco **até uma avaliação medida**, e escreveu o
+que ela precisaria conter:
+
+> O teto pode ser reaberto quando existir uma avaliação versionada com perguntas amplas
+> fictícias, medindo cobertura, citações resolvíveis, latência e custo nas alternativas.
+
+Essa avaliação foi executada em 2026-09-06 e está registrada em
+[`docs/product/avaliacao-recuperacao.md`](../product/avaliacao-recuperacao.md), com o instrumento
+em `infra/scripts/avalia-recuperacao.mjs`. O que ela mediu, sobre onze perguntas no caso
+`RT-2026-0008` — seis com resposta provada no acervo e cinco sem resposta nenhuma:
+
+| Teto | Cobertura | Custo médio por resposta | Latência mediana |
+| ---- | --------- | ------------------------ | ---------------- |
+| 3    | 3/6       | R$ 0,1190                | 6.612 ms         |
+| 5    | 5/6       | R$ 0,1424                | 7.455 ms         |
+| 8    | 6/6       | R$ 0,2217 (projetado)    | não medida       |
+
+A sexta pergunta é a que decide. "Qual a data de pagamento das verbas rescisórias" tem resposta
+literal no TRCT — "Pagamento efetuado em 20/05/2026" — que a extração identificou e que a busca
+coloca na **posição seis** do ranking. Com teto cinco o modelo nunca vê o trecho. Não é o modelo
+falhando em ler: é o sistema não entregando o documento que ele mesmo indexou.
+
+Um sistema que guarda a resposta e não a alcança é pior do que um que não a tem, porque o silêncio
+parece ausência de prova. Num dossiê trabalhista, "não consta a data de pagamento" e "a data de
+pagamento é 20/05/2026" sustentam pedidos diferentes.
+
+### O que se está comprando, e por quanto
+
+R$ 0,0793 a mais por resposta — de R$ 0,1424 para R$ 0,2217, 56% de acréscimo sobre um valor que
+continua abaixo de vinte e três centavos. Contra o teto de custo por caso de R$ 250,00, são cerca
+de mil e cem perguntas por caso, e nenhum caso do acervo fictício se aproxima disso.
+
+O acréscimo é de contexto, não de chamadas: os trechos das posições 6 a 8 medem em média 716, 690
+e 762 caracteres, somando 56% ao que as cinco primeiras já enviavam. Por isso o custo cresce na
+mesma proporção, e por isso a conta é previsível em vez de estimada.
+
+### Por que oito, e não seis, dez ou vinte e cinco
+
+Seis resolveria a pergunta medida e nada mais — dimensionar o teto pela última pergunta que
+falhou é ajustar ao teste, não ao problema. Oito dá duas posições de folga sobre o pior caso
+observado, que é o tipo de margem que sobrevive a um documento a mais no caso.
+
+Acima disso o argumento inverte. O contrato de saída aceita no máximo cinco identificadores de
+trecho por afirmação, então trechos muito além disso entram no contexto sem poder ser citados
+individualmente — entram como ruído que a resposta não consegue atribuir. Vinte e cinco, o teto da
+busca, quadruplicaria o custo por cobertura que a avaliação não mediu.
+
+### O que continua valendo do ADR-016
+
+As outras quatro decisões seguem intactas: upload é o único canal de entrada, o adaptador real
+continua restrito a `CASE_ARCHIVE=fictional`, os prompts de especialidade permanecem `DRAFT` até
+assinatura de advogado com OAB ativa, e a aplicação não guarda senha. Este ADR trata de um número,
+não do escopo.
+
+Continua valendo também a frase que o ADR-016 escreveu sobre perguntas amplas: **o sistema não
+compensa um recorte insuficiente com conhecimento próprio do modelo.** Oito trechos não tornam uma
+pergunta vaga respondível; tornam uma pergunta precisa alcançável.
+
+### Verificações de conformidade
+
+- o contrato de entrada do assistente recusa `limit` acima de oito, e o padrão é oito;
+- nenhum outro lugar do código ou da tela repete o número — a política mora no DTO;
+- a folga de orçamento exigida antes de chamar o modelo cobre oito trechos, não cinco;
+- a avaliação versionada continua no repositório, e suas duas primeiras fases rodam sem provedor
+  pago;
+- reabrir este teto de novo exige o mesmo que exigiu desta vez: medida antes de opinião.
+
+### Condição para quem mexer nisto depois
+
+Subir ou baixar o número pede execução nova de `infra/scripts/avalia-recuperacao.mjs` e
+atualização de `docs/product/avaliacao-recuperacao.md` com a data da medida. Um teto escolhido sem
+medida volta a ser exatamente o que este ADR acabou de substituir.

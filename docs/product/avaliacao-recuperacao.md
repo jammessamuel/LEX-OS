@@ -10,8 +10,11 @@ O ADR-016 fixou o teto de cinco trechos e disse, por escrito, o que permitiria r
 > fictícias, medindo cobertura, citações resolvíveis, latência e custo nas alternativas. Até lá,
 > permanecer em cinco é decisão, não pendência.
 
-Este documento é essa avaliação. Ele **não** reabre o teto — reabrir exige ADR novo. Ele entrega
-a medida que o ADR nomeou como condição, para que a decisão deixe de depender de intuição.
+Este documento é essa avaliação. Ele entregou a medida que o ADR nomeou como condição, e o dono
+decidiu sobre ela no mesmo dia: o
+[ADR-017](../decisions/decisoes.md#adr-017-ampliar-a-recuperação-do-assistente-para-oito-trechos)
+levou o teto de cinco para **oito trechos**, que passam a ser teto e padrão. Os números abaixo são
+os que sustentaram essa decisão.
 
 ## Como está montada
 
@@ -118,10 +121,12 @@ cada metade contribuiu. Ficam registrados.
 Autoriza a decisão sobre o teto a deixar de ser intuição. Os números estão acima, o instrumento
 está no repositório e a execução é repetível.
 
-**Não autoriza mexer no teto.** Passar de cinco para oito é reabrir uma decisão aceita, e o próprio
-ADR-016 exige ADR novo para isso. O que a medida mostra é que oito cobriria 6/6 por R$ 0,2217 por
-resposta, contra 5/6 por R$ 0,1424 — 56% mais caro por um sexto a mais de cobertura, com latência
-não medida. É uma troca defensável e é uma escolha do dono, não da engenharia.
+**O teto foi para oito, e por ADR.** Oito cobre 6/6 por R$ 0,2217 por resposta, contra 5/6 por
+R$ 0,1424 — 56% mais caro por um sexto a mais de cobertura. A troca foi aceita porque a pergunta
+que faltava tem resposta literal no acervo: com teto cinco o sistema guardava o TRCT e não o
+entregava, e silêncio sobre documento que existe parece ausência de prova. O registro é o
+[ADR-017](../decisions/decisoes.md#adr-017-ampliar-a-recuperação-do-assistente-para-oito-trechos).
+A latência em oito continua não medida e entra na próxima execução.
 
 Também não autoriza tratar 6/6 como meta. Seis perguntas fictícias sobre um caso trabalhista não
 representam o acervo de um escritório. O que esta avaliação estabelece é uma régua, não um

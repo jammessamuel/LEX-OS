@@ -11,6 +11,7 @@ import type {
   PersonType,
   ProcessingJobType,
   Priority,
+  SearchMode,
   TaskSourceType,
   TaskStatus,
   UserStatus,
@@ -512,6 +513,28 @@ export function userStatusTone(
       return 'rejeitado';
     default:
       return 'neutro';
+  }
+}
+
+/**
+ * Como o trecho foi encontrado, em palavras de quem pesquisa.
+ *
+ * A busca oferece um modo e a resposta ecoa o modo pedido, não o que de fato achou o trecho —
+ * então "híbrida" aparece na tela mesmo quando a metade semântica não devolveu nada, o que a
+ * avaliação de 2026-09-06 mediu: 73 de 74 trechos vieram só do léxico. Cada resultado sempre
+ * soube dizer a verdade em `matchedBy`; faltava mostrar.
+ *
+ * "Termos" e "sentido" em vez de "lexical" e "semântico" porque quem lê é advogado conferindo de
+ * onde veio a prova, e a distinção que importa para ele é entre achar a palavra e achar a ideia.
+ */
+export function matchedByLabel(matchedBy: SearchMode): string {
+  switch (matchedBy) {
+    case 'LEXICAL':
+      return 'termos';
+    case 'SEMANTIC':
+      return 'sentido';
+    default:
+      return 'termos e sentido';
   }
 }
 

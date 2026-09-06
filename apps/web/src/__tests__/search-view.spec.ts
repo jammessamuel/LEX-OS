@@ -66,6 +66,9 @@ describe('SearchView', () => {
     });
     expect(wrapper.text()).toContain('Trecho autorizado do contrato');
     expect(wrapper.text()).toContain('página 2');
+    // Como o trecho foi achado é procedência, não enfeite: a resposta ecoa o modo pedido, e sem
+    // isto a tela dizia "híbrida" enquanto a metade semântica não devolvia nada.
+    expect(wrapper.text()).toContain('encontrado por termos e sentido');
     expect(wrapper.text()).toContain('Abrir documento');
   });
 

@@ -10,6 +10,7 @@ import type {
   SearchResponse,
 } from '../api/types.js';
 import { highlightExcerpt } from '../domain/highlight.js';
+import { matchedByLabel } from '../domain/vocabulary.js';
 
 const cases = ref<CaseSummary[]>([]);
 const caseId = ref('');
@@ -185,7 +186,8 @@ onMounted(() => void loadCases());
           </blockquote>
           <p class="source__meta data">
             página {{ source.citation.pageNumber }} · caracteres
-            {{ source.citation.startOffset }}–{{ source.citation.endOffset }}
+            {{ source.citation.startOffset }}–{{ source.citation.endOffset }} · encontrado por
+            {{ matchedByLabel(source.matchedBy) }}
           </p>
           <RouterLink :to="{ name: 'document-detail', params: { id: source.citation.documentId } }">
             Abrir documento

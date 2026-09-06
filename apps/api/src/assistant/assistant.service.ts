@@ -36,8 +36,11 @@ interface ParsedProviderOutput {
  * Exigir esta folga antes de chamar o modelo transforma o teto em teto de verdade.
  *
  * O teto de saída é conhecido — o próprio adaptador o envia. A entrada é limitada pelo prompt
- * mais cinco trechos recuperados; o valor abaixo é uma cota generosa dela, porque errar para
- * mais aqui recusa uma pergunta a mais, e errar para menos deixa o gasto furar o teto.
+ * mais os trechos recuperados, hoje no máximo oito pelo ADR-017; o valor abaixo é uma cota
+ * generosa dela, porque errar para mais aqui recusa uma pergunta a mais, e errar para menos
+ * deixa o gasto furar o teto. Oito trechos medem cerca de seis mil caracteres na avaliação de
+ * 2026-09-06, bem dentro da cota — que existe para não precisar ser recalculada a cada ajuste
+ * do teto, e não para ser exata.
  */
 const TETO_TOKENS_DE_SAIDA = 4096;
 const COTA_TOKENS_DE_ENTRADA = 32_000;

@@ -41,19 +41,23 @@ export class GroundedAnswerRequestDto {
   mode?: SearchMode;
 
   /**
-   * Quantos trechos sustentam a resposta.
+   * Quantos trechos sustentam a resposta. É teto e padrão ao mesmo tempo, e mora só aqui.
    *
-   * Cinco é o teto que o ADR-016 fixou, e passa a ser também o padrão. O padrão era três, e a
-   * avaliação de 2026-09-06 mediu o que isso custava: de seis perguntas cujas respostas estão
-   * comprovadamente no acervo, três trechos alcançavam três, e cinco alcançam cinco. O que se
-   * economizava eram R$ 0,023 por resposta; o que se perdia era um terço dos fatos que o
-   * escritório pediu. Num produto jurídico o fato que falta é o erro que importa.
+   * Oito, pelo ADR-017 de 2026-09-06, que reabriu o teto de cinco do ADR-016 com a avaliação
+   * medida que aquele registro exigia como condição. De seis perguntas cujas respostas estão
+   * comprovadamente no acervo, três trechos alcançavam três, cinco alcançam cinco, e a sexta —
+   * a data de pagamento das verbas rescisórias, que está literalmente no TRCT — cai na posição
+   * seis do ranking. Com teto cinco o modelo nunca via o trecho: não é falha de leitura, é o
+   * sistema não entregando o documento que ele mesmo indexou.
+   *
+   * Custa R$ 0,0793 a mais por resposta. Num produto jurídico o fato que falta é o erro que
+   * importa, e silêncio sobre um documento que está no acervo parece ausência de prova.
    */
-  @ApiPropertyOptional({ minimum: 1, maximum: 5, default: 5 })
+  @ApiPropertyOptional({ minimum: 1, maximum: 8, default: 8 })
   @Type(() => Number)
   @IsOptional()
   @IsInt({ message: 'O limite deve ser um número inteiro.' })
   @Min(1, { message: 'O limite deve ser pelo menos 1.' })
-  @Max(5, { message: 'O limite não pode exceder 5.' })
-  limit = 5;
+  @Max(8, { message: 'O limite não pode exceder 8.' })
+  limit = 8;
 }
