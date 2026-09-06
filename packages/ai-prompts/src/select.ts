@@ -1,8 +1,12 @@
 import { specialtyCodeFor } from '@lex-os/shared';
 
 import { genericPrompts } from './prompts/generico.js';
+import { administrativoPrompts } from './prompts/administrativo.js';
 import { civelPrompts } from './prompts/civel.js';
+import { empresarialPrompts } from './prompts/empresarial.js';
+import { consumidorPrompts } from './prompts/consumidor.js';
 import { criminalPrompts } from './prompts/criminal.js';
+import { familiaPrompts } from './prompts/familia.js';
 import { previdenciarioPrompts } from './prompts/previdenciario.js';
 import { trabalhistaPrompts } from './prompts/trabalhista.js';
 import { tributarioPrompts } from './prompts/tributario.js';
@@ -24,6 +28,10 @@ export const promptLibrary: readonly PromptSpecification[] = [
   ...criminalPrompts,
   ...previdenciarioPrompts,
   ...tributarioPrompts,
+  ...familiaPrompts,
+  ...consumidorPrompts,
+  ...empresarialPrompts,
+  ...administrativoPrompts,
 ];
 
 const bySpecialtyAndTask = new Map<string, PromptSpecification>();

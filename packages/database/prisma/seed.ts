@@ -155,6 +155,51 @@ const documentTypes = [
   ['CAT', 'Comunicação de acidente de trabalho', 'PREVIDENCIARIO'],
   ['GUIA_CONTRIBUICAO_PREVIDENCIARIA', 'Guia de contribuição previdenciária', 'PREVIDENCIARIO'],
   ['PROVA_ATIVIDADE_RURAL', 'Documento de comprovação de atividade rural', 'PREVIDENCIARIO'],
+  // Família, consumidor, empresarial e administrativo entraram na biblioteca de prompts em
+  // 2026-09-06, e vale aqui a mesma razão que trouxe tributário e previdenciário: a classificação
+  // promete respeitar este catálogo, e prometer classificar num catálogo que não tem o tipo não
+  // deixa saída honesta — a certidão de casamento, a ordem de serviço da assistência, a ata de
+  // assembleia e a portaria cairiam todas em OUTRO com confiança baixa, indistinguível de "não sei
+  // que documento é este", e nenhum item de checklist dessas quatro áreas fecharia.
+  ['CERTIDAO_CASAMENTO', 'Certidão de casamento', 'FAMILIA'],
+  ['CERTIDAO_NASCIMENTO', 'Certidão de nascimento', 'FAMILIA'],
+  ['CERTIDAO_OBITO', 'Certidão de óbito', 'FAMILIA'],
+  ['PACTO_ANTENUPCIAL', 'Pacto antenupcial', 'FAMILIA'],
+  ['ACORDO_FAMILIAR', 'Acordo de divórcio, guarda ou alimentos', 'FAMILIA'],
+  ['ESTUDO_PSICOSSOCIAL', 'Estudo psicossocial', 'FAMILIA'],
+  ['FORMAL_PARTILHA', 'Formal de partilha', 'FAMILIA'],
+  ['ESCRITURA_INVENTARIO', 'Escritura pública de inventário e partilha', 'FAMILIA'],
+  ['TESTAMENTO', 'Testamento', 'FAMILIA'],
+  ['MEDIDA_PROTETIVA', 'Decisão de medida protetiva de urgência', 'FAMILIA'],
+  ['NOTA_FISCAL', 'Nota fiscal', 'CONSUMO'],
+  ['CUPOM_FISCAL', 'Cupom fiscal', 'CONSUMO'],
+  ['PROTOCOLO_ATENDIMENTO', 'Registro de protocolo de atendimento', 'CONSUMO'],
+  ['LAUDO_ASSISTENCIA_TECNICA', 'Laudo de assistência técnica', 'CONSUMO'],
+  ['EXTRATO_NEGATIVACAO', 'Extrato de órgão de proteção ao crédito', 'CONSUMO'],
+  ['NEGATIVA_COBERTURA', 'Negativa de cobertura por escrito', 'CONSUMO'],
+  ['BILHETE_AEREO', 'Bilhete aéreo e cartão de embarque', 'CONSUMO'],
+  ['CAPTURA_DE_TELA', 'Captura de tela de conversa ou aplicativo', 'CONSUMO'],
+  ['CONTRATO_SOCIAL', 'Contrato social ou estatuto', 'SOCIETARIO'],
+  ['ALTERACAO_CONTRATUAL', 'Alteração contratual', 'SOCIETARIO'],
+  ['ATA_ASSEMBLEIA', 'Ata de assembleia ou reunião de sócios', 'SOCIETARIO'],
+  ['CERTIDAO_JUNTA_COMERCIAL', 'Certidão simplificada da junta comercial', 'SOCIETARIO'],
+  ['ACORDO_SOCIOS', 'Acordo de sócios ou acionistas', 'SOCIETARIO'],
+  ['BALANCO_PATRIMONIAL', 'Balanço patrimonial e demonstrações', 'SOCIETARIO'],
+  ['PLANO_RECUPERACAO', 'Plano de recuperação judicial', 'SOCIETARIO'],
+  ['QUADRO_CREDORES', 'Relação ou quadro geral de credores', 'SOCIETARIO'],
+  ['DUPLICATA', 'Duplicata', 'SOCIETARIO'],
+  ['INSTRUMENTO_PROTESTO', 'Instrumento de protesto', 'SOCIETARIO'],
+  ['LAUDO_APURACAO_HAVERES', 'Laudo de apuração de haveres', 'SOCIETARIO'],
+  ['PORTARIA', 'Portaria', 'ADMINISTRATIVO'],
+  ['EDITAL_LICITACAO', 'Edital de licitação e anexos', 'ADMINISTRATIVO'],
+  ['ATA_SESSAO_LICITACAO', 'Ata de sessão pública', 'ADMINISTRATIVO'],
+  ['CONTRATO_ADMINISTRATIVO', 'Contrato administrativo e aditivos', 'ADMINISTRATIVO'],
+  ['PARECER_JURIDICO', 'Parecer jurídico', 'ADMINISTRATIVO'],
+  ['PUBLICACAO_DIARIO_OFICIAL', 'Publicação em diário oficial', 'ADMINISTRATIVO'],
+  ['AUTO_INFRACAO_ADMINISTRATIVO', 'Auto de infração administrativa', 'ADMINISTRATIVO'],
+  ['RELATORIO_COMISSAO_PAD', 'Relatório de comissão disciplinar', 'ADMINISTRATIVO'],
+  ['NOTA_EMPENHO', 'Nota de empenho', 'ADMINISTRATIVO'],
+  ['CERTIDAO_NEGATIVA', 'Certidão negativa de débitos', 'ADMINISTRATIVO'],
 ] as const;
 
 function loadRootEnvironment(): void {

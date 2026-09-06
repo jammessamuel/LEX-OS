@@ -132,32 +132,13 @@ export const legalSpecialties: readonly LegalSpecialty[] = [
         name: 'Despejo por falta de pagamento de aluguel e encargos',
       },
       { code: 'EXECUCAO_DE_TITULO_EXTRAJUDICIAL', name: 'Execução de título extrajudicial' },
-      { code: 'DIVORCIO', name: 'Divórcio' },
       { code: 'ACAO_DE_COBRANCA', name: 'Ação de cobrança' },
       { code: 'ACAO_MONITORIA', name: 'Ação monitória' },
       { code: 'INDENIZACAO_POR_DANOS_MATERIAIS', name: 'Indenização por danos materiais' },
-      { code: 'GUARDA_E_REGIME_DE_CONVIVENCIA', name: 'Guarda e regime de convivência' },
       { code: 'ACAO_REIVINDICATORIA', name: 'Ação reivindicatória' },
       { code: 'ACAO_RENOVATORIA_DE_LOCACAO', name: 'Ação renovatória de locação não residencial' },
-      { code: 'INVENTARIO_E_PARTILHA', name: 'Inventário e partilha' },
-      { code: 'VICIO_OU_FATO_DO_PRODUTO', name: 'Vício ou fato do produto' },
-      {
-        code: 'RECONHECIMENTO_E_DISSOLUCAO_DE_UNIAO_ESTAVEL',
-        name: 'Reconhecimento e dissolução de união estável',
-      },
-      { code: 'ACAO_DE_ALIMENTOS', name: 'Ação de alimentos' },
-      { code: 'INTERDICAO_E_CURATELA', name: 'Interdição e curatela' },
-      {
-        code: 'COBRANCA_INDEVIDA_E_NEGATIVACAO',
-        name: 'Cobrança indevida e inscrição em cadastro de inadimplentes',
-      },
       { code: 'EMBARGOS_DE_TERCEIRO', name: 'Embargos de terceiro' },
-      { code: 'INVESTIGACAO_DE_PATERNIDADE', name: 'Investigação de paternidade' },
       { code: 'OBRIGACAO_DE_FAZER', name: 'Ação de obrigação de fazer' },
-      {
-        code: 'PLANO_SAUDE_NEGATIVA_DE_COBERTURA',
-        name: 'Negativa de cobertura por plano de saúde',
-      },
       {
         code: 'DECLARATORIA_INEXISTENCIA_DEBITO',
         name: 'Ação declaratória de inexistência de débito (inexigibilidade)',
@@ -350,6 +331,285 @@ export const legalSpecialties: readonly LegalSpecialty[] = [
       {
         code: 'PENHORA_E_GARANTIA_DO_JUIZO',
         name: 'Penhora, garantia do juízo e substituição da garantia',
+      },
+    ],
+  },
+  {
+    /**
+     * Família e sucessões saem de dentro do cível.
+     *
+     * Sete tipos desta faixa estavam catalogados como cíveis — divórcio, guarda, alimentos, união
+     * estável, inventário, investigação de paternidade e curatela. Não é erro de arrumação: um
+     * divórcio com partilha tem estrutura de disputa patrimonial, e por isso enganava. O que o
+     * cível não tem é o resto — criança cujo interesse prevalece sobre o dos pais, prestação que
+     * se mede pelo que um pode e o outro precisa, regime de bens que decide o que sequer entra na
+     * partilha, herdeiro que não pode ser excluído, e processo que corre em segredo de justiça.
+     *
+     * Mover o tipo de caso não muda que prompt roda: quem escolhe é `legalArea`. Muda o que este
+     * catálogo afirma, e afirmar que divórcio é matéria cível depois de existir uma faixa de
+     * família é o catálogo dizendo duas coisas.
+     */
+    code: 'FAMILIA',
+    name: 'Direito de família e sucessões',
+    aliases: [
+      'DIREITO_DE_FAMILIA',
+      'FAMILIA_E_SUCESSOES',
+      'DIREITO_DAS_FAMILIAS',
+      'SUCESSOES',
+      'DIREITO_SUCESSORIO',
+    ],
+    caseTypes: [
+      { code: 'DIVORCIO_CONSENSUAL', name: 'Divórcio consensual' },
+      { code: 'DIVORCIO_LITIGIOSO', name: 'Divórcio litigioso' },
+      { code: 'PARTILHA_DE_BENS', name: 'Partilha de bens do casal' },
+      {
+        code: 'RECONHECIMENTO_E_DISSOLUCAO_DE_UNIAO_ESTAVEL',
+        name: 'Reconhecimento e dissolução de união estável',
+      },
+      { code: 'ALIMENTOS_FIXACAO', name: 'Ação de alimentos' },
+      { code: 'ALIMENTOS_REVISIONAL', name: 'Revisional de alimentos' },
+      { code: 'ALIMENTOS_EXONERACAO', name: 'Exoneração de alimentos' },
+      { code: 'ALIMENTOS_EXECUCAO', name: 'Execução de alimentos' },
+      { code: 'ALIMENTOS_GRAVIDICOS', name: 'Alimentos gravídicos' },
+      { code: 'GUARDA_E_CONVIVENCIA', name: 'Guarda e regime de convivência' },
+      { code: 'ALTERACAO_DE_GUARDA', name: 'Modificação de guarda' },
+      { code: 'ALIENACAO_PARENTAL', name: 'Alegação de alienação parental' },
+      { code: 'AUTORIZACAO_DE_VIAGEM_DE_MENOR', name: 'Autorização judicial de viagem de menor' },
+      { code: 'INVESTIGACAO_DE_PATERNIDADE', name: 'Investigação de paternidade' },
+      { code: 'NEGATORIA_DE_PATERNIDADE', name: 'Negatória de paternidade' },
+      {
+        code: 'RECONHECIMENTO_DE_PATERNIDADE_SOCIOAFETIVA',
+        name: 'Reconhecimento de paternidade socioafetiva',
+      },
+      { code: 'ADOCAO', name: 'Adoção' },
+      { code: 'DESTITUICAO_DO_PODER_FAMILIAR', name: 'Destituição do poder familiar' },
+      { code: 'CURATELA', name: 'Curatela e tomada de decisão apoiada' },
+      { code: 'MEDIDA_PROTETIVA_VIOLENCIA_DOMESTICA', name: 'Medida protetiva de urgência' },
+      { code: 'INVENTARIO_JUDICIAL', name: 'Inventário judicial' },
+      { code: 'INVENTARIO_EXTRAJUDICIAL', name: 'Inventário extrajudicial' },
+      { code: 'ARROLAMENTO', name: 'Arrolamento sumário e comum' },
+      { code: 'SOBREPARTILHA', name: 'Sobrepartilha de bem não inventariado' },
+      {
+        code: 'TESTAMENTO_ABERTURA_E_REGISTRO',
+        name: 'Abertura, registro e cumprimento de testamento',
+      },
+      { code: 'ANULACAO_DE_TESTAMENTO', name: 'Anulação de testamento' },
+      { code: 'PETICAO_DE_HERANCA', name: 'Petição de herança' },
+      { code: 'ALVARA_JUDICIAL_SUCESSORIO', name: 'Alvará judicial para levantamento de valores' },
+      { code: 'DESERDACAO_E_INDIGNIDADE', name: 'Deserdação e indignidade' },
+      {
+        code: 'UNIAO_HOMOAFETIVA_E_MULTIPARENTALIDADE',
+        name: 'União homoafetiva e multiparentalidade',
+      },
+    ],
+  },
+  {
+    /**
+     * Consumidor também sai do cível, e pelo mesmo motivo de fundo.
+     *
+     * Três tipos estavam lá: vício ou fato do produto, cobrança indevida com negativação e
+     * negativa de cobertura por plano de saúde. O Código de Defesa do Consumidor não é uma
+     * variação do direito civil comum — inverte quem prova, dispensa a culpa, separa vício de
+     * fato com prazos próprios para cada um, e trata desigualmente as partes de propósito.
+     * Analisar uma negativa de plano de saúde com instrução de contrato paritário perde
+     * exatamente o que decide o caso.
+     */
+    code: 'CONSUMIDOR',
+    name: 'Direito do consumidor',
+    aliases: ['DIREITO_DO_CONSUMIDOR', 'CDC', 'RELACAO_DE_CONSUMO'],
+    caseTypes: [
+      { code: 'VICIO_DO_PRODUTO', name: 'Vício do produto' },
+      { code: 'VICIO_DO_SERVICO', name: 'Vício do serviço' },
+      {
+        code: 'FATO_DO_PRODUTO_ACIDENTE_DE_CONSUMO',
+        name: 'Fato do produto e acidente de consumo',
+      },
+      { code: 'FATO_DO_SERVICO', name: 'Fato do serviço' },
+      {
+        code: 'COBRANCA_INDEVIDA_E_NEGATIVACAO',
+        name: 'Cobrança indevida e inscrição em cadastro de inadimplentes',
+      },
+      {
+        code: 'PLANO_SAUDE_NEGATIVA_DE_COBERTURA',
+        name: 'Negativa de cobertura por plano de saúde',
+      },
+      { code: 'PLANO_SAUDE_REAJUSTE', name: 'Reajuste abusivo de plano de saúde' },
+      { code: 'PLANO_SAUDE_RESCISAO_UNILATERAL', name: 'Rescisão unilateral de plano de saúde' },
+      { code: 'BANCO_FRAUDE_E_GOLPE', name: 'Fraude bancária e transação não reconhecida' },
+      {
+        code: 'EMPRESTIMO_CONSIGNADO_NAO_CONTRATADO',
+        name: 'Empréstimo consignado não contratado',
+      },
+      { code: 'JUROS_E_TARIFAS_ABUSIVAS', name: 'Juros e tarifas abusivas em contrato bancário' },
+      { code: 'SUPERENDIVIDAMENTO', name: 'Repactuação por superendividamento' },
+      { code: 'TRANSPORTE_AEREO_ATRASO_E_CANCELAMENTO', name: 'Atraso e cancelamento de voo' },
+      { code: 'EXTRAVIO_DE_BAGAGEM', name: 'Extravio ou avaria de bagagem' },
+      { code: 'OVERBOOKING', name: 'Preterição de embarque' },
+      {
+        code: 'TELECOM_COBRANCA_E_SERVICO',
+        name: 'Telefonia e internet: cobrança e falha de serviço',
+      },
+      {
+        code: 'ENERGIA_E_SANEAMENTO_CORTE_INDEVIDO',
+        name: 'Corte indevido de energia, água ou gás',
+      },
+      { code: 'COMERCIO_ELETRONICO_NAO_ENTREGA', name: 'Compra pela internet não entregue' },
+      {
+        code: 'DIREITO_DE_ARREPENDIMENTO',
+        name: 'Direito de arrependimento na compra a distância',
+      },
+      { code: 'PUBLICIDADE_ENGANOSA_OU_ABUSIVA', name: 'Publicidade enganosa ou abusiva' },
+      { code: 'PRATICA_ABUSIVA_E_VENDA_CASADA', name: 'Prática abusiva e venda casada' },
+      {
+        code: 'CLAUSULA_ABUSIVA_EM_CONTRATO_DE_ADESAO',
+        name: 'Cláusula abusiva em contrato de adesão',
+      },
+      { code: 'RECALL_E_VICIO_OCULTO_DE_VEICULO', name: 'Recall e vício oculto de veículo' },
+      { code: 'INCORPORACAO_ATRASO_NA_ENTREGA', name: 'Atraso na entrega de imóvel na planta' },
+      { code: 'DISTRATO_IMOBILIARIO', name: 'Distrato de compra de imóvel e retenção de valores' },
+      { code: 'CURSO_E_MENSALIDADE_ESCOLAR', name: 'Serviço educacional e mensalidade' },
+      { code: 'SEGURO_NEGATIVA_DE_SINISTRO', name: 'Negativa de cobertura securitária' },
+      {
+        code: 'PROTECAO_DE_DADOS_DO_CONSUMIDOR',
+        name: 'Uso indevido de dados pessoais do consumidor',
+      },
+      { code: 'ACAO_COLETIVA_DE_CONSUMO', name: 'Ação coletiva de consumo' },
+      { code: 'INVERSAO_DO_ONUS_DA_PROVA', name: 'Incidente de inversão do ônus da prova' },
+    ],
+  },
+  {
+    /**
+     * Empresarial e societário, que não existia em faixa nenhuma.
+     *
+     * Não estava escondido no cível como família e consumo: simplesmente não havia. O que o
+     * distingue é o sujeito e o tempo. A pessoa jurídica tem existência, órgãos e registro
+     * próprios, e nada disso se lê num contrato entre pessoas; e a crise da empresa tem
+     * calendário que manda no processo inteiro, com marcos que não existem em lugar nenhum do
+     * direito comum.
+     */
+    code: 'EMPRESARIAL',
+    name: 'Direito empresarial e societário',
+    aliases: ['DIREITO_EMPRESARIAL', 'SOCIETARIO', 'DIREITO_SOCIETARIO', 'COMERCIAL'],
+    caseTypes: [
+      { code: 'RECUPERACAO_JUDICIAL', name: 'Recuperação judicial' },
+      { code: 'RECUPERACAO_EXTRAJUDICIAL', name: 'Recuperação extrajudicial' },
+      { code: 'FALENCIA_PEDIDO', name: 'Pedido de falência' },
+      { code: 'FALENCIA_HABILITACAO_DE_CREDITO', name: 'Habilitação e impugnação de crédito' },
+      { code: 'DISSOLUCAO_DE_SOCIEDADE', name: 'Dissolução total ou parcial de sociedade' },
+      { code: 'APURACAO_DE_HAVERES', name: 'Apuração de haveres do sócio retirante' },
+      { code: 'EXCLUSAO_DE_SOCIO', name: 'Exclusão de sócio por falta grave' },
+      {
+        code: 'CONFLITO_ENTRE_SOCIOS',
+        name: 'Conflito societário e quebra da affectio societatis',
+      },
+      {
+        code: 'DESCONSIDERACAO_DA_PERSONALIDADE_JURIDICA',
+        name: 'Incidente de desconsideração da personalidade jurídica',
+      },
+      {
+        code: 'RESPONSABILIDADE_DE_ADMINISTRADOR',
+        name: 'Responsabilidade civil do administrador',
+      },
+      {
+        code: 'ANULACAO_DE_DELIBERACAO_SOCIAL',
+        name: 'Anulação de deliberação de assembleia ou reunião',
+      },
+      { code: 'ACORDO_DE_SOCIOS_E_QUOTISTAS', name: 'Execução de acordo de sócios ou acionistas' },
+      {
+        code: 'ALTERACAO_CONTRATUAL_E_REGISTRO',
+        name: 'Alteração contratual e registro na junta comercial',
+      },
+      { code: 'CESSAO_DE_QUOTAS', name: 'Cessão de quotas e direito de preferência' },
+      {
+        code: 'CONTRATO_DE_DISTRIBUICAO_E_REPRESENTACAO',
+        name: 'Distribuição e representação comercial',
+      },
+      { code: 'CONTRATO_DE_FRANQUIA', name: 'Franquia e circular de oferta' },
+      { code: 'CONTRATO_DE_FORNECIMENTO', name: 'Fornecimento empresarial e inadimplemento' },
+      {
+        code: 'COMPRA_E_VENDA_DE_PARTICIPACAO_SOCIETARIA',
+        name: 'Compra e venda de participação societária',
+      },
+      {
+        code: 'TITULOS_DE_CREDITO_EXECUCAO',
+        name: 'Execução de duplicata, nota promissória e cheque',
+      },
+      { code: 'DUPLICATA_SEM_LASTRO_E_PROTESTO', name: 'Duplicata sem lastro e protesto indevido' },
+      { code: 'SUSTACAO_DE_PROTESTO', name: 'Sustação de protesto' },
+      {
+        code: 'MARCA_E_CONCORRENCIA_DESLEAL',
+        name: 'Uso indevido de marca e concorrência desleal',
+      },
+      { code: 'TRESPASSE_DE_ESTABELECIMENTO', name: 'Trespasse de estabelecimento e sucessão' },
+      { code: 'ARBITRAGEM_EMPRESARIAL', name: 'Cláusula compromissória e arbitragem' },
+      { code: 'DIREITO_DE_RETIRADA', name: 'Direito de retirada e reembolso' },
+    ],
+  },
+  {
+    /**
+     * Administrativo, também ausente até aqui.
+     *
+     * A faixa tem uma assimetria que nenhuma outra tem: de um lado está a administração, que
+     * decide antes de ser processada e cujos atos já nascem produzindo efeito, e do outro o
+     * particular ou o servidor. Por isso quase todo caso começa fora do Judiciário, num processo
+     * administrativo com prazo, publicação e ato formal — e é nessa peça, não na inicial, que
+     * estão as datas que decidem.
+     */
+    code: 'ADMINISTRATIVO',
+    name: 'Direito administrativo',
+    aliases: ['DIREITO_ADMINISTRATIVO', 'ADMINISTRACAO_PUBLICA', 'PUBLICO'],
+    caseTypes: [
+      { code: 'LICITACAO_IMPUGNACAO_DE_EDITAL', name: 'Impugnação de edital de licitação' },
+      { code: 'LICITACAO_RECURSO_ADMINISTRATIVO', name: 'Recurso administrativo em licitação' },
+      {
+        code: 'LICITACAO_INABILITACAO_E_DESCLASSIFICACAO',
+        name: 'Inabilitação e desclassificação',
+      },
+      { code: 'CONTRATO_ADMINISTRATIVO_REEQUILIBRIO', name: 'Reequilíbrio econômico-financeiro' },
+      { code: 'CONTRATO_ADMINISTRATIVO_RESCISAO', name: 'Rescisão de contrato administrativo' },
+      {
+        code: 'SANCAO_ADMINISTRATIVA_A_LICITANTE',
+        name: 'Sanção a licitante e declaração de inidoneidade',
+      },
+      {
+        code: 'PAGAMENTO_A_FORNECEDOR_DA_ADMINISTRACAO',
+        name: 'Cobrança de fornecedor contra a administração',
+      },
+      {
+        code: 'SERVIDOR_CONCURSO_PUBLICO',
+        name: 'Concurso público: aprovação, nomeação e preterição',
+      },
+      { code: 'SERVIDOR_PROCESSO_DISCIPLINAR', name: 'Processo administrativo disciplinar' },
+      { code: 'SERVIDOR_DEMISSAO_E_REINTEGRACAO', name: 'Demissão de servidor e reintegração' },
+      {
+        code: 'SERVIDOR_VANTAGENS_E_GRATIFICACOES',
+        name: 'Vantagens, gratificações e reenquadramento',
+      },
+      {
+        code: 'SERVIDOR_APOSENTADORIA_ESTATUTARIA',
+        name: 'Aposentadoria de servidor e registro pelo tribunal de contas',
+      },
+      { code: 'IMPROBIDADE_ADMINISTRATIVA', name: 'Ação de improbidade administrativa' },
+      { code: 'TOMADA_DE_CONTAS_E_TCU', name: 'Tomada de contas e imputação de débito' },
+      { code: 'RESPONSABILIDADE_CIVIL_DO_ESTADO', name: 'Responsabilidade civil do Estado' },
+      { code: 'DESAPROPRIACAO', name: 'Desapropriação e justa indenização' },
+      { code: 'SERVIDAO_ADMINISTRATIVA', name: 'Servidão administrativa' },
+      { code: 'PODER_DE_POLICIA_MULTA', name: 'Auto de infração e multa administrativa' },
+      { code: 'LICENCA_E_ALVARA', name: 'Licença, alvará e cassação' },
+      {
+        code: 'SAUDE_FORNECIMENTO_DE_MEDICAMENTO',
+        name: 'Fornecimento de medicamento e tratamento',
+      },
+      { code: 'VAGA_EM_CRECHE_E_ENSINO', name: 'Vaga em creche e acesso ao ensino' },
+      {
+        code: 'MANDADO_DE_SEGURANCA_ADMINISTRATIVO',
+        name: 'Mandado de segurança contra ato de autoridade',
+      },
+      { code: 'ACAO_POPULAR', name: 'Ação popular' },
+      { code: 'ACESSO_A_INFORMACAO', name: 'Pedido de acesso à informação e negativa' },
+      {
+        code: 'PERMISSAO_E_CONCESSAO_DE_SERVICO',
+        name: 'Permissão e concessão de serviço público',
       },
     ],
   },

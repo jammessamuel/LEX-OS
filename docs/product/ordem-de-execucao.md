@@ -12,25 +12,25 @@ Estado verificado no código em 2026-09-06, não deduzido dos ADRs.
 
 ## 1. Onde estamos, ADR por ADR
 
-| ADR     | Decisão                        | Construído                                                                        | Aberto                                                                                          |
-| ------- | ------------------------------ | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                             | —                                                                                               |
-| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 19 migrações                             | —                                                                                               |
-| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                            | —                                                                                               |
-| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos                  | —                                                                                               |
-| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                                          | —                                                                                               |
-| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real atrás da porta                  | Contrato padrão proíbe treino; aceite empresarial e demais portões do 012 pendem                |
-| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP                          | —                                                                                               |
-| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                                        | —                                                                                               |
-| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada e sem sustentação nos trechos, citação obrigatória | — Teto de 8 fontes pelo ADR-017, medido em 06/09                                                |
-| **010** | Canais de entrada              | ✅ Upload                                                                         | Superado pelo ADR-016; e-mail passou a conector futuro                                          |
-| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos             | —                                                                                               |
-| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                                   | Transferência, região única e responsável nomeado                                               |
-| **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos                | —                                                                                               |
-| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código             | Itens 4–7 adiados **por decisão**, não por esquecimento                                         |
-| **015** | Biblioteca de prompts          | ✅ Todos os itens · ✅ 30 prompts em 6 faixas (20 atestados, 10 rascunho)         | Acervo real segue recusado em todas as faixas: sem inscrição ativa, e as duas novas sem leitura |
-| **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                               | Condições externas permanecem falhando fechado; decisão 1 superada pelo ADR-017                 |
-| **017** | Recuperação em oito trechos    | ✅ Teto e padrão em oito · ✅ avaliação versionada e repetível                    | Latência em oito ainda não medida — entra na próxima execução da avaliação                      |
+| ADR     | Decisão                        | Construído                                                                        | Aberto                                                                                        |
+| ------- | ------------------------------ | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                             | —                                                                                             |
+| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 19 migrações                             | —                                                                                             |
+| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                            | —                                                                                             |
+| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos                  | —                                                                                             |
+| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                                          | —                                                                                             |
+| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real atrás da porta                  | Contrato padrão proíbe treino; aceite empresarial e demais portões do 012 pendem              |
+| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP                          | —                                                                                             |
+| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                                        | —                                                                                             |
+| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada e sem sustentação nos trechos, citação obrigatória | — Teto de 8 fontes pelo ADR-017, medido em 06/09                                              |
+| **010** | Canais de entrada              | ✅ Upload                                                                         | Superado pelo ADR-016; e-mail passou a conector futuro                                        |
+| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos             | —                                                                                             |
+| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                                   | Transferência, região única e responsável nomeado                                             |
+| **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos                | —                                                                                             |
+| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código             | Itens 4–7 adiados **por decisão**, não por esquecimento                                       |
+| **015** | Biblioteca de prompts          | ✅ Todos os itens · ✅ 50 prompts em 10 faixas (20 atestados, 30 rascunho)        | Acervo real segue recusado em todas as faixas: sem inscrição ativa, e seis faixas sem leitura |
+| **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                               | Condições externas permanecem falhando fechado; decisão 1 superada pelo ADR-017               |
+| **017** | Recuperação em oito trechos    | ✅ Teto e padrão em oito · ✅ avaliação versionada e repetível                    | Latência em oito ainda não medida — entra na próxima execução da avaliação                    |
 
 **Leitura rápida:** a fila do MVP fechou em 28/08; o uso real reabriu uma fila curta entre 01 e
 06/09 — a Fila F da seção 3 — e ela fechou no mesmo dia 06. O que continua fora do alcance de
@@ -324,8 +324,24 @@ assunto não está no acervo, a outra que está e a pergunta é que não encontr
 passou a vir explícito no contrato em vez de deduzido de `model` ser nulo.
 
 **Leitura pendente, que é de gente e não de código:** oito prompts tiveram a versão subida depois
-da atestação de 2026-08-27 e voltaram a precisar de leitura; previdenciário e tributário nunca
-foram lidos. Os cadernos das seis faixas estão gerados em `docs/product/revisao-juridica/`.
+da atestação de 2026-08-27 e voltaram a precisar de leitura; previdenciário, tributário, família,
+consumidor, empresarial e administrativo nunca foram lidos. Os cadernos das nove faixas estão
+gerados em `docs/product/revisao-juridica/`.
+
+**As quatro faixas de 06/09 fecham a cobertura por área.** Família e sucessões e consumidor saíram
+de dentro do cível, onde sete e três tipos de caso estavam catalogados rodando com instrução
+cível — um divórcio analisado como rescisão contratual e uma negativa de plano de saúde analisada
+como contrato paritário. Empresarial e societário e administrativo não existiam em faixa nenhuma:
+recuperação judicial e processo disciplinar caíam no prompt genérico.
+
+O catálogo de tipos documentais cresceu junto, e não por simetria: o teste de divergência entre
+prompt e catálogo reprovou os exemplos das quatro faixas novas, e tinha razão pelo motivo certo —
+prometer classificar num catálogo sem o tipo não deixa saída honesta, e certidão de casamento, ata
+de assembleia e portaria cairiam todas em OUTRO com confiança baixa, que é indistinguível de "não
+sei que documento é este". Quarenta códigos novos em quatro grupos.
+
+A cobertura por tipo de caso continua sendo a lacuna conhecida das seis faixas sem caderno de
+pesquisa: o texto saiu do universo documental de cada área, não de fichas levantadas uma a uma.
 
 ---
 

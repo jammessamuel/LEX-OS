@@ -26,6 +26,10 @@ const AREAS = [
   ['CRIMINAL', 'direito penal e processo penal'],
   ['PREVIDENCIARIO', 'direito previdenciário'],
   ['TRIBUTARIO', 'direito tributário'],
+  ['FAMILIA', 'direito de família e sucessões'],
+  ['CONSUMIDOR', 'direito do consumidor'],
+  ['EMPRESARIAL', 'direito empresarial e societário'],
+  ['ADMINISTRATIVO', 'direito administrativo'],
 ];
 
 const TAREFAS = new Map([
