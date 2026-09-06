@@ -26,7 +26,7 @@ Tenant identity always comes from the verified session. `organizationId` is not 
 
 ## Ranking and authorized source set
 
-Lexical retrieval uses the Portuguese PostgreSQL configuration, a stored generated `tsvector`, and a GIN index. Semantic retrieval embeds the query through the same versioned `EmbeddingProvider` descriptor used during indexing and performs exact pgvector cosine-distance ranking. The deterministic mock has 16 dimensions and a minimum semantic similarity of `0.65`; it refuses production startup.
+Lexical retrieval uses the Portuguese PostgreSQL configuration, a stored generated `tsvector`, and a GIN index. Semantic retrieval embeds the query through the same versioned `EmbeddingProvider` descriptor used during indexing and performs exact pgvector cosine-distance ranking. Each `EmbeddingProvider` declares its own `minimumSimilarity`, because a cosine score only means something inside one vector space. The deterministic mock has 16 dimensions and declares `0.65`; a 2026-09-06 evaluation measured its best question-to-answer similarity at `0.505`, so its semantic half contributes nothing and hybrid retrieval is effectively lexical. It refuses production startup.
 
 Hybrid mode retrieves a bounded authorized candidate set from each database path and combines ranks through reciprocal-rank fusion with constant 60. This avoids treating lexical and cosine scores as if they shared a numeric scale. Stable chunk-ID ordering breaks ties.
 

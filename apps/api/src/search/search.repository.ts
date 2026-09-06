@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@lex-os/database';
+import type { EmbeddingDescriptor } from '@lex-os/shared';
 
 import { DatabaseService } from '../database/database.service.js';
 
@@ -159,7 +160,10 @@ export class SearchRepository {
 
   semantic(
     queryVector: readonly number[],
-    descriptor: { provider: string; model: string; version: string; dimensions: number },
+    // O tipo estrutural repetido aqui era o que deixava o limiar de fora: descrevia o descritor
+    // pelos quatro campos que a consulta usava, e um campo novo do contrato compartilhado não
+    // chegava. Passa a ser o próprio contrato.
+    descriptor: EmbeddingDescriptor,
     scope: SearchScope,
     take: number,
   ): Promise<SearchDatabaseRow[]> {
@@ -191,7 +195,7 @@ export class SearchRepository {
         "confidentialityLevel",
         (1 - ("embedding" <=> ${vector}::vector))::double precision AS "score"
       FROM candidates
-      WHERE (1 - ("embedding" <=> ${vector}::vector)) >= 0.65
+      WHERE (1 - ("embedding" <=> ${vector}::vector)) >= ${descriptor.minimumSimilarity}
       ORDER BY "score" DESC, "chunkId" ASC
       LIMIT ${take}
     `);

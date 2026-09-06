@@ -5,6 +5,7 @@ export const deterministicEmbeddingDescriptor = {
   model: 'deterministic-hash-v1',
   version: '1',
   dimensions: 16,
+  minimumSimilarity: 0.65,
 } as const;
 
 export interface EmbeddingDescriptor {
@@ -12,6 +13,22 @@ export interface EmbeddingDescriptor {
   model: string;
   version: string;
   dimensions: number;
+  /**
+   * Abaixo de quanto a similaridade deixa de ser evidência.
+   *
+   * Mora aqui, e não na consulta, porque similaridade só significa alguma coisa dentro de um
+   * espaço vetorial: 0,65 num saco de tokens com hash em 16 dimensões e 0,65 num modelo de
+   * milhares não descrevem a mesma proximidade. O valor estava fixo no SQL como se fosse
+   * universal, e o primeiro provedor real herdaria em silêncio um número calibrado para outro
+   * espaço. Cada provedor passa a declarar o seu.
+   *
+   * A avaliação de 2026-09-06 mediu o que o determinístico alcança: a maior similaridade entre
+   * uma pergunta e o trecho que a responde foi 0,505, contra o limiar de 0,65. Só texto
+   * praticamente idêntico passa — a busca semântica não contribui, e baixar o limiar não
+   * consertaria, porque a esse nível o sinal é coincidência de tokens, que a busca lexical já
+   * cobre melhor. O número fica onde está, agora dizendo de quem é.
+   */
+  minimumSimilarity: number;
 }
 
 export interface EmbeddingProvider {

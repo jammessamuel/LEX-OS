@@ -35,7 +35,7 @@ Selected vector plan fragment:
 CTE candidates
   -> authorized tenant/source joins (10,000 rows)
 CTE Scan on candidates
-  Filter: 1 - cosine_distance >= 0.65
+  Filter: 1 - cosine_distance >= descriptor.minimumSimilarity (0.65 for the deterministic mock)
 Sort Method: top-N heapsort  Memory: 25kB
 Execution Time: 21.346 ms
 ```
