@@ -44,8 +44,10 @@ describe('dados identificados no documento', () => {
     // deslocamentos fixos. Num cartão de ponto de março a tela mostrava as duas como "dados
     // identificados", com botão de confirmar ao lado — e confirmar é ato humano que vale.
     const provider = new MockProcessingProvider({ environment: 'test' });
+    // Os identificadores da fixture têm dígito verificador válido desde que a extração passou a
+    // conferi-lo: fixture com CNPJ inválido descreveria um documento que o sistema recusa.
     const texto =
-      'Empregador Vale Sereno Ltda., CNPJ 11.222.333/0001-44.\n' +
+      'Empregador Vale Sereno Ltda., CNPJ 34.028.316/0001-03.\n' +
       'Empregado Ronaldo, CPF 111.222.333-96, salario R$ 2.840,00 desde 03/02/2020.';
     const { entities } = provider.extractEntities({ sourceText: textoDe(texto) });
 
@@ -81,6 +83,21 @@ describe('dados identificados no documento', () => {
       expect(texto.slice(entidade.startOffset, entidade.endOffset)).toBe(entidade.originalValue);
       expect(entidade.originalValue).not.toContain('competencia');
     }
+  });
+
+  it('descarta CPF e CNPJ que só têm o formato, não o dígito', () => {
+    // Formato não distingue documento de ruído: digitalização troca dígito, formulário traz
+    // exemplo preenchido, e onze algarismos pontuados passam por CPF em qualquer expressão. Foi
+    // o cadastro de pessoa que denunciou — ele recusa identificador inválido na entrada, e os
+    // números dos documentos fictícios não passavam, enquanto a extração os apresentava como se
+    // fossem CPF. Mesma classe da data 31/02 aceita como data.
+    const provider = new MockProcessingProvider({ environment: 'test' });
+    const texto =
+      'Valido: CPF 111.222.333-96 e CNPJ 34.028.316/0001-03.\n' +
+      'Invalidos: CPF 444.555.666-11 e CNPJ 11.222.333/0001-44.';
+    const { entities } = provider.extractEntities({ sourceText: textoDe(texto) });
+
+    expect(entities.map((e) => e.originalValue)).toEqual(['111.222.333-96', '34.028.316/0001-03']);
   });
 
   it('devolve lista vazia quando o documento não traz nenhum desses dados', () => {

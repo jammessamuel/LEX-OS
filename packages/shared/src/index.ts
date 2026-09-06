@@ -38,6 +38,7 @@ export {
   providerLabels,
 } from './legal-vocabulary.js';
 export { cnjSegmentName, isValidCnj, normalizeCnj, parseCnj } from './cnj.js';
+export { isValidCnpj, isValidCpf, somenteDigitos } from './cpf-cnpj.js';
 export type { CnjParts } from './cnj.js';
 
 export {

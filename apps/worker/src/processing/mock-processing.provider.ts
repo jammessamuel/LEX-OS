@@ -1,6 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { RuntimeConfig } from '@lex-os/config';
 
+import { isValidCnpj, isValidCpf, somenteDigitos } from '@lex-os/shared';
+
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
 import { frasePerto, type SourceText } from './review-processing.provider.js';
 
@@ -70,8 +72,20 @@ const PADROES: readonly {
   expressao: RegExp;
   normaliza?: (bruto: string) => string | null;
 }[] = [
-  { tipo: 'CNPJ', expressao: /\b\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}\b/gu },
-  { tipo: 'CPF', expressao: /\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/gu },
+  // Formato não distingue documento de ruído: digitalização troca dígito e formulário traz
+  // exemplo preenchido, e onze algarismos pontuados passam por CPF em qualquer expressão. O
+  // dígito verificador separa os dois — apresentar como CPF o que não é um põe um número errado
+  // na frente de quem vai confirmar, com o botão de confirmar ao lado.
+  {
+    tipo: 'CNPJ',
+    expressao: /\b\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}\b/gu,
+    normaliza: (bruto) => (isValidCnpj(somenteDigitos(bruto)) ? bruto : null),
+  },
+  {
+    tipo: 'CPF',
+    expressao: /\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/gu,
+    normaliza: (bruto) => (isValidCpf(somenteDigitos(bruto)) ? bruto : null),
+  },
   { tipo: 'CASE_NUMBER', expressao: /\b\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}\b/gu },
   {
     tipo: 'MONETARY_VALUE',
