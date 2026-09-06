@@ -140,6 +140,8 @@ export interface StageCompletion {
       startOffset: number;
       endOffset: number;
       confidenceScore: number;
+      /** A frase do documento que diz o que o valor é. Vai para a procedência da entidade. */
+      context: string;
     }[];
   };
   classification?: { documentTypeCode: 'OUTRO'; confidenceScore: number };
@@ -554,7 +556,9 @@ export class ProcessingRepository {
               startOffset: entity.startOffset,
               endOffset: entity.endOffset,
               confidenceScore: entity.confidenceScore,
-              metadata: asJson({ source: 'DETERMINISTIC_MOCK' }),
+              // A frase que qualifica o valor entra na procedência da entidade: "R$ 148.320,55"
+              // sozinho não identifica nada, e é a linha do documento que diz de que ele é.
+              metadata: asJson({ source: 'DETERMINISTIC_MOCK', context: entity.context }),
             })),
           });
         }

@@ -293,6 +293,20 @@ export const ENTITIES_OUTPUT = {
           startOffset: { type: 'integer', minimum: 0 },
           endOffset: { type: 'integer', minimum: 0 },
           confidenceScore: { type: 'number', minimum: 0, maximum: 1 },
+          /**
+           * A frase do documento que diz o que o valor é.
+           *
+           * "R$ 148.320,55" sozinho não identifica nada num processo tributário: falta a
+           * rubrica, a competência e a peça. As instruções mandavam devolver esses atributos e
+           * a saída não tinha onde — o que sobrava era espremê-los no valor original, e aí o
+           * par de deslocamentos deixava de recortar o próprio dado.
+           *
+           * É um campo só, e de propósito: o que qualifica um número muda por área — rubrica e
+           * competência no tributário, período e regime no previdenciário, competência no
+           * trabalhista. Modelar todos daria um contrato errado para a maioria. A frase do
+           * documento serve a todas, e é verificável: sai do texto, não da interpretação.
+           */
+          context: { type: 'string', maxLength: 200 },
         },
       },
     },

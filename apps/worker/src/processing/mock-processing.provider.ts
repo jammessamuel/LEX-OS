@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { RuntimeConfig } from '@lex-os/config';
 
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
-import type { SourceText } from './review-processing.provider.js';
+import { frasePerto, type SourceText } from './review-processing.provider.js';
 
 /**
  * O que a classificação recebe.
@@ -45,6 +45,8 @@ export interface ProcessingProvider {
       startOffset: number;
       endOffset: number;
       confidenceScore: number;
+      /** A frase do documento que diz o que o valor e. */
+      context: string;
     }[];
   };
 }
@@ -108,6 +110,7 @@ function dadosNoTexto(conteudo: string): {
   startOffset: number;
   endOffset: number;
   confidenceScore: number;
+  context: string;
 }[] {
   const achados = [];
   for (const { tipo, expressao, normaliza } of PADROES) {
@@ -129,6 +132,9 @@ function dadosNoTexto(conteudo: string): {
         // A varredura lê o que está escrito; o que o dado significa para o caso continua sendo
         // juízo de quem revisa, e por isso a entidade nasce não confirmada.
         confidenceScore: 1,
+        // Um numero sozinho nao identifica nada: falta a rubrica, a competencia, a peca. A
+        // frase em que ele aparece diz isso, e sai do texto — nao da interpretacao.
+        context: frasePerto(conteudo, achado.index, achado.index + bruto.length),
       });
     }
   }
@@ -185,6 +191,8 @@ export class MockProcessingProvider implements ProcessingProvider {
       startOffset: number;
       endOffset: number;
       confidenceScore: number;
+      /** A frase do documento que diz o que o valor e. */
+      context: string;
     }[];
   } {
     return {

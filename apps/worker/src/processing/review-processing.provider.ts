@@ -347,7 +347,7 @@ const DATA_POR_EXTENSO = new RegExp(
  * e a linha é o que dá sentido ao número. Corta em 120 caracteres porque o título é rótulo, não
  * transcrição.
  */
-function frasePerto(texto: string, inicio: number, fim: number): string {
+export function frasePerto(texto: string, inicio: number, fim: number): string {
   const abre = Math.max(texto.lastIndexOf('\n', inicio), 0);
   const fecha = texto.indexOf('\n', fim);
   const linha = texto.slice(abre, fecha === -1 ? texto.length : fecha).trim();

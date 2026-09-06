@@ -60,6 +60,29 @@ describe('dados identificados no documento', () => {
     expect(entities[3].normalizedValue).toBe('2020-02-03');
   });
 
+  it('cada valor sai com a frase que diz o que ele é', () => {
+    // "R$ 148.320,55" sozinho não identifica nada num processo tributário: falta a rubrica, a
+    // competência e a peça. As instruções mandavam devolver esses atributos e a saída não tinha
+    // onde — o que sobrava era espremê-los no valor original, e aí o par de deslocamentos
+    // deixava de recortar o próprio dado.
+    const provider = new MockProcessingProvider({ environment: 'test' });
+    const texto =
+      'DEMONSTRATIVO DO AUTO\nMulta de oficio, competencia 03/2024: R$ 148.320,55\nJuros: R$ 12.004,10';
+    const { entities } = provider.extractEntities({ sourceText: textoDe(texto) });
+
+    expect(entities).toHaveLength(2);
+    expect(entities[0].context).toContain('Multa de oficio');
+    expect(entities[0].context).toContain('competencia 03/2024');
+    expect(entities[1].context).toContain('Juros');
+
+    // A separação é o ponto: o contexto qualifica, o intervalo continua recortando só o número.
+    // Espremer a qualificação no valor faria o localizador deixar de conferir.
+    for (const entidade of entities) {
+      expect(texto.slice(entidade.startOffset, entidade.endOffset)).toBe(entidade.originalValue);
+      expect(entidade.originalValue).not.toContain('competencia');
+    }
+  });
+
   it('devolve lista vazia quando o documento não traz nenhum desses dados', () => {
     const provider = new MockProcessingProvider({ environment: 'test' });
     const { entities } = provider.extractEntities({

@@ -513,11 +513,13 @@ valor, não converta alíquota em valor, não calcule tributo e não complete do
 identificação truncado. Se o demonstrativo discrimina principal, multa e juros em doze
 competências, extraia cada linha — a soma é de quem calcula, com critério que você não conhece.
 
-CADA VALOR SAI COM O QUE O IDENTIFICA: a rubrica impressa, a competência, a data de referência e a
-peça. "R$ 148.320,55" sozinho não serve; "multa de ofício, competência 03/2024, demonstrativo do
-auto de infração, valores atualizados até 12/04/2024" serve. Valor sem rubrica e sem competência é
-o dado que mais gera retrabalho neste acervo, porque ninguém consegue dizer depois a que ele se
-referia.
+CADA VALOR SAI COM O QUE O IDENTIFICA, no campo context: a rubrica impressa, a competência, a
+data de referência e a peça, como o documento os escreve. "R$ 148.320,55" sozinho não serve;
+"multa de ofício, competência 03/2024, demonstrativo do auto de infração, valores atualizados até
+12/04/2024" serve. Valor sem rubrica e sem competência é o dado que mais gera retrabalho neste
+acervo, porque ninguém consegue dizer depois a que ele se referia. O campo recebe a frase do
+documento, não a sua paráfrase: o intervalo de deslocamentos continua recortando só o número, e
+é essa separação que deixa a conferência possível.
 
 TRIBUTO, CÓDIGO DE RECEITA E COMPETÊNCIA SÃO TRÊS CAMPOS DISTINTOS. O código de receita impresso na
 guia identifica a receita perante o ente e não é o nome do tributo: transcreva o código como está,
