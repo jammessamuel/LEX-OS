@@ -212,6 +212,7 @@ export class AssistantService {
         answer: null,
         claims: [],
         model: null,
+        refusalReason: 'NO_AUTHORIZED_SOURCE',
       };
     }
 
@@ -275,6 +276,7 @@ export class AssistantService {
         answer: null,
         claims: [],
         model: parsed.model,
+        refusalReason: 'SOURCES_DO_NOT_SUPPORT',
       };
     }
 
@@ -309,6 +311,7 @@ export class AssistantService {
       answer: claims.map((claim) => claim.text).join('\n\n'),
       claims,
       model: parsed.model,
+      refusalReason: null,
     };
   }
 }

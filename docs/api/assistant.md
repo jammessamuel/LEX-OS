@@ -22,9 +22,22 @@ If no authorized source remains, it does not call the language-model provider an
   "disclaimer": "Conteúdo gerado por máquina a partir de fontes autorizadas; não é parecer jurídico e exige revisão humana.",
   "answer": null,
   "claims": [],
-  "model": null
+  "model": null,
+  "refusalReason": "NO_AUTHORIZED_SOURCE"
 }
 ```
+
+A second refusal exists and means something different. When authorized sources _are_ retrieved,
+the model reads them and none supports an answer, the provider returns an empty claim list — which
+the output contract instructs it to do — and the service answers `INSUFFICIENT_EVIDENCE` with
+`"refusalReason": "SOURCES_DO_NOT_SUPPORT"` and full model provenance, because the model ran and
+the case is charged for it.
+
+The two reasons send a reader to different places: `NO_AUTHORIZED_SOURCE` says the archive holds
+nothing on the subject, while `SOURCES_DO_NOT_SUPPORT` says it holds material on the case but not
+on this question, so rephrasing usually helps. Reporting the first when it is the second sends a
+lawyer looking elsewhere for a document that is already here. `refusalReason` is `null` on an
+answer.
 
 ## Grounding and provenance
 

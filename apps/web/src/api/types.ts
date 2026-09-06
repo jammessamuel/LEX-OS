@@ -588,6 +588,7 @@ export interface GroundedAnswerResponse {
     costAmount: string;
     costCurrency: string;
   } | null;
+  refusalReason: 'NO_AUTHORIZED_SOURCE' | 'SOURCES_DO_NOT_SUPPORT' | null;
 }
 
 export interface AuditLog {

@@ -196,7 +196,18 @@ onMounted(() => void loadCases());
 
     <div v-else-if="answer?.status === 'INSUFFICIENT_EVIDENCE'" class="state result" role="status">
       <h2 class="state__title">O sistema recusou responder</h2>
-      <p class="state__body">
+      <!--
+        As duas recusas mandam o leitor a lugares diferentes. Sem fonte autorizada, o assunto não
+        está no acervo e procurar aqui de novo não adianta. Com fontes lidas e nenhuma sustentando,
+        o acervo tem material sobre o caso e a pergunta é que não encontra apoio nele — refazer a
+        pergunta costuma resolver. Dizer a primeira quando é a segunda manda procurar fora um
+        documento que já está aqui dentro.
+      -->
+      <p v-if="answer.refusalReason === 'SOURCES_DO_NOT_SUPPORT'" class="state__body">
+        Os trechos recuperados foram examinados e nenhum sustenta uma resposta a esta pergunta.
+        Nenhuma afirmação foi inventada. Tente reformular a pergunta ou restringi-la a um documento.
+      </p>
+      <p v-else class="state__body">
         Nenhuma fonte autorizada sustenta uma resposta. Nenhuma afirmação foi inventada.
       </p>
     </div>

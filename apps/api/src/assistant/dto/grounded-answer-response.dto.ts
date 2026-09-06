@@ -51,4 +51,20 @@ export class GroundedAnswerResponseDto {
 
   @ApiPropertyOptional({ type: GroundedAnswerModelDto, nullable: true })
   model!: GroundedAnswerModelDto | null;
+
+  /**
+   * Por que a resposta foi recusada. `null` quando houve resposta.
+   *
+   * As duas recusas dizem coisas diferentes para quem lê, e confundi-las é pior do que não
+   * distinguir: `NO_AUTHORIZED_SOURCE` significa que a pesquisa não trouxe nada que este usuário
+   * possa ver, e sugere que o acervo não tem o assunto; `SOURCES_DO_NOT_SUPPORT` significa que
+   * trechos foram recuperados, lidos pelo modelo, e nenhum sustenta a resposta — o acervo tem
+   * material sobre o caso, só não sobre esta pergunta. Dizer a primeira quando é a segunda manda
+   * o advogado procurar em outro lugar um documento que já está aqui.
+   */
+  @ApiPropertyOptional({
+    enum: ['NO_AUTHORIZED_SOURCE', 'SOURCES_DO_NOT_SUPPORT'],
+    nullable: true,
+  })
+  refusalReason!: 'NO_AUTHORIZED_SOURCE' | 'SOURCES_DO_NOT_SUPPORT' | null;
 }

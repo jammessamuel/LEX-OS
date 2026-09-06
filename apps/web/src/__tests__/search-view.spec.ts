@@ -84,6 +84,7 @@ describe('SearchView', () => {
         answer: null,
         claims: [],
         model: null,
+        refusalReason: 'NO_AUTHORIZED_SOURCE',
       };
     });
     const wrapper = mountView();
@@ -96,6 +97,51 @@ describe('SearchView', () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain('recusou responder');
+    expect(wrapper.text()).toContain('Nenhuma fonte autorizada');
     expect(wrapper.text()).toContain('Nenhuma afirmação foi inventada');
+  });
+
+  it('distingue a recusa por trechos examinados da recusa por falta de fonte', async () => {
+    // As duas recusas mandam o leitor a lugares diferentes: uma diz que o assunto não está no
+    // acervo, a outra que o acervo tem material e a pergunta é que não encontra apoio nele. Antes
+    // as duas mostravam o mesmo texto, e o segundo caso nem existia — o modelo era obrigado a
+    // embrulhar a recusa numa afirmação, que a tela exibia como resposta fundamentada.
+    request.mockImplementation(async (path: string) => {
+      if (path === '/cases') {
+        return {
+          data: [{ id: 'case-1', internalCode: 'DEMO-1', title: 'Caso fictício' }],
+          pageInfo: { nextCursor: null, hasNextPage: false },
+        };
+      }
+      return {
+        status: 'INSUFFICIENT_EVIDENCE',
+        machineGenerated: true,
+        disclaimer: 'Exige revisão humana.',
+        answer: null,
+        claims: [],
+        model: {
+          provider: 'lex-os-mock-language-model',
+          modelName: 'deterministic-grounded-v1',
+          modelVersion: '1',
+          promptVersion: '1.0.0',
+          executionId: 'exec-1',
+          costAmount: '0.000000',
+          costCurrency: 'BRL',
+        },
+        refusalReason: 'SOURCES_DO_NOT_SUPPORT',
+      };
+    });
+    const wrapper = mountView();
+    await flushPromises();
+    await wrapper.get('textarea').setValue('pergunta que os trechos não respondem');
+    const answerButton = wrapper
+      .findAll('button')
+      .find((button) => button.text().includes('Responder'));
+    await answerButton?.trigger('click');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('recusou responder');
+    expect(wrapper.text()).toContain('trechos recuperados foram examinados');
+    expect(wrapper.text()).not.toContain('Nenhuma fonte autorizada');
   });
 });

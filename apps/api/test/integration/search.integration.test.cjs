@@ -470,6 +470,11 @@ describe('Delivery 9 authorized text and semantic search', () => {
     assert.equal(recusa.body.status, 'INSUFFICIENT_EVIDENCE');
     assert.equal(recusa.body.answer, null);
     assert.deepEqual(recusa.body.claims, []);
+    // As duas recusas mandam quem lê a lugares diferentes: sem fonte autorizada o assunto não
+    // está no acervo; com trechos lidos e nenhum sustentando, o acervo tem material sobre o caso
+    // e é a pergunta que não encontra apoio. A tela mostra textos distintos, então o motivo
+    // precisa vir do servidor e não de adivinhação sobre o campo `model`.
+    assert.equal(recusa.body.refusalReason, 'SOURCES_DO_NOT_SUPPORT');
     // A procedência acompanha a recusa: quem pergunta depois precisa saber qual instrução e qual
     // modelo concluíram que não havia resposta.
     assert.ok(recusa.body.model.promptVersion);
@@ -561,6 +566,9 @@ describe('Delivery 9 authorized text and semantic search', () => {
     }).expect(200);
     assert.deepEqual(absent.body, {
       status: 'INSUFFICIENT_EVIDENCE',
+      // Sem fonte autorizada o assunto não está no acervo, e o texto da tela diz isso. É a outra
+      // recusa — a de trechos lidos que não sustentam — que manda reformular a pergunta.
+      refusalReason: 'NO_AUTHORIZED_SOURCE',
       machineGenerated: true,
       disclaimer:
         'Conteúdo gerado por máquina a partir de fontes autorizadas; não é parecer jurídico e exige revisão humana.',
