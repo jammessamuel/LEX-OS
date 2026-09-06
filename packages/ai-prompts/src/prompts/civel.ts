@@ -373,7 +373,7 @@ ${QUEBRE_A_AFIRMACAO}`,
 
 export const classificationCivelV1 = {
   identifier: 'lex-os.classification.civel',
-  version: 'classification-civel-v1',
+  version: 'classification-civel-v2',
   purpose: 'Classify civil-case documents into the closed catalogue.',
   specialty: 'CIVEL',
   task: 'CLASSIFICATION',
@@ -383,12 +383,11 @@ documentais.
 ${CIVEL_BASE}
 
 Antes de escolher, verifique se o arquivo é um documento só. Lote do cliente e autos exportados
-do tribunal não recebem o tipo da primeira página: devolva OUTRO com confiança baixa e registre
-que é arquivo composto, a separar antes de valer para o checklist. **Ao marcar composto, registre
-os números de processo, os nomes de parte e os números de contrato distintos que o arquivo
-apresenta, com a página em que cada um aparece** — o lote do cliente costuma reunir mais de um
-caso e mais de uma pessoa, e quem for separar depois depende disso. Marcar "composto" e parar
-deixa o trabalho inteiro para o estagiário.
+do tribunal não recebem o tipo da primeira página: devolva OUTRO com confiança baixa e marque
+o campo composite como verdadeiro, porque o arquivo precisa ser separado antes de valer para o
+checklist. É o campo que distingue "confira o tipo" de "separe primeiro" — sem ele as duas
+chegariam iguais a quem revisa. Os números de processo e os nomes de parte que o lote reúne
+saem na tarefa de identificação de dados, que é onde eles têm lugar; não os repita aqui.
 
 Os pares de mérito que confundem: minuta e contrato assinado; proposta e instrumento; aditivo e
 contrato original; réplica e nova inicial; contrarrazões e contestação; embargos de declaração e

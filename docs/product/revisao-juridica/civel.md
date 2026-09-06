@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito civil e processo civil estão abaixo, na íntegra e
-exatamente como o sistema as usa — **8.446 palavras**.
+exatamente como o sistema as usa — **8.438 palavras**.
 
 **Revisadas por Thais Regina Farrapo Moreira em 2026-08-27**, **sem número de inscrição registrado** — Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.
 
@@ -61,7 +61,7 @@ recusando usá-las sobre acervo real — a assinatura não é formalidade, é o 
 
 ## Classificar o documento
 
-`classification-civel-v1` · identificador `lex-os.classification.civel`
+`classification-civel-v2` · identificador `lex-os.classification.civel`
 
 ### A instrução
 
@@ -142,12 +142,11 @@ jurisdição voluntária tem requerentes de um lado só. Extraia o papel process
 concreta, não do hábito — e se a peça não tiver polos, não invente polos.
 
 Antes de escolher, verifique se o arquivo é um documento só. Lote do cliente e autos exportados
-do tribunal não recebem o tipo da primeira página: devolva OUTRO com confiança baixa e registre
-que é arquivo composto, a separar antes de valer para o checklist. **Ao marcar composto, registre
-os números de processo, os nomes de parte e os números de contrato distintos que o arquivo
-apresenta, com a página em que cada um aparece** — o lote do cliente costuma reunir mais de um
-caso e mais de uma pessoa, e quem for separar depois depende disso. Marcar "composto" e parar
-deixa o trabalho inteiro para o estagiário.
+do tribunal não recebem o tipo da primeira página: devolva OUTRO com confiança baixa e marque
+o campo composite como verdadeiro, porque o arquivo precisa ser separado antes de valer para o
+checklist. É o campo que distingue "confira o tipo" de "separe primeiro" — sem ele as duas
+chegariam iguais a quem revisa. Os números de processo e os nomes de parte que o lote reúne
+saem na tarefa de identificação de dados, que é onde eles têm lugar; não os repita aqui.
 
 Os pares de mérito que confundem: minuta e contrato assinado; proposta e instrumento; aditivo e
 contrato original; réplica e nova inicial; contrarrazões e contestação; embargos de declaração e
@@ -198,6 +197,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 - `code`
 - `confidence`
+- `composite`
 
 ---
 

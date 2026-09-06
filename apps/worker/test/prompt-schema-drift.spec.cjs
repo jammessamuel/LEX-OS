@@ -1,9 +1,11 @@
 let parsers;
 let prompts;
+let MockProcessingProvider;
 
 beforeAll(async () => {
   parsers = await import('../dist/processing/review-processing.provider.js');
   prompts = await import('@lex-os/ai-prompts');
+  ({ MockProcessingProvider } = await import('../dist/processing/mock-processing.provider.js'));
 });
 
 /**
@@ -214,6 +216,25 @@ describe('divergência schema × validador', () => {
       const forma = campo.oneOf === undefined ? campo : campo.oneOf[0];
       expect(new Set(forma.required)).toEqual(new Set(['content', 'totalLength', 'truncated']));
     }
+  });
+
+  it('a classificação tem onde dizer que o arquivo é composto', () => {
+    // Quatro instruções mandavam "registrar que é arquivo composto" e a saída não tinha campo:
+    // sobrava devolver OUTRO com confiança baixa, indistinguível de "não sei o que é isto". As
+    // duas pedem coisas diferentes de quem revisa — conferir o tipo, ou separar o arquivo antes
+    // de conferir qualquer coisa. Lote do cliente e autos exportados chegam assim todo dia.
+    const saida = prompts.classificationPromptV1.outputSchema;
+    expect(saida.properties.composite).toEqual({ type: 'boolean' });
+    expect(saida.required).toContain('composite');
+
+    // E o provedor determinístico preenche o campo, ainda que sempre falso: reconhecer lote
+    // exige ler o documento inteiro, e ele não faz isso nem finge que faz.
+    const provider = new MockProcessingProvider({ environment: 'test' });
+    const resultado = provider.classify({
+      availableTypeCodes: ['OUTRO'],
+      sourceText: { content: 'texto', totalLength: 5, truncated: false },
+    });
+    expect(resultado.composite).toBe(false);
   });
 
   it('o checklist recebe o enunciado da exigência, não só o código de tipo', () => {

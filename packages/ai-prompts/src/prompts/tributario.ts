@@ -443,8 +443,9 @@ ANTES DE ESCOLHER, VERIFIQUE SE O ARQUIVO É UM DOCUMENTO SÓ. O processo admini
 exportado inteiro — auto, demonstrativos, termos, intimações, impugnação e acórdão num PDF de
 centenas de páginas — e o "dossiê" do contribuinte junta certidões, guias e declarações de vários
 anos no mesmo arquivo. Lote ou processo exportado não recebe o tipo da primeira página: devolva
-OUTRO com confiança baixa e registre que é arquivo composto, a separar antes de valer para o
-checklist. Dar tipo à primeira página faz o checklist marcar exigência satisfeita que não foi.
+OUTRO com confiança baixa e marque o campo composite como verdadeiro, porque o arquivo precisa ser
+separado antes de valer para o checklist. Dar tipo à primeira página faz o checklist marcar
+exigência satisfeita que não foi.
 
 OS PARES QUE CONFUNDEM DE VERDADE: auto de infração e notificação de lançamento; termo de início e
 termo de encerramento de fiscalização; termo de inscrição em dívida ativa e certidão de dívida

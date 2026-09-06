@@ -238,12 +238,22 @@ export const CLASSIFICATION_INPUT = {
 export const CLASSIFICATION_OUTPUT = {
   type: 'object',
   additionalProperties: false,
-  required: ['provider', 'modelName', 'code', 'confidence'],
+  required: ['provider', 'modelName', 'code', 'confidence', 'composite'],
   properties: {
     provider: { type: 'string' },
     modelName: { type: 'string' },
     code: { type: 'string' },
     confidence: { type: 'number', minimum: 0, maximum: 1 },
+    /**
+     * O arquivo reúne mais de um documento.
+     *
+     * As quatro instruções mandavam "registrar que é arquivo composto" e a saída não tinha onde:
+     * o que sobrava era devolver OUTRO com confiança baixa, indistinguível de "não sei que
+     * documento é este". As duas situações pedem coisas diferentes de quem revisa — uma é
+     * conferir o tipo, a outra é separar o arquivo antes de qualquer conferência —, e o lote do
+     * cliente e os autos exportados do tribunal chegam assim todo dia.
+     */
+    composite: { type: 'boolean' },
   },
 } as const;
 

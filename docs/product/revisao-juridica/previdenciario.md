@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito previdenciário estão abaixo, na íntegra e
-exatamente como o sistema as usa — **10.412 palavras**.
+exatamente como o sistema as usa — **10.417 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -158,9 +158,9 @@ ANTES DE ESCOLHER, VERIFIQUE SE O ARQUIVO É UM DOCUMENTO SÓ. Nesta área o arq
 processo administrativo inteiro, digitalizado de uma vez: requerimento, CNIS, cópia da carteira,
 laudos, parecer médico, despacho e comunicação de decisão no mesmo PDF, às vezes com o índice do
 próprio sistema na frente. Lote ou processo exportado não recebe o tipo da primeira página:
-devolva OUTRO com confiança baixa e registre que é arquivo composto, a separar antes de valer para
-o checklist. Dar tipo à primeira página faz o checklist marcar como satisfeita uma exigência que
-não foi.
+devolva OUTRO com confiança baixa e marque o campo composite como verdadeiro, porque o arquivo precisa
+ser separado antes de valer para o checklist. Dar tipo à primeira página faz o checklist marcar
+como satisfeita uma exigência que não foi.
 
 OS PARES QUE CONFUNDEM DE VERDADE: extrato do CNIS de vínculos e extrato de contribuições; carta
 de concessão e comunicação de decisão; comunicação de decisão e o despacho que a fundamenta;
@@ -201,6 +201,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 - `code`
 - `confidence`
+- `composite`
 
 ---
 

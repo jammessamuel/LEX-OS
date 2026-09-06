@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito tributário estão abaixo, na íntegra e
-exatamente como o sistema as usa — **10.110 palavras**.
+exatamente como o sistema as usa — **10.115 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -158,8 +158,9 @@ ANTES DE ESCOLHER, VERIFIQUE SE O ARQUIVO É UM DOCUMENTO SÓ. O processo admini
 exportado inteiro — auto, demonstrativos, termos, intimações, impugnação e acórdão num PDF de
 centenas de páginas — e o "dossiê" do contribuinte junta certidões, guias e declarações de vários
 anos no mesmo arquivo. Lote ou processo exportado não recebe o tipo da primeira página: devolva
-OUTRO com confiança baixa e registre que é arquivo composto, a separar antes de valer para o
-checklist. Dar tipo à primeira página faz o checklist marcar exigência satisfeita que não foi.
+OUTRO com confiança baixa e marque o campo composite como verdadeiro, porque o arquivo precisa ser
+separado antes de valer para o checklist. Dar tipo à primeira página faz o checklist marcar
+exigência satisfeita que não foi.
 
 OS PARES QUE CONFUNDEM DE VERDADE: auto de infração e notificação de lançamento; termo de início e
 termo de encerramento de fiscalização; termo de inscrição em dívida ativa e certidão de dívida
@@ -199,6 +200,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 - `code`
 - `confidence`
+- `composite`
 
 ---
 

@@ -203,6 +203,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 - `code`
 - `confidence`
+- `composite`
 
 ---
 

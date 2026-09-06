@@ -208,7 +208,14 @@ export class PipelineProcessorService {
             type: 'CLASSIFICATION',
             executionId: `mock-v1:${job.id}`,
             promptVersion: this.#promptFor('CLASSIFICATION', job).version,
-            structuredData: { documentTypeCode: result.code, requiresHumanReview: true },
+            // O arquivo composto fica na procedência: quem revisa precisa distinguir "confira o
+            // tipo" de "separe o arquivo antes de conferir qualquer coisa", e as duas chegavam
+            // como OUTRO com confiança baixa.
+            structuredData: {
+              documentTypeCode: result.code,
+              requiresHumanReview: true,
+              composite: result.composite,
+            },
             confidenceScore: result.confidence,
             processingTimeMs: 1,
           },

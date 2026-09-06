@@ -329,7 +329,7 @@ ${QUEBRE_A_AFIRMACAO}`,
 
 export const classificationTrabalhistaV1 = {
   identifier: 'lex-os.classification.trabalhista',
-  version: 'classification-trabalhista-v1',
+  version: 'classification-trabalhista-v2',
   purpose: 'Classify labour-case documents into the closed catalogue.',
   specialty: 'TRABALHISTA',
   task: 'CLASSIFICATION',
@@ -341,8 +341,9 @@ ${TRABALHISTA_BASE}
 ANTES DE ESCOLHER, VERIFIQUE SE O ARQUIVO É UM DOCUMENTO SÓ. O cliente manda um PDF de cento e
 oitenta páginas com CTPS, vinte e quatro holerites, TRCT e extrato; o export do tribunal traz os
 autos inteiros. Lote ou autos exportados não recebem o tipo da primeira página: devolva OUTRO
-com confiança baixa e registre que é arquivo composto, a separar antes de valer para o
-checklist. Dar tipo à primeira página faz o checklist marcar exigência satisfeita que não foi.
+com confiança baixa e marque o campo composite como verdadeiro, porque o arquivo precisa ser separado
+antes de valer para o checklist. Dar tipo à primeira página faz o checklist marcar exigência
+satisfeita que não foi.
 
 OS PARES QUE CONFUNDEM DE VERDADE: espelho de ponto e folha individual de presença assinada;
 TRCT e termo de quitação anual; extrato analítico e sintético do FGTS; ASO, atestado médico e

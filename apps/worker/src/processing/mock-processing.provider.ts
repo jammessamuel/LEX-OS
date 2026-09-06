@@ -31,6 +31,8 @@ export interface ProcessingProvider {
     modelName: string;
     code: 'OUTRO';
     confidence: number;
+    /** O arquivo reúne mais de um documento e precisa ser separado antes de valer. */
+    composite: boolean;
   };
   extractEntities(input: { sourceText: SourceText }): {
     provider: string;
@@ -159,11 +161,15 @@ export class MockProcessingProvider implements ProcessingProvider {
     modelName: string;
     code: 'OUTRO';
     confidence: number;
+    composite: boolean;
   } {
     return {
       provider: 'lex-os-mock-classifier',
       modelName: 'deterministic-v1',
       code: 'OUTRO',
+      // Reconhecer lote exige ler o documento inteiro e comparar o que há dentro; o provedor
+      // determinístico não faz isso e não finge que faz. Quem preenche este campo é o modelo.
+      composite: false,
       confidence: 0.51,
     };
   }

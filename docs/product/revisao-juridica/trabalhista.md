@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito e processo do trabalho estão abaixo, na íntegra e
-exatamente como o sistema as usa — **6.477 palavras**.
+exatamente como o sistema as usa — **6.482 palavras**.
 
 **Revisadas por Thais Regina Farrapo Moreira em 2026-08-27**, **sem número de inscrição registrado** — Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.
 
@@ -61,7 +61,7 @@ recusando usá-las sobre acervo real — a assinatura não é formalidade, é o 
 
 ## Classificar o documento
 
-`classification-trabalhista-v1` · identificador `lex-os.classification.trabalhista`
+`classification-trabalhista-v2` · identificador `lex-os.classification.trabalhista`
 
 ### A instrução
 
@@ -126,8 +126,9 @@ de cada fato e sinaliza quando o período discutido cruzar 11/11/2017.
 ANTES DE ESCOLHER, VERIFIQUE SE O ARQUIVO É UM DOCUMENTO SÓ. O cliente manda um PDF de cento e
 oitenta páginas com CTPS, vinte e quatro holerites, TRCT e extrato; o export do tribunal traz os
 autos inteiros. Lote ou autos exportados não recebem o tipo da primeira página: devolva OUTRO
-com confiança baixa e registre que é arquivo composto, a separar antes de valer para o
-checklist. Dar tipo à primeira página faz o checklist marcar exigência satisfeita que não foi.
+com confiança baixa e marque o campo composite como verdadeiro, porque o arquivo precisa ser separado
+antes de valer para o checklist. Dar tipo à primeira página faz o checklist marcar exigência
+satisfeita que não foi.
 
 OS PARES QUE CONFUNDEM DE VERDADE: espelho de ponto e folha individual de presença assinada;
 TRCT e termo de quitação anual; extrato analítico e sintético do FGTS; ASO, atestado médico e
@@ -157,6 +158,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 - `code`
 - `confidence`
+- `composite`
 
 ---
 
