@@ -499,6 +499,21 @@ export class CasesService {
         'O caso atingiu o teto de custo de processamento. Ajuste o teto para continuar.',
       );
     }
+    // A verificação só olhava o estado, nunca a folga — e o teto nasce em zero em todo caso
+    // criado pela interface. Com isso a pergunta era aceita, o modelo respondia, a despesa
+    // existia, e só então o banco recusava gravá-la: o escritório recebia erro interno depois
+    // de o dinheiro ter sido gasto. Recusar antes de chamar o modelo é o que o ADR-011 pede
+    // quando manda o teto existir por caso.
+    const committed = record.processingCostSpentAmount.add(record.processingCostReservedAmount);
+    if (committed.greaterThanOrEqualTo(record.processingCostLimitAmount)) {
+      throw new ApiException(
+        HttpStatus.CONFLICT,
+        'CASE_PROCESSING_BUDGET_REACHED',
+        record.processingCostLimitAmount.isZero()
+          ? 'O caso ainda não tem teto de custo definido, e sem teto nenhuma consulta ao modelo é autorizada. Defina o teto do caso para usar o assistente.'
+          : 'O caso atingiu o teto de custo de processamento. Ajuste o teto para continuar.',
+      );
+    }
   }
 
   /** Debita a despesa da resposta já gerada. Ver `chargeAssistantCost` no repositório. */

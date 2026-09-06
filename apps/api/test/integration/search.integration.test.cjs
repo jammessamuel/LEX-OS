@@ -144,11 +144,14 @@ async function createSource({
   fixture.fileIds.push(fileId);
   fixture.documentIds.push(documentId);
   await pool.query(
+    // O teto entra na fixture porque o caso real tem um: sem teto, o assistente recusa antes
+    // de chamar o modelo, e um caso de teste sem teto descreveria um acervo que não existe.
     `INSERT INTO cases
       (id, organization_id, internal_code, title, legal_area, case_type, status, priority,
-       confidentiality_level, responsible_user_id, deleted_at, updated_at)
+       confidentiality_level, responsible_user_id, processing_cost_limit_amount, deleted_at,
+       updated_at)
      VALUES ($1, $2, $3, $4, 'TRABALHISTA', 'RECLAMACAO_TRABALHISTA', 'INTAKE', 'NORMAL',
-       $5, $6, $7, now())`,
+       $5, $6, 250.000000, $7, now())`,
     [
       caseId,
       organizationId,
@@ -449,6 +452,38 @@ describe('Delivery 9 authorized text and semantic search', () => {
       results: [],
     });
     await search({ query: 'contrato' }, noSearchToken).expect(403);
+  });
+
+  it('recusa a pergunta antes de chamar o modelo quando o caso não tem folga de teto', async () => {
+    // A verificação só olhava se o estado já era "limite atingido", e o teto nasce em zero em
+    // todo caso criado pela interface: a pergunta era aceita, o modelo respondia, a despesa
+    // existia, e só então o banco recusava gravá-la — o escritório recebia erro interno depois
+    // de o dinheiro ter sido gasto. Gastar sem poder registrar é o pior dos dois mundos.
+    await pool.query('UPDATE cases SET processing_cost_limit_amount = 0 WHERE id = $1', [
+      standardSource.caseId,
+    ]);
+    try {
+      const recusa = await answer({
+        question: 'cláusula rescisória',
+        caseId: standardSource.caseId,
+        mode: 'LEXICAL',
+      }).expect(409);
+      assert.equal(recusa.body.code, 'CASE_PROCESSING_BUDGET_REACHED');
+      // A mensagem distingue as duas situações: teto por definir e teto esgotado pedem ações
+      // diferentes de quem lê.
+      assert.match(recusa.body.message, /ainda não tem teto/u);
+
+      // Nada foi gasto, porque nada foi chamado.
+      const depois = await pool.query(
+        'SELECT processing_cost_spent_amount AS gasto FROM cases WHERE id = $1',
+        [standardSource.caseId],
+      );
+      assert.equal(Number(depois.rows[0].gasto), 0);
+    } finally {
+      await pool.query('UPDATE cases SET processing_cost_limit_amount = 250 WHERE id = $1', [
+        standardSource.caseId,
+      ]);
+    }
   });
 
   it('generates only case-scoped cited claims and refuses when authorized evidence is absent', async () => {

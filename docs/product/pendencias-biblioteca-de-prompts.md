@@ -57,6 +57,32 @@ Corrigir os exemplos não invalidou a atestação de Thais: o caderno de revisã
 falta de inscrição ativa; as duas novas, por serem rascunho. Três testes em
 `packages/ai-prompts/test/prompt-library.test.cjs` prendem as duas metades e a soma delas.
 
+### O teto por caso e o custo que só se conhece depois — decisão pendente
+
+**Corrigido em 2026-09-06:** a verificação de orçamento do assistente só olhava se o caso já
+estava marcado como "limite atingido", nunca se havia folga. Como o teto nasce em zero em todo
+caso criado pela interface, a pergunta era aceita, o modelo respondia, a despesa existia e só
+então o banco recusava gravá-la — o escritório recebia erro interno **depois** de o dinheiro ter
+sido gasto. Agora a recusa vem antes da chamada, com mensagem que distingue teto por definir de
+teto esgotado. Zero deixou de ser lido como "sem teto" no débito: o banco e o worker sempre o
+trataram como teto zero, e só o assistente discordava.
+
+**Continua aberto, e é decisão de produto, não de código.** Duas coisas:
+
+1. **Caso novo nasce sem teto e, portanto, sem assistente.** É o comportamento fail-closed que o
+   ADR-011 pede — teto tem de existir antes da despesa —, mas significa que o escritório precisa
+   definir o teto de cada caso antes da primeira pergunta. Um padrão por organização resolveria,
+   e escolher o valor é do dono.
+2. **O custo de uma resposta só se conhece depois de ela existir.** A restrição
+   `cases_processing_cost_within_limit` exige gasto somado à reserva dentro do teto, e o próprio
+   código do débito registra a intenção oposta: "recusar a gravação aqui não desfaria a despesa —
+   só a esconderia; o teto age na pergunta seguinte". Com folga menor que o custo de uma resposta,
+   as duas regras colidem de novo. Sair disso pede uma das duas: reservar o custo máximo de uma
+   pergunta antes de chamar o modelo — calculável, porque o teto de tokens de saída e o preço são
+   conhecidos — ou afrouxar a restrição para permitir que o gasto real ultrapasse o teto na última
+   resposta. A primeira é mais fiel ao ADR-011; a segunda é mais simples. Nenhuma pode ser
+   escolhida sem o dono.
+
 ### Oito prompts precisam de nova leitura, e é o mecanismo funcionando
 
 Ao fechar o P1.7 eu alterei quatro templates de cronologia **sem subir a versão**. O texto passou

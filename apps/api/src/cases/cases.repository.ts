@@ -395,9 +395,13 @@ export class CasesRepository {
     }
     const spent = current.processingCostSpentAmount.add(amount);
     const limit = current.processingCostLimitAmount;
-    const limitReached =
-      limit.greaterThan(0) &&
-      spent.add(current.processingCostReservedAmount).greaterThanOrEqualTo(limit);
+    // Zero era lido aqui como "sem teto" e no banco como "teto zero" — a restrição
+    // `cases_processing_cost_within_limit` exige gasto somado à reserva dentro do teto, e o
+    // worker cancela o trabalho pela mesma regra. Três camadas, duas leituras: o débito passava
+    // adiante o que o banco recusava, e a recusa chegava como erro interno. Zero é teto zero.
+    const limitReached = spent
+      .add(current.processingCostReservedAmount)
+      .greaterThanOrEqualTo(limit);
 
     await transaction.case.updateMany({
       where: { organizationId, id: caseId, deletedAt: null },
