@@ -161,17 +161,15 @@ const documentTypes = [
   // deixa saída honesta — a certidão de casamento, a ordem de serviço da assistência, a ata de
   // assembleia e a portaria cairiam todas em OUTRO com confiança baixa, indistinguível de "não sei
   // que documento é este", e nenhum item de checklist dessas quatro áreas fecharia.
-  ['CERTIDAO_CASAMENTO', 'Certidão de casamento', 'FAMILIA'],
-  ['CERTIDAO_NASCIMENTO', 'Certidão de nascimento', 'FAMILIA'],
-  ['CERTIDAO_OBITO', 'Certidão de óbito', 'FAMILIA'],
-  ['PACTO_ANTENUPCIAL', 'Pacto antenupcial', 'FAMILIA'],
+  //
+  // Certidões, pacto antenupcial, testamento, formal de partilha, contrato social, nota fiscal e
+  // duplicata já existiam aqui sob CIVIL, FINANCEIRO e SOCIETARIO, e ficam onde estão: o código é
+  // único e recadastrá-los sob a categoria nova quebraria o seed. A categoria organiza a lista
+  // para quem a lê, e não decide prompt nenhum — quem decide é `legalArea`.
   ['ACORDO_FAMILIAR', 'Acordo de divórcio, guarda ou alimentos', 'FAMILIA'],
   ['ESTUDO_PSICOSSOCIAL', 'Estudo psicossocial', 'FAMILIA'],
-  ['FORMAL_PARTILHA', 'Formal de partilha', 'FAMILIA'],
   ['ESCRITURA_INVENTARIO', 'Escritura pública de inventário e partilha', 'FAMILIA'],
-  ['TESTAMENTO', 'Testamento', 'FAMILIA'],
   ['MEDIDA_PROTETIVA', 'Decisão de medida protetiva de urgência', 'FAMILIA'],
-  ['NOTA_FISCAL', 'Nota fiscal', 'CONSUMO'],
   ['CUPOM_FISCAL', 'Cupom fiscal', 'CONSUMO'],
   ['PROTOCOLO_ATENDIMENTO', 'Registro de protocolo de atendimento', 'CONSUMO'],
   ['LAUDO_ASSISTENCIA_TECNICA', 'Laudo de assistência técnica', 'CONSUMO'],
@@ -179,7 +177,6 @@ const documentTypes = [
   ['NEGATIVA_COBERTURA', 'Negativa de cobertura por escrito', 'CONSUMO'],
   ['BILHETE_AEREO', 'Bilhete aéreo e cartão de embarque', 'CONSUMO'],
   ['CAPTURA_DE_TELA', 'Captura de tela de conversa ou aplicativo', 'CONSUMO'],
-  ['CONTRATO_SOCIAL', 'Contrato social ou estatuto', 'SOCIETARIO'],
   ['ALTERACAO_CONTRATUAL', 'Alteração contratual', 'SOCIETARIO'],
   ['ATA_ASSEMBLEIA', 'Ata de assembleia ou reunião de sócios', 'SOCIETARIO'],
   ['CERTIDAO_JUNTA_COMERCIAL', 'Certidão simplificada da junta comercial', 'SOCIETARIO'],
@@ -187,7 +184,6 @@ const documentTypes = [
   ['BALANCO_PATRIMONIAL', 'Balanço patrimonial e demonstrações', 'SOCIETARIO'],
   ['PLANO_RECUPERACAO', 'Plano de recuperação judicial', 'SOCIETARIO'],
   ['QUADRO_CREDORES', 'Relação ou quadro geral de credores', 'SOCIETARIO'],
-  ['DUPLICATA', 'Duplicata', 'SOCIETARIO'],
   ['INSTRUMENTO_PROTESTO', 'Instrumento de protesto', 'SOCIETARIO'],
   ['LAUDO_APURACAO_HAVERES', 'Laudo de apuração de haveres', 'SOCIETARIO'],
   ['PORTARIA', 'Portaria', 'ADMINISTRATIVO'],
