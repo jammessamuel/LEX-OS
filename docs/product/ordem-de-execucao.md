@@ -12,24 +12,24 @@ Estado verificado no código em 2026-09-06, não deduzido dos ADRs.
 
 ## 1. Onde estamos, ADR por ADR
 
-| ADR     | Decisão                        | Construído                                                                | Aberto                                                                                          |
-| ------- | ------------------------------ | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                     | —                                                                                               |
-| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 19 migrações                     | —                                                                                               |
-| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                    | —                                                                                               |
-| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos          | —                                                                                               |
-| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                                  | —                                                                                               |
-| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real atrás da porta          | Contrato padrão proíbe treino; aceite empresarial e demais portões do 012 pendem                |
-| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP                  | —                                                                                               |
-| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                                | —                                                                                               |
-| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada, citação obrigatória                       | — Teto de 5 fontes mantido deliberadamente pelo ADR-016                                         |
-| **010** | Canais de entrada              | ✅ Upload                                                                 | Superado pelo ADR-016; e-mail passou a conector futuro                                          |
-| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos     | —                                                                                               |
-| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                           | Transferência, região única e responsável nomeado                                               |
-| **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos        | —                                                                                               |
-| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código     | Itens 4–7 adiados **por decisão**, não por esquecimento                                         |
-| **015** | Biblioteca de prompts          | ✅ Todos os itens · ✅ 30 prompts em 6 faixas (20 atestados, 10 rascunho) | Acervo real segue recusado em todas as faixas: sem inscrição ativa, e as duas novas sem leitura |
-| **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                       | Condições externas permanecem falhando fechado                                                  |
+| ADR     | Decisão                        | Construído                                                                        | Aberto                                                                                          |
+| ------- | ------------------------------ | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                             | —                                                                                               |
+| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 19 migrações                             | —                                                                                               |
+| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                            | —                                                                                               |
+| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos                  | —                                                                                               |
+| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                                          | —                                                                                               |
+| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real atrás da porta                  | Contrato padrão proíbe treino; aceite empresarial e demais portões do 012 pendem                |
+| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP                          | —                                                                                               |
+| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                                        | —                                                                                               |
+| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada e sem sustentação nos trechos, citação obrigatória | — Teto de 5 fontes mantido pelo ADR-016; a avaliação de 06/09 mostra 1 resposta fora dele       |
+| **010** | Canais de entrada              | ✅ Upload                                                                         | Superado pelo ADR-016; e-mail passou a conector futuro                                          |
+| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos             | —                                                                                               |
+| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                                   | Transferência, região única e responsável nomeado                                               |
+| **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos                | —                                                                                               |
+| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código             | Itens 4–7 adiados **por decisão**, não por esquecimento                                         |
+| **015** | Biblioteca de prompts          | ✅ Todos os itens · ✅ 30 prompts em 6 faixas (20 atestados, 10 rascunho)         | Acervo real segue recusado em todas as faixas: sem inscrição ativa, e as duas novas sem leitura |
+| **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                               | Condições externas permanecem falhando fechado                                                  |
 
 **Leitura rápida:** a fila do MVP fechou em 28/08; o uso real reabriu uma fila curta entre 01 e
 06/09 — a Fila F da seção 3 — e ela fechou no mesmo dia 06. O que continua fora do alcance de
@@ -225,7 +225,7 @@ Não fazer nada aqui é a decisão correta até a condição mudar. Registrado p
 | Troca de nome curto            | 014, 6 | Sem custo em esperar              |
 | Pessoa em dois escritórios     | 014, 7 | Demanda real de cliente           |
 | Conectores de e-mail/WhatsApp  | 016    | Novo incremento e demanda real    |
-| Teto de recuperação acima de 5 | 016    | Avaliação de qualidade/custo      |
+| Teto de recuperação acima de 5 | 016    | ADR novo — a avaliação já existe  |
 
 ### Fila E — dívida fora de ADR
 
@@ -283,6 +283,33 @@ dela — contrato sem consumidor é dívida disfarçada de progresso.
 
 Detalhe de cada um em [`pendencias-biblioteca-de-prompts.md`](pendencias-biblioteca-de-prompts.md).
 
+**A avaliação medida abriu uma segunda leva, e desta vez o método foi outro: perguntar ao
+produto o que ele não sabe.** Onze perguntas sobre o caso da apresentação, seis com resposta
+provada no acervo e cinco sem nenhuma. O registro completo está em
+[`avaliacao-recuperacao.md`](avaliacao-recuperacao.md); o instrumento é
+`infra/scripts/avalia-recuperacao.mjs` e repete a medida.
+
+| O que estava errado                                               | Como se via                                        | Estado                  |
+| ----------------------------------------------------------------- | -------------------------------------------------- | ----------------------- |
+| Recusa não cabia na saída: `claims` exigia ao menos uma afirmação | "os trechos não contêm" exibido como fundamentação | ✅ fechado 06/09        |
+| Padrão de três trechos contra os cinco que o ADR-016 fixou        | dois dos seis fatos pedidos não saíam na resposta  | ✅ fechado 06/09        |
+| A resposta que existe no TRCT cai na posição seis do ranking      | data de pagamento nunca alcançada                  | aberto — exige ADR novo |
+| Limiar de 0,65 fixo no SQL como se fosse universal                | busca semântica devolve zero                       | aberto                  |
+| `HYBRID` entrega lexical e se apresenta como híbrida              | nada na tela distingue as duas                     | aberto                  |
+
+**A recusa é a mesma família dos outros três, e é a mais séria delas.** A instrução mandava,
+com todas as letras, devolver lista vazia sem sustentação; o contrato de saída recusava lista
+vazia. O modelo que obedecesse derrubava a chamada, e o que "funcionava" era o que desobedecia,
+embrulhando a recusa numa afirmação — que a tela então exibia como resposta fundamentada, com
+citação ao lado. Num produto cuja promessa central é não afirmar o que não está nos autos, esse
+era o defeito que negava a promessa.
+
+**Os três abertos não são de engenharia sozinha.** Subir o teto de cinco para oito reabre
+decisão aceita e exige ADR novo — a medida diz que oito cobriria 6/6 por R$ 0,2217 contra 5/6
+por R$ 0,1424, e essa troca é do dono. Os outros dois vivem enquanto o embedding for o mock: o
+conserto honesto é o limiar virar propriedade do descritor de embedding, e a resposta dizer o
+que cada metade da busca contribuiu.
+
 **Leitura pendente, que é de gente e não de código:** oito prompts tiveram a versão subida depois
 da atestação de 2026-08-27 e voltaram a precisar de leitura; previdenciário e tributário nunca
 foram lidos. Os cadernos das seis faixas estão gerados em `docs/product/revisao-juridica/`.
@@ -319,6 +346,12 @@ caminho do cliente. Treze defeitos apareceram assim, nenhum deles visível pela 
 
 Fica a conclusão de método, mais útil que a fila em si: **quando a lista de código esvaziar de
 novo, o próximo passo não é esperar decisão externa — é usar o produto e olhar o que ele mostra.**
+
+Em 06/09 apareceu um segundo método, e ele encontra o que o primeiro não vê. Olhar a tela mostra
+o que o produto exibe errado; **perguntar ao produto o que ele não sabe mostra o que ele afirma
+sem saber** — e essa é a falha que o cliente não consegue detectar sozinho, porque uma resposta
+inventada com citação ao lado parece exatamente uma resposta correta. Foi assim que se descobriu
+que a recusa não cabia no contrato de saída. A avaliação está versionada e repete a medida.
 
 ---
 
