@@ -613,6 +613,174 @@ export const legalSpecialties: readonly LegalSpecialty[] = [
       },
     ],
   },
+  {
+    /**
+     * Ambiental, a primeira das quatro que sobraram depois das nove de maior volume.
+     *
+     * Vem antes das outras três por frequência: cliente empresarial esbarra em licenciamento e em
+     * auto de infração o ano inteiro. O crime ambiental fica no penal, onde já estava catalogado —
+     * o rito é de processo penal e duplicar a matéria criaria duas instruções divergindo sobre a
+     * mesma denúncia.
+     */
+    code: 'AMBIENTAL',
+    name: 'Direito ambiental',
+    aliases: ['DIREITO_AMBIENTAL', 'MEIO_AMBIENTE'],
+    caseTypes: [
+      { code: 'LICENCA_PREVIA', name: 'Licença prévia e viabilidade do empreendimento' },
+      { code: 'LICENCA_DE_INSTALACAO', name: 'Licença de instalação' },
+      { code: 'LICENCA_DE_OPERACAO', name: 'Licença de operação' },
+      { code: 'RENOVACAO_DE_LICENCA', name: 'Renovação de licença ambiental' },
+      { code: 'CUMPRIMENTO_DE_CONDICIONANTE', name: 'Cumprimento de condicionante de licença' },
+      { code: 'ESTUDO_DE_IMPACTO_E_AUDIENCIA', name: 'Estudo de impacto e audiência pública' },
+      { code: 'AUTO_DE_INFRACAO_AMBIENTAL', name: 'Auto de infração ambiental e defesa' },
+      { code: 'MULTA_AMBIENTAL_E_CONVERSAO', name: 'Multa ambiental e conversão em serviços' },
+      { code: 'EMBARGO_E_INTERDICAO', name: 'Embargo de obra e interdição de atividade' },
+      { code: 'APREENSAO_DE_BENS_E_PRODUTOS', name: 'Apreensão de bens e produtos' },
+      { code: 'TERMO_DE_AJUSTAMENTO_DE_CONDUTA', name: 'Termo de ajustamento de conduta' },
+      { code: 'INQUERITO_CIVIL_AMBIENTAL', name: 'Inquérito civil ambiental' },
+      { code: 'ACAO_CIVIL_PUBLICA_AMBIENTAL', name: 'Ação civil pública ambiental' },
+      { code: 'REPARACAO_DE_DANO_AMBIENTAL', name: 'Reparação de dano ambiental' },
+      { code: 'PLANO_DE_RECUPERACAO_DE_AREA', name: 'Plano de recuperação de área degradada' },
+      {
+        code: 'AREA_DE_PRESERVACAO_PERMANENTE',
+        name: 'Intervenção em área de preservação permanente',
+      },
+      { code: 'RESERVA_LEGAL_E_AVERBACAO', name: 'Reserva legal e sua inscrição' },
+      { code: 'CADASTRO_AMBIENTAL_RURAL', name: 'Cadastro ambiental rural e regularização' },
+      { code: 'SUPRESSAO_DE_VEGETACAO', name: 'Autorização de supressão de vegetação' },
+      { code: 'OUTORGA_DE_USO_DE_AGUA', name: 'Outorga de direito de uso de recursos hídricos' },
+      { code: 'POLUICAO_E_EMISSOES', name: 'Poluição atmosférica, hídrica e sonora' },
+      {
+        code: 'RESIDUOS_SOLIDOS_E_LOGISTICA_REVERSA',
+        name: 'Resíduos sólidos e logística reversa',
+      },
+      { code: 'AREA_CONTAMINADA', name: 'Área contaminada e passivo ambiental' },
+      { code: 'COMPENSACAO_AMBIENTAL', name: 'Compensação ambiental' },
+      { code: 'UNIDADE_DE_CONSERVACAO', name: 'Unidade de conservação e zona de amortecimento' },
+    ],
+  },
+  {
+    /**
+     * Propriedade intelectual.
+     *
+     * Marca e concorrência desleal continuam no empresarial, onde o tipo de caso já existe e onde
+     * a concorrência desleal de fato pertence — é ilícito de mercado, não de registro. Esta faixa
+     * declara o que aquele tipo não cobre: o procedimento perante o instituto de registro, a
+     * patente, o desenho industrial, o direito autoral e o software.
+     */
+    code: 'PROPRIEDADE_INTELECTUAL',
+    name: 'Propriedade intelectual',
+    aliases: ['PI', 'DIREITO_AUTORAL', 'MARCAS_E_PATENTES', 'PROPRIEDADE_INDUSTRIAL'],
+    caseTypes: [
+      { code: 'PEDIDO_DE_REGISTRO_DE_MARCA', name: 'Pedido de registro de marca' },
+      { code: 'OPOSICAO_A_REGISTRO_DE_MARCA', name: 'Oposição a pedido de registro' },
+      { code: 'NULIDADE_DE_REGISTRO_DE_MARCA', name: 'Processo administrativo de nulidade' },
+      { code: 'CADUCIDADE_DE_MARCA', name: 'Caducidade por desuso' },
+      { code: 'ACAO_DE_NULIDADE_DE_MARCA', name: 'Ação judicial de nulidade de registro' },
+      {
+        code: 'ABSTENCAO_DE_USO_DE_MARCA',
+        name: 'Abstenção de uso e indenização por uso indevido',
+      },
+      { code: 'PEDIDO_DE_PATENTE', name: 'Pedido de patente de invenção' },
+      { code: 'MODELO_DE_UTILIDADE', name: 'Modelo de utilidade' },
+      { code: 'EXIGENCIA_TECNICA_EM_PATENTE', name: 'Cumprimento de exigência técnica' },
+      { code: 'NULIDADE_DE_PATENTE', name: 'Nulidade de patente' },
+      { code: 'INFRACAO_DE_PATENTE', name: 'Infração de patente' },
+      { code: 'DESENHO_INDUSTRIAL', name: 'Registro de desenho industrial' },
+      { code: 'DIREITO_AUTORAL_OBRA', name: 'Autoria e titularidade de obra' },
+      { code: 'VIOLACAO_DE_DIREITO_AUTORAL', name: 'Violação de direito autoral' },
+      { code: 'DIREITO_CONEXO_E_EXECUCAO_PUBLICA', name: 'Direitos conexos e execução pública' },
+      { code: 'REGISTRO_DE_SOFTWARE', name: 'Registro de programa de computador' },
+      { code: 'CONTRATO_DE_LICENCIAMENTO', name: 'Contrato de licenciamento e royalties' },
+      { code: 'CESSAO_DE_DIREITOS', name: 'Cessão de direitos patrimoniais' },
+      { code: 'TRANSFERENCIA_DE_TECNOLOGIA', name: 'Transferência de tecnologia e averbação' },
+      { code: 'NOME_DE_DOMINIO', name: 'Conflito sobre nome de domínio' },
+      { code: 'SEGREDO_DE_NEGOCIO', name: 'Segredo de negócio e informação confidencial' },
+      { code: 'INDICACAO_GEOGRAFICA', name: 'Indicação geográfica' },
+      {
+        code: 'BUSCA_E_APREENSAO_DE_CONTRAFACAO',
+        name: 'Busca e apreensão de produto contrafeito',
+      },
+      { code: 'PIRATARIA_E_PLATAFORMAS', name: 'Remoção de conteúdo infrator em plataforma' },
+    ],
+  },
+  {
+    /**
+     * Agrário. O agronegócio move o país e a matéria não estava em faixa nenhuma.
+     *
+     * Encosta em três já catalogadas e não as repete: aposentadoria rural fica no
+     * previdenciário, cadastro ambiental rural e reserva legal ficam no ambiental, e usucapião
+     * genérica fica no cível. O que é próprio daqui é o título de crédito do campo, o contrato de
+     * uso da terra, a regularização fundiária e o conflito possessório coletivo.
+     */
+    code: 'AGRARIO',
+    name: 'Direito agrário e do agronegócio',
+    aliases: ['DIREITO_AGRARIO', 'AGRONEGOCIO', 'RURAL'],
+    caseTypes: [
+      { code: 'CEDULA_DE_PRODUTO_RURAL', name: 'Cédula de produto rural e sua execução' },
+      { code: 'CREDITO_RURAL_E_CUSTEIO', name: 'Crédito rural, custeio e renegociação' },
+      { code: 'PENHOR_E_ALIENACAO_DE_SAFRA', name: 'Penhor agrícola e alienação de safra' },
+      { code: 'ARRENDAMENTO_RURAL', name: 'Arrendamento rural' },
+      { code: 'PARCERIA_AGRICOLA_E_PECUARIA', name: 'Parceria agrícola e pecuária' },
+      { code: 'COMPRA_E_VENDA_DE_SAFRA', name: 'Compra e venda de safra e inadimplemento' },
+      { code: 'BARTER_E_INSUMOS', name: 'Operação de troca de insumos por produto' },
+      { code: 'ARMAZENAGEM_E_DEPOSITO', name: 'Armazenagem, depósito e certificado' },
+      { code: 'SEGURO_RURAL_E_SINISTRO', name: 'Seguro rural e negativa de sinistro' },
+      { code: 'REGULARIZACAO_FUNDIARIA', name: 'Regularização fundiária e titulação' },
+      { code: 'USUCAPIAO_RURAL', name: 'Usucapião de imóvel rural' },
+      { code: 'DESAPROPRIACAO_PARA_REFORMA_AGRARIA', name: 'Desapropriação para reforma agrária' },
+      {
+        code: 'IMISSAO_E_REINTEGRACAO_DE_POSSE_RURAL',
+        name: 'Reintegração de posse de área rural',
+      },
+      { code: 'CONFLITO_POSSESSORIO_COLETIVO', name: 'Conflito possessório coletivo' },
+      { code: 'DEMARCACAO_E_DIVISAO', name: 'Demarcação, divisão e georreferenciamento' },
+      { code: 'IMOVEL_RURAL_CADASTRO_E_ITR', name: 'Cadastro do imóvel rural e ITR' },
+      { code: 'MODULO_RURAL_E_FRACIONAMENTO', name: 'Módulo rural e limite ao fracionamento' },
+      { code: 'AQUISICAO_POR_ESTRANGEIRO', name: 'Aquisição de terra por estrangeiro' },
+      { code: 'DEFESA_AGROPECUARIA', name: 'Defesa agropecuária e sanidade' },
+      { code: 'CONTRATO_DE_INTEGRACAO', name: 'Contrato de integração na produção animal' },
+    ],
+  },
+  {
+    /**
+     * Eleitoral, por último entre as quatro, e por um motivo declarado: é a mais sazonal.
+     *
+     * O volume concentra-se no ano de pleito e nos meses seguintes, o que a torna a menos usada
+     * das quatro no calendário de um escritório de banca completa — mas a de prazo mais curto
+     * quando aparece, e por isso vale existir com instrução própria em vez de cair no genérico.
+     */
+    code: 'ELEITORAL',
+    name: 'Direito eleitoral',
+    aliases: ['DIREITO_ELEITORAL', 'ELEICOES'],
+    caseTypes: [
+      { code: 'REGISTRO_DE_CANDIDATURA', name: 'Pedido de registro de candidatura' },
+      { code: 'IMPUGNACAO_DE_REGISTRO', name: 'Impugnação ao registro de candidatura' },
+      { code: 'INELEGIBILIDADE', name: 'Arguição de inelegibilidade' },
+      { code: 'PRESTACAO_DE_CONTAS_DE_CAMPANHA', name: 'Prestação de contas de campanha' },
+      { code: 'PRESTACAO_DE_CONTAS_PARTIDARIAS', name: 'Prestação de contas anual do partido' },
+      { code: 'DOACAO_ACIMA_DO_LIMITE', name: 'Doação acima do limite legal' },
+      { code: 'PROPAGANDA_ELEITORAL_IRREGULAR', name: 'Propaganda eleitoral irregular' },
+      { code: 'DIREITO_DE_RESPOSTA_ELEITORAL', name: 'Direito de resposta' },
+      { code: 'PROPAGANDA_ANTECIPADA', name: 'Propaganda antecipada negativa' },
+      { code: 'DESINFORMACAO_E_REMOCAO_DE_CONTEUDO', name: 'Desinformação e remoção de conteúdo' },
+      { code: 'ABUSO_DE_PODER_ECONOMICO', name: 'Abuso de poder econômico' },
+      { code: 'ABUSO_DE_PODER_POLITICO', name: 'Abuso de poder político e uso da máquina' },
+      { code: 'CONDUTA_VEDADA_A_AGENTE_PUBLICO', name: 'Conduta vedada a agente público' },
+      { code: 'CAPTACAO_ILICITA_DE_SUFRAGIO', name: 'Captação ilícita de sufrágio' },
+      { code: 'ACAO_DE_INVESTIGACAO_JUDICIAL', name: 'Ação de investigação judicial eleitoral' },
+      { code: 'RECURSO_CONTRA_DIPLOMACAO', name: 'Recurso contra expedição de diploma' },
+      { code: 'ACAO_DE_IMPUGNACAO_DE_MANDATO', name: 'Ação de impugnação de mandato eletivo' },
+      { code: 'CRIME_ELEITORAL', name: 'Crime eleitoral' },
+      { code: 'FILIACAO_PARTIDARIA_E_DUPLICIDADE', name: 'Filiação partidária e duplicidade' },
+      { code: 'CONVENCAO_E_ORGAO_PARTIDARIO', name: 'Convenção partidária e órgão de direção' },
+      {
+        code: 'FUNDO_PARTIDARIO_E_FUNDO_ELEITORAL',
+        name: 'Aplicação do fundo partidário e eleitoral',
+      },
+      { code: 'AUDITORIA_E_URNA', name: 'Auditoria, urna e apuração' },
+    ],
+  },
 ];
 
 const byCode = new Map<string, LegalSpecialty>();

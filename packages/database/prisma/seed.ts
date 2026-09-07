@@ -196,6 +196,46 @@ const documentTypes = [
   ['RELATORIO_COMISSAO_PAD', 'Relatório de comissão disciplinar', 'ADMINISTRATIVO'],
   ['NOTA_EMPENHO', 'Nota de empenho', 'ADMINISTRATIVO'],
   ['CERTIDAO_NEGATIVA', 'Certidão negativa de débitos', 'ADMINISTRATIVO'],
+  // Ambiental, propriedade intelectual, agrário e eleitoral entraram na biblioteca em 2026-09-07,
+  // fechando a cobertura por área. Mesma razão de sempre: a classificação promete respeitar este
+  // catálogo, e sem o tipo a licença, a carta-patente, a cédula de produto rural e o requerimento
+  // de candidatura cairiam todas em OUTRO com confiança baixa. Conferido contra os 115 códigos
+  // anteriores antes de escrever — nenhum destes trinta colide, e matrícula, laudo pericial e
+  // certidão negativa, que estas quatro faixas também usam, ficam onde já estavam.
+  ['LICENCA_AMBIENTAL', 'Licença ambiental e condicionantes', 'AMBIENTAL'],
+  ['AUTO_INFRACAO_AMBIENTAL', 'Auto de infração ambiental', 'AMBIENTAL'],
+  ['ESTUDO_IMPACTO_AMBIENTAL', 'Estudo de impacto ambiental e relatório', 'AMBIENTAL'],
+  ['LAUDO_TECNICO_AMBIENTAL', 'Laudo técnico ambiental', 'AMBIENTAL'],
+  ['CADASTRO_AMBIENTAL_RURAL', 'Cadastro ambiental rural', 'AMBIENTAL'],
+  ['PLANO_RECUPERACAO_AREA', 'Plano de recuperação de área degradada', 'AMBIENTAL'],
+  ['TAC_AMBIENTAL', 'Termo de ajustamento de conduta', 'AMBIENTAL'],
+  ['OUTORGA_USO_AGUA', 'Outorga de uso de recursos hídricos', 'AMBIENTAL'],
+  ['RELATORIO_MONITORAMENTO', 'Relatório de monitoramento ambiental', 'AMBIENTAL'],
+  ['CERTIFICADO_REGISTRO_MARCA', 'Certificado de registro de marca', 'PROPRIEDADE_INTELECTUAL'],
+  ['CARTA_PATENTE', 'Carta-patente', 'PROPRIEDADE_INTELECTUAL'],
+  ['PEDIDO_PATENTE', 'Pedido de patente com relatório e reivindicações', 'PROPRIEDADE_INTELECTUAL'],
+  [
+    'PUBLICACAO_REVISTA_PI',
+    'Publicação na revista da propriedade industrial',
+    'PROPRIEDADE_INTELECTUAL',
+  ],
+  ['CONTRATO_LICENCIAMENTO', 'Contrato de licenciamento e royalties', 'PROPRIEDADE_INTELECTUAL'],
+  ['CERTIFICADO_AVERBACAO', 'Certificado de averbação de contrato', 'PROPRIEDADE_INTELECTUAL'],
+  ['REGISTRO_SOFTWARE', 'Registro de programa de computador', 'PROPRIEDADE_INTELECTUAL'],
+  ['CEDULA_PRODUTO_RURAL', 'Cédula de produto rural', 'AGRARIO'],
+  ['CONTRATO_ARRENDAMENTO', 'Contrato de arrendamento rural', 'AGRARIO'],
+  ['CONTRATO_PARCERIA_RURAL', 'Contrato de parceria agrícola ou pecuária', 'AGRARIO'],
+  ['CERTIFICADO_DEPOSITO_AGRO', 'Certificado de depósito agropecuário', 'AGRARIO'],
+  ['CCIR', 'Certificado de cadastro de imóvel rural', 'AGRARIO'],
+  ['APOLICE_SEGURO_RURAL', 'Apólice de seguro rural', 'AGRARIO'],
+  ['LAUDO_CLASSIFICACAO_PRODUTO', 'Laudo de classificação e pesagem', 'AGRARIO'],
+  ['REQUERIMENTO_REGISTRO_CANDIDATURA', 'Requerimento de registro de candidatura', 'ELEITORAL'],
+  ['PRESTACAO_CONTAS_ELEITORAL', 'Prestação de contas eleitoral', 'ELEITORAL'],
+  ['RECIBO_ELEITORAL', 'Recibo eleitoral de doação', 'ELEITORAL'],
+  ['ATA_CONVENCAO', 'Ata de convenção partidária', 'ELEITORAL'],
+  ['CERTIDAO_QUITACAO_ELEITORAL', 'Certidão de quitação eleitoral', 'ELEITORAL'],
+  ['REPRESENTACAO_ELEITORAL', 'Representação eleitoral', 'ELEITORAL'],
+  ['DIPLOMA', 'Diploma e ata de diplomação', 'ELEITORAL'],
 ] as const;
 
 function loadRootEnvironment(): void {

@@ -30,11 +30,15 @@ export {
 export { SOURCE_TEXT_LIMIT } from './prompts/contratos.js';
 
 export { administrativoPrompts } from './prompts/administrativo.js';
+export { agrarioPrompts } from './prompts/agrario.js';
+export { ambientalPrompts } from './prompts/ambiental.js';
 export { civelPrompts } from './prompts/civel.js';
 export { consumidorPrompts } from './prompts/consumidor.js';
 export { criminalPrompts } from './prompts/criminal.js';
 export { empresarialPrompts } from './prompts/empresarial.js';
 export { familiaPrompts } from './prompts/familia.js';
+export { propriedadeIntelectualPrompts } from './prompts/propriedade-intelectual.js';
+export { eleitoralPrompts } from './prompts/eleitoral.js';
 export { previdenciarioPrompts } from './prompts/previdenciario.js';
 export { tributarioPrompts } from './prompts/tributario.js';
 

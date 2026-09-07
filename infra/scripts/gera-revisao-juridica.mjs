@@ -30,6 +30,10 @@ const AREAS = [
   ['CONSUMIDOR', 'direito do consumidor'],
   ['EMPRESARIAL', 'direito empresarial e societário'],
   ['ADMINISTRATIVO', 'direito administrativo'],
+  ['AMBIENTAL', 'direito ambiental'],
+  ['PROPRIEDADE_INTELECTUAL', 'propriedade intelectual'],
+  ['AGRARIO', 'direito agrário e do agronegócio'],
+  ['ELEITORAL', 'direito eleitoral'],
 ];
 
 const TAREFAS = new Map([
