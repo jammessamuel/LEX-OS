@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  DIREITO_SO_O_DOS_TRECHOS,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -356,7 +357,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerFamiliaV1 = {
   identifier: 'lex-os.grounded-answer.familia',
-  version: 'grounded-answer-familia-v5',
+  version: 'grounded-answer-familia-v6',
   purpose: 'Answer family and succession questions strictly from authorized case excerpts.',
   specialty: 'FAMILIA',
   task: 'GROUNDED_ANSWER',
@@ -383,6 +384,8 @@ afirma que a separação de fato ocorreu em março de 2023" é resposta correta;
 ocorreu em março de 2023" não é, a menos que o trecho traga decisão ou documento que a fixe.
 
 ${RECUSA_SEM_SUSTENTACAO}
+
+${DIREITO_SO_O_DOS_TRECHOS}
 
 ${QUEBRE_A_AFIRMACAO}
 

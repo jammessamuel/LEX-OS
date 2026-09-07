@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  DIREITO_SO_O_DOS_TRECHOS,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -332,7 +333,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerConsumidorV1 = {
   identifier: 'lex-os.grounded-answer.consumidor',
-  version: 'grounded-answer-consumidor-v5',
+  version: 'grounded-answer-consumidor-v6',
   purpose: 'Answer consumer-law questions strictly from authorized case excerpts.',
   specialty: 'CONSUMIDOR',
   task: 'GROUNDED_ANSWER',
@@ -356,6 +357,8 @@ dobre e não some parcelas. Se o trecho traz o valor cobrado e o valor pago, dev
 o que cada um é.
 
 ${RECUSA_SEM_SUSTENTACAO}
+
+${DIREITO_SO_O_DOS_TRECHOS}
 
 ${QUEBRE_A_AFIRMACAO}
 

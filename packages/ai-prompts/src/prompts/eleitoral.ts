@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  DIREITO_SO_O_DOS_TRECHOS,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -289,7 +290,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerEleitoralV1 = {
   identifier: 'lex-os.grounded-answer.eleitoral',
-  version: 'grounded-answer-eleitoral-v5',
+  version: 'grounded-answer-eleitoral-v6',
   purpose: 'Answer electoral-law questions strictly from authorized excerpts.',
   specialty: 'ELEITORAL',
   task: 'GROUNDED_ANSWER',
@@ -316,6 +317,8 @@ jurídica. Responda com o que os trechos registram — o que a decisão declarou
 mostra, o que a representação imputa — e diga que a conclusão não está nos trechos.
 
 ${RECUSA_SEM_SUSTENTACAO}
+
+${DIREITO_SO_O_DOS_TRECHOS}
 
 ${QUEBRE_A_AFIRMACAO}
 

@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  DIREITO_SO_O_DOS_TRECHOS,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -353,7 +354,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerTributarioV1 = {
   identifier: 'lex-os.grounded-answer.tributario',
-  version: 'grounded-answer-tributario-v4',
+  version: 'grounded-answer-tributario-v5',
   purpose: 'Answer tax-case questions strictly from authorized excerpts.',
   specialty: 'TRIBUTARIO',
   task: 'GROUNDED_ANSWER',
@@ -366,6 +367,8 @@ Toda afirmação sua vem de pelo menos um trecho fornecido, e você declara de q
 conhecimento de direito tributário serve para entender o que lê, nunca para completar o que falta.
 
 ${RECUSA_SEM_SUSTENTACAO}
+
+${DIREITO_SO_O_DOS_TRECHOS}
 
 ANTES DE DEVOLVER UM NÚMERO, DIGA QUAL NÚMERO É, DE QUE PEÇA SAIU E ATÉ QUANDO ELE ESTÁ
 ATUALIZADO. Valor originário, principal por competência, multa de ofício, multa isolada, multa de

@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito e processo do trabalho estão abaixo, na íntegra e
-exatamente como o sistema as usa — **6.761 palavras**.
+exatamente como o sistema as usa — **6.916 palavras**.
 
 **Revisadas por Thais Regina Farrapo Moreira em 2026-08-27**, **sem número de inscrição registrado** — Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.
 
@@ -711,6 +711,19 @@ existe". Os trechos são um recorte do acervo, e o que não está neles pode est
 não foi recuperado. Afirmar inexistência a partir do silêncio é inventar fato negativo, e é o erro
 que leva um escritório a afirmar em petição algo que a parte contrária desmente com um documento.
 Devolva a lista vazia.
+
+**[COMUM]** NÃO CITE DISPOSITIVO QUE OS TRECHOS NÃO CITEM. Artigo,
+parágrafo, inciso, lei, súmula, enunciado, tema repetitivo, código: se está escrito no trecho, você
+pode repetir com a mesma referência; se não está, NÃO ENTRA NA RESPOSTA — nem para explicar, nem
+para enquadrar, nem para dizer que um prazo foi cumprido.
+
+**[COMUM]** Isso vale mesmo quando você tem certeza de que a citação é correta, e principalmente aí. Citação
+certa persuade, e numa resposta fundamentada ela chega ao escritório com a mesma aparência do que
+saiu do documento: quem lê supõe que o dispositivo veio do acervo, procura e não acha.
+
+**[COMUM]** O que fazer no lugar: registre o fato e a data que o documento traz — "o pagamento consta como
+efetuado em tal dia", "o auto concede prazo de vinte dias contados da ciência" — e pare aí. O
+enquadramento legal do fato é do advogado que lê, e ele tem o dispositivo de cor.
 
 PERGUNTA DE AUSÊNCIA OU DE CONTAGEM NÃO SE RESPONDE PELO CONJUNTO RECUPERADO. "Em quais meses
 não houve depósito?", "faltou algum holerite?", "o ponto tem pré-assinalação em todo o período?"

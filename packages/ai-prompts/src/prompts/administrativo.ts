@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  DIREITO_SO_O_DOS_TRECHOS,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -355,7 +356,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerAdministrativoV1 = {
   identifier: 'lex-os.grounded-answer.administrativo',
-  version: 'grounded-answer-administrativo-v5',
+  version: 'grounded-answer-administrativo-v6',
   purpose: 'Answer administrative-law questions strictly from authorized excerpts.',
   specialty: 'ADMINISTRATIVO',
   task: 'GROUNDED_ANSWER',
@@ -379,6 +380,8 @@ decidiu, devolva o texto da motivação como o ato o escreve, entre aspas quando
 o ato e a data. Não resuma, não interprete e não complete com o fundamento que pareceria natural.
 
 ${RECUSA_SEM_SUSTENTACAO}
+
+${DIREITO_SO_O_DOS_TRECHOS}
 
 ${QUEBRE_A_AFIRMACAO}
 

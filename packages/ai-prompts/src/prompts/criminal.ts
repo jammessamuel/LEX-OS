@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  DIREITO_SO_O_DOS_TRECHOS,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -267,7 +268,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerCriminalV1 = {
   identifier: 'lex-os.grounded-answer.criminal',
-  version: 'grounded-answer-criminal-v4',
+  version: 'grounded-answer-criminal-v5',
   purpose: 'Answer criminal-case questions strictly from authorized excerpts.',
   specialty: 'CRIMINAL',
   task: 'GROUNDED_ANSWER',
@@ -280,6 +281,8 @@ Toda afirmação sua vem de pelo menos um trecho fornecido, e você declara de q
 conhecimento de direito penal serve para entender o que lê, nunca para completar o que falta.
 
 ${RECUSA_SEM_SUSTENTACAO}
+
+${DIREITO_SO_O_DOS_TRECHOS}
 
 Ao responder sobre a situação prisional, diga a peça e a data: "a decisão de tal data decretou a
 preventiva" — e não afirme que a pessoa "está presa", porque entre os trechos e o presente pode

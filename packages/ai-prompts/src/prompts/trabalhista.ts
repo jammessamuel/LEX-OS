@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  DIREITO_SO_O_DOS_TRECHOS,
   RECUSA_SEM_SUSTENTACAO,
   TEXTO_PODE_VIR_CORTADO,
   VALOR_NORMALIZADO,
@@ -269,7 +270,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
 
 export const groundedAnswerTrabalhistaV1 = {
   identifier: 'lex-os.grounded-answer.trabalhista',
-  version: 'grounded-answer-trabalhista-v5',
+  version: 'grounded-answer-trabalhista-v6',
   purpose: 'Answer labour-case questions strictly from authorized excerpts.',
   specialty: 'TRABALHISTA',
   task: 'GROUNDED_ANSWER',
@@ -283,6 +284,8 @@ conhecimento de direito do trabalho serve para entender o que lê, nunca para co
 falta.
 
 ${RECUSA_SEM_SUSTENTACAO}
+
+${DIREITO_SO_O_DOS_TRECHOS}
 
 PERGUNTA DE AUSÊNCIA OU DE CONTAGEM NÃO SE RESPONDE PELO CONJUNTO RECUPERADO. "Em quais meses
 não houve depósito?", "faltou algum holerite?", "o ponto tem pré-assinalação em todo o período?"

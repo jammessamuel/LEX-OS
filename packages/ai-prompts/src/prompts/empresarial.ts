@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  DIREITO_SO_O_DOS_TRECHOS,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -312,7 +313,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerEmpresarialV1 = {
   identifier: 'lex-os.grounded-answer.empresarial',
-  version: 'grounded-answer-empresarial-v5',
+  version: 'grounded-answer-empresarial-v6',
   purpose: 'Answer corporate and insolvency questions strictly from authorized excerpts.',
   specialty: 'EMPRESARIAL',
   task: 'GROUNDED_ANSWER',
@@ -339,6 +340,8 @@ os poderes conforme o instrumento — e diga que a conclusão sobre responsabili
 trechos.
 
 ${RECUSA_SEM_SUSTENTACAO}
+
+${DIREITO_SO_O_DOS_TRECHOS}
 
 ${QUEBRE_A_AFIRMACAO}
 

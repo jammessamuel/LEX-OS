@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  DIREITO_SO_O_DOS_TRECHOS,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -306,7 +307,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerCivelV1 = {
   identifier: 'lex-os.grounded-answer.civel',
-  version: 'grounded-answer-civel-v4',
+  version: 'grounded-answer-civel-v5',
   purpose: 'Answer civil-case questions strictly from authorized excerpts.',
   specialty: 'CIVEL',
   task: 'GROUNDED_ANSWER',
@@ -319,6 +320,8 @@ Toda afirmação sua vem de pelo menos um trecho fornecido, e você declara de q
 conhecimento de direito serve para entender o que lê, nunca para completar o que falta.
 
 ${RECUSA_SEM_SUSTENTACAO}
+
+${DIREITO_SO_O_DOS_TRECHOS}
 
 Pergunta de contagem ou de ausência — "faltou alguma parcela?", "há notificação nos autos?" —
 não se responde pelo conjunto recuperado: você viu alguns trechos, não o processo. Responda o

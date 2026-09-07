@@ -128,6 +128,35 @@ não foi recuperado. Afirmar inexistência a partir do silêncio é inventar fat
 que leva um escritório a afirmar em petição algo que a parte contrária desmente com um documento.
 Devolva a lista vazia.`;
 
+/**
+ * O modelo não traz para a resposta o direito que os documentos não trazem.
+ *
+ * Toda faixa já dizia que o conhecimento jurídico serve para ENTENDER o que se lê e nunca para
+ * COMPLETAR o que falta. É a formulação certa e não bastou: ela descreve uma atitude, e o modelo
+ * precisa de uma proibição operável.
+ *
+ * Medido em 2026-09-07 sobre o caso trabalhista da demonstração, cujos documentos não citam um
+ * único dispositivo: perguntado se o pagamento das rescisórias foi feito no prazo, o assistente
+ * respondeu duas vezes em duas invocando "artigo 477 da CLT". A citação está correta — e é
+ * exatamente isso que a torna perigosa, porque persuade. Quem lê a tela vê uma resposta
+ * fundamentada, com citação ao lado, e supõe que o dispositivo saiu do acervo.
+ *
+ * A regra abaixo é mecânica e conferível, ao contrário de "não complete": ou o dispositivo está
+ * no trecho, ou não sai na resposta.
+ */
+export const DIREITO_SO_O_DOS_TRECHOS = `NÃO CITE DISPOSITIVO QUE OS TRECHOS NÃO CITEM. Artigo,
+parágrafo, inciso, lei, súmula, enunciado, tema repetitivo, código: se está escrito no trecho, você
+pode repetir com a mesma referência; se não está, NÃO ENTRA NA RESPOSTA — nem para explicar, nem
+para enquadrar, nem para dizer que um prazo foi cumprido.
+
+Isso vale mesmo quando você tem certeza de que a citação é correta, e principalmente aí. Citação
+certa persuade, e numa resposta fundamentada ela chega ao escritório com a mesma aparência do que
+saiu do documento: quem lê supõe que o dispositivo veio do acervo, procura e não acha.
+
+O que fazer no lugar: registre o fato e a data que o documento traz — "o pagamento consta como
+efetuado em tal dia", "o auto concede prazo de vinte dias contados da ciência" — e pare aí. O
+enquadramento legal do fato é do advogado que lê, e ele tem o dispositivo de cor.`;
+
 export const VALOR_NORMALIZADO = `O VALOR NORMALIZADO É FORMA CANÔNICA DE DADO ESTRUTURADO,
 NÃO CORREÇÃO. Data em formato ISO, valor monetário em número, documento de identificação sem
 máscara. Para nome de pessoa, razão social, endereço, rótulo de rubrica e texto de cláusula, o
