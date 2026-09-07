@@ -329,7 +329,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerAmbientalV1 = {
   identifier: 'lex-os.grounded-answer.ambiental',
-  version: 'grounded-answer-ambiental-v2',
+  version: 'grounded-answer-ambiental-v3',
   purpose: 'Answer environmental-law questions strictly from authorized excerpts.',
   specialty: 'AMBIENTAL',
   task: 'GROUNDED_ANSWER',

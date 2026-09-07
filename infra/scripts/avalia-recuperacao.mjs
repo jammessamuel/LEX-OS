@@ -309,19 +309,23 @@ async function faseResposta() {
     });
   }
 
-  for (const linha of linhas) {
+  // O laço não pode chamar o item de "linha": esse nome é da função que escreve na saída, e a
+  // variável a sombreava. A fase paga era a única que passava por aqui, e ela só roda com
+  // --com-modelo — então o erro sobreviveu a toda a suíte e só apareceu depois de o modelo já
+  // ter sido chamado onze vezes.
+  for (const resultado of linhas) {
     const marca =
-      linha.veredito === 'PASSOU' ? 'ok   ' : linha.veredito === 'ERRO' ? 'ERRO ' : 'FALHA';
-    linha(`  ${marca} ${linha.pergunta.slice(0, 74)}`);
-    if (linha.detalhe !== '') {
-      linha(`        -> ${linha.detalhe}`);
+      resultado.veredito === 'PASSOU' ? 'ok   ' : resultado.veredito === 'ERRO' ? 'ERRO ' : 'FALHA';
+    linha(`  ${marca} ${resultado.pergunta.slice(0, 74)}`);
+    if (resultado.detalhe !== '') {
+      linha(`        -> ${resultado.detalhe}`);
     }
   }
 
-  const validas = linhas.filter((linha) => linha.veredito !== 'ERRO');
-  const latencias = validas.map((linha) => linha.ms).sort((a, b) => a - b);
-  const custo = validas.reduce((total, linha) => total + linha.custo, 0);
-  const aprovadas = linhas.filter((linha) => linha.veredito === 'PASSOU').length;
+  const validas = linhas.filter((item) => item.veredito !== 'ERRO');
+  const latencias = validas.map((item) => item.ms).sort((a, b) => a - b);
+  const custo = validas.reduce((total, item) => total + item.custo, 0);
+  const aprovadas = linhas.filter((item) => item.veredito === 'PASSOU').length;
   linha(
     `\n  ${aprovadas}/${linhas.length} · custo R$ ${custo.toFixed(4)}` +
       ` · latência mediana ${latencias[Math.floor(latencias.length / 2)] ?? 0} ms` +

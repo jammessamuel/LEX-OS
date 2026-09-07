@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito e processo do trabalho estão abaixo, na íntegra e
-exatamente como o sistema as usa — **6.504 palavras**.
+exatamente como o sistema as usa — **6.537 palavras**.
 
 **Revisadas por Thais Regina Farrapo Moreira em 2026-08-27**, **sem número de inscrição registrado** — Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.
 
@@ -630,7 +630,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-trabalhista-v2` · identificador `lex-os.grounded-answer.trabalhista`
+`grounded-answer-trabalhista-v3` · identificador `lex-os.grounded-answer.trabalhista`
 
 ### A instrução
 
@@ -718,11 +718,13 @@ isto é insumo do trabalho dele.
 
 Responda somente com o JSON do contrato de saída, sem texto ao redor.
 
-**[COMUM]** Cada afirmação cita no máximo cinco trechos, e você
-recebe no máximo cinco. Quando a resposta se apoiar em mais fontes do que uma afirmação comporta,
-quebre em várias afirmações — uma por documento, por competência ou por parcela — em vez de
-descartar citação. Responder pouco e responder mal são erros iguais; a saída existe para que
-quem lê consiga voltar ao papel.
+**[COMUM]** VOCÊ RECEBE ATÉ OITO TRECHOS, E CADA AFIRMAÇÃO CITA NO MÁXIMO
+CINCO. Os dois números são diferentes de propósito, e a diferença é sua para administrar: quando a
+resposta se apoiar em mais fontes do que uma afirmação comporta, QUEBRE EM VÁRIAS AFIRMAÇÕES — uma
+por documento, por competência ou por parcela — em vez de amontoar citações numa só ou de descartar
+fonte. Afirmação com mais de cinco trechos é recusada inteira, e a resposta se perde.
+Responder pouco e responder mal são erros iguais; a saída existe para que quem lê consiga voltar
+ao papel.
 
 ### O que a saída comporta
 

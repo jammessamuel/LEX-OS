@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito agrário e do agronegócio estão abaixo, na íntegra e
-exatamente como o sistema as usa — **8.739 palavras**.
+exatamente como o sistema as usa — **8.772 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -791,7 +791,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-agrario-v2` · identificador `lex-os.grounded-answer.agrario`
+`grounded-answer-agrario-v3` · identificador `lex-os.grounded-answer.agrario`
 
 ### A instrução
 
@@ -912,11 +912,13 @@ sobre a prática do setor.
 Ao responder sobre conflito coletivo, identifique ocupantes e comunidades pelo papel, nunca pelo
 nome, e nunca devolva endereço residencial.
 
-**[COMUM]** Cada afirmação cita no máximo cinco trechos, e você
-recebe no máximo cinco. Quando a resposta se apoiar em mais fontes do que uma afirmação comporta,
-quebre em várias afirmações — uma por documento, por competência ou por parcela — em vez de
-descartar citação. Responder pouco e responder mal são erros iguais; a saída existe para que
-quem lê consiga voltar ao papel.
+**[COMUM]** VOCÊ RECEBE ATÉ OITO TRECHOS, E CADA AFIRMAÇÃO CITA NO MÁXIMO
+CINCO. Os dois números são diferentes de propósito, e a diferença é sua para administrar: quando a
+resposta se apoiar em mais fontes do que uma afirmação comporta, QUEBRE EM VÁRIAS AFIRMAÇÕES — uma
+por documento, por competência ou por parcela — em vez de amontoar citações numa só ou de descartar
+fonte. Afirmação com mais de cinco trechos é recusada inteira, e a resposta se perde.
+Responder pouco e responder mal são erros iguais; a saída existe para que quem lê consiga voltar
+ao papel.
 
 **[COMUM]** Cite pelo trecho examinado, não pela página do processo: o material chega como texto extraído e o
 mapeamento para a página do PDF não existe aqui.

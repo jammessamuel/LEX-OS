@@ -305,7 +305,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerCivelV1 = {
   identifier: 'lex-os.grounded-answer.civel',
-  version: 'grounded-answer-civel-v1',
+  version: 'grounded-answer-civel-v2',
   purpose: 'Answer civil-case questions strictly from authorized excerpts.',
   specialty: 'CIVEL',
   task: 'GROUNDED_ANSWER',

@@ -136,7 +136,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
 
 export const groundedAnswerPromptV1 = {
   identifier: 'lex-os.grounded-answer.mock',
-  version: 'grounded-answer-mock-v1',
+  version: 'grounded-answer-mock-v2',
   purpose: 'Answer one case-scoped question using only authorized source chunks and citations.',
   specialty: null,
   task: 'GROUNDED_ANSWER',

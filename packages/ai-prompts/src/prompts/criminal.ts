@@ -266,7 +266,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerCriminalV1 = {
   identifier: 'lex-os.grounded-answer.criminal',
-  version: 'grounded-answer-criminal-v1',
+  version: 'grounded-answer-criminal-v2',
   purpose: 'Answer criminal-case questions strictly from authorized excerpts.',
   specialty: 'CRIMINAL',
   task: 'GROUNDED_ANSWER',

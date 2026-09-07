@@ -268,7 +268,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
 
 export const groundedAnswerTrabalhistaV1 = {
   identifier: 'lex-os.grounded-answer.trabalhista',
-  version: 'grounded-answer-trabalhista-v2',
+  version: 'grounded-answer-trabalhista-v3',
   purpose: 'Answer labour-case questions strictly from authorized excerpts.',
   specialty: 'TRABALHISTA',
   task: 'GROUNDED_ANSWER',

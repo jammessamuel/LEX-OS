@@ -354,7 +354,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerAdministrativoV1 = {
   identifier: 'lex-os.grounded-answer.administrativo',
-  version: 'grounded-answer-administrativo-v2',
+  version: 'grounded-answer-administrativo-v3',
   purpose: 'Answer administrative-law questions strictly from authorized excerpts.',
   specialty: 'ADMINISTRATIVO',
   task: 'GROUNDED_ANSWER',

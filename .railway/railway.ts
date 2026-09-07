@@ -1,5 +1,6 @@
 import {
   defineRailway,
+  github,
   image,
   preserve,
   project,
@@ -11,6 +12,26 @@ import {
 
 const REGION = 'europe-west4-drams3a';
 const DOCKERFILE_PATH = 'infra/docker/Dockerfile';
+
+/**
+ * De onde o código dos serviços de aplicação vem.
+ *
+ * Antes disto não havia origem declarada, e a implantação era upload do diretório local por
+ * `railway up`. Isso tem dois problemas. O primeiro é operacional: em 2026-09-06 um `railway up`
+ * sem serviço vinculado não falhou — criou um projeto novo com o nome da pasta e começou a
+ * construir nele. O segundo é de garantia: o que subia era a árvore da máquina de quem rodou o
+ * comando, que pode ter alteração não commitada, e não o que está no repositório.
+ *
+ * Com a origem no repositório, a implantação passa a ser o que `main` contém. E `checkSuites`
+ * fecha a trava que faltava: o Railway espera as verificações do GitHub concluírem antes de
+ * construir, então uma esteira vermelha não vira implantação. A regra que a equipe já seguia à
+ * mão passa a ser mecânica.
+ */
+const REPOSITORIO = 'jammessamuel/LEX-OS';
+
+function origemDoRepositorio() {
+  return github(REPOSITORIO, { branch: 'main', checkSuites: true });
+}
 
 const APPLICATION_VARIABLES = [
   'AI_INPUT_COST_PER_MILLION_TOKENS',
@@ -103,6 +124,7 @@ export default defineRailway((context) => {
   };
 
   const api = service('api', {
+    source: origemDoRepositorio(),
     build: applicationBuild(),
     deploy: {
       startCommand: 'node apps/api/dist/main.js',
@@ -116,6 +138,7 @@ export default defineRailway((context) => {
   });
 
   const worker = service('worker', {
+    source: origemDoRepositorio(),
     build: applicationBuild(),
     deploy: {
       startCommand: 'node apps/worker/dist/main.js',

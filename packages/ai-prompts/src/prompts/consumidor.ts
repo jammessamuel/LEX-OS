@@ -331,7 +331,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerConsumidorV1 = {
   identifier: 'lex-os.grounded-answer.consumidor',
-  version: 'grounded-answer-consumidor-v2',
+  version: 'grounded-answer-consumidor-v3',
   purpose: 'Answer consumer-law questions strictly from authorized case excerpts.',
   specialty: 'CONSUMIDOR',
   task: 'GROUNDED_ANSWER',

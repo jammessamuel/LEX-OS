@@ -299,7 +299,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerPiV1 = {
   identifier: 'lex-os.grounded-answer.propriedade-intelectual',
-  version: 'grounded-answer-propriedade-intelectual-v2',
+  version: 'grounded-answer-propriedade-intelectual-v3',
   purpose: 'Answer intellectual-property questions strictly from authorized excerpts.',
   specialty: 'PROPRIEDADE_INTELECTUAL',
   task: 'GROUNDED_ANSWER',

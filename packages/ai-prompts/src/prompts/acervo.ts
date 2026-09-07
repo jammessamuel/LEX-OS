@@ -69,11 +69,26 @@ nele.
 Exigência não obrigatória continua sendo exigência: proponha o estado que descreve o que você
 viu, e deixe a dispensa para quem revisa.`;
 
-export const QUEBRE_A_AFIRMACAO = `Cada afirmação cita no máximo cinco trechos, e você
-recebe no máximo cinco. Quando a resposta se apoiar em mais fontes do que uma afirmação comporta,
-quebre em várias afirmações — uma por documento, por competência ou por parcela — em vez de
-descartar citação. Responder pouco e responder mal são erros iguais; a saída existe para que
-quem lê consiga voltar ao papel.`;
+/**
+ * Quantos trechos chegam e quantos cabem numa afirmação — dois números diferentes.
+ *
+ * Este bloco dizia "você recebe no máximo cinco", e era verdade até o ADR-017 levar a recuperação
+ * a oito. A frase virou mentira e o efeito foi imediato: sem saber que recebe mais do que uma
+ * afirmação comporta, o modelo cita seis ou sete trechos numa afirmação só, o parser recusa por
+ * exceder o teto de citação, e a chamada devolve 502. Medido em 2026-09-07 contra a demonstração,
+ * na pergunta cuja resposta está no trecho de posição seis — exatamente a que motivou subir o teto.
+ *
+ * Os dois números são de propósito. Oito é o alcance da busca; cinco é quanto uma afirmação
+ * consegue citar sem virar um parágrafo que aponta para todo lado. Quando os dois se encontram, a
+ * saída é quebrar a afirmação, não descartar fonte.
+ */
+export const QUEBRE_A_AFIRMACAO = `VOCÊ RECEBE ATÉ OITO TRECHOS, E CADA AFIRMAÇÃO CITA NO MÁXIMO
+CINCO. Os dois números são diferentes de propósito, e a diferença é sua para administrar: quando a
+resposta se apoiar em mais fontes do que uma afirmação comporta, QUEBRE EM VÁRIAS AFIRMAÇÕES — uma
+por documento, por competência ou por parcela — em vez de amontoar citações numa só ou de descartar
+fonte. Afirmação com mais de cinco trechos é recusada inteira, e a resposta se perde.
+Responder pouco e responder mal são erros iguais; a saída existe para que quem lê consiga voltar
+ao papel.`;
 
 export const VALOR_NORMALIZADO = `O VALOR NORMALIZADO É FORMA CANÔNICA DE DADO ESTRUTURADO,
 NÃO CORREÇÃO. Data em formato ISO, valor monetário em número, documento de identificação sem

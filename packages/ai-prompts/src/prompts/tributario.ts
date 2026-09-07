@@ -352,7 +352,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerTributarioV1 = {
   identifier: 'lex-os.grounded-answer.tributario',
-  version: 'grounded-answer-tributario-v1',
+  version: 'grounded-answer-tributario-v2',
   purpose: 'Answer tax-case questions strictly from authorized excerpts.',
   specialty: 'TRIBUTARIO',
   task: 'GROUNDED_ANSWER',
