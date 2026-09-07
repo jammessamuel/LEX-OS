@@ -303,6 +303,9 @@ export function eventTypeLabel(eventType: string): string {
 const AUDIT_ACTION_LABELS: Readonly<Record<string, string>> = {
   'assistant.answer.generated': 'Resposta do assistente gerada',
   'assistant.answer.refused': 'Assistente recusou responder',
+  // Recusar é o sistema funcionando; falhar é o provedor não ter entregue resposta utilizável.
+  // A trilha precisa distinguir, porque quem lê tira conclusões opostas de cada uma.
+  'assistant.answer.failed': 'Falha do provedor ao responder',
   'audit.log.listed': 'Trilha de auditoria consultada',
   'auth.login.blocked': 'Entrada bloqueada',
   'auth.login.failed': 'Tentativa de entrada malsucedida',

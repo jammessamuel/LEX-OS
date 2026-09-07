@@ -31,6 +31,13 @@ export class MockGroundedLanguageModelProvider implements GroundedLanguageModelP
     question: string;
     sources: readonly GroundedLanguageModelSource[];
   }): Promise<unknown> {
+    // O provedor real falha de vez em quando sem devolver o objeto JSON pedido, e essa falha
+    // escapava como 500 até 2026-09-07. O mock precisa saber falhar para o teste conseguir
+    // exercitar o tratamento sem provedor pago — do mesmo jeito que aprendeu a recusar.
+    if (input.question.toLowerCase().includes('provedor falha')) {
+      throw new Error('The model did not return the requested JSON object.');
+    }
+
     // A pergunta e as fontes são campos separados. O texto recuperado é somente dado hostil:
     // nunca é concatenado às instruções nem interpretado como autorização para ferramentas.
     return Promise.resolve({

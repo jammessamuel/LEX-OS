@@ -488,6 +488,33 @@ describe('Delivery 9 authorized text and semantic search', () => {
     assert.equal(trilha.rows[0]?.action, 'assistant.answer.refused');
   });
 
+  it('trata a falha do provedor como 502 auditado, e não como erro interno', async () => {
+    // O adaptador real lança quando o modelo não devolve o objeto JSON pedido, e nada capturava
+    // isso: virava 500 "erro inesperado" — "erro interno" na tela do escritório, sem dizer o que
+    // houve. Uma avaliação por faixa em 2026-09-07 encontrou o caso em pergunta difícil.
+    const falha = await answer({
+      // O termo precisa casar com o acervo: sem recuperação a chamada recusa antes de chegar ao
+      // modelo, e o teste passaria a medir outra coisa.
+      question: 'cláusula rescisória na pergunta em que o provedor falha ao montar a saída',
+      caseId: standardSource.caseId,
+      mode: 'LEXICAL',
+    }).expect(502);
+
+    assert.equal(falha.body.code, 'INVALID_LANGUAGE_MODEL_OUTPUT');
+
+    // Recusar e falhar são coisas diferentes, e a trilha precisa distinguir: uma é o sistema
+    // funcionando, a outra é o provedor não ter entregue. Antes disto a falha não deixava rastro.
+    const trilha = await pool.query(
+      `SELECT action, new_data FROM audit_logs
+       WHERE organization_id = $1 AND action = 'assistant.answer.failed'
+       ORDER BY created_at DESC LIMIT 1`,
+      [ORGANIZATION_ID],
+    );
+    assert.equal(trilha.rows[0]?.action, 'assistant.answer.failed');
+    assert.ok(String(trilha.rows[0]?.new_data?.reason ?? '').length > 0);
+    assert.ok(String(trilha.rows[0]?.new_data?.promptVersion ?? '').length > 0);
+  });
+
   it('recusa a pergunta quando o caso já bateu no teto, sem chamar o modelo', async () => {
     // A recusa por falta de folga vive no teste unitário `assistant-budget`: com o provedor
     // determinístico o preço é zero, a folga exigida é zero, e ela fica inalcançável por aqui.

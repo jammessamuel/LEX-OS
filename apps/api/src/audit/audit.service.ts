@@ -341,6 +341,25 @@ export type DomainAuditEvent =
         status: 'INSUFFICIENT_EVIDENCE';
       };
     })
+  /**
+   * O provedor não devolveu resposta utilizável.
+   *
+   * Recusar e falhar são coisas diferentes e a trilha precisa distinguir. Recusa é o sistema
+   * funcionando: leu, não achou apoio, disse isso. Falha é o modelo não ter entregue o objeto
+   * pedido — e antes deste registro ela não aparecia em lugar nenhum, saía como 500 no log de
+   * infraestrutura e sumia. Quem depois perguntasse "por que esta pergunta não tem resposta na
+   * trilha" não tinha como saber.
+   */
+  | (DomainAuditBase & {
+      action: 'assistant.answer.failed';
+      entityType: 'assistant_answer';
+      newData: {
+        caseId: string;
+        questionLength: number;
+        promptVersion: string;
+        reason: string;
+      };
+    })
   | (DomainAuditBase & {
       action: 'assistant.answer.generated';
       entityType: 'assistant_answer';

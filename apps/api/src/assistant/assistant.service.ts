@@ -242,14 +242,48 @@ export class AssistantService {
     const prompt = promptFor('GROUNDED_ANSWER', legalArea, {
       caseArchive: this.config.caseArchive,
     });
-    const rawOutput = await this.languageModel.generate({
-      prompt,
-      question: input.question,
-      sources: retrieval.results.map((result) => ({
-        chunkId: result.chunkId,
-        content: result.excerpt,
-      })),
-    });
+    // A falha do provedor é esperada e precisa ter tratamento próprio. Sem este `catch`, o
+    // adaptador real lançava `Error` puro quando o modelo não devolvia o objeto JSON pedido, e
+    // a falha escapava como 500 `http_request_failed_unexpectedly` — "erro interno" na tela do
+    // escritório, sem nada que diga o que houve nem o que fazer. Medido em 2026-09-07 numa
+    // avaliação por faixa: acontecia em pergunta difícil, de forma intermitente, e sempre na
+    // mesma pergunta que o assistente deveria recusar.
+    //
+    // Vira o mesmo 502 do contrato de saída inválido, porque para quem chama é a mesma coisa: o
+    // provedor não entregou resposta utilizável. O motivo real fica no log e na trilha, que é
+    // onde se diagnostica.
+    let rawOutput: unknown;
+    try {
+      rawOutput = await this.languageModel.generate({
+        prompt,
+        question: input.question,
+        sources: retrieval.results.map((result) => ({
+          chunkId: result.chunkId,
+          content: result.excerpt,
+        })),
+      });
+    } catch (erro) {
+      await this.audit.recordDomain({
+        organizationId: actor.organizationId,
+        userId: actor.userId,
+        entityId: null,
+        entityType: 'assistant_answer',
+        action: 'assistant.answer.failed',
+        newData: {
+          caseId: input.caseId,
+          questionLength: input.question.length,
+          promptVersion: prompt.version,
+          // A mensagem do adaptador é metadado da chamada e nunca carrega texto de documento —
+          // o próprio adaptador cuida disso ao montá-la.
+          reason: erro instanceof Error ? erro.message : 'unknown provider failure',
+        },
+        ...metadata,
+      });
+      // O custo desta chamada existe no provedor e não é debitado do teto do caso: o adaptador
+      // falha antes de informar quanto custou, e gravar um número inventado seria pior do que
+      // não gravar. Limitação conhecida, registrada aqui e não escondida.
+      throw invalidOutput();
+    }
     const parsed = parseProviderOutput(rawOutput, new Set(sources.keys()));
     const claims = parsed.claims.map((claim) => mapClaim(claim, sources));
     const sourceChunkIds = [...new Set(parsed.claims.flatMap((claim) => claim.sourceChunkIds))];
