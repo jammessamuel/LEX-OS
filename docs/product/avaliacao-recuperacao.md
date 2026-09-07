@@ -1,9 +1,13 @@
 # Avaliação da recuperação e da resposta fundamentada
 
-**Medida em 2026-09-06 e reexecutada em 2026-09-07**, contra o caso `RT-2026-0008` do ambiente de
-demonstração, com o adaptador real de modelo e `CASE_ARCHIVE=fictional`. A segunda execução é a
-que traz custo e latência do teto de oito já no ar, e a que encontrou o defeito que subir o teto
-causou. Instrumento:
+**Medida em 2026-09-06 e reexecutada duas vezes em 2026-09-07**, contra o caso `RT-2026-0008` do
+ambiente de demonstração, com o adaptador real de modelo e `CASE_ARCHIVE=fictional`.
+
+O placar foi de **6/11 para 11/11** ao longo dessas três execuções, e cada salto veio de um
+defeito diferente: a recusa que não cabia no contrato de saída, o teto que não alcançava o
+documento, e a instrução que mandava o modelo _escrever_ a recusa em vez de devolvê-la pelo canal
+próprio. Nenhum dos três apareceria numa suíte de testes — todos os três produziam saída bem
+formada. Instrumento:
 `infra/scripts/avalia-recuperacao.mjs`, versionado ao lado deste documento.
 
 O ADR-016 fixou o teto de cinco trechos e disse, por escrito, o que permitiria reabri-lo:
@@ -59,6 +63,13 @@ nunca viu o trecho.
 | 5     | 5/6       | R$ 0,1424              | 7.455 ms         | 19.053 ms  |
 | 8 \*  | 6/6       | R$ 0,2217 — projetado  | não medida       | não medida |
 | **8** | **6/6**   | **R$ 0,1590 — medido** | **9.483 ms**     | 19.386 ms  |
+| 8 †   | 6/6       | R$ 0,1685              | 15.714 ms        | 28.669 ms  |
+
+† Terceira execução, depois de as catorze faixas passarem a recusar pelo mesmo canal. Responder
+ficou mais lento e um pouco mais caro; **recusar ficou nove vezes mais rápido** — 1.681 ms de
+mediana contra 15.714 ms — e mais barato, R$ 0,0797 contra R$ 0,1685. É consequência direta do
+conserto: devolver lista vazia não exige compor parágrafo nenhum, enquanto a redação antiga fazia
+o modelo escrever a explicação da ausência. Placar desta execução: **11/11**.
 
 A última linha é de **2026-09-07**, com o teto de oito já no ar. As três primeiras são de
 2026-09-06 e ficam onde estão: apagá-las esconderia que a decisão foi tomada sobre uma projeção
@@ -115,6 +126,17 @@ exigia ao menos uma afirmação enquanto a instrução mandava, com todas as let
 vazia sem sustentação. O modelo que obedecesse derrubava a chamada; o que "funcionava" era o que
 desobedecia. Corrigido: lista vazia passou a ser recusa, com procedência preservada e custo
 debitado, porque o modelo rodou.
+
+**E o conserto do contrato não bastou — a instrução ainda mandava o contrário.** Com a lista vazia
+já aceita, três recusas continuavam voltando como resposta, e a causa estava escrita no prompt:
+"Se os trechos não sustentam a resposta, **diga** que a evidência é insuficiente." As seis faixas
+mais antigas mandavam dizer; as oito escritas depois de 06/09 mandavam devolver lista vazia. O
+modelo obedecia à faixa que rodava.
+
+A regra passou a viver num bloco compartilhado, e ganhou uma segunda metade que nenhuma faixa
+tratava: **pergunta sobre existência**. "Houve advertência?" respondida com "não houve" é afirmação
+que os trechos não sustentam — eles podem apenas não trazer a advertência. Silêncio de recorte não
+é prova de inexistência. Depois disso, **11/11**.
 
 **A busca semântica não contribui nada, e nada diz.** Em todas as seis consultas o modo `HYBRID`
 devolveu resultado idêntico ao `LEXICAL`, posição por posição; o modo `SEMANTIC` sozinho devolveu
