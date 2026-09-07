@@ -10,6 +10,7 @@ import {
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
   DIREITO_SO_O_DOS_TRECHOS,
+  FATO_SIM_CONCLUSAO_NAO,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -307,7 +308,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerCivelV1 = {
   identifier: 'lex-os.grounded-answer.civel',
-  version: 'grounded-answer-civel-v6',
+  version: 'grounded-answer-civel-v7',
   purpose: 'Answer civil-case questions strictly from authorized excerpts.',
   specialty: 'CIVEL',
   task: 'GROUNDED_ANSWER',
@@ -322,6 +323,8 @@ conhecimento de direito serve para entender o que lê, nunca para completar o qu
 ${RECUSA_SEM_SUSTENTACAO}
 
 ${DIREITO_SO_O_DOS_TRECHOS}
+
+${FATO_SIM_CONCLUSAO_NAO}
 
 Pergunta de contagem ou de ausência — "faltou alguma parcela?", "há notificação nos autos?" —
 não se responde pelo conjunto recuperado: você viu alguns trechos, não o processo. Responda o

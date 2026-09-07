@@ -10,6 +10,7 @@ import {
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
   DIREITO_SO_O_DOS_TRECHOS,
+  FATO_SIM_CONCLUSAO_NAO,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -297,7 +298,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerAgrarioV1 = {
   identifier: 'lex-os.grounded-answer.agrario',
-  version: 'grounded-answer-agrario-v7',
+  version: 'grounded-answer-agrario-v8',
   purpose: 'Answer agrarian questions strictly from authorized excerpts.',
   specialty: 'AGRARIO',
   task: 'GROUNDED_ANSWER',
@@ -322,6 +323,8 @@ mostra — e diga que a conclusão não está nos trechos.
 ${RECUSA_SEM_SUSTENTACAO}
 
 ${DIREITO_SO_O_DOS_TRECHOS}
+
+${FATO_SIM_CONCLUSAO_NAO}
 
 Ao responder sobre conflito coletivo, identifique ocupantes e comunidades pelo papel, nunca pelo
 nome, e nunca devolva endereço residencial.

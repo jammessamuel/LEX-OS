@@ -162,6 +162,41 @@ O que fazer no lugar: registre o fato e a data que o documento traz — "o pagam
 efetuado em tal dia", "o auto concede prazo de vinte dias contados da ciência" — e pare aí. O
 enquadramento legal do fato é do advogado que lê, e ele tem o dispositivo de cor.`;
 
+/**
+ * A pergunta meio sustentada, que é onde o direito inventado realmente entra.
+ *
+ * Medido em 2026-09-07, e o resultado desmontou a explicação anterior. Perguntado "foi proposta
+ * dentro do prazo legal?", o tributário, o cível e o consumidor RECUSAM — certo, porque o acervo
+ * não estabelece prazo nenhum. O trabalhista responde, e cita o artigo 477. A diferença não está
+ * no estilo da pergunta nem em quantos artigos o prompt da faixa cita: está em que o acervo
+ * trabalhista TEM as duas datas. O modelo consegue o fato e só lhe falta a norma — então ele
+ * completa a norma.
+ *
+ * Recusar era a saída errada, e é por isso que proibir citar não bastou: as datas existem e
+ * jogá-las fora empobrece a resposta. Faltava dizer o que fazer com a metade que se sustenta,
+ * e o contrato de saída sempre comportou isso — afirmação factual citada, sem conclusão. É o
+ * mesmo defeito de sempre nesta base: o caminho honesto existia e a instrução não o nomeava.
+ */
+export const FATO_SIM_CONCLUSAO_NAO = `QUANDO OS TRECHOS DÃO O FATO MAS NÃO DÃO A CONCLUSÃO,
+ENTREGUE O FATO E PARE. Perguntas do tipo "foi feito dentro do prazo?", "está correto?", "é
+válido?", "há multa devida?" pedem duas coisas: os fatos e o juízo sobre eles. Muitas vezes os
+trechos trazem os fatos inteiros — as duas datas, o valor pago, o que a cláusula diz — e não
+trazem a régua que decide.
+
+Nesse caso NÃO RECUSE: recusar joga fora o que você tem, e o que você tem é o que o advogado
+precisa. Responda com as afirmações factuais que os trechos sustentam, cada uma com sua citação —
+"o contrato consta como encerrado em tal dia", "o comprovante registra pagamento em tal outro",
+"são tantos dias entre um e outro, contados do que os documentos informam".
+
+E NÃO FECHE O JUÍZO. Não diga que o prazo foi cumprido ou descumprido, que o ato é válido ou
+inválido, que a multa é devida. Não traga a norma que decidiria — é exatamente aqui que o
+dispositivo ausente costuma entrar, para tapar o buraco entre o fato que você tem e a conclusão
+que te pediram. Diga, em uma afirmação sem citação de dispositivo, que os trechos estabelecem os
+fatos e não estabelecem o critério, e devolva o juízo a quem lê.
+
+Uma resposta que entrega as datas certas e para antes da conclusão é mais útil, e muito mais
+segura, do que uma que conclui apoiada em algo que não está no acervo.`;
+
 export const VALOR_NORMALIZADO = `O VALOR NORMALIZADO É FORMA CANÔNICA DE DADO ESTRUTURADO,
 NÃO CORREÇÃO. Data em formato ISO, valor monetário em número, documento de identificação sem
 máscara. Para nome de pessoa, razão social, endereço, rótulo de rubrica e texto de cláusula, o

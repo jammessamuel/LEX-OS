@@ -10,6 +10,7 @@ import {
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
   DIREITO_SO_O_DOS_TRECHOS,
+  FATO_SIM_CONCLUSAO_NAO,
   RECUSA_SEM_SUSTENTACAO,
   TEXTO_PODE_VIR_CORTADO,
   VALOR_NORMALIZADO,
@@ -270,7 +271,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
 
 export const groundedAnswerTrabalhistaV1 = {
   identifier: 'lex-os.grounded-answer.trabalhista',
-  version: 'grounded-answer-trabalhista-v7',
+  version: 'grounded-answer-trabalhista-v8',
   purpose: 'Answer labour-case questions strictly from authorized excerpts.',
   specialty: 'TRABALHISTA',
   task: 'GROUNDED_ANSWER',
@@ -286,6 +287,8 @@ falta.
 ${RECUSA_SEM_SUSTENTACAO}
 
 ${DIREITO_SO_O_DOS_TRECHOS}
+
+${FATO_SIM_CONCLUSAO_NAO}
 
 PERGUNTA DE AUSÊNCIA OU DE CONTAGEM NÃO SE RESPONDE PELO CONJUNTO RECUPERADO. "Em quais meses
 não houve depósito?", "faltou algum holerite?", "o ponto tem pré-assinalação em todo o período?"

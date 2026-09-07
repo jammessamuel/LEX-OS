@@ -10,6 +10,7 @@ import {
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
   DIREITO_SO_O_DOS_TRECHOS,
+  FATO_SIM_CONCLUSAO_NAO,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -331,7 +332,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerAmbientalV1 = {
   identifier: 'lex-os.grounded-answer.ambiental',
-  version: 'grounded-answer-ambiental-v7',
+  version: 'grounded-answer-ambiental-v8',
   purpose: 'Answer environmental-law questions strictly from authorized excerpts.',
   specialty: 'AMBIENTAL',
   task: 'GROUNDED_ANSWER',
@@ -356,6 +357,8 @@ o que a licença autoriza — e diga que a conclusão não está nos trechos.
 ${RECUSA_SEM_SUSTENTACAO}
 
 ${DIREITO_SO_O_DOS_TRECHOS}
+
+${FATO_SIM_CONCLUSAO_NAO}
 
 ${QUEBRE_A_AFIRMACAO}
 

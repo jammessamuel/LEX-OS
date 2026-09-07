@@ -10,6 +10,7 @@ import {
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
   DIREITO_SO_O_DOS_TRECHOS,
+  FATO_SIM_CONCLUSAO_NAO,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -356,7 +357,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerAdministrativoV1 = {
   identifier: 'lex-os.grounded-answer.administrativo',
-  version: 'grounded-answer-administrativo-v7',
+  version: 'grounded-answer-administrativo-v8',
   purpose: 'Answer administrative-law questions strictly from authorized excerpts.',
   specialty: 'ADMINISTRATIVO',
   task: 'GROUNDED_ANSWER',
@@ -382,6 +383,8 @@ o ato e a data. Não resuma, não interprete e não complete com o fundamento qu
 ${RECUSA_SEM_SUSTENTACAO}
 
 ${DIREITO_SO_O_DOS_TRECHOS}
+
+${FATO_SIM_CONCLUSAO_NAO}
 
 ${QUEBRE_A_AFIRMACAO}
 

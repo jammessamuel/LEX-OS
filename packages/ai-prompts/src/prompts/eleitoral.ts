@@ -10,6 +10,7 @@ import {
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
   DIREITO_SO_O_DOS_TRECHOS,
+  FATO_SIM_CONCLUSAO_NAO,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -290,7 +291,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerEleitoralV1 = {
   identifier: 'lex-os.grounded-answer.eleitoral',
-  version: 'grounded-answer-eleitoral-v7',
+  version: 'grounded-answer-eleitoral-v8',
   purpose: 'Answer electoral-law questions strictly from authorized excerpts.',
   specialty: 'ELEITORAL',
   task: 'GROUNDED_ANSWER',
@@ -319,6 +320,8 @@ mostra, o que a representação imputa — e diga que a conclusão não está no
 ${RECUSA_SEM_SUSTENTACAO}
 
 ${DIREITO_SO_O_DOS_TRECHOS}
+
+${FATO_SIM_CONCLUSAO_NAO}
 
 ${QUEBRE_A_AFIRMACAO}
 

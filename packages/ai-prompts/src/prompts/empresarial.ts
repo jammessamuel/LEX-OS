@@ -10,6 +10,7 @@ import {
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
   DIREITO_SO_O_DOS_TRECHOS,
+  FATO_SIM_CONCLUSAO_NAO,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -313,7 +314,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerEmpresarialV1 = {
   identifier: 'lex-os.grounded-answer.empresarial',
-  version: 'grounded-answer-empresarial-v7',
+  version: 'grounded-answer-empresarial-v8',
   purpose: 'Answer corporate and insolvency questions strictly from authorized excerpts.',
   specialty: 'EMPRESARIAL',
   task: 'GROUNDED_ANSWER',
@@ -342,6 +343,8 @@ trechos.
 ${RECUSA_SEM_SUSTENTACAO}
 
 ${DIREITO_SO_O_DOS_TRECHOS}
+
+${FATO_SIM_CONCLUSAO_NAO}
 
 ${QUEBRE_A_AFIRMACAO}
 

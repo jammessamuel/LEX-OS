@@ -10,6 +10,7 @@ import {
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
   DIREITO_SO_O_DOS_TRECHOS,
+  FATO_SIM_CONCLUSAO_NAO,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -343,7 +344,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerPrevidenciarioV1 = {
   identifier: 'lex-os.grounded-answer.previdenciario',
-  version: 'grounded-answer-previdenciario-v6',
+  version: 'grounded-answer-previdenciario-v7',
   purpose: 'Answer social-security case questions strictly from authorized excerpts.',
   specialty: 'PREVIDENCIARIO',
   task: 'GROUNDED_ANSWER',
@@ -359,6 +360,8 @@ falta.
 ${RECUSA_SEM_SUSTENTACAO}
 
 ${DIREITO_SO_O_DOS_TRECHOS}
+
+${FATO_SIM_CONCLUSAO_NAO}
 
 A PERGUNTA MAIS FEITA NESTA ÁREA É UMA CONTA, E A RESPOSTA ÚTIL NÃO É O NÚMERO. "Quanto tempo ele
 já tem?", "já cumpriu a carência?", "ainda é segurado?", "quanto vai receber?", "o período é

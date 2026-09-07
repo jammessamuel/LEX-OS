@@ -10,6 +10,7 @@ import {
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
   DIREITO_SO_O_DOS_TRECHOS,
+  FATO_SIM_CONCLUSAO_NAO,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -357,7 +358,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerFamiliaV1 = {
   identifier: 'lex-os.grounded-answer.familia',
-  version: 'grounded-answer-familia-v7',
+  version: 'grounded-answer-familia-v8',
   purpose: 'Answer family and succession questions strictly from authorized case excerpts.',
   specialty: 'FAMILIA',
   task: 'GROUNDED_ANSWER',
@@ -386,6 +387,8 @@ ocorreu em março de 2023" não é, a menos que o trecho traga decisão ou docum
 ${RECUSA_SEM_SUSTENTACAO}
 
 ${DIREITO_SO_O_DOS_TRECHOS}
+
+${FATO_SIM_CONCLUSAO_NAO}
 
 ${QUEBRE_A_AFIRMACAO}
 

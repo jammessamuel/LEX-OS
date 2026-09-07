@@ -10,6 +10,7 @@ import {
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
   DIREITO_SO_O_DOS_TRECHOS,
+  FATO_SIM_CONCLUSAO_NAO,
   RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
@@ -301,7 +302,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerPiV1 = {
   identifier: 'lex-os.grounded-answer.propriedade-intelectual',
-  version: 'grounded-answer-propriedade-intelectual-v7',
+  version: 'grounded-answer-propriedade-intelectual-v8',
   purpose: 'Answer intellectual-property questions strictly from authorized excerpts.',
   specialty: 'PROPRIEDADE_INTELECTUAL',
   task: 'GROUNDED_ANSWER',
@@ -326,6 +327,8 @@ cláusula escreve, o que o laudo mediu — e diga que a conclusão não está no
 ${RECUSA_SEM_SUSTENTACAO}
 
 ${DIREITO_SO_O_DOS_TRECHOS}
+
+${FATO_SIM_CONCLUSAO_NAO}
 
 ${QUEBRE_A_AFIRMACAO}
 
