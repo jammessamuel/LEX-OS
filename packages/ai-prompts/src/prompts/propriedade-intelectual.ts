@@ -112,11 +112,32 @@ concessão de patente.
 CONTRATO DE LICENÇA PRODUZ EFEITO ENTRE AS PARTES DESDE A ASSINATURA, E PERANTE TERCEIROS DEPOIS DA
 AVERBAÇÃO. São duas datas, e da segunda dependem também a dedutibilidade e a remessa de royalties
 ao exterior. Registre assinatura, protocolo do pedido de averbação e emissão do certificado como
-três eventos.`;
+três eventos.
+
+NULIDADE E CADUCIDADE ATACAM O MESMO REGISTRO POR MOTIVOS OPOSTOS. A nulidade diz que o registro
+nunca deveria ter sido concedido, e tem janela contada da concessão; a caducidade diz que o
+registro é válido mas o titular não o usa. Registre qual das duas o pedido invoca, quem o formulou
+e a data, e nunca as descreva com a mesma palavra.
+
+NA CADUCIDADE, QUEM PROVA O USO É O TITULAR, E ISSO MUDA O QUE SE PROCURA NO MATERIAL. O requerente
+apenas alega o desuso; a prova de uso efetivo — notas fiscais, embalagens, material publicitário,
+faturamento por produto — é ônus de quem detém o registro. Registre cada elemento de uso que o
+material trouxer com a sua data e o período que ele cobre, porque o que importa é a janela, não a
+quantidade de documentos.
+
+INVENÇÃO E MODELO DE UTILIDADE NÃO SÃO A MESMA COISA, e o pedido diz qual é logo no cabeçalho. O
+modelo de utilidade protege melhoria funcional em objeto de uso prático, tem exame e vigência
+próprios, e a vigência é menor que a da patente de invenção. Registre a natureza declarada no
+pedido e nunca a deduza do objeto — a mesma criação pode ser depositada de uma forma ou de outra, e
+essa escolha é do depositante.
+
+A OPOSIÇÃO NÃO SUSPENDE O PEDIDO, E O SILÊNCIO DO DEPOSITANTE NÃO O ARQUIVA. Oposição apresentada,
+manifestação e decisão são três atos, e a ausência de manifestação não implica desistência. Registre
+cada ato com a data e diga qual deles falta, sem concluir efeito.`;
 
 export const timelinePiV1 = {
   identifier: 'lex-os.timeline.propriedade-intelectual',
-  version: 'timeline-propriedade-intelectual-v1',
+  version: 'timeline-propriedade-intelectual-v2',
   purpose: 'Extract dated intellectual-property facts with re-checkable provenance.',
   specialty: 'PROPRIEDADE_INTELECTUAL',
   task: 'TIMELINE',
@@ -207,7 +228,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const checklistPiV1 = {
   identifier: 'lex-os.checklist.propriedade-intelectual',
-  version: 'checklist-propriedade-intelectual-v1',
+  version: 'checklist-propriedade-intelectual-v2',
   purpose: 'Match received documents against intellectual-property requirements.',
   specialty: 'PROPRIEDADE_INTELECTUAL',
   task: 'CHECKLIST',
@@ -278,7 +299,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerPiV1 = {
   identifier: 'lex-os.grounded-answer.propriedade-intelectual',
-  version: 'grounded-answer-propriedade-intelectual-v1',
+  version: 'grounded-answer-propriedade-intelectual-v2',
   purpose: 'Answer intellectual-property questions strictly from authorized excerpts.',
   specialty: 'PROPRIEDADE_INTELECTUAL',
   task: 'GROUNDED_ANSWER',
@@ -333,7 +354,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const classificationPiV1 = {
   identifier: 'lex-os.classification.propriedade-intelectual',
-  version: 'classification-propriedade-intelectual-v1',
+  version: 'classification-propriedade-intelectual-v2',
   purpose: 'Classify intellectual-property documents into the catalogued types.',
   specialty: 'PROPRIEDADE_INTELECTUAL',
   task: 'CLASSIFICATION',
@@ -408,7 +429,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const entitiesPiV1 = {
   identifier: 'lex-os.entities.propriedade-intelectual',
-  version: 'entities-propriedade-intelectual-v1',
+  version: 'entities-propriedade-intelectual-v2',
   purpose: 'Extract intellectual-property entities with resolvable character offsets.',
   specialty: 'PROPRIEDADE_INTELECTUAL',
   task: 'ENTITIES',

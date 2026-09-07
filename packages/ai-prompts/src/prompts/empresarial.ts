@@ -119,11 +119,25 @@ publicação da relação de credores, prazos de habilitação e de divergência
 assembleia de credores, concessão, e o período de fiscalização posterior são marcos encadeados, e
 o descumprimento de um deles produz efeito próprio. Registre cada marco com a data da decisão E a
 data da publicação quando ambas constarem: é da publicação que costumam correr os prazos dos
-credores, e confundi-las perde habilitação.`;
+credores, e confundi-las perde habilitação.
+
+CRÉDITO TEM VALOR, CLASSE E ORIGEM, E OS TRÊS SE REGISTRAM SEPARADOS. O quadro de credores lista o
+valor habilitado, a classe atribuída e o fato gerador; o credor costuma discordar de um dos três. E
+o valor muda de nome conforme a peça: o declarado pela devedora, o habilitado pelo administrador e
+o reconhecido em decisão são três números para o mesmo crédito. Registre cada um com a peça de que
+saiu, e nunca conclua qual prevalece nem reclassifique.
+
+NA FRANQUIA, A DATA DE ENTREGA DA CIRCULAR DE OFERTA É O CAMPO QUE DECIDE. A lei exige que o
+documento com as informações da rede seja entregue ao candidato com antecedência mínima antes da
+assinatura do contrato ou de qualquer pagamento, e é a distância entre essas datas que sustenta ou
+derruba o pedido de anulação. Registre a data de entrega da circular, a data de assinatura do
+contrato e a data do primeiro pagamento como três campos distintos, com o comprovante de recebimento
+quando houver. Registre também taxa inicial, royalties, taxa de publicidade e território como
+campos próprios — sem somar e sem calcular percentual.`;
 
 export const timelineEmpresarialV1 = {
   identifier: 'lex-os.timeline.empresarial',
-  version: 'timeline-empresarial-v1',
+  version: 'timeline-empresarial-v2',
   purpose: 'Extract dated corporate and insolvency facts with re-checkable provenance.',
   specialty: 'EMPRESARIAL',
   task: 'TIMELINE',
@@ -219,7 +233,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const checklistEmpresarialV1 = {
   identifier: 'lex-os.checklist.empresarial',
-  version: 'checklist-empresarial-v1',
+  version: 'checklist-empresarial-v2',
   purpose: 'Match received documents against corporate and insolvency requirements.',
   specialty: 'EMPRESARIAL',
   task: 'CHECKLIST',
@@ -297,7 +311,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerEmpresarialV1 = {
   identifier: 'lex-os.grounded-answer.empresarial',
-  version: 'grounded-answer-empresarial-v1',
+  version: 'grounded-answer-empresarial-v2',
   purpose: 'Answer corporate and insolvency questions strictly from authorized excerpts.',
   specialty: 'EMPRESARIAL',
   task: 'GROUNDED_ANSWER',
@@ -356,7 +370,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const classificationEmpresarialV1 = {
   identifier: 'lex-os.classification.empresarial',
-  version: 'classification-empresarial-v1',
+  version: 'classification-empresarial-v2',
   purpose: 'Classify corporate and insolvency documents into the catalogued types.',
   specialty: 'EMPRESARIAL',
   task: 'CLASSIFICATION',
@@ -429,7 +443,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const entitiesEmpresarialV1 = {
   identifier: 'lex-os.entities.empresarial',
-  version: 'entities-empresarial-v1',
+  version: 'entities-empresarial-v2',
   purpose: 'Extract corporate and insolvency entities with resolvable character offsets.',
   specialty: 'EMPRESARIAL',
   task: 'ENTITIES',

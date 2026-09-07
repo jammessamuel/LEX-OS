@@ -109,11 +109,29 @@ como propriedade adquirida.
 CONFLITO COLETIVO TEM PESSOAS DENTRO. Ocupação, comunidade e assentamento envolvem famílias, e o
 material traz nomes, endereços e situação social. Ao rotular qualquer coisa que apareça em lista ou
 título, identifique pelo papel — o ocupante, a comunidade, o assentado —, nunca nominalmente, e
-nunca registre endereço residencial de pessoa em situação de conflito.`;
+nunca registre endereço residencial de pessoa em situação de conflito.
+
+DESAPROPRIAÇÃO PARA REFORMA AGRÁRIA NÃO É A DESAPROPRIAÇÃO COMUM, e a diferença aparece no
+pagamento. A terra nua é paga em títulos da dívida agrária, resgatáveis ao longo de anos; as
+benfeitorias úteis e necessárias são pagas em dinheiro. São duas parcelas, com naturezas e prazos
+diferentes, e somá-las apaga exatamente o que se discute. Registre cada uma com o seu valor, a sua
+natureza e o laudo que a apurou.
+
+O RITO TAMBÉM É PRÓPRIO: vistoria do órgão fundiário com notificação prévia ao proprietário, laudo
+agronômico com os índices apurados, decreto declaratório de interesse social com a sua publicação,
+ação de desapropriação, depósito e imissão na posse. Registre a data da notificação prévia como
+campo destacado — vistoria feita sem ela é vício alegado com frequência, e a data é o que sustenta
+a alegação. NÃO CONCLUA que o imóvel é produtivo ou improdutivo: os índices são leitura técnica do
+laudo, e a consequência é jurídica.
+
+DUAS ÁREAS CONVIVEM NO MESMO PROCESSO E NÃO SÃO A MESMA: a área registrada na matrícula e a área
+medida em vistoria ou em georreferenciamento. Divergir é comum e é justamente o ponto. Registre as
+duas com a unidade impressa e a fonte de cada uma, sem escolher qual vale e sem calcular a
+diferença.`;
 
 export const timelineAgrarioV1 = {
   identifier: 'lex-os.timeline.agrario',
-  version: 'timeline-agrario-v1',
+  version: 'timeline-agrario-v2',
   purpose: 'Extract dated agrarian and agribusiness facts with re-checkable provenance.',
   specialty: 'AGRARIO',
   task: 'TIMELINE',
@@ -205,7 +223,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const checklistAgrarioV1 = {
   identifier: 'lex-os.checklist.agrario',
-  version: 'checklist-agrario-v1',
+  version: 'checklist-agrario-v2',
   purpose: 'Match received documents against agrarian documentary requirements.',
   specialty: 'AGRARIO',
   task: 'CHECKLIST',
@@ -277,7 +295,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerAgrarioV1 = {
   identifier: 'lex-os.grounded-answer.agrario',
-  version: 'grounded-answer-agrario-v1',
+  version: 'grounded-answer-agrario-v2',
   purpose: 'Answer agrarian questions strictly from authorized excerpts.',
   specialty: 'AGRARIO',
   task: 'GROUNDED_ANSWER',
@@ -333,7 +351,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const classificationAgrarioV1 = {
   identifier: 'lex-os.classification.agrario',
-  version: 'classification-agrario-v1',
+  version: 'classification-agrario-v2',
   purpose: 'Classify agrarian documents into the catalogued document types.',
   specialty: 'AGRARIO',
   task: 'CLASSIFICATION',
@@ -402,7 +420,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const entitiesAgrarioV1 = {
   identifier: 'lex-os.entities.agrario',
-  version: 'entities-agrario-v1',
+  version: 'entities-agrario-v2',
   purpose: 'Extract agrarian entities with resolvable character offsets.',
   specialty: 'AGRARIO',
   task: 'ENTITIES',

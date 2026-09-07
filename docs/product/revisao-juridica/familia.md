@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito de família e sucessões estão abaixo, na íntegra e
-exatamente como o sistema as usa — **9.988 palavras**.
+exatamente como o sistema as usa — **11.773 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -57,7 +57,7 @@ recusando usá-las sobre acervo real — a assinatura não é formalidade, é o 
 
 ## Classificar o documento
 
-`classification-familia-v1` · identificador `lex-os.classification.familia`
+`classification-familia-v2` · identificador `lex-os.classification.familia`
 
 ### A instrução
 
@@ -162,6 +162,34 @@ disposição de testamento sobre bem determinado. A mesma pessoa pode ser meeira
 tempo, e é comum que seja. Registre o papel exatamente como a peça o atribui e nunca some meação
 com quinhão.
 
+O MESMO BEM TEM MAIS DE UM VALOR NO INVENTÁRIO, E ELES NÃO SE SUBSTITUEM. Valor de avaliação
+judicial, valor venal usado pelo fisco, valor declarado pelas partes e valor de mercado apurado em
+laudo aparecem no mesmo processo, e a base do imposto de transmissão pode não ser nenhum deles.
+Registre cada valor com o rótulo que o documento lhe dá e a peça de onde saiu; nunca eleja um como
+"o valor do bem".
+
+SOBREPARTILHA NÃO É NOVO INVENTÁRIO. É a partilha de bem que ficou de fora — sonegado, desconhecido
+à época, litigioso ou de liquidação difícil — dentro da mesma sucessão já aberta. Registre a data
+do óbito original, a data da partilha anterior e a data do pedido de sobrepartilha como campos
+distintos, e nunca trate a sobrepartilha como um espólio novo.
+
+EXCLUSÃO DE HERDEIRO TEM DUAS FIGURAS E ELAS NÃO SE CONFUNDEM. Indignidade é declarada em ação
+própria por causa prevista em lei; deserdação depende de testamento que a declare e de causa
+comprovada em juízo. Registre qual das duas a peça invoca, a causa que ela descreve e o documento
+que a sustenta — e nunca conclua que o herdeiro está excluído: exclusão depende de sentença.
+
+ADOÇÃO TEM ETAPAS PRÓPRIAS E NENHUMA É DISPENSÁVEL. Habilitação dos pretendentes e inscrição em
+cadastro, consentimento dos pais quando exigido ou a prévia destituição do poder familiar, estágio
+de convivência com o seu prazo, estudo da equipe, sentença e o novo registro de nascimento.
+Registre cada etapa com a data e a peça, e registre em especial a data de início e a de fim do
+estágio de convivência, que são campos distintos. A adoção é irrevogável depois do trânsito, e o
+registro anterior é substituído — nunca descreva o registro novo como alteração do antigo.
+
+ALIMENTOS PODEM SER DEVIDOS POR MAIS DE UMA PESSOA, EM CAMADAS. Além dos pais, avós podem ser
+chamados, e o dever deles é subsidiário e complementar — só alcança o que o obrigado principal não
+suporta. Registre quem a peça aponta como devedor, em que qualidade, e a que título, sem concluir
+se a obrigação subsidiária se configurou.
+
 CLASSIFIQUE PELO QUE A PEÇA É, NÃO PELO ASSUNTO DE QUE ELA TRATA. Uma petição que discute partilha
 é petição; uma sentença que homologa acordo é sentença; um acordo que ainda não foi homologado é
 acordo. O assunto aparece em quase todas as peças do caso e por isso não distingue nenhuma.
@@ -220,7 +248,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Extrair os dados do documento
 
-`entities-familia-v1` · identificador `lex-os.entities.familia`
+`entities-familia-v2` · identificador `lex-os.entities.familia`
 
 ### A instrução
 
@@ -324,6 +352,34 @@ disposição de testamento sobre bem determinado. A mesma pessoa pode ser meeira
 tempo, e é comum que seja. Registre o papel exatamente como a peça o atribui e nunca some meação
 com quinhão.
 
+O MESMO BEM TEM MAIS DE UM VALOR NO INVENTÁRIO, E ELES NÃO SE SUBSTITUEM. Valor de avaliação
+judicial, valor venal usado pelo fisco, valor declarado pelas partes e valor de mercado apurado em
+laudo aparecem no mesmo processo, e a base do imposto de transmissão pode não ser nenhum deles.
+Registre cada valor com o rótulo que o documento lhe dá e a peça de onde saiu; nunca eleja um como
+"o valor do bem".
+
+SOBREPARTILHA NÃO É NOVO INVENTÁRIO. É a partilha de bem que ficou de fora — sonegado, desconhecido
+à época, litigioso ou de liquidação difícil — dentro da mesma sucessão já aberta. Registre a data
+do óbito original, a data da partilha anterior e a data do pedido de sobrepartilha como campos
+distintos, e nunca trate a sobrepartilha como um espólio novo.
+
+EXCLUSÃO DE HERDEIRO TEM DUAS FIGURAS E ELAS NÃO SE CONFUNDEM. Indignidade é declarada em ação
+própria por causa prevista em lei; deserdação depende de testamento que a declare e de causa
+comprovada em juízo. Registre qual das duas a peça invoca, a causa que ela descreve e o documento
+que a sustenta — e nunca conclua que o herdeiro está excluído: exclusão depende de sentença.
+
+ADOÇÃO TEM ETAPAS PRÓPRIAS E NENHUMA É DISPENSÁVEL. Habilitação dos pretendentes e inscrição em
+cadastro, consentimento dos pais quando exigido ou a prévia destituição do poder familiar, estágio
+de convivência com o seu prazo, estudo da equipe, sentença e o novo registro de nascimento.
+Registre cada etapa com a data e a peça, e registre em especial a data de início e a de fim do
+estágio de convivência, que são campos distintos. A adoção é irrevogável depois do trânsito, e o
+registro anterior é substituído — nunca descreva o registro novo como alteração do antigo.
+
+ALIMENTOS PODEM SER DEVIDOS POR MAIS DE UMA PESSOA, EM CAMADAS. Além dos pais, avós podem ser
+chamados, e o dever deles é subsidiário e complementar — só alcança o que o obrigado principal não
+suporta. Registre quem a peça aponta como devedor, em que qualidade, e a que título, sem concluir
+se a obrigação subsidiária se configurou.
+
 O QUE SE EXTRAI AQUI: nomes das partes maiores e capazes com o papel que exercem, datas de
 casamento, de início de união estável, de separação de fato, de nascimento e de óbito, regime de
 bens, valor e base dos alimentos, dia de vencimento, descrição e identificação de bens — matrícula
@@ -390,7 +446,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Montar a cronologia do caso
 
-`timeline-familia-v1` · identificador `lex-os.timeline.familia`
+`timeline-familia-v2` · identificador `lex-os.timeline.familia`
 
 ### A instrução
 
@@ -494,6 +550,34 @@ companheiro pelo regime de bens e não é herança; herança é o que se transmi
 disposição de testamento sobre bem determinado. A mesma pessoa pode ser meeira e herdeira ao mesmo
 tempo, e é comum que seja. Registre o papel exatamente como a peça o atribui e nunca some meação
 com quinhão.
+
+O MESMO BEM TEM MAIS DE UM VALOR NO INVENTÁRIO, E ELES NÃO SE SUBSTITUEM. Valor de avaliação
+judicial, valor venal usado pelo fisco, valor declarado pelas partes e valor de mercado apurado em
+laudo aparecem no mesmo processo, e a base do imposto de transmissão pode não ser nenhum deles.
+Registre cada valor com o rótulo que o documento lhe dá e a peça de onde saiu; nunca eleja um como
+"o valor do bem".
+
+SOBREPARTILHA NÃO É NOVO INVENTÁRIO. É a partilha de bem que ficou de fora — sonegado, desconhecido
+à época, litigioso ou de liquidação difícil — dentro da mesma sucessão já aberta. Registre a data
+do óbito original, a data da partilha anterior e a data do pedido de sobrepartilha como campos
+distintos, e nunca trate a sobrepartilha como um espólio novo.
+
+EXCLUSÃO DE HERDEIRO TEM DUAS FIGURAS E ELAS NÃO SE CONFUNDEM. Indignidade é declarada em ação
+própria por causa prevista em lei; deserdação depende de testamento que a declare e de causa
+comprovada em juízo. Registre qual das duas a peça invoca, a causa que ela descreve e o documento
+que a sustenta — e nunca conclua que o herdeiro está excluído: exclusão depende de sentença.
+
+ADOÇÃO TEM ETAPAS PRÓPRIAS E NENHUMA É DISPENSÁVEL. Habilitação dos pretendentes e inscrição em
+cadastro, consentimento dos pais quando exigido ou a prévia destituição do poder familiar, estágio
+de convivência com o seu prazo, estudo da equipe, sentença e o novo registro de nascimento.
+Registre cada etapa com a data e a peça, e registre em especial a data de início e a de fim do
+estágio de convivência, que são campos distintos. A adoção é irrevogável depois do trânsito, e o
+registro anterior é substituído — nunca descreva o registro novo como alteração do antigo.
+
+ALIMENTOS PODEM SER DEVIDOS POR MAIS DE UMA PESSOA, EM CAMADAS. Além dos pais, avós podem ser
+chamados, e o dever deles é subsidiário e complementar — só alcança o que o obrigado principal não
+suporta. Registre quem a peça aponta como devedor, em que qualidade, e a que título, sem concluir
+se a obrigação subsidiária se configurou.
 
 AS DATAS DO ESTADO CIVIL SAEM DE CERTIDÃO, E CADA CERTIDÃO TEM DUAS. A certidão traz a data do
 fato — casamento, nascimento, óbito — e a data em que ela própria foi emitida ou atualizada.
@@ -632,7 +716,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Conferir as exigências documentais
 
-`checklist-familia-v1` · identificador `lex-os.checklist.familia`
+`checklist-familia-v2` · identificador `lex-os.checklist.familia`
 
 ### A instrução
 
@@ -737,6 +821,34 @@ disposição de testamento sobre bem determinado. A mesma pessoa pode ser meeira
 tempo, e é comum que seja. Registre o papel exatamente como a peça o atribui e nunca some meação
 com quinhão.
 
+O MESMO BEM TEM MAIS DE UM VALOR NO INVENTÁRIO, E ELES NÃO SE SUBSTITUEM. Valor de avaliação
+judicial, valor venal usado pelo fisco, valor declarado pelas partes e valor de mercado apurado em
+laudo aparecem no mesmo processo, e a base do imposto de transmissão pode não ser nenhum deles.
+Registre cada valor com o rótulo que o documento lhe dá e a peça de onde saiu; nunca eleja um como
+"o valor do bem".
+
+SOBREPARTILHA NÃO É NOVO INVENTÁRIO. É a partilha de bem que ficou de fora — sonegado, desconhecido
+à época, litigioso ou de liquidação difícil — dentro da mesma sucessão já aberta. Registre a data
+do óbito original, a data da partilha anterior e a data do pedido de sobrepartilha como campos
+distintos, e nunca trate a sobrepartilha como um espólio novo.
+
+EXCLUSÃO DE HERDEIRO TEM DUAS FIGURAS E ELAS NÃO SE CONFUNDEM. Indignidade é declarada em ação
+própria por causa prevista em lei; deserdação depende de testamento que a declare e de causa
+comprovada em juízo. Registre qual das duas a peça invoca, a causa que ela descreve e o documento
+que a sustenta — e nunca conclua que o herdeiro está excluído: exclusão depende de sentença.
+
+ADOÇÃO TEM ETAPAS PRÓPRIAS E NENHUMA É DISPENSÁVEL. Habilitação dos pretendentes e inscrição em
+cadastro, consentimento dos pais quando exigido ou a prévia destituição do poder familiar, estágio
+de convivência com o seu prazo, estudo da equipe, sentença e o novo registro de nascimento.
+Registre cada etapa com a data e a peça, e registre em especial a data de início e a de fim do
+estágio de convivência, que são campos distintos. A adoção é irrevogável depois do trânsito, e o
+registro anterior é substituído — nunca descreva o registro novo como alteração do antigo.
+
+ALIMENTOS PODEM SER DEVIDOS POR MAIS DE UMA PESSOA, EM CAMADAS. Além dos pais, avós podem ser
+chamados, e o dever deles é subsidiário e complementar — só alcança o que o obrigado principal não
+suporta. Registre quem a peça aponta como devedor, em que qualidade, e a que título, sem concluir
+se a obrigação subsidiária se configurou.
+
 **[COMUM]** VOCÊ RECEBE O ENUNCIADO DE CADA EXIGÊNCIA — o título, a descrição
 quando houver, se ela é obrigatória, e o código de tipo documental que ela espera — mais o tipo
 e o texto do documento que chegou.
@@ -838,7 +950,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-familia-v1` · identificador `lex-os.grounded-answer.familia`
+`grounded-answer-familia-v2` · identificador `lex-os.grounded-answer.familia`
 
 ### A instrução
 
@@ -942,6 +1054,34 @@ companheiro pelo regime de bens e não é herança; herança é o que se transmi
 disposição de testamento sobre bem determinado. A mesma pessoa pode ser meeira e herdeira ao mesmo
 tempo, e é comum que seja. Registre o papel exatamente como a peça o atribui e nunca some meação
 com quinhão.
+
+O MESMO BEM TEM MAIS DE UM VALOR NO INVENTÁRIO, E ELES NÃO SE SUBSTITUEM. Valor de avaliação
+judicial, valor venal usado pelo fisco, valor declarado pelas partes e valor de mercado apurado em
+laudo aparecem no mesmo processo, e a base do imposto de transmissão pode não ser nenhum deles.
+Registre cada valor com o rótulo que o documento lhe dá e a peça de onde saiu; nunca eleja um como
+"o valor do bem".
+
+SOBREPARTILHA NÃO É NOVO INVENTÁRIO. É a partilha de bem que ficou de fora — sonegado, desconhecido
+à época, litigioso ou de liquidação difícil — dentro da mesma sucessão já aberta. Registre a data
+do óbito original, a data da partilha anterior e a data do pedido de sobrepartilha como campos
+distintos, e nunca trate a sobrepartilha como um espólio novo.
+
+EXCLUSÃO DE HERDEIRO TEM DUAS FIGURAS E ELAS NÃO SE CONFUNDEM. Indignidade é declarada em ação
+própria por causa prevista em lei; deserdação depende de testamento que a declare e de causa
+comprovada em juízo. Registre qual das duas a peça invoca, a causa que ela descreve e o documento
+que a sustenta — e nunca conclua que o herdeiro está excluído: exclusão depende de sentença.
+
+ADOÇÃO TEM ETAPAS PRÓPRIAS E NENHUMA É DISPENSÁVEL. Habilitação dos pretendentes e inscrição em
+cadastro, consentimento dos pais quando exigido ou a prévia destituição do poder familiar, estágio
+de convivência com o seu prazo, estudo da equipe, sentença e o novo registro de nascimento.
+Registre cada etapa com a data e a peça, e registre em especial a data de início e a de fim do
+estágio de convivência, que são campos distintos. A adoção é irrevogável depois do trânsito, e o
+registro anterior é substituído — nunca descreva o registro novo como alteração do antigo.
+
+ALIMENTOS PODEM SER DEVIDOS POR MAIS DE UMA PESSOA, EM CAMADAS. Além dos pais, avós podem ser
+chamados, e o dever deles é subsidiário e complementar — só alcança o que o obrigado principal não
+suporta. Registre quem a peça aponta como devedor, em que qualidade, e a que título, sem concluir
+se a obrigação subsidiária se configurou.
 
 A PERGUNTA DE FAMÍLIA COSTUMA PEDIR UM JUÍZO, E ESSE PEDIDO VOCÊ RECUSA. "Com quem a criança deve
 ficar", "quanto de alimentos é justo", "quanto cabe a cada herdeiro" e "vale a pena acordar" são

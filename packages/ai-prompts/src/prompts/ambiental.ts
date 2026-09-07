@@ -118,11 +118,49 @@ eleja qual prevalece.
 O CRIME AMBIENTAL NÃO É DESTA FAIXA. Denúncia, inquérito policial, audiência de instrução e
 transação penal seguem o rito penal e a instrução penal cuida deles. Se o material trouxer peça
 criminal, registre-a pelo que ela é e não tente aplicar aqui a lógica administrativa do auto de
-infração — são processos distintos que correm em paralelo sobre o mesmo fato.`;
+infração — são processos distintos que correm em paralelo sobre o mesmo fato.
+
+RESULTADO DE ANÁLISE SÓ VALE COM A CADEIA DA AMOSTRA, E ELA É DADO A REGISTRAR. Um laudo de
+laboratório afirma uma concentração; o que o liga ao empreendimento é a amostra — onde foi coletada,
+quando, por quem, como foi preservada e quando chegou ao laboratório. Registre o ponto de coleta
+como o documento o identifica, a data e a hora da coleta, a data do ensaio, e o responsável por
+cada etapa. Laudo sem esses campos é resultado sem origem, e registrar que faltam é mais útil do
+que repetir o número.
+
+O AUTO DE INFRAÇÃO NÃO VEM SOZINHO, E AS MEDIDAS QUE O ACOMPANHAM SÃO ATOS PRÓPRIOS. Embargo de
+obra, suspensão de atividade, apreensão de bens, produtos ou animais, e demolição são medidas
+administrativas com termo próprio, cada uma com data, objeto e alcance. EM APREENSÃO, registre o
+que foi apreendido com a quantidade e a unidade impressas, quem ficou como depositário, o local, e
+a destinação quando declarada — doação, destruição, liberação. Termo de apreensão e termo de
+depósito são peças distintas, às vezes no mesmo papel.
+
+SUPRESSÃO DE VEGETAÇÃO É AUTORIZAÇÃO À PARTE, E NÃO VEM DENTRO DA LICENÇA. Traz área autorizada
+com a unidade, espécies quando listadas, prazo de validade próprio, e a obrigação de reposição ou
+compensação florestal. Registre a área autorizada e a área efetivamente suprimida como campos
+distintos sempre que o material trouxer as duas — a comparação entre elas é de quem revisa.
+
+POLUIÇÃO SE MEDE CONTRA PADRÃO, E O PADRÃO É OUTRO DADO. Emissão atmosférica, efluente, ruído e
+resíduo têm parâmetros com limite de referência, e o relatório traz o medido ao lado do admitido.
+Registre os dois separadamente, com o parâmetro nomeado, a unidade e o ponto de medição. NUNCA
+CALCULE A EXCEDÊNCIA e nunca conclua que houve poluição: o desvio entre medido e limite é leitura
+técnica.
+
+RESÍDUOS SÓLIDOS TÊM DOCUMENTO QUE OS ACOMPANHA DO GERADOR AO DESTINO. Plano de gerenciamento,
+manifesto de transporte com o número, transportador, destinador e certificado de destinação final
+formam a cadeia, e é a falta de um elo que se discute. Registre cada peça com o seu número e a sua
+data, e registre a quantidade com a unidade impressa em cada etapa — divergência de quantidade
+entre manifesto e certificado é dado a registrar, não erro a corrigir.
+
+LOGÍSTICA REVERSA É OBRIGAÇÃO DE RETORNO, NÃO DE DESCARTE, e por isso os documentos são outros.
+Fabricantes, importadores, distribuidores e comerciantes de certos produtos respondem por
+estruturar o retorno do que venderam, e o cumprimento se prova por acordo setorial ou termo de
+compromisso, pontos de recebimento, metas declaradas e relatórios de quantidade retornada. Registre
+a meta como o documento a escreve, o retornado como cada relatório o declara, e a origem de cada
+número — sem calcular percentual de atendimento e sem concluir se a meta foi cumprida.`;
 
 export const timelineAmbientalV1 = {
   identifier: 'lex-os.timeline.ambiental',
-  version: 'timeline-ambiental-v1',
+  version: 'timeline-ambiental-v2',
   purpose: 'Extract dated environmental-law facts with re-checkable provenance.',
   specialty: 'AMBIENTAL',
   task: 'TIMELINE',
@@ -216,7 +254,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const checklistAmbientalV1 = {
   identifier: 'lex-os.checklist.ambiental',
-  version: 'checklist-ambiental-v1',
+  version: 'checklist-ambiental-v2',
   purpose: 'Match received documents against environmental documentary requirements.',
   specialty: 'AMBIENTAL',
   task: 'CHECKLIST',
@@ -291,7 +329,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerAmbientalV1 = {
   identifier: 'lex-os.grounded-answer.ambiental',
-  version: 'grounded-answer-ambiental-v1',
+  version: 'grounded-answer-ambiental-v2',
   purpose: 'Answer environmental-law questions strictly from authorized excerpts.',
   specialty: 'AMBIENTAL',
   task: 'GROUNDED_ANSWER',
@@ -346,7 +384,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const classificationAmbientalV1 = {
   identifier: 'lex-os.classification.ambiental',
-  version: 'classification-ambiental-v1',
+  version: 'classification-ambiental-v2',
   purpose: 'Classify environmental documents into the catalogued document types.',
   specialty: 'AMBIENTAL',
   task: 'CLASSIFICATION',
@@ -424,7 +462,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const entitiesAmbientalV1 = {
   identifier: 'lex-os.entities.ambiental',
-  version: 'entities-ambiental-v1',
+  version: 'entities-ambiental-v2',
   purpose: 'Extract environmental entities with resolvable character offsets.',
   specialty: 'AMBIENTAL',
   task: 'ENTITIES',

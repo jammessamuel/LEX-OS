@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito empresarial e societário estão abaixo, na íntegra e
-exatamente como o sistema as usa — **8.689 palavras**.
+exatamente como o sistema as usa — **9.624 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -57,7 +57,7 @@ recusando usá-las sobre acervo real — a assinatura não é formalidade, é o 
 
 ## Classificar o documento
 
-`classification-empresarial-v1` · identificador `lex-os.classification.empresarial`
+`classification-empresarial-v2` · identificador `lex-os.classification.empresarial`
 
 ### A instrução
 
@@ -151,6 +151,20 @@ o descumprimento de um deles produz efeito próprio. Registre cada marco com a d
 data da publicação quando ambas constarem: é da publicação que costumam correr os prazos dos
 credores, e confundi-las perde habilitação.
 
+CRÉDITO TEM VALOR, CLASSE E ORIGEM, E OS TRÊS SE REGISTRAM SEPARADOS. O quadro de credores lista o
+valor habilitado, a classe atribuída e o fato gerador; o credor costuma discordar de um dos três. E
+o valor muda de nome conforme a peça: o declarado pela devedora, o habilitado pelo administrador e
+o reconhecido em decisão são três números para o mesmo crédito. Registre cada um com a peça de que
+saiu, e nunca conclua qual prevalece nem reclassifique.
+
+NA FRANQUIA, A DATA DE ENTREGA DA CIRCULAR DE OFERTA É O CAMPO QUE DECIDE. A lei exige que o
+documento com as informações da rede seja entregue ao candidato com antecedência mínima antes da
+assinatura do contrato ou de qualquer pagamento, e é a distância entre essas datas que sustenta ou
+derruba o pedido de anulação. Registre a data de entrega da circular, a data de assinatura do
+contrato e a data do primeiro pagamento como três campos distintos, com o comprovante de recebimento
+quando houver. Registre também taxa inicial, royalties, taxa de publicidade e território como
+campos próprios — sem somar e sem calcular percentual.
+
 CLASSIFIQUE PELO QUE A PEÇA É, NÃO PELA SOCIEDADE DE QUE ELA TRATA. A razão social aparece em
 todas as peças do caso e por isso não distingue nenhuma.
 
@@ -208,7 +222,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Extrair os dados do documento
 
-`entities-empresarial-v1` · identificador `lex-os.entities.empresarial`
+`entities-empresarial-v2` · identificador `lex-os.entities.empresarial`
 
 ### A instrução
 
@@ -301,6 +315,20 @@ o descumprimento de um deles produz efeito próprio. Registre cada marco com a d
 data da publicação quando ambas constarem: é da publicação que costumam correr os prazos dos
 credores, e confundi-las perde habilitação.
 
+CRÉDITO TEM VALOR, CLASSE E ORIGEM, E OS TRÊS SE REGISTRAM SEPARADOS. O quadro de credores lista o
+valor habilitado, a classe atribuída e o fato gerador; o credor costuma discordar de um dos três. E
+o valor muda de nome conforme a peça: o declarado pela devedora, o habilitado pelo administrador e
+o reconhecido em decisão são três números para o mesmo crédito. Registre cada um com a peça de que
+saiu, e nunca conclua qual prevalece nem reclassifique.
+
+NA FRANQUIA, A DATA DE ENTREGA DA CIRCULAR DE OFERTA É O CAMPO QUE DECIDE. A lei exige que o
+documento com as informações da rede seja entregue ao candidato com antecedência mínima antes da
+assinatura do contrato ou de qualquer pagamento, e é a distância entre essas datas que sustenta ou
+derruba o pedido de anulação. Registre a data de entrega da circular, a data de assinatura do
+contrato e a data do primeiro pagamento como três campos distintos, com o comprovante de recebimento
+quando houver. Registre também taxa inicial, royalties, taxa de publicidade e território como
+campos próprios — sem somar e sem calcular percentual.
+
 O QUE SE EXTRAI AQUI: razão social e nome fantasia, número de inscrição no cadastro de pessoas
 jurídicas, número de registro na junta comercial e número de cada arquivamento, nome e papel de
 sócios e administradores, número de quotas ou ações e percentual quando impresso, valores de
@@ -365,7 +393,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Montar a cronologia do caso
 
-`timeline-empresarial-v1` · identificador `lex-os.timeline.empresarial`
+`timeline-empresarial-v2` · identificador `lex-os.timeline.empresarial`
 
 ### A instrução
 
@@ -458,6 +486,20 @@ assembleia de credores, concessão, e o período de fiscalização posterior sã
 o descumprimento de um deles produz efeito próprio. Registre cada marco com a data da decisão E a
 data da publicação quando ambas constarem: é da publicação que costumam correr os prazos dos
 credores, e confundi-las perde habilitação.
+
+CRÉDITO TEM VALOR, CLASSE E ORIGEM, E OS TRÊS SE REGISTRAM SEPARADOS. O quadro de credores lista o
+valor habilitado, a classe atribuída e o fato gerador; o credor costuma discordar de um dos três. E
+o valor muda de nome conforme a peça: o declarado pela devedora, o habilitado pelo administrador e
+o reconhecido em decisão são três números para o mesmo crédito. Registre cada um com a peça de que
+saiu, e nunca conclua qual prevalece nem reclassifique.
+
+NA FRANQUIA, A DATA DE ENTREGA DA CIRCULAR DE OFERTA É O CAMPO QUE DECIDE. A lei exige que o
+documento com as informações da rede seja entregue ao candidato com antecedência mínima antes da
+assinatura do contrato ou de qualquer pagamento, e é a distância entre essas datas que sustenta ou
+derruba o pedido de anulação. Registre a data de entrega da circular, a data de assinatura do
+contrato e a data do primeiro pagamento como três campos distintos, com o comprovante de recebimento
+quando houver. Registre também taxa inicial, royalties, taxa de publicidade e território como
+campos próprios — sem somar e sem calcular percentual.
 
 DATAS SOCIETÁRIAS: constituição da sociedade e seu registro, cada alteração contratual com a data
 do ato e a do arquivamento, entrada e saída de cada sócio, nomeação e destituição de
@@ -587,7 +629,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Conferir as exigências documentais
 
-`checklist-empresarial-v1` · identificador `lex-os.checklist.empresarial`
+`checklist-empresarial-v2` · identificador `lex-os.checklist.empresarial`
 
 ### A instrução
 
@@ -680,6 +722,20 @@ assembleia de credores, concessão, e o período de fiscalização posterior sã
 o descumprimento de um deles produz efeito próprio. Registre cada marco com a data da decisão E a
 data da publicação quando ambas constarem: é da publicação que costumam correr os prazos dos
 credores, e confundi-las perde habilitação.
+
+CRÉDITO TEM VALOR, CLASSE E ORIGEM, E OS TRÊS SE REGISTRAM SEPARADOS. O quadro de credores lista o
+valor habilitado, a classe atribuída e o fato gerador; o credor costuma discordar de um dos três. E
+o valor muda de nome conforme a peça: o declarado pela devedora, o habilitado pelo administrador e
+o reconhecido em decisão são três números para o mesmo crédito. Registre cada um com a peça de que
+saiu, e nunca conclua qual prevalece nem reclassifique.
+
+NA FRANQUIA, A DATA DE ENTREGA DA CIRCULAR DE OFERTA É O CAMPO QUE DECIDE. A lei exige que o
+documento com as informações da rede seja entregue ao candidato com antecedência mínima antes da
+assinatura do contrato ou de qualquer pagamento, e é a distância entre essas datas que sustenta ou
+derruba o pedido de anulação. Registre a data de entrega da circular, a data de assinatura do
+contrato e a data do primeiro pagamento como três campos distintos, com o comprovante de recebimento
+quando houver. Registre também taxa inicial, royalties, taxa de publicidade e território como
+campos próprios — sem somar e sem calcular percentual.
 
 **[COMUM]** VOCÊ RECEBE O ENUNCIADO DE CADA EXIGÊNCIA — o título, a descrição
 quando houver, se ela é obrigatória, e o código de tipo documental que ela espera — mais o tipo
@@ -778,7 +834,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-empresarial-v1` · identificador `lex-os.grounded-answer.empresarial`
+`grounded-answer-empresarial-v2` · identificador `lex-os.grounded-answer.empresarial`
 
 ### A instrução
 
@@ -871,6 +927,20 @@ assembleia de credores, concessão, e o período de fiscalização posterior sã
 o descumprimento de um deles produz efeito próprio. Registre cada marco com a data da decisão E a
 data da publicação quando ambas constarem: é da publicação que costumam correr os prazos dos
 credores, e confundi-las perde habilitação.
+
+CRÉDITO TEM VALOR, CLASSE E ORIGEM, E OS TRÊS SE REGISTRAM SEPARADOS. O quadro de credores lista o
+valor habilitado, a classe atribuída e o fato gerador; o credor costuma discordar de um dos três. E
+o valor muda de nome conforme a peça: o declarado pela devedora, o habilitado pelo administrador e
+o reconhecido em decisão são três números para o mesmo crédito. Registre cada um com a peça de que
+saiu, e nunca conclua qual prevalece nem reclassifique.
+
+NA FRANQUIA, A DATA DE ENTREGA DA CIRCULAR DE OFERTA É O CAMPO QUE DECIDE. A lei exige que o
+documento com as informações da rede seja entregue ao candidato com antecedência mínima antes da
+assinatura do contrato ou de qualquer pagamento, e é a distância entre essas datas que sustenta ou
+derruba o pedido de anulação. Registre a data de entrega da circular, a data de assinatura do
+contrato e a data do primeiro pagamento como três campos distintos, com o comprovante de recebimento
+quando houver. Registre também taxa inicial, royalties, taxa de publicidade e território como
+campos próprios — sem somar e sem calcular percentual.
 
 QUEM É SÓCIO E QUANTO TEM SÃO PERGUNTAS COM DATA. Nunca responda "os sócios são" sem dizer segundo
 qual instrumento e de que data. O quadro societário muda por alteração registrada, e uma resposta

@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito ambiental estão abaixo, na íntegra e
-exatamente como o sistema as usa — **8.187 palavras**.
+exatamente como o sistema as usa — **10.572 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -57,7 +57,7 @@ recusando usá-las sobre acervo real — a assinatura não é formalidade, é o 
 
 ## Classificar o documento
 
-`classification-ambiental-v1` · identificador `lex-os.classification.ambiental`
+`classification-ambiental-v2` · identificador `lex-os.classification.ambiental`
 
 ### A instrução
 
@@ -144,6 +144,44 @@ transação penal seguem o rito penal e a instrução penal cuida deles. Se o ma
 criminal, registre-a pelo que ela é e não tente aplicar aqui a lógica administrativa do auto de
 infração — são processos distintos que correm em paralelo sobre o mesmo fato.
 
+RESULTADO DE ANÁLISE SÓ VALE COM A CADEIA DA AMOSTRA, E ELA É DADO A REGISTRAR. Um laudo de
+laboratório afirma uma concentração; o que o liga ao empreendimento é a amostra — onde foi coletada,
+quando, por quem, como foi preservada e quando chegou ao laboratório. Registre o ponto de coleta
+como o documento o identifica, a data e a hora da coleta, a data do ensaio, e o responsável por
+cada etapa. Laudo sem esses campos é resultado sem origem, e registrar que faltam é mais útil do
+que repetir o número.
+
+O AUTO DE INFRAÇÃO NÃO VEM SOZINHO, E AS MEDIDAS QUE O ACOMPANHAM SÃO ATOS PRÓPRIOS. Embargo de
+obra, suspensão de atividade, apreensão de bens, produtos ou animais, e demolição são medidas
+administrativas com termo próprio, cada uma com data, objeto e alcance. EM APREENSÃO, registre o
+que foi apreendido com a quantidade e a unidade impressas, quem ficou como depositário, o local, e
+a destinação quando declarada — doação, destruição, liberação. Termo de apreensão e termo de
+depósito são peças distintas, às vezes no mesmo papel.
+
+SUPRESSÃO DE VEGETAÇÃO É AUTORIZAÇÃO À PARTE, E NÃO VEM DENTRO DA LICENÇA. Traz área autorizada
+com a unidade, espécies quando listadas, prazo de validade próprio, e a obrigação de reposição ou
+compensação florestal. Registre a área autorizada e a área efetivamente suprimida como campos
+distintos sempre que o material trouxer as duas — a comparação entre elas é de quem revisa.
+
+POLUIÇÃO SE MEDE CONTRA PADRÃO, E O PADRÃO É OUTRO DADO. Emissão atmosférica, efluente, ruído e
+resíduo têm parâmetros com limite de referência, e o relatório traz o medido ao lado do admitido.
+Registre os dois separadamente, com o parâmetro nomeado, a unidade e o ponto de medição. NUNCA
+CALCULE A EXCEDÊNCIA e nunca conclua que houve poluição: o desvio entre medido e limite é leitura
+técnica.
+
+RESÍDUOS SÓLIDOS TÊM DOCUMENTO QUE OS ACOMPANHA DO GERADOR AO DESTINO. Plano de gerenciamento,
+manifesto de transporte com o número, transportador, destinador e certificado de destinação final
+formam a cadeia, e é a falta de um elo que se discute. Registre cada peça com o seu número e a sua
+data, e registre a quantidade com a unidade impressa em cada etapa — divergência de quantidade
+entre manifesto e certificado é dado a registrar, não erro a corrigir.
+
+LOGÍSTICA REVERSA É OBRIGAÇÃO DE RETORNO, NÃO DE DESCARTE, e por isso os documentos são outros.
+Fabricantes, importadores, distribuidores e comerciantes de certos produtos respondem por
+estruturar o retorno do que venderam, e o cumprimento se prova por acordo setorial ou termo de
+compromisso, pontos de recebimento, metas declaradas e relatórios de quantidade retornada. Registre
+a meta como o documento a escreve, o retornado como cada relatório o declara, e a origem de cada
+número — sem calcular percentual de atendimento e sem concluir se a meta foi cumprida.
+
 CLASSIFIQUE PELO QUE A PEÇA É, NÃO PELO EMPREENDIMENTO DE QUE ELA TRATA. O nome da obra ou da
 atividade aparece em todas as peças e por isso não distingue nenhuma.
 
@@ -200,7 +238,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Extrair os dados do documento
 
-`entities-ambiental-v1` · identificador `lex-os.entities.ambiental`
+`entities-ambiental-v2` · identificador `lex-os.entities.ambiental`
 
 ### A instrução
 
@@ -286,6 +324,44 @@ transação penal seguem o rito penal e a instrução penal cuida deles. Se o ma
 criminal, registre-a pelo que ela é e não tente aplicar aqui a lógica administrativa do auto de
 infração — são processos distintos que correm em paralelo sobre o mesmo fato.
 
+RESULTADO DE ANÁLISE SÓ VALE COM A CADEIA DA AMOSTRA, E ELA É DADO A REGISTRAR. Um laudo de
+laboratório afirma uma concentração; o que o liga ao empreendimento é a amostra — onde foi coletada,
+quando, por quem, como foi preservada e quando chegou ao laboratório. Registre o ponto de coleta
+como o documento o identifica, a data e a hora da coleta, a data do ensaio, e o responsável por
+cada etapa. Laudo sem esses campos é resultado sem origem, e registrar que faltam é mais útil do
+que repetir o número.
+
+O AUTO DE INFRAÇÃO NÃO VEM SOZINHO, E AS MEDIDAS QUE O ACOMPANHAM SÃO ATOS PRÓPRIOS. Embargo de
+obra, suspensão de atividade, apreensão de bens, produtos ou animais, e demolição são medidas
+administrativas com termo próprio, cada uma com data, objeto e alcance. EM APREENSÃO, registre o
+que foi apreendido com a quantidade e a unidade impressas, quem ficou como depositário, o local, e
+a destinação quando declarada — doação, destruição, liberação. Termo de apreensão e termo de
+depósito são peças distintas, às vezes no mesmo papel.
+
+SUPRESSÃO DE VEGETAÇÃO É AUTORIZAÇÃO À PARTE, E NÃO VEM DENTRO DA LICENÇA. Traz área autorizada
+com a unidade, espécies quando listadas, prazo de validade próprio, e a obrigação de reposição ou
+compensação florestal. Registre a área autorizada e a área efetivamente suprimida como campos
+distintos sempre que o material trouxer as duas — a comparação entre elas é de quem revisa.
+
+POLUIÇÃO SE MEDE CONTRA PADRÃO, E O PADRÃO É OUTRO DADO. Emissão atmosférica, efluente, ruído e
+resíduo têm parâmetros com limite de referência, e o relatório traz o medido ao lado do admitido.
+Registre os dois separadamente, com o parâmetro nomeado, a unidade e o ponto de medição. NUNCA
+CALCULE A EXCEDÊNCIA e nunca conclua que houve poluição: o desvio entre medido e limite é leitura
+técnica.
+
+RESÍDUOS SÓLIDOS TÊM DOCUMENTO QUE OS ACOMPANHA DO GERADOR AO DESTINO. Plano de gerenciamento,
+manifesto de transporte com o número, transportador, destinador e certificado de destinação final
+formam a cadeia, e é a falta de um elo que se discute. Registre cada peça com o seu número e a sua
+data, e registre a quantidade com a unidade impressa em cada etapa — divergência de quantidade
+entre manifesto e certificado é dado a registrar, não erro a corrigir.
+
+LOGÍSTICA REVERSA É OBRIGAÇÃO DE RETORNO, NÃO DE DESCARTE, e por isso os documentos são outros.
+Fabricantes, importadores, distribuidores e comerciantes de certos produtos respondem por
+estruturar o retorno do que venderam, e o cumprimento se prova por acordo setorial ou termo de
+compromisso, pontos de recebimento, metas declaradas e relatórios de quantidade retornada. Registre
+a meta como o documento a escreve, o retornado como cada relatório o declara, e a origem de cada
+número — sem calcular percentual de atendimento e sem concluir se a meta foi cumprida.
+
 O QUE SE EXTRAI AQUI: número e espécie de cada licença com o órgão emissor e a validade, número de
 cada condicionante com o prazo que ela fixa, número do processo de licenciamento, número do auto
 de infração com o órgão que o lavrou, valor da multa, matrícula e cartório do imóvel, número de
@@ -355,7 +431,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Montar a cronologia do caso
 
-`timeline-ambiental-v1` · identificador `lex-os.timeline.ambiental`
+`timeline-ambiental-v2` · identificador `lex-os.timeline.ambiental`
 
 ### A instrução
 
@@ -441,6 +517,44 @@ O CRIME AMBIENTAL NÃO É DESTA FAIXA. Denúncia, inquérito policial, audiênci
 transação penal seguem o rito penal e a instrução penal cuida deles. Se o material trouxer peça
 criminal, registre-a pelo que ela é e não tente aplicar aqui a lógica administrativa do auto de
 infração — são processos distintos que correm em paralelo sobre o mesmo fato.
+
+RESULTADO DE ANÁLISE SÓ VALE COM A CADEIA DA AMOSTRA, E ELA É DADO A REGISTRAR. Um laudo de
+laboratório afirma uma concentração; o que o liga ao empreendimento é a amostra — onde foi coletada,
+quando, por quem, como foi preservada e quando chegou ao laboratório. Registre o ponto de coleta
+como o documento o identifica, a data e a hora da coleta, a data do ensaio, e o responsável por
+cada etapa. Laudo sem esses campos é resultado sem origem, e registrar que faltam é mais útil do
+que repetir o número.
+
+O AUTO DE INFRAÇÃO NÃO VEM SOZINHO, E AS MEDIDAS QUE O ACOMPANHAM SÃO ATOS PRÓPRIOS. Embargo de
+obra, suspensão de atividade, apreensão de bens, produtos ou animais, e demolição são medidas
+administrativas com termo próprio, cada uma com data, objeto e alcance. EM APREENSÃO, registre o
+que foi apreendido com a quantidade e a unidade impressas, quem ficou como depositário, o local, e
+a destinação quando declarada — doação, destruição, liberação. Termo de apreensão e termo de
+depósito são peças distintas, às vezes no mesmo papel.
+
+SUPRESSÃO DE VEGETAÇÃO É AUTORIZAÇÃO À PARTE, E NÃO VEM DENTRO DA LICENÇA. Traz área autorizada
+com a unidade, espécies quando listadas, prazo de validade próprio, e a obrigação de reposição ou
+compensação florestal. Registre a área autorizada e a área efetivamente suprimida como campos
+distintos sempre que o material trouxer as duas — a comparação entre elas é de quem revisa.
+
+POLUIÇÃO SE MEDE CONTRA PADRÃO, E O PADRÃO É OUTRO DADO. Emissão atmosférica, efluente, ruído e
+resíduo têm parâmetros com limite de referência, e o relatório traz o medido ao lado do admitido.
+Registre os dois separadamente, com o parâmetro nomeado, a unidade e o ponto de medição. NUNCA
+CALCULE A EXCEDÊNCIA e nunca conclua que houve poluição: o desvio entre medido e limite é leitura
+técnica.
+
+RESÍDUOS SÓLIDOS TÊM DOCUMENTO QUE OS ACOMPANHA DO GERADOR AO DESTINO. Plano de gerenciamento,
+manifesto de transporte com o número, transportador, destinador e certificado de destinação final
+formam a cadeia, e é a falta de um elo que se discute. Registre cada peça com o seu número e a sua
+data, e registre a quantidade com a unidade impressa em cada etapa — divergência de quantidade
+entre manifesto e certificado é dado a registrar, não erro a corrigir.
+
+LOGÍSTICA REVERSA É OBRIGAÇÃO DE RETORNO, NÃO DE DESCARTE, e por isso os documentos são outros.
+Fabricantes, importadores, distribuidores e comerciantes de certos produtos respondem por
+estruturar o retorno do que venderam, e o cumprimento se prova por acordo setorial ou termo de
+compromisso, pontos de recebimento, metas declaradas e relatórios de quantidade retornada. Registre
+a meta como o documento a escreve, o retornado como cada relatório o declara, e a origem de cada
+número — sem calcular percentual de atendimento e sem concluir se a meta foi cumprida.
 
 DATAS DO LICENCIAMENTO: protocolo do requerimento, termo de referência, entrega do estudo de
 impacto, audiência pública, parecer técnico, emissão de cada uma das três licenças com o seu
@@ -568,7 +682,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Conferir as exigências documentais
 
-`checklist-ambiental-v1` · identificador `lex-os.checklist.ambiental`
+`checklist-ambiental-v2` · identificador `lex-os.checklist.ambiental`
 
 ### A instrução
 
@@ -654,6 +768,44 @@ O CRIME AMBIENTAL NÃO É DESTA FAIXA. Denúncia, inquérito policial, audiênci
 transação penal seguem o rito penal e a instrução penal cuida deles. Se o material trouxer peça
 criminal, registre-a pelo que ela é e não tente aplicar aqui a lógica administrativa do auto de
 infração — são processos distintos que correm em paralelo sobre o mesmo fato.
+
+RESULTADO DE ANÁLISE SÓ VALE COM A CADEIA DA AMOSTRA, E ELA É DADO A REGISTRAR. Um laudo de
+laboratório afirma uma concentração; o que o liga ao empreendimento é a amostra — onde foi coletada,
+quando, por quem, como foi preservada e quando chegou ao laboratório. Registre o ponto de coleta
+como o documento o identifica, a data e a hora da coleta, a data do ensaio, e o responsável por
+cada etapa. Laudo sem esses campos é resultado sem origem, e registrar que faltam é mais útil do
+que repetir o número.
+
+O AUTO DE INFRAÇÃO NÃO VEM SOZINHO, E AS MEDIDAS QUE O ACOMPANHAM SÃO ATOS PRÓPRIOS. Embargo de
+obra, suspensão de atividade, apreensão de bens, produtos ou animais, e demolição são medidas
+administrativas com termo próprio, cada uma com data, objeto e alcance. EM APREENSÃO, registre o
+que foi apreendido com a quantidade e a unidade impressas, quem ficou como depositário, o local, e
+a destinação quando declarada — doação, destruição, liberação. Termo de apreensão e termo de
+depósito são peças distintas, às vezes no mesmo papel.
+
+SUPRESSÃO DE VEGETAÇÃO É AUTORIZAÇÃO À PARTE, E NÃO VEM DENTRO DA LICENÇA. Traz área autorizada
+com a unidade, espécies quando listadas, prazo de validade próprio, e a obrigação de reposição ou
+compensação florestal. Registre a área autorizada e a área efetivamente suprimida como campos
+distintos sempre que o material trouxer as duas — a comparação entre elas é de quem revisa.
+
+POLUIÇÃO SE MEDE CONTRA PADRÃO, E O PADRÃO É OUTRO DADO. Emissão atmosférica, efluente, ruído e
+resíduo têm parâmetros com limite de referência, e o relatório traz o medido ao lado do admitido.
+Registre os dois separadamente, com o parâmetro nomeado, a unidade e o ponto de medição. NUNCA
+CALCULE A EXCEDÊNCIA e nunca conclua que houve poluição: o desvio entre medido e limite é leitura
+técnica.
+
+RESÍDUOS SÓLIDOS TÊM DOCUMENTO QUE OS ACOMPANHA DO GERADOR AO DESTINO. Plano de gerenciamento,
+manifesto de transporte com o número, transportador, destinador e certificado de destinação final
+formam a cadeia, e é a falta de um elo que se discute. Registre cada peça com o seu número e a sua
+data, e registre a quantidade com a unidade impressa em cada etapa — divergência de quantidade
+entre manifesto e certificado é dado a registrar, não erro a corrigir.
+
+LOGÍSTICA REVERSA É OBRIGAÇÃO DE RETORNO, NÃO DE DESCARTE, e por isso os documentos são outros.
+Fabricantes, importadores, distribuidores e comerciantes de certos produtos respondem por
+estruturar o retorno do que venderam, e o cumprimento se prova por acordo setorial ou termo de
+compromisso, pontos de recebimento, metas declaradas e relatórios de quantidade retornada. Registre
+a meta como o documento a escreve, o retornado como cada relatório o declara, e a origem de cada
+número — sem calcular percentual de atendimento e sem concluir se a meta foi cumprida.
 
 **[COMUM]** VOCÊ RECEBE O ENUNCIADO DE CADA EXIGÊNCIA — o título, a descrição
 quando houver, se ela é obrigatória, e o código de tipo documental que ela espera — mais o tipo
@@ -749,7 +901,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-ambiental-v1` · identificador `lex-os.grounded-answer.ambiental`
+`grounded-answer-ambiental-v2` · identificador `lex-os.grounded-answer.ambiental`
 
 ### A instrução
 
@@ -835,6 +987,44 @@ O CRIME AMBIENTAL NÃO É DESTA FAIXA. Denúncia, inquérito policial, audiênci
 transação penal seguem o rito penal e a instrução penal cuida deles. Se o material trouxer peça
 criminal, registre-a pelo que ela é e não tente aplicar aqui a lógica administrativa do auto de
 infração — são processos distintos que correm em paralelo sobre o mesmo fato.
+
+RESULTADO DE ANÁLISE SÓ VALE COM A CADEIA DA AMOSTRA, E ELA É DADO A REGISTRAR. Um laudo de
+laboratório afirma uma concentração; o que o liga ao empreendimento é a amostra — onde foi coletada,
+quando, por quem, como foi preservada e quando chegou ao laboratório. Registre o ponto de coleta
+como o documento o identifica, a data e a hora da coleta, a data do ensaio, e o responsável por
+cada etapa. Laudo sem esses campos é resultado sem origem, e registrar que faltam é mais útil do
+que repetir o número.
+
+O AUTO DE INFRAÇÃO NÃO VEM SOZINHO, E AS MEDIDAS QUE O ACOMPANHAM SÃO ATOS PRÓPRIOS. Embargo de
+obra, suspensão de atividade, apreensão de bens, produtos ou animais, e demolição são medidas
+administrativas com termo próprio, cada uma com data, objeto e alcance. EM APREENSÃO, registre o
+que foi apreendido com a quantidade e a unidade impressas, quem ficou como depositário, o local, e
+a destinação quando declarada — doação, destruição, liberação. Termo de apreensão e termo de
+depósito são peças distintas, às vezes no mesmo papel.
+
+SUPRESSÃO DE VEGETAÇÃO É AUTORIZAÇÃO À PARTE, E NÃO VEM DENTRO DA LICENÇA. Traz área autorizada
+com a unidade, espécies quando listadas, prazo de validade próprio, e a obrigação de reposição ou
+compensação florestal. Registre a área autorizada e a área efetivamente suprimida como campos
+distintos sempre que o material trouxer as duas — a comparação entre elas é de quem revisa.
+
+POLUIÇÃO SE MEDE CONTRA PADRÃO, E O PADRÃO É OUTRO DADO. Emissão atmosférica, efluente, ruído e
+resíduo têm parâmetros com limite de referência, e o relatório traz o medido ao lado do admitido.
+Registre os dois separadamente, com o parâmetro nomeado, a unidade e o ponto de medição. NUNCA
+CALCULE A EXCEDÊNCIA e nunca conclua que houve poluição: o desvio entre medido e limite é leitura
+técnica.
+
+RESÍDUOS SÓLIDOS TÊM DOCUMENTO QUE OS ACOMPANHA DO GERADOR AO DESTINO. Plano de gerenciamento,
+manifesto de transporte com o número, transportador, destinador e certificado de destinação final
+formam a cadeia, e é a falta de um elo que se discute. Registre cada peça com o seu número e a sua
+data, e registre a quantidade com a unidade impressa em cada etapa — divergência de quantidade
+entre manifesto e certificado é dado a registrar, não erro a corrigir.
+
+LOGÍSTICA REVERSA É OBRIGAÇÃO DE RETORNO, NÃO DE DESCARTE, e por isso os documentos são outros.
+Fabricantes, importadores, distribuidores e comerciantes de certos produtos respondem por
+estruturar o retorno do que venderam, e o cumprimento se prova por acordo setorial ou termo de
+compromisso, pontos de recebimento, metas declaradas e relatórios de quantidade retornada. Registre
+a meta como o documento a escreve, o retornado como cada relatório o declara, e a origem de cada
+número — sem calcular percentual de atendimento e sem concluir se a meta foi cumprida.
 
 LICENÇA PEDIDA É LICENÇA IDENTIFICADA. Nunca responda "a licença é válida até" sem dizer qual das
 três, com que número e emitida por qual órgão. Havendo mais de uma nos trechos, devolva cada uma

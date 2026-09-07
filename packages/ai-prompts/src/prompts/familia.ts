@@ -136,11 +136,39 @@ HERDEIRO, MEEIRO E LEGATÁRIO NÃO SÃO A MESMA COISA. Meação é o que já per
 companheiro pelo regime de bens e não é herança; herança é o que se transmite pelo óbito; legado é
 disposição de testamento sobre bem determinado. A mesma pessoa pode ser meeira e herdeira ao mesmo
 tempo, e é comum que seja. Registre o papel exatamente como a peça o atribui e nunca some meação
-com quinhão.`;
+com quinhão.
+
+O MESMO BEM TEM MAIS DE UM VALOR NO INVENTÁRIO, E ELES NÃO SE SUBSTITUEM. Valor de avaliação
+judicial, valor venal usado pelo fisco, valor declarado pelas partes e valor de mercado apurado em
+laudo aparecem no mesmo processo, e a base do imposto de transmissão pode não ser nenhum deles.
+Registre cada valor com o rótulo que o documento lhe dá e a peça de onde saiu; nunca eleja um como
+"o valor do bem".
+
+SOBREPARTILHA NÃO É NOVO INVENTÁRIO. É a partilha de bem que ficou de fora — sonegado, desconhecido
+à época, litigioso ou de liquidação difícil — dentro da mesma sucessão já aberta. Registre a data
+do óbito original, a data da partilha anterior e a data do pedido de sobrepartilha como campos
+distintos, e nunca trate a sobrepartilha como um espólio novo.
+
+EXCLUSÃO DE HERDEIRO TEM DUAS FIGURAS E ELAS NÃO SE CONFUNDEM. Indignidade é declarada em ação
+própria por causa prevista em lei; deserdação depende de testamento que a declare e de causa
+comprovada em juízo. Registre qual das duas a peça invoca, a causa que ela descreve e o documento
+que a sustenta — e nunca conclua que o herdeiro está excluído: exclusão depende de sentença.
+
+ADOÇÃO TEM ETAPAS PRÓPRIAS E NENHUMA É DISPENSÁVEL. Habilitação dos pretendentes e inscrição em
+cadastro, consentimento dos pais quando exigido ou a prévia destituição do poder familiar, estágio
+de convivência com o seu prazo, estudo da equipe, sentença e o novo registro de nascimento.
+Registre cada etapa com a data e a peça, e registre em especial a data de início e a de fim do
+estágio de convivência, que são campos distintos. A adoção é irrevogável depois do trânsito, e o
+registro anterior é substituído — nunca descreva o registro novo como alteração do antigo.
+
+ALIMENTOS PODEM SER DEVIDOS POR MAIS DE UMA PESSOA, EM CAMADAS. Além dos pais, avós podem ser
+chamados, e o dever deles é subsidiário e complementar — só alcança o que o obrigado principal não
+suporta. Registre quem a peça aponta como devedor, em que qualidade, e a que título, sem concluir
+se a obrigação subsidiária se configurou.`;
 
 export const timelineFamiliaV1 = {
   identifier: 'lex-os.timeline.familia',
-  version: 'timeline-familia-v1',
+  version: 'timeline-familia-v2',
   purpose: 'Extract dated family and succession facts with provenance a lawyer can re-check.',
   specialty: 'FAMILIA',
   task: 'TIMELINE',
@@ -245,7 +273,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const checklistFamiliaV1 = {
   identifier: 'lex-os.checklist.familia',
-  version: 'checklist-familia-v1',
+  version: 'checklist-familia-v2',
   purpose: 'Match received documents against family and succession documentary requirements.',
   specialty: 'FAMILIA',
   task: 'CHECKLIST',
@@ -327,7 +355,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerFamiliaV1 = {
   identifier: 'lex-os.grounded-answer.familia',
-  version: 'grounded-answer-familia-v1',
+  version: 'grounded-answer-familia-v2',
   purpose: 'Answer family and succession questions strictly from authorized case excerpts.',
   specialty: 'FAMILIA',
   task: 'GROUNDED_ANSWER',
@@ -392,7 +420,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const classificationFamiliaV1 = {
   identifier: 'lex-os.classification.familia',
-  version: 'classification-familia-v1',
+  version: 'classification-familia-v2',
   purpose: 'Classify family and succession documents into the catalogued document types.',
   specialty: 'FAMILIA',
   task: 'CLASSIFICATION',
@@ -466,7 +494,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const entitiesFamiliaV1 = {
   identifier: 'lex-os.entities.familia',
-  version: 'entities-familia-v1',
+  version: 'entities-familia-v2',
   purpose: 'Extract family and succession entities with resolvable character offsets.',
   specialty: 'FAMILIA',
   task: 'ENTITIES',

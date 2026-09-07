@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de propriedade intelectual estão abaixo, na íntegra e
-exatamente como o sistema as usa — **7.935 palavras**.
+exatamente como o sistema as usa — **9.240 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -57,7 +57,7 @@ recusando usá-las sobre acervo real — a assinatura não é formalidade, é o 
 
 ## Classificar o documento
 
-`classification-propriedade-intelectual-v1` · identificador `lex-os.classification.propriedade-intelectual`
+`classification-propriedade-intelectual-v2` · identificador `lex-os.classification.propriedade-intelectual`
 
 ### A instrução
 
@@ -145,6 +145,27 @@ AVERBAÇÃO. São duas datas, e da segunda dependem também a dedutibilidade e a
 ao exterior. Registre assinatura, protocolo do pedido de averbação e emissão do certificado como
 três eventos.
 
+NULIDADE E CADUCIDADE ATACAM O MESMO REGISTRO POR MOTIVOS OPOSTOS. A nulidade diz que o registro
+nunca deveria ter sido concedido, e tem janela contada da concessão; a caducidade diz que o
+registro é válido mas o titular não o usa. Registre qual das duas o pedido invoca, quem o formulou
+e a data, e nunca as descreva com a mesma palavra.
+
+NA CADUCIDADE, QUEM PROVA O USO É O TITULAR, E ISSO MUDA O QUE SE PROCURA NO MATERIAL. O requerente
+apenas alega o desuso; a prova de uso efetivo — notas fiscais, embalagens, material publicitário,
+faturamento por produto — é ônus de quem detém o registro. Registre cada elemento de uso que o
+material trouxer com a sua data e o período que ele cobre, porque o que importa é a janela, não a
+quantidade de documentos.
+
+INVENÇÃO E MODELO DE UTILIDADE NÃO SÃO A MESMA COISA, e o pedido diz qual é logo no cabeçalho. O
+modelo de utilidade protege melhoria funcional em objeto de uso prático, tem exame e vigência
+próprios, e a vigência é menor que a da patente de invenção. Registre a natureza declarada no
+pedido e nunca a deduza do objeto — a mesma criação pode ser depositada de uma forma ou de outra, e
+essa escolha é do depositante.
+
+A OPOSIÇÃO NÃO SUSPENDE O PEDIDO, E O SILÊNCIO DO DEPOSITANTE NÃO O ARQUIVA. Oposição apresentada,
+manifestação e decisão são três atos, e a ausência de manifestação não implica desistência. Registre
+cada ato com a data e diga qual deles falta, sem concluir efeito.
+
 CLASSIFIQUE PELO QUE A PEÇA É, NÃO PELO SINAL OU PELA INVENÇÃO DE QUE ELA TRATA. O nome da marca
 aparece em todas as peças do caso.
 
@@ -198,7 +219,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Extrair os dados do documento
 
-`entities-propriedade-intelectual-v1` · identificador `lex-os.entities.propriedade-intelectual`
+`entities-propriedade-intelectual-v2` · identificador `lex-os.entities.propriedade-intelectual`
 
 ### A instrução
 
@@ -285,6 +306,27 @@ AVERBAÇÃO. São duas datas, e da segunda dependem também a dedutibilidade e a
 ao exterior. Registre assinatura, protocolo do pedido de averbação e emissão do certificado como
 três eventos.
 
+NULIDADE E CADUCIDADE ATACAM O MESMO REGISTRO POR MOTIVOS OPOSTOS. A nulidade diz que o registro
+nunca deveria ter sido concedido, e tem janela contada da concessão; a caducidade diz que o
+registro é válido mas o titular não o usa. Registre qual das duas o pedido invoca, quem o formulou
+e a data, e nunca as descreva com a mesma palavra.
+
+NA CADUCIDADE, QUEM PROVA O USO É O TITULAR, E ISSO MUDA O QUE SE PROCURA NO MATERIAL. O requerente
+apenas alega o desuso; a prova de uso efetivo — notas fiscais, embalagens, material publicitário,
+faturamento por produto — é ônus de quem detém o registro. Registre cada elemento de uso que o
+material trouxer com a sua data e o período que ele cobre, porque o que importa é a janela, não a
+quantidade de documentos.
+
+INVENÇÃO E MODELO DE UTILIDADE NÃO SÃO A MESMA COISA, e o pedido diz qual é logo no cabeçalho. O
+modelo de utilidade protege melhoria funcional em objeto de uso prático, tem exame e vigência
+próprios, e a vigência é menor que a da patente de invenção. Registre a natureza declarada no
+pedido e nunca a deduza do objeto — a mesma criação pode ser depositada de uma forma ou de outra, e
+essa escolha é do depositante.
+
+A OPOSIÇÃO NÃO SUSPENDE O PEDIDO, E O SILÊNCIO DO DEPOSITANTE NÃO O ARQUIVA. Oposição apresentada,
+manifestação e decisão são três atos, e a ausência de manifestação não implica desistência. Registre
+cada ato com a data e diga qual deles falta, sem concluir efeito.
+
 O QUE SE EXTRAI AQUI: número do pedido e número do registro, o sinal ou o título da invenção como
 impresso, a classe com a sua especificação, o nome do titular e o do depositante quando diferirem,
 o do inventor, o do procurador, datas de depósito, publicação, concessão e vencimento, número e
@@ -348,7 +390,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Montar a cronologia do caso
 
-`timeline-propriedade-intelectual-v1` · identificador `lex-os.timeline.propriedade-intelectual`
+`timeline-propriedade-intelectual-v2` · identificador `lex-os.timeline.propriedade-intelectual`
 
 ### A instrução
 
@@ -435,6 +477,27 @@ CONTRATO DE LICENÇA PRODUZ EFEITO ENTRE AS PARTES DESDE A ASSINATURA, E PERANTE
 AVERBAÇÃO. São duas datas, e da segunda dependem também a dedutibilidade e a remessa de royalties
 ao exterior. Registre assinatura, protocolo do pedido de averbação e emissão do certificado como
 três eventos.
+
+NULIDADE E CADUCIDADE ATACAM O MESMO REGISTRO POR MOTIVOS OPOSTOS. A nulidade diz que o registro
+nunca deveria ter sido concedido, e tem janela contada da concessão; a caducidade diz que o
+registro é válido mas o titular não o usa. Registre qual das duas o pedido invoca, quem o formulou
+e a data, e nunca as descreva com a mesma palavra.
+
+NA CADUCIDADE, QUEM PROVA O USO É O TITULAR, E ISSO MUDA O QUE SE PROCURA NO MATERIAL. O requerente
+apenas alega o desuso; a prova de uso efetivo — notas fiscais, embalagens, material publicitário,
+faturamento por produto — é ônus de quem detém o registro. Registre cada elemento de uso que o
+material trouxer com a sua data e o período que ele cobre, porque o que importa é a janela, não a
+quantidade de documentos.
+
+INVENÇÃO E MODELO DE UTILIDADE NÃO SÃO A MESMA COISA, e o pedido diz qual é logo no cabeçalho. O
+modelo de utilidade protege melhoria funcional em objeto de uso prático, tem exame e vigência
+próprios, e a vigência é menor que a da patente de invenção. Registre a natureza declarada no
+pedido e nunca a deduza do objeto — a mesma criação pode ser depositada de uma forma ou de outra, e
+essa escolha é do depositante.
+
+A OPOSIÇÃO NÃO SUSPENDE O PEDIDO, E O SILÊNCIO DO DEPOSITANTE NÃO O ARQUIVA. Oposição apresentada,
+manifestação e decisão são três atos, e a ausência de manifestação não implica desistência. Registre
+cada ato com a data e diga qual deles falta, sem concluir efeito.
 
 DATAS DO PEDIDO DE MARCA: depósito, publicação do pedido, prazo de oposição tal como a publicação o
 anuncia, oposição apresentada, manifestação do depositante, exigência e resposta, decisão de
@@ -559,7 +622,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Conferir as exigências documentais
 
-`checklist-propriedade-intelectual-v1` · identificador `lex-os.checklist.propriedade-intelectual`
+`checklist-propriedade-intelectual-v2` · identificador `lex-os.checklist.propriedade-intelectual`
 
 ### A instrução
 
@@ -646,6 +709,27 @@ CONTRATO DE LICENÇA PRODUZ EFEITO ENTRE AS PARTES DESDE A ASSINATURA, E PERANTE
 AVERBAÇÃO. São duas datas, e da segunda dependem também a dedutibilidade e a remessa de royalties
 ao exterior. Registre assinatura, protocolo do pedido de averbação e emissão do certificado como
 três eventos.
+
+NULIDADE E CADUCIDADE ATACAM O MESMO REGISTRO POR MOTIVOS OPOSTOS. A nulidade diz que o registro
+nunca deveria ter sido concedido, e tem janela contada da concessão; a caducidade diz que o
+registro é válido mas o titular não o usa. Registre qual das duas o pedido invoca, quem o formulou
+e a data, e nunca as descreva com a mesma palavra.
+
+NA CADUCIDADE, QUEM PROVA O USO É O TITULAR, E ISSO MUDA O QUE SE PROCURA NO MATERIAL. O requerente
+apenas alega o desuso; a prova de uso efetivo — notas fiscais, embalagens, material publicitário,
+faturamento por produto — é ônus de quem detém o registro. Registre cada elemento de uso que o
+material trouxer com a sua data e o período que ele cobre, porque o que importa é a janela, não a
+quantidade de documentos.
+
+INVENÇÃO E MODELO DE UTILIDADE NÃO SÃO A MESMA COISA, e o pedido diz qual é logo no cabeçalho. O
+modelo de utilidade protege melhoria funcional em objeto de uso prático, tem exame e vigência
+próprios, e a vigência é menor que a da patente de invenção. Registre a natureza declarada no
+pedido e nunca a deduza do objeto — a mesma criação pode ser depositada de uma forma ou de outra, e
+essa escolha é do depositante.
+
+A OPOSIÇÃO NÃO SUSPENDE O PEDIDO, E O SILÊNCIO DO DEPOSITANTE NÃO O ARQUIVA. Oposição apresentada,
+manifestação e decisão são três atos, e a ausência de manifestação não implica desistência. Registre
+cada ato com a data e diga qual deles falta, sem concluir efeito.
 
 **[COMUM]** VOCÊ RECEBE O ENUNCIADO DE CADA EXIGÊNCIA — o título, a descrição
 quando houver, se ela é obrigatória, e o código de tipo documental que ela espera — mais o tipo
@@ -737,7 +821,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-propriedade-intelectual-v1` · identificador `lex-os.grounded-answer.propriedade-intelectual`
+`grounded-answer-propriedade-intelectual-v2` · identificador `lex-os.grounded-answer.propriedade-intelectual`
 
 ### A instrução
 
@@ -824,6 +908,27 @@ CONTRATO DE LICENÇA PRODUZ EFEITO ENTRE AS PARTES DESDE A ASSINATURA, E PERANTE
 AVERBAÇÃO. São duas datas, e da segunda dependem também a dedutibilidade e a remessa de royalties
 ao exterior. Registre assinatura, protocolo do pedido de averbação e emissão do certificado como
 três eventos.
+
+NULIDADE E CADUCIDADE ATACAM O MESMO REGISTRO POR MOTIVOS OPOSTOS. A nulidade diz que o registro
+nunca deveria ter sido concedido, e tem janela contada da concessão; a caducidade diz que o
+registro é válido mas o titular não o usa. Registre qual das duas o pedido invoca, quem o formulou
+e a data, e nunca as descreva com a mesma palavra.
+
+NA CADUCIDADE, QUEM PROVA O USO É O TITULAR, E ISSO MUDA O QUE SE PROCURA NO MATERIAL. O requerente
+apenas alega o desuso; a prova de uso efetivo — notas fiscais, embalagens, material publicitário,
+faturamento por produto — é ônus de quem detém o registro. Registre cada elemento de uso que o
+material trouxer com a sua data e o período que ele cobre, porque o que importa é a janela, não a
+quantidade de documentos.
+
+INVENÇÃO E MODELO DE UTILIDADE NÃO SÃO A MESMA COISA, e o pedido diz qual é logo no cabeçalho. O
+modelo de utilidade protege melhoria funcional em objeto de uso prático, tem exame e vigência
+próprios, e a vigência é menor que a da patente de invenção. Registre a natureza declarada no
+pedido e nunca a deduza do objeto — a mesma criação pode ser depositada de uma forma ou de outra, e
+essa escolha é do depositante.
+
+A OPOSIÇÃO NÃO SUSPENDE O PEDIDO, E O SILÊNCIO DO DEPOSITANTE NÃO O ARQUIVA. Oposição apresentada,
+manifestação e decisão são três atos, e a ausência de manifestação não implica desistência. Registre
+cada ato com a data e diga qual deles falta, sem concluir efeito.
 
 MARCA RESPONDIDA É MARCA IDENTIFICADA POR NÚMERO, SINAL, CLASSE E TITULAR. Responder "a marca está
 registrada" sem os quatro campos é resposta que o escritório vai usar errado, porque o mesmo sinal

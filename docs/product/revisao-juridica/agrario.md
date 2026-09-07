@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito agrário e do agronegócio estão abaixo, na íntegra e
-exatamente como o sistema as usa — **7.679 palavras**.
+exatamente como o sistema as usa — **8.739 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -57,7 +57,7 @@ recusando usá-las sobre acervo real — a assinatura não é formalidade, é o 
 
 ## Classificar o documento
 
-`classification-agrario-v1` · identificador `lex-os.classification.agrario`
+`classification-agrario-v2` · identificador `lex-os.classification.agrario`
 
 ### A instrução
 
@@ -140,6 +140,24 @@ material traz nomes, endereços e situação social. Ao rotular qualquer coisa q
 título, identifique pelo papel — o ocupante, a comunidade, o assentado —, nunca nominalmente, e
 nunca registre endereço residencial de pessoa em situação de conflito.
 
+DESAPROPRIAÇÃO PARA REFORMA AGRÁRIA NÃO É A DESAPROPRIAÇÃO COMUM, e a diferença aparece no
+pagamento. A terra nua é paga em títulos da dívida agrária, resgatáveis ao longo de anos; as
+benfeitorias úteis e necessárias são pagas em dinheiro. São duas parcelas, com naturezas e prazos
+diferentes, e somá-las apaga exatamente o que se discute. Registre cada uma com o seu valor, a sua
+natureza e o laudo que a apurou.
+
+O RITO TAMBÉM É PRÓPRIO: vistoria do órgão fundiário com notificação prévia ao proprietário, laudo
+agronômico com os índices apurados, decreto declaratório de interesse social com a sua publicação,
+ação de desapropriação, depósito e imissão na posse. Registre a data da notificação prévia como
+campo destacado — vistoria feita sem ela é vício alegado com frequência, e a data é o que sustenta
+a alegação. NÃO CONCLUA que o imóvel é produtivo ou improdutivo: os índices são leitura técnica do
+laudo, e a consequência é jurídica.
+
+DUAS ÁREAS CONVIVEM NO MESMO PROCESSO E NÃO SÃO A MESMA: a área registrada na matrícula e a área
+medida em vistoria ou em georreferenciamento. Divergir é comum e é justamente o ponto. Registre as
+duas com a unidade impressa e a fonte de cada uma, sem escolher qual vale e sem calcular a
+diferença.
+
 CLASSIFIQUE PELO QUE A PEÇA É, NÃO PELA FAZENDA OU PELO PRODUTO DE QUE ELA TRATA. O nome da
 propriedade aparece em todas as peças do caso.
 
@@ -193,7 +211,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Extrair os dados do documento
 
-`entities-agrario-v1` · identificador `lex-os.entities.agrario`
+`entities-agrario-v2` · identificador `lex-os.entities.agrario`
 
 ### A instrução
 
@@ -275,6 +293,24 @@ material traz nomes, endereços e situação social. Ao rotular qualquer coisa q
 título, identifique pelo papel — o ocupante, a comunidade, o assentado —, nunca nominalmente, e
 nunca registre endereço residencial de pessoa em situação de conflito.
 
+DESAPROPRIAÇÃO PARA REFORMA AGRÁRIA NÃO É A DESAPROPRIAÇÃO COMUM, e a diferença aparece no
+pagamento. A terra nua é paga em títulos da dívida agrária, resgatáveis ao longo de anos; as
+benfeitorias úteis e necessárias são pagas em dinheiro. São duas parcelas, com naturezas e prazos
+diferentes, e somá-las apaga exatamente o que se discute. Registre cada uma com o seu valor, a sua
+natureza e o laudo que a apurou.
+
+O RITO TAMBÉM É PRÓPRIO: vistoria do órgão fundiário com notificação prévia ao proprietário, laudo
+agronômico com os índices apurados, decreto declaratório de interesse social com a sua publicação,
+ação de desapropriação, depósito e imissão na posse. Registre a data da notificação prévia como
+campo destacado — vistoria feita sem ela é vício alegado com frequência, e a data é o que sustenta
+a alegação. NÃO CONCLUA que o imóvel é produtivo ou improdutivo: os índices são leitura técnica do
+laudo, e a consequência é jurídica.
+
+DUAS ÁREAS CONVIVEM NO MESMO PROCESSO E NÃO SÃO A MESMA: a área registrada na matrícula e a área
+medida em vistoria ou em georreferenciamento. Divergir é comum e é justamente o ponto. Registre as
+duas com a unidade impressa e a fonte de cada uma, sem escolher qual vale e sem calcular a
+diferença.
+
 O QUE SE EXTRAI AQUI: nome da propriedade, matrícula e cartório, número do cadastro do imóvel
 rural, inscrição do imposto territorial, área com a unidade impressa, coordenadas quando houver,
 número e espécie do título, produto, quantidade com a unidade, safra como escrita, preço unitário e
@@ -338,7 +374,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Montar a cronologia do caso
 
-`timeline-agrario-v1` · identificador `lex-os.timeline.agrario`
+`timeline-agrario-v2` · identificador `lex-os.timeline.agrario`
 
 ### A instrução
 
@@ -420,6 +456,24 @@ CONFLITO COLETIVO TEM PESSOAS DENTRO. Ocupação, comunidade e assentamento envo
 material traz nomes, endereços e situação social. Ao rotular qualquer coisa que apareça em lista ou
 título, identifique pelo papel — o ocupante, a comunidade, o assentado —, nunca nominalmente, e
 nunca registre endereço residencial de pessoa em situação de conflito.
+
+DESAPROPRIAÇÃO PARA REFORMA AGRÁRIA NÃO É A DESAPROPRIAÇÃO COMUM, e a diferença aparece no
+pagamento. A terra nua é paga em títulos da dívida agrária, resgatáveis ao longo de anos; as
+benfeitorias úteis e necessárias são pagas em dinheiro. São duas parcelas, com naturezas e prazos
+diferentes, e somá-las apaga exatamente o que se discute. Registre cada uma com o seu valor, a sua
+natureza e o laudo que a apurou.
+
+O RITO TAMBÉM É PRÓPRIO: vistoria do órgão fundiário com notificação prévia ao proprietário, laudo
+agronômico com os índices apurados, decreto declaratório de interesse social com a sua publicação,
+ação de desapropriação, depósito e imissão na posse. Registre a data da notificação prévia como
+campo destacado — vistoria feita sem ela é vício alegado com frequência, e a data é o que sustenta
+a alegação. NÃO CONCLUA que o imóvel é produtivo ou improdutivo: os índices são leitura técnica do
+laudo, e a consequência é jurídica.
+
+DUAS ÁREAS CONVIVEM NO MESMO PROCESSO E NÃO SÃO A MESMA: a área registrada na matrícula e a área
+medida em vistoria ou em georreferenciamento. Divergir é comum e é justamente o ponto. Registre as
+duas com a unidade impressa e a fonte de cada uma, sem escolher qual vale e sem calcular a
+diferença.
 
 DATAS DE TÍTULO E DE CRÉDITO: emissão da cédula, vencimento tal como o título o fixa, registro no
 cartório competente, aditamentos, entregas parciais com a quantidade de cada uma, e o protesto
@@ -545,7 +599,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Conferir as exigências documentais
 
-`checklist-agrario-v1` · identificador `lex-os.checklist.agrario`
+`checklist-agrario-v2` · identificador `lex-os.checklist.agrario`
 
 ### A instrução
 
@@ -627,6 +681,24 @@ CONFLITO COLETIVO TEM PESSOAS DENTRO. Ocupação, comunidade e assentamento envo
 material traz nomes, endereços e situação social. Ao rotular qualquer coisa que apareça em lista ou
 título, identifique pelo papel — o ocupante, a comunidade, o assentado —, nunca nominalmente, e
 nunca registre endereço residencial de pessoa em situação de conflito.
+
+DESAPROPRIAÇÃO PARA REFORMA AGRÁRIA NÃO É A DESAPROPRIAÇÃO COMUM, e a diferença aparece no
+pagamento. A terra nua é paga em títulos da dívida agrária, resgatáveis ao longo de anos; as
+benfeitorias úteis e necessárias são pagas em dinheiro. São duas parcelas, com naturezas e prazos
+diferentes, e somá-las apaga exatamente o que se discute. Registre cada uma com o seu valor, a sua
+natureza e o laudo que a apurou.
+
+O RITO TAMBÉM É PRÓPRIO: vistoria do órgão fundiário com notificação prévia ao proprietário, laudo
+agronômico com os índices apurados, decreto declaratório de interesse social com a sua publicação,
+ação de desapropriação, depósito e imissão na posse. Registre a data da notificação prévia como
+campo destacado — vistoria feita sem ela é vício alegado com frequência, e a data é o que sustenta
+a alegação. NÃO CONCLUA que o imóvel é produtivo ou improdutivo: os índices são leitura técnica do
+laudo, e a consequência é jurídica.
+
+DUAS ÁREAS CONVIVEM NO MESMO PROCESSO E NÃO SÃO A MESMA: a área registrada na matrícula e a área
+medida em vistoria ou em georreferenciamento. Divergir é comum e é justamente o ponto. Registre as
+duas com a unidade impressa e a fonte de cada uma, sem escolher qual vale e sem calcular a
+diferença.
 
 **[COMUM]** VOCÊ RECEBE O ENUNCIADO DE CADA EXIGÊNCIA — o título, a descrição
 quando houver, se ela é obrigatória, e o código de tipo documental que ela espera — mais o tipo
@@ -719,7 +791,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-agrario-v1` · identificador `lex-os.grounded-answer.agrario`
+`grounded-answer-agrario-v2` · identificador `lex-os.grounded-answer.agrario`
 
 ### A instrução
 
@@ -801,6 +873,24 @@ CONFLITO COLETIVO TEM PESSOAS DENTRO. Ocupação, comunidade e assentamento envo
 material traz nomes, endereços e situação social. Ao rotular qualquer coisa que apareça em lista ou
 título, identifique pelo papel — o ocupante, a comunidade, o assentado —, nunca nominalmente, e
 nunca registre endereço residencial de pessoa em situação de conflito.
+
+DESAPROPRIAÇÃO PARA REFORMA AGRÁRIA NÃO É A DESAPROPRIAÇÃO COMUM, e a diferença aparece no
+pagamento. A terra nua é paga em títulos da dívida agrária, resgatáveis ao longo de anos; as
+benfeitorias úteis e necessárias são pagas em dinheiro. São duas parcelas, com naturezas e prazos
+diferentes, e somá-las apaga exatamente o que se discute. Registre cada uma com o seu valor, a sua
+natureza e o laudo que a apurou.
+
+O RITO TAMBÉM É PRÓPRIO: vistoria do órgão fundiário com notificação prévia ao proprietário, laudo
+agronômico com os índices apurados, decreto declaratório de interesse social com a sua publicação,
+ação de desapropriação, depósito e imissão na posse. Registre a data da notificação prévia como
+campo destacado — vistoria feita sem ela é vício alegado com frequência, e a data é o que sustenta
+a alegação. NÃO CONCLUA que o imóvel é produtivo ou improdutivo: os índices são leitura técnica do
+laudo, e a consequência é jurídica.
+
+DUAS ÁREAS CONVIVEM NO MESMO PROCESSO E NÃO SÃO A MESMA: a área registrada na matrícula e a área
+medida em vistoria ou em georreferenciamento. Divergir é comum e é justamente o ponto. Registre as
+duas com a unidade impressa e a fonte de cada uma, sem escolher qual vale e sem calcular a
+diferença.
 
 QUANTIDADE E ÁREA SAEM COM A UNIDADE, SEMPRE. "12.000 sacas" e "340 hectares" são respostas; "12
 mil" e "340" não são. Não converta entre unidades, não some quantidades de documentos diferentes e

@@ -106,11 +106,32 @@ do recibo como ausência, sem concluir irregularidade.
 CANDIDATO É PESSOA PÚBLICA NAQUILO QUE A CANDIDATURA EXPÕE, E NÃO NO RESTO. Nome, número, cargo,
 partido e dados da campanha são públicos. Endereço residencial, documento de identificação completo,
 dados de saúde e informação sobre familiares não são: registre-os apenas quando a tarefa pedir o
-campo, nunca em título ou resumo.`;
+campo, nunca em título ou resumo.
+
+"CAPTAÇÃO" APARECE EM DUAS EXPRESSÕES QUE NÃO TÊM NADA A VER UMA COM A OUTRA, E TROCÁ-LAS É O ERRO
+DE VOCABULÁRIO MAIS CARO DESTA FAIXA. Captação ilícita de sufrágio é oferecer ou prometer vantagem
+ao eleitor em troca do voto; captação ilícita de recursos é arrecadar dinheiro de fonte vedada ou
+fora das formas permitidas. Uma trata de voto, a outra de financiamento; os fatos, as provas e as
+consequências são distintos. Registre a expressão exatamente como a peça a usa, e nunca abrevie
+para "captação".
+
+EM CAPTAÇÃO ILÍCITA DE SUFRÁGIO A JANELA TEMPORAL É ELEMENTO, e por isso a data do fato pesa mais
+que em outras ações. Registre a data e o local de cada ato imputado como o documento os descreve, o
+que se teria oferecido, a quem, e quem o afirma. Depoimento, gravação e captura de tela são
+elementos com pesos distintos: registre o que cada um é, sem concluir que o fato ocorreu.
+
+DECISÃO ELEITORAL COSTUMA TER DOIS EFEITOS EM UMA, E ELES SE REGISTRAM SEPARADOS. A mesma sentença
+pode cassar o registro ou o diploma E declarar inelegibilidade por período próprio. São
+consequências distintas, com recursos e prazos distintos. Registre cada uma como o dispositivo a
+escreve, com a duração quando declarada, e nunca funda as duas em "condenado".
+
+PESQUISA ELEITORAL TEM REGISTRO PRÉVIO, E O NÚMERO DELE É DADO. Divulgar pesquisa sem registro é
+ilícito próprio, distinto da propaganda irregular. Registre o número de registro da pesquisa, o
+instituto, o contratante, o período de coleta e a data de divulgação como campos distintos.`;
 
 export const timelineEleitoralV1 = {
   identifier: 'lex-os.timeline.eleitoral',
-  version: 'timeline-eleitoral-v1',
+  version: 'timeline-eleitoral-v2',
   purpose: 'Extract dated electoral-law facts with re-checkable provenance.',
   specialty: 'ELEITORAL',
   task: 'TIMELINE',
@@ -199,7 +220,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const checklistEleitoralV1 = {
   identifier: 'lex-os.checklist.eleitoral',
-  version: 'checklist-eleitoral-v1',
+  version: 'checklist-eleitoral-v2',
   purpose: 'Match received documents against electoral documentary requirements.',
   specialty: 'ELEITORAL',
   task: 'CHECKLIST',
@@ -267,7 +288,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerEleitoralV1 = {
   identifier: 'lex-os.grounded-answer.eleitoral',
-  version: 'grounded-answer-eleitoral-v1',
+  version: 'grounded-answer-eleitoral-v2',
   purpose: 'Answer electoral-law questions strictly from authorized excerpts.',
   specialty: 'ELEITORAL',
   task: 'GROUNDED_ANSWER',
@@ -324,7 +345,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const classificationEleitoralV1 = {
   identifier: 'lex-os.classification.eleitoral',
-  version: 'classification-eleitoral-v1',
+  version: 'classification-eleitoral-v2',
   purpose: 'Classify electoral documents into the catalogued document types.',
   specialty: 'ELEITORAL',
   task: 'CLASSIFICATION',
@@ -396,7 +417,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const entitiesEleitoralV1 = {
   identifier: 'lex-os.entities.eleitoral',
-  version: 'entities-eleitoral-v1',
+  version: 'entities-eleitoral-v2',
   purpose: 'Extract electoral entities with resolvable character offsets.',
   specialty: 'ELEITORAL',
   task: 'ENTITIES',

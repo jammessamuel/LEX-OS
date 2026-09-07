@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito eleitoral estão abaixo, na íntegra e
-exatamente como o sistema as usa — **7.338 palavras**.
+exatamente como o sistema as usa — **8.643 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -57,7 +57,7 @@ recusando usá-las sobre acervo real — a assinatura não é formalidade, é o 
 
 ## Classificar o documento
 
-`classification-eleitoral-v1` · identificador `lex-os.classification.eleitoral`
+`classification-eleitoral-v2` · identificador `lex-os.classification.eleitoral`
 
 ### A instrução
 
@@ -137,6 +137,27 @@ partido e dados da campanha são públicos. Endereço residencial, documento de 
 dados de saúde e informação sobre familiares não são: registre-os apenas quando a tarefa pedir o
 campo, nunca em título ou resumo.
 
+"CAPTAÇÃO" APARECE EM DUAS EXPRESSÕES QUE NÃO TÊM NADA A VER UMA COM A OUTRA, E TROCÁ-LAS É O ERRO
+DE VOCABULÁRIO MAIS CARO DESTA FAIXA. Captação ilícita de sufrágio é oferecer ou prometer vantagem
+ao eleitor em troca do voto; captação ilícita de recursos é arrecadar dinheiro de fonte vedada ou
+fora das formas permitidas. Uma trata de voto, a outra de financiamento; os fatos, as provas e as
+consequências são distintos. Registre a expressão exatamente como a peça a usa, e nunca abrevie
+para "captação".
+
+EM CAPTAÇÃO ILÍCITA DE SUFRÁGIO A JANELA TEMPORAL É ELEMENTO, e por isso a data do fato pesa mais
+que em outras ações. Registre a data e o local de cada ato imputado como o documento os descreve, o
+que se teria oferecido, a quem, e quem o afirma. Depoimento, gravação e captura de tela são
+elementos com pesos distintos: registre o que cada um é, sem concluir que o fato ocorreu.
+
+DECISÃO ELEITORAL COSTUMA TER DOIS EFEITOS EM UMA, E ELES SE REGISTRAM SEPARADOS. A mesma sentença
+pode cassar o registro ou o diploma E declarar inelegibilidade por período próprio. São
+consequências distintas, com recursos e prazos distintos. Registre cada uma como o dispositivo a
+escreve, com a duração quando declarada, e nunca funda as duas em "condenado".
+
+PESQUISA ELEITORAL TEM REGISTRO PRÉVIO, E O NÚMERO DELE É DADO. Divulgar pesquisa sem registro é
+ilícito próprio, distinto da propaganda irregular. Registre o número de registro da pesquisa, o
+instituto, o contratante, o período de coleta e a data de divulgação como campos distintos.
+
 CLASSIFIQUE PELO QUE A PEÇA É, NÃO PELO CANDIDATO DE QUE ELA TRATA. O nome e o número aparecem em
 todas as peças do caso.
 
@@ -187,7 +208,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Extrair os dados do documento
 
-`entities-eleitoral-v1` · identificador `lex-os.entities.eleitoral`
+`entities-eleitoral-v2` · identificador `lex-os.entities.eleitoral`
 
 ### A instrução
 
@@ -266,6 +287,27 @@ partido e dados da campanha são públicos. Endereço residencial, documento de 
 dados de saúde e informação sobre familiares não são: registre-os apenas quando a tarefa pedir o
 campo, nunca em título ou resumo.
 
+"CAPTAÇÃO" APARECE EM DUAS EXPRESSÕES QUE NÃO TÊM NADA A VER UMA COM A OUTRA, E TROCÁ-LAS É O ERRO
+DE VOCABULÁRIO MAIS CARO DESTA FAIXA. Captação ilícita de sufrágio é oferecer ou prometer vantagem
+ao eleitor em troca do voto; captação ilícita de recursos é arrecadar dinheiro de fonte vedada ou
+fora das formas permitidas. Uma trata de voto, a outra de financiamento; os fatos, as provas e as
+consequências são distintos. Registre a expressão exatamente como a peça a usa, e nunca abrevie
+para "captação".
+
+EM CAPTAÇÃO ILÍCITA DE SUFRÁGIO A JANELA TEMPORAL É ELEMENTO, e por isso a data do fato pesa mais
+que em outras ações. Registre a data e o local de cada ato imputado como o documento os descreve, o
+que se teria oferecido, a quem, e quem o afirma. Depoimento, gravação e captura de tela são
+elementos com pesos distintos: registre o que cada um é, sem concluir que o fato ocorreu.
+
+DECISÃO ELEITORAL COSTUMA TER DOIS EFEITOS EM UMA, E ELES SE REGISTRAM SEPARADOS. A mesma sentença
+pode cassar o registro ou o diploma E declarar inelegibilidade por período próprio. São
+consequências distintas, com recursos e prazos distintos. Registre cada uma como o dispositivo a
+escreve, com a duração quando declarada, e nunca funda as duas em "condenado".
+
+PESQUISA ELEITORAL TEM REGISTRO PRÉVIO, E O NÚMERO DELE É DADO. Divulgar pesquisa sem registro é
+ilícito próprio, distinto da propaganda irregular. Registre o número de registro da pesquisa, o
+instituto, o contratante, o período de coleta e a data de divulgação como campos distintos.
+
 O QUE SE EXTRAI AQUI: nome de urna e nome civil do candidato, número do candidato, cargo pretendido,
 partido e coligação, número do processo de registro, zona e município eleitorais, número da
 inscrição eleitoral, datas e horários dos atos, número e valor de cada recibo eleitoral, doador ou
@@ -330,7 +372,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Montar a cronologia do caso
 
-`timeline-eleitoral-v1` · identificador `lex-os.timeline.eleitoral`
+`timeline-eleitoral-v2` · identificador `lex-os.timeline.eleitoral`
 
 ### A instrução
 
@@ -409,6 +451,27 @@ CANDIDATO É PESSOA PÚBLICA NAQUILO QUE A CANDIDATURA EXPÕE, E NÃO NO RESTO. 
 partido e dados da campanha são públicos. Endereço residencial, documento de identificação completo,
 dados de saúde e informação sobre familiares não são: registre-os apenas quando a tarefa pedir o
 campo, nunca em título ou resumo.
+
+"CAPTAÇÃO" APARECE EM DUAS EXPRESSÕES QUE NÃO TÊM NADA A VER UMA COM A OUTRA, E TROCÁ-LAS É O ERRO
+DE VOCABULÁRIO MAIS CARO DESTA FAIXA. Captação ilícita de sufrágio é oferecer ou prometer vantagem
+ao eleitor em troca do voto; captação ilícita de recursos é arrecadar dinheiro de fonte vedada ou
+fora das formas permitidas. Uma trata de voto, a outra de financiamento; os fatos, as provas e as
+consequências são distintos. Registre a expressão exatamente como a peça a usa, e nunca abrevie
+para "captação".
+
+EM CAPTAÇÃO ILÍCITA DE SUFRÁGIO A JANELA TEMPORAL É ELEMENTO, e por isso a data do fato pesa mais
+que em outras ações. Registre a data e o local de cada ato imputado como o documento os descreve, o
+que se teria oferecido, a quem, e quem o afirma. Depoimento, gravação e captura de tela são
+elementos com pesos distintos: registre o que cada um é, sem concluir que o fato ocorreu.
+
+DECISÃO ELEITORAL COSTUMA TER DOIS EFEITOS EM UMA, E ELES SE REGISTRAM SEPARADOS. A mesma sentença
+pode cassar o registro ou o diploma E declarar inelegibilidade por período próprio. São
+consequências distintas, com recursos e prazos distintos. Registre cada uma como o dispositivo a
+escreve, com a duração quando declarada, e nunca funda as duas em "condenado".
+
+PESQUISA ELEITORAL TEM REGISTRO PRÉVIO, E O NÚMERO DELE É DADO. Divulgar pesquisa sem registro é
+ilícito próprio, distinto da propaganda irregular. Registre o número de registro da pesquisa, o
+instituto, o contratante, o período de coleta e a data de divulgação como campos distintos.
 
 DATAS DO REGISTRO DE CANDIDATURA: convenção partidária, protocolo do requerimento, publicação do
 edital, prazo de impugnação tal como o edital o anuncia, impugnação apresentada, notícia de
@@ -531,7 +594,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Conferir as exigências documentais
 
-`checklist-eleitoral-v1` · identificador `lex-os.checklist.eleitoral`
+`checklist-eleitoral-v2` · identificador `lex-os.checklist.eleitoral`
 
 ### A instrução
 
@@ -610,6 +673,27 @@ CANDIDATO É PESSOA PÚBLICA NAQUILO QUE A CANDIDATURA EXPÕE, E NÃO NO RESTO. 
 partido e dados da campanha são públicos. Endereço residencial, documento de identificação completo,
 dados de saúde e informação sobre familiares não são: registre-os apenas quando a tarefa pedir o
 campo, nunca em título ou resumo.
+
+"CAPTAÇÃO" APARECE EM DUAS EXPRESSÕES QUE NÃO TÊM NADA A VER UMA COM A OUTRA, E TROCÁ-LAS É O ERRO
+DE VOCABULÁRIO MAIS CARO DESTA FAIXA. Captação ilícita de sufrágio é oferecer ou prometer vantagem
+ao eleitor em troca do voto; captação ilícita de recursos é arrecadar dinheiro de fonte vedada ou
+fora das formas permitidas. Uma trata de voto, a outra de financiamento; os fatos, as provas e as
+consequências são distintos. Registre a expressão exatamente como a peça a usa, e nunca abrevie
+para "captação".
+
+EM CAPTAÇÃO ILÍCITA DE SUFRÁGIO A JANELA TEMPORAL É ELEMENTO, e por isso a data do fato pesa mais
+que em outras ações. Registre a data e o local de cada ato imputado como o documento os descreve, o
+que se teria oferecido, a quem, e quem o afirma. Depoimento, gravação e captura de tela são
+elementos com pesos distintos: registre o que cada um é, sem concluir que o fato ocorreu.
+
+DECISÃO ELEITORAL COSTUMA TER DOIS EFEITOS EM UMA, E ELES SE REGISTRAM SEPARADOS. A mesma sentença
+pode cassar o registro ou o diploma E declarar inelegibilidade por período próprio. São
+consequências distintas, com recursos e prazos distintos. Registre cada uma como o dispositivo a
+escreve, com a duração quando declarada, e nunca funda as duas em "condenado".
+
+PESQUISA ELEITORAL TEM REGISTRO PRÉVIO, E O NÚMERO DELE É DADO. Divulgar pesquisa sem registro é
+ilícito próprio, distinto da propaganda irregular. Registre o número de registro da pesquisa, o
+instituto, o contratante, o período de coleta e a data de divulgação como campos distintos.
 
 **[COMUM]** VOCÊ RECEBE O ENUNCIADO DE CADA EXIGÊNCIA — o título, a descrição
 quando houver, se ela é obrigatória, e o código de tipo documental que ela espera — mais o tipo
@@ -698,7 +782,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-eleitoral-v1` · identificador `lex-os.grounded-answer.eleitoral`
+`grounded-answer-eleitoral-v2` · identificador `lex-os.grounded-answer.eleitoral`
 
 ### A instrução
 
@@ -777,6 +861,27 @@ CANDIDATO É PESSOA PÚBLICA NAQUILO QUE A CANDIDATURA EXPÕE, E NÃO NO RESTO. 
 partido e dados da campanha são públicos. Endereço residencial, documento de identificação completo,
 dados de saúde e informação sobre familiares não são: registre-os apenas quando a tarefa pedir o
 campo, nunca em título ou resumo.
+
+"CAPTAÇÃO" APARECE EM DUAS EXPRESSÕES QUE NÃO TÊM NADA A VER UMA COM A OUTRA, E TROCÁ-LAS É O ERRO
+DE VOCABULÁRIO MAIS CARO DESTA FAIXA. Captação ilícita de sufrágio é oferecer ou prometer vantagem
+ao eleitor em troca do voto; captação ilícita de recursos é arrecadar dinheiro de fonte vedada ou
+fora das formas permitidas. Uma trata de voto, a outra de financiamento; os fatos, as provas e as
+consequências são distintos. Registre a expressão exatamente como a peça a usa, e nunca abrevie
+para "captação".
+
+EM CAPTAÇÃO ILÍCITA DE SUFRÁGIO A JANELA TEMPORAL É ELEMENTO, e por isso a data do fato pesa mais
+que em outras ações. Registre a data e o local de cada ato imputado como o documento os descreve, o
+que se teria oferecido, a quem, e quem o afirma. Depoimento, gravação e captura de tela são
+elementos com pesos distintos: registre o que cada um é, sem concluir que o fato ocorreu.
+
+DECISÃO ELEITORAL COSTUMA TER DOIS EFEITOS EM UMA, E ELES SE REGISTRAM SEPARADOS. A mesma sentença
+pode cassar o registro ou o diploma E declarar inelegibilidade por período próprio. São
+consequências distintas, com recursos e prazos distintos. Registre cada uma como o dispositivo a
+escreve, com a duração quando declarada, e nunca funda as duas em "condenado".
+
+PESQUISA ELEITORAL TEM REGISTRO PRÉVIO, E O NÚMERO DELE É DADO. Divulgar pesquisa sem registro é
+ilícito próprio, distinto da propaganda irregular. Registre o número de registro da pesquisa, o
+instituto, o contratante, o período de coleta e a data de divulgação como campos distintos.
 
 DATA RESPONDIDA VEM COM HORA QUANDO O TRECHO A TRAZ, e diz a que ato se refere. Nesta matéria a
 pergunta sobre data existe porque alguém vai contar prazo, e prazo aqui se conta em horas com

@@ -120,11 +120,39 @@ constarem, e nunca as trate como uma só nem eleja quem responde.
 GARANTIA LEGAL E GARANTIA CONTRATUAL SÃO DUAS, E A SEGUNDA NÃO SUBSTITUI A PRIMEIRA. O termo de
 garantia do fabricante, a garantia estendida vendida à parte e a garantia da assistência sobre o
 reparo têm prazos próprios e documentos próprios. Registre o prazo tal como escrito no termo, com
-o termo de que saiu, e não some prazos nem conclua qual prevalece.`;
+o termo de que saiu, e não some prazos nem conclua qual prevalece.
+
+TRÊS VALORES CONVIVEM E SÃO TRÊS DADOS: o cobrado, o pago e o contestado. Uma fatura discutida traz
+o total lançado, o que o consumidor efetivamente pagou e a parcela que ele impugna, e os três quase
+nunca coincidem. Registre cada um com a sua rubrica e nunca calcule a diferença entre eles.
+
+EM TRANSAÇÃO NÃO RECONHECIDA, O QUE DECIDE É A TRILHA DA CONTESTAÇÃO. Registre a data e a hora de
+cada lançamento impugnado, o canal em que ele ocorreu quando o extrato o disser, a data da
+contestação junto à instituição com o número de protocolo, a resposta dada, o boletim de ocorrência
+quando houver, e a data de eventual estorno. NÃO CONCLUA que houve fraude nem que houve culpa do
+consumidor: registre o que o extrato mostra e o que cada parte alegou.
+
+EMPRÉSTIMO NÃO CONTRATADO TEM CAMPOS PRÓPRIOS, e o primeiro desconto é o marco que o caso persegue.
+Registre o número do contrato apontado, a instituição, o valor liberado e para onde foi creditado,
+o valor da parcela, o número de parcelas, a data do primeiro desconto em folha ou em benefício, e a
+margem consignável quando o documento a trouxer. Crédito recebido e não devolvido é dado a
+registrar, não conclusão sobre quem contratou.
+
+SUPERENDIVIDAMENTO NÃO É INADIMPLÊNCIA COMUM. O procedimento reúne todos os credores para
+repactuar, com plano de pagamento e preservação de um mínimo para viver. Registre a relação de
+dívidas como o documento a apresenta — credor, contrato, valor, parcela —, a renda declarada e as
+despesas essenciais, cada uma como campo próprio. Nunca some as dívidas, nunca calcule
+comprometimento de renda e nunca conclua que o mínimo existencial foi violado.
+
+EM BAGAGEM, EXTRAVIO E AVARIA SÃO OCORRÊNCIAS DISTINTAS COM DOCUMENTO COMUM. O relatório de
+irregularidade lavrado no desembarque é a peça central e tem número próprio. Registre o número do
+relatório, a data e a hora do desembarque, o número da etiqueta da bagagem, o que se declarou
+faltar ou estar danificado, e a data de eventual devolução. Extravio temporário e definitivo são
+desfechos diferentes: registre a devolução quando houver, sem concluir qual dos dois ocorreu.`;
 
 export const timelineConsumidorV1 = {
   identifier: 'lex-os.timeline.consumidor',
-  version: 'timeline-consumidor-v1',
+  version: 'timeline-consumidor-v2',
   purpose: 'Extract dated consumer-law facts with provenance a lawyer can re-check.',
   specialty: 'CONSUMIDOR',
   task: 'TIMELINE',
@@ -223,7 +251,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const checklistConsumidorV1 = {
   identifier: 'lex-os.checklist.consumidor',
-  version: 'checklist-consumidor-v1',
+  version: 'checklist-consumidor-v2',
   purpose: 'Match received documents against consumer-law documentary requirements.',
   specialty: 'CONSUMIDOR',
   task: 'CHECKLIST',
@@ -303,7 +331,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerConsumidorV1 = {
   identifier: 'lex-os.grounded-answer.consumidor',
-  version: 'grounded-answer-consumidor-v1',
+  version: 'grounded-answer-consumidor-v2',
   purpose: 'Answer consumer-law questions strictly from authorized case excerpts.',
   specialty: 'CONSUMIDOR',
   task: 'GROUNDED_ANSWER',
@@ -360,7 +388,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const classificationConsumidorV1 = {
   identifier: 'lex-os.classification.consumidor',
-  version: 'classification-consumidor-v1',
+  version: 'classification-consumidor-v2',
   purpose: 'Classify consumer-law documents into the catalogued document types.',
   specialty: 'CONSUMIDOR',
   task: 'CLASSIFICATION',
@@ -431,7 +459,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const entitiesConsumidorV1 = {
   identifier: 'lex-os.entities.consumidor',
-  version: 'entities-consumidor-v1',
+  version: 'entities-consumidor-v2',
   purpose: 'Extract consumer-law entities with resolvable character offsets.',
   specialty: 'CONSUMIDOR',
   task: 'ENTITIES',

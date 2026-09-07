@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito do consumidor estão abaixo, na íntegra e
-exatamente como o sistema as usa — **9.033 palavras**.
+exatamente como o sistema as usa — **10.813 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -57,7 +57,7 @@ recusando usá-las sobre acervo real — a assinatura não é formalidade, é o 
 
 ## Classificar o documento
 
-`classification-consumidor-v1` · identificador `lex-os.classification.consumidor`
+`classification-consumidor-v2` · identificador `lex-os.classification.consumidor`
 
 ### A instrução
 
@@ -152,6 +152,34 @@ garantia do fabricante, a garantia estendida vendida à parte e a garantia da as
 reparo têm prazos próprios e documentos próprios. Registre o prazo tal como escrito no termo, com
 o termo de que saiu, e não some prazos nem conclua qual prevalece.
 
+TRÊS VALORES CONVIVEM E SÃO TRÊS DADOS: o cobrado, o pago e o contestado. Uma fatura discutida traz
+o total lançado, o que o consumidor efetivamente pagou e a parcela que ele impugna, e os três quase
+nunca coincidem. Registre cada um com a sua rubrica e nunca calcule a diferença entre eles.
+
+EM TRANSAÇÃO NÃO RECONHECIDA, O QUE DECIDE É A TRILHA DA CONTESTAÇÃO. Registre a data e a hora de
+cada lançamento impugnado, o canal em que ele ocorreu quando o extrato o disser, a data da
+contestação junto à instituição com o número de protocolo, a resposta dada, o boletim de ocorrência
+quando houver, e a data de eventual estorno. NÃO CONCLUA que houve fraude nem que houve culpa do
+consumidor: registre o que o extrato mostra e o que cada parte alegou.
+
+EMPRÉSTIMO NÃO CONTRATADO TEM CAMPOS PRÓPRIOS, e o primeiro desconto é o marco que o caso persegue.
+Registre o número do contrato apontado, a instituição, o valor liberado e para onde foi creditado,
+o valor da parcela, o número de parcelas, a data do primeiro desconto em folha ou em benefício, e a
+margem consignável quando o documento a trouxer. Crédito recebido e não devolvido é dado a
+registrar, não conclusão sobre quem contratou.
+
+SUPERENDIVIDAMENTO NÃO É INADIMPLÊNCIA COMUM. O procedimento reúne todos os credores para
+repactuar, com plano de pagamento e preservação de um mínimo para viver. Registre a relação de
+dívidas como o documento a apresenta — credor, contrato, valor, parcela —, a renda declarada e as
+despesas essenciais, cada uma como campo próprio. Nunca some as dívidas, nunca calcule
+comprometimento de renda e nunca conclua que o mínimo existencial foi violado.
+
+EM BAGAGEM, EXTRAVIO E AVARIA SÃO OCORRÊNCIAS DISTINTAS COM DOCUMENTO COMUM. O relatório de
+irregularidade lavrado no desembarque é a peça central e tem número próprio. Registre o número do
+relatório, a data e a hora do desembarque, o número da etiqueta da bagagem, o que se declarou
+faltar ou estar danificado, e a data de eventual devolução. Extravio temporário e definitivo são
+desfechos diferentes: registre a devolução quando houver, sem concluir qual dos dois ocorreu.
+
 CLASSIFIQUE PELO QUE A PEÇA É, NÃO PELO PRODUTO DE QUE ELA FALA. O aparelho, o voo ou o plano
 aparecem em todas as peças do caso e por isso não distinguem nenhuma.
 
@@ -207,7 +235,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Extrair os dados do documento
 
-`entities-consumidor-v1` · identificador `lex-os.entities.consumidor`
+`entities-consumidor-v2` · identificador `lex-os.entities.consumidor`
 
 ### A instrução
 
@@ -301,6 +329,34 @@ garantia do fabricante, a garantia estendida vendida à parte e a garantia da as
 reparo têm prazos próprios e documentos próprios. Registre o prazo tal como escrito no termo, com
 o termo de que saiu, e não some prazos nem conclua qual prevalece.
 
+TRÊS VALORES CONVIVEM E SÃO TRÊS DADOS: o cobrado, o pago e o contestado. Uma fatura discutida traz
+o total lançado, o que o consumidor efetivamente pagou e a parcela que ele impugna, e os três quase
+nunca coincidem. Registre cada um com a sua rubrica e nunca calcule a diferença entre eles.
+
+EM TRANSAÇÃO NÃO RECONHECIDA, O QUE DECIDE É A TRILHA DA CONTESTAÇÃO. Registre a data e a hora de
+cada lançamento impugnado, o canal em que ele ocorreu quando o extrato o disser, a data da
+contestação junto à instituição com o número de protocolo, a resposta dada, o boletim de ocorrência
+quando houver, e a data de eventual estorno. NÃO CONCLUA que houve fraude nem que houve culpa do
+consumidor: registre o que o extrato mostra e o que cada parte alegou.
+
+EMPRÉSTIMO NÃO CONTRATADO TEM CAMPOS PRÓPRIOS, e o primeiro desconto é o marco que o caso persegue.
+Registre o número do contrato apontado, a instituição, o valor liberado e para onde foi creditado,
+o valor da parcela, o número de parcelas, a data do primeiro desconto em folha ou em benefício, e a
+margem consignável quando o documento a trouxer. Crédito recebido e não devolvido é dado a
+registrar, não conclusão sobre quem contratou.
+
+SUPERENDIVIDAMENTO NÃO É INADIMPLÊNCIA COMUM. O procedimento reúne todos os credores para
+repactuar, com plano de pagamento e preservação de um mínimo para viver. Registre a relação de
+dívidas como o documento a apresenta — credor, contrato, valor, parcela —, a renda declarada e as
+despesas essenciais, cada uma como campo próprio. Nunca some as dívidas, nunca calcule
+comprometimento de renda e nunca conclua que o mínimo existencial foi violado.
+
+EM BAGAGEM, EXTRAVIO E AVARIA SÃO OCORRÊNCIAS DISTINTAS COM DOCUMENTO COMUM. O relatório de
+irregularidade lavrado no desembarque é a peça central e tem número próprio. Registre o número do
+relatório, a data e a hora do desembarque, o número da etiqueta da bagagem, o que se declarou
+faltar ou estar danificado, e a data de eventual devolução. Extravio temporário e definitivo são
+desfechos diferentes: registre a devolução quando houver, sem concluir qual dos dois ocorreu.
+
 O QUE SE EXTRAI AQUI: razão social e documento de inscrição de cada fornecedor da cadeia, número
 da nota fiscal, número do contrato, número do pedido, número de protocolo de atendimento, número
 da ordem de serviço, descrição e identificação do produto — modelo, número de série, chassi,
@@ -366,7 +422,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Montar a cronologia do caso
 
-`timeline-consumidor-v1` · identificador `lex-os.timeline.consumidor`
+`timeline-consumidor-v2` · identificador `lex-os.timeline.consumidor`
 
 ### A instrução
 
@@ -460,6 +516,34 @@ GARANTIA LEGAL E GARANTIA CONTRATUAL SÃO DUAS, E A SEGUNDA NÃO SUBSTITUI A PRI
 garantia do fabricante, a garantia estendida vendida à parte e a garantia da assistência sobre o
 reparo têm prazos próprios e documentos próprios. Registre o prazo tal como escrito no termo, com
 o termo de que saiu, e não some prazos nem conclua qual prevalece.
+
+TRÊS VALORES CONVIVEM E SÃO TRÊS DADOS: o cobrado, o pago e o contestado. Uma fatura discutida traz
+o total lançado, o que o consumidor efetivamente pagou e a parcela que ele impugna, e os três quase
+nunca coincidem. Registre cada um com a sua rubrica e nunca calcule a diferença entre eles.
+
+EM TRANSAÇÃO NÃO RECONHECIDA, O QUE DECIDE É A TRILHA DA CONTESTAÇÃO. Registre a data e a hora de
+cada lançamento impugnado, o canal em que ele ocorreu quando o extrato o disser, a data da
+contestação junto à instituição com o número de protocolo, a resposta dada, o boletim de ocorrência
+quando houver, e a data de eventual estorno. NÃO CONCLUA que houve fraude nem que houve culpa do
+consumidor: registre o que o extrato mostra e o que cada parte alegou.
+
+EMPRÉSTIMO NÃO CONTRATADO TEM CAMPOS PRÓPRIOS, e o primeiro desconto é o marco que o caso persegue.
+Registre o número do contrato apontado, a instituição, o valor liberado e para onde foi creditado,
+o valor da parcela, o número de parcelas, a data do primeiro desconto em folha ou em benefício, e a
+margem consignável quando o documento a trouxer. Crédito recebido e não devolvido é dado a
+registrar, não conclusão sobre quem contratou.
+
+SUPERENDIVIDAMENTO NÃO É INADIMPLÊNCIA COMUM. O procedimento reúne todos os credores para
+repactuar, com plano de pagamento e preservação de um mínimo para viver. Registre a relação de
+dívidas como o documento a apresenta — credor, contrato, valor, parcela —, a renda declarada e as
+despesas essenciais, cada uma como campo próprio. Nunca some as dívidas, nunca calcule
+comprometimento de renda e nunca conclua que o mínimo existencial foi violado.
+
+EM BAGAGEM, EXTRAVIO E AVARIA SÃO OCORRÊNCIAS DISTINTAS COM DOCUMENTO COMUM. O relatório de
+irregularidade lavrado no desembarque é a peça central e tem número próprio. Registre o número do
+relatório, a data e a hora do desembarque, o número da etiqueta da bagagem, o que se declarou
+faltar ou estar danificado, e a data de eventual devolução. Extravio temporário e definitivo são
+desfechos diferentes: registre a devolução quando houver, sem concluir qual dos dois ocorreu.
 
 A CRONOLOGIA DO CONSUMO COMEÇA ANTES DO PROCESSO, E É A PARTE QUE MAIS DECIDE. Oferta e
 publicidade, contratação, pagamento, entrega ou início da prestação, aparecimento do problema,
@@ -592,7 +676,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Conferir as exigências documentais
 
-`checklist-consumidor-v1` · identificador `lex-os.checklist.consumidor`
+`checklist-consumidor-v2` · identificador `lex-os.checklist.consumidor`
 
 ### A instrução
 
@@ -686,6 +770,34 @@ GARANTIA LEGAL E GARANTIA CONTRATUAL SÃO DUAS, E A SEGUNDA NÃO SUBSTITUI A PRI
 garantia do fabricante, a garantia estendida vendida à parte e a garantia da assistência sobre o
 reparo têm prazos próprios e documentos próprios. Registre o prazo tal como escrito no termo, com
 o termo de que saiu, e não some prazos nem conclua qual prevalece.
+
+TRÊS VALORES CONVIVEM E SÃO TRÊS DADOS: o cobrado, o pago e o contestado. Uma fatura discutida traz
+o total lançado, o que o consumidor efetivamente pagou e a parcela que ele impugna, e os três quase
+nunca coincidem. Registre cada um com a sua rubrica e nunca calcule a diferença entre eles.
+
+EM TRANSAÇÃO NÃO RECONHECIDA, O QUE DECIDE É A TRILHA DA CONTESTAÇÃO. Registre a data e a hora de
+cada lançamento impugnado, o canal em que ele ocorreu quando o extrato o disser, a data da
+contestação junto à instituição com o número de protocolo, a resposta dada, o boletim de ocorrência
+quando houver, e a data de eventual estorno. NÃO CONCLUA que houve fraude nem que houve culpa do
+consumidor: registre o que o extrato mostra e o que cada parte alegou.
+
+EMPRÉSTIMO NÃO CONTRATADO TEM CAMPOS PRÓPRIOS, e o primeiro desconto é o marco que o caso persegue.
+Registre o número do contrato apontado, a instituição, o valor liberado e para onde foi creditado,
+o valor da parcela, o número de parcelas, a data do primeiro desconto em folha ou em benefício, e a
+margem consignável quando o documento a trouxer. Crédito recebido e não devolvido é dado a
+registrar, não conclusão sobre quem contratou.
+
+SUPERENDIVIDAMENTO NÃO É INADIMPLÊNCIA COMUM. O procedimento reúne todos os credores para
+repactuar, com plano de pagamento e preservação de um mínimo para viver. Registre a relação de
+dívidas como o documento a apresenta — credor, contrato, valor, parcela —, a renda declarada e as
+despesas essenciais, cada uma como campo próprio. Nunca some as dívidas, nunca calcule
+comprometimento de renda e nunca conclua que o mínimo existencial foi violado.
+
+EM BAGAGEM, EXTRAVIO E AVARIA SÃO OCORRÊNCIAS DISTINTAS COM DOCUMENTO COMUM. O relatório de
+irregularidade lavrado no desembarque é a peça central e tem número próprio. Registre o número do
+relatório, a data e a hora do desembarque, o número da etiqueta da bagagem, o que se declarou
+faltar ou estar danificado, e a data de eventual devolução. Extravio temporário e definitivo são
+desfechos diferentes: registre a devolução quando houver, sem concluir qual dos dois ocorreu.
 
 **[COMUM]** VOCÊ RECEBE O ENUNCIADO DE CADA EXIGÊNCIA — o título, a descrição
 quando houver, se ela é obrigatória, e o código de tipo documental que ela espera — mais o tipo
@@ -786,7 +898,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-consumidor-v1` · identificador `lex-os.grounded-answer.consumidor`
+`grounded-answer-consumidor-v2` · identificador `lex-os.grounded-answer.consumidor`
 
 ### A instrução
 
@@ -880,6 +992,34 @@ GARANTIA LEGAL E GARANTIA CONTRATUAL SÃO DUAS, E A SEGUNDA NÃO SUBSTITUI A PRI
 garantia do fabricante, a garantia estendida vendida à parte e a garantia da assistência sobre o
 reparo têm prazos próprios e documentos próprios. Registre o prazo tal como escrito no termo, com
 o termo de que saiu, e não some prazos nem conclua qual prevalece.
+
+TRÊS VALORES CONVIVEM E SÃO TRÊS DADOS: o cobrado, o pago e o contestado. Uma fatura discutida traz
+o total lançado, o que o consumidor efetivamente pagou e a parcela que ele impugna, e os três quase
+nunca coincidem. Registre cada um com a sua rubrica e nunca calcule a diferença entre eles.
+
+EM TRANSAÇÃO NÃO RECONHECIDA, O QUE DECIDE É A TRILHA DA CONTESTAÇÃO. Registre a data e a hora de
+cada lançamento impugnado, o canal em que ele ocorreu quando o extrato o disser, a data da
+contestação junto à instituição com o número de protocolo, a resposta dada, o boletim de ocorrência
+quando houver, e a data de eventual estorno. NÃO CONCLUA que houve fraude nem que houve culpa do
+consumidor: registre o que o extrato mostra e o que cada parte alegou.
+
+EMPRÉSTIMO NÃO CONTRATADO TEM CAMPOS PRÓPRIOS, e o primeiro desconto é o marco que o caso persegue.
+Registre o número do contrato apontado, a instituição, o valor liberado e para onde foi creditado,
+o valor da parcela, o número de parcelas, a data do primeiro desconto em folha ou em benefício, e a
+margem consignável quando o documento a trouxer. Crédito recebido e não devolvido é dado a
+registrar, não conclusão sobre quem contratou.
+
+SUPERENDIVIDAMENTO NÃO É INADIMPLÊNCIA COMUM. O procedimento reúne todos os credores para
+repactuar, com plano de pagamento e preservação de um mínimo para viver. Registre a relação de
+dívidas como o documento a apresenta — credor, contrato, valor, parcela —, a renda declarada e as
+despesas essenciais, cada uma como campo próprio. Nunca some as dívidas, nunca calcule
+comprometimento de renda e nunca conclua que o mínimo existencial foi violado.
+
+EM BAGAGEM, EXTRAVIO E AVARIA SÃO OCORRÊNCIAS DISTINTAS COM DOCUMENTO COMUM. O relatório de
+irregularidade lavrado no desembarque é a peça central e tem número próprio. Registre o número do
+relatório, a data e a hora do desembarque, o número da etiqueta da bagagem, o que se declarou
+faltar ou estar danificado, e a data de eventual devolução. Extravio temporário e definitivo são
+desfechos diferentes: registre a devolução quando houver, sem concluir qual dos dois ocorreu.
 
 A PERGUNTA COSTUMA PEDIR A QUALIFICAÇÃO, E É ELA QUE VOCÊ NÃO DÁ. "Isso é vício ou fato", "a
 cláusula é abusiva", "cabe devolução em dobro", "o prazo já correu" são perguntas de advogado.
