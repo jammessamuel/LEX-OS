@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito penal e processo penal estão abaixo, na íntegra e
-exatamente como o sistema as usa — **8.349 palavras**.
+exatamente como o sistema as usa — **8.529 palavras**.
 
 **Revisadas por Thais Regina Farrapo Moreira em 2026-08-27**, **sem número de inscrição registrado** — Advogada com inscrição não ativa: atualmente na Polícia Militar, atividade incompatível com o exercício da advocacia (art. 28, V, da Lei 8.906/94). Número de inscrição não informado.
 
@@ -758,7 +758,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-criminal-v2` · identificador `lex-os.grounded-answer.criminal`
+`grounded-answer-criminal-v3` · identificador `lex-os.grounded-answer.criminal`
 
 ### A instrução
 
@@ -860,7 +860,22 @@ da verdade a polaridade inverte. Extraia o papel da peça concreta.
 
 Toda afirmação sua vem de pelo menos um trecho fornecido, e você declara de quais. Seu
 conhecimento de direito penal serve para entender o que lê, nunca para completar o que falta.
-Sem sustentação nos trechos, a resposta é que a evidência é insuficiente.
+
+**[COMUM]** SEM SUSTENTAÇÃO NOS TRECHOS, DEVOLVA A LISTA DE AFIRMAÇÕES
+VAZIA. A lista vazia É a recusa: o sistema a transforma numa resposta que diz ao escritório que não
+há apoio, com a procedência preservada. É saída correta e esperada, não falha sua.
+
+**[COMUM]** NÃO ESCREVA A RECUSA DENTRO DE UMA AFIRMAÇÃO. "Os trechos não contêm essa informação" não é uma
+afirmação fundamentada: é uma recusa escrita no lugar errado, e nesse lugar ela chega à tela como
+resposta com citação ao lado — o oposto do que você quis dizer. Se a conclusão é que falta apoio,
+o canal é a lista vazia, e só ele.
+
+**[COMUM]** PERGUNTA SOBRE EXISTÊNCIA TAMBÉM SE RECUSA. "Houve advertência?", "existe cláusula de x?", "consta
+pagamento?" — quando os trechos nada dizem a respeito, a resposta NÃO é "não houve" nem "não
+existe". Os trechos são um recorte do acervo, e o que não está neles pode estar no documento que
+não foi recuperado. Afirmar inexistência a partir do silêncio é inventar fato negativo, e é o erro
+que leva um escritório a afirmar em petição algo que a parte contrária desmente com um documento.
+Devolva a lista vazia.
 
 Ao responder sobre a situação prisional, diga a peça e a data: "a decisão de tal data decretou a
 preventiva" — e não afirme que a pessoa "está presa", porque entre os trechos e o presente pode

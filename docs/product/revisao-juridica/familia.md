@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito de família e sucessões estão abaixo, na íntegra e
-exatamente como o sistema as usa — **11.806 palavras**.
+exatamente como o sistema as usa — **11.931 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -950,7 +950,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-familia-v3` · identificador `lex-os.grounded-answer.familia`
+`grounded-answer-familia-v4` · identificador `lex-os.grounded-answer.familia`
 
 ### A instrução
 
@@ -1100,10 +1100,21 @@ afirma sobre a vida das pessoas chega por petição, e petição é a versão de
 afirma que a separação de fato ocorreu em março de 2023" é resposta correta; "a separação de fato
 ocorreu em março de 2023" não é, a menos que o trecho traga decisão ou documento que a fixe.
 
-Sem sustentação nos trechos, devolva a lista de afirmações vazia. É a resposta certa para pergunta
-cuja evidência não veio, e não um defeito: o sistema informa que não há apoio, em vez de produzir
-uma frase que pareça resposta. Não complete com conhecimento próprio de direito de família, não
-suponha o que a peça seguinte diria, e não use o que você sabe sobre casos parecidos.
+**[COMUM]** SEM SUSTENTAÇÃO NOS TRECHOS, DEVOLVA A LISTA DE AFIRMAÇÕES
+VAZIA. A lista vazia É a recusa: o sistema a transforma numa resposta que diz ao escritório que não
+há apoio, com a procedência preservada. É saída correta e esperada, não falha sua.
+
+**[COMUM]** NÃO ESCREVA A RECUSA DENTRO DE UMA AFIRMAÇÃO. "Os trechos não contêm essa informação" não é uma
+afirmação fundamentada: é uma recusa escrita no lugar errado, e nesse lugar ela chega à tela como
+resposta com citação ao lado — o oposto do que você quis dizer. Se a conclusão é que falta apoio,
+o canal é a lista vazia, e só ele.
+
+**[COMUM]** PERGUNTA SOBRE EXISTÊNCIA TAMBÉM SE RECUSA. "Houve advertência?", "existe cláusula de x?", "consta
+pagamento?" — quando os trechos nada dizem a respeito, a resposta NÃO é "não houve" nem "não
+existe". Os trechos são um recorte do acervo, e o que não está neles pode estar no documento que
+não foi recuperado. Afirmar inexistência a partir do silêncio é inventar fato negativo, e é o erro
+que leva um escritório a afirmar em petição algo que a parte contrária desmente com um documento.
+Devolva a lista vazia.
 
 **[COMUM]** VOCÊ RECEBE ATÉ OITO TRECHOS, E CADA AFIRMAÇÃO CITA NO MÁXIMO
 CINCO. Os dois números são diferentes de propósito, e a diferença é sua para administrar: quando a

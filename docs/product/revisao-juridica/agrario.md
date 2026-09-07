@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito agrário e do agronegócio estão abaixo, na íntegra e
-exatamente como o sistema as usa — **8.772 palavras**.
+exatamente como o sistema as usa — **8.926 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -791,7 +791,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-agrario-v3` · identificador `lex-os.grounded-answer.agrario`
+`grounded-answer-agrario-v4` · identificador `lex-os.grounded-answer.agrario`
 
 ### A instrução
 
@@ -905,9 +905,21 @@ garantia vale", "a posse é boa", "cabe reintegração" dependem de qualificaç�
 com o que os trechos registram — como o instrumento se intitula, como remunera, o que a matrícula
 mostra — e diga que a conclusão não está nos trechos.
 
-Sem sustentação nos trechos, devolva a lista de afirmações vazia. Não complete com conhecimento
-próprio de direito agrário, não suponha o que a cláusula seguinte diria, e não use o que você sabe
-sobre a prática do setor.
+**[COMUM]** SEM SUSTENTAÇÃO NOS TRECHOS, DEVOLVA A LISTA DE AFIRMAÇÕES
+VAZIA. A lista vazia É a recusa: o sistema a transforma numa resposta que diz ao escritório que não
+há apoio, com a procedência preservada. É saída correta e esperada, não falha sua.
+
+**[COMUM]** NÃO ESCREVA A RECUSA DENTRO DE UMA AFIRMAÇÃO. "Os trechos não contêm essa informação" não é uma
+afirmação fundamentada: é uma recusa escrita no lugar errado, e nesse lugar ela chega à tela como
+resposta com citação ao lado — o oposto do que você quis dizer. Se a conclusão é que falta apoio,
+o canal é a lista vazia, e só ele.
+
+**[COMUM]** PERGUNTA SOBRE EXISTÊNCIA TAMBÉM SE RECUSA. "Houve advertência?", "existe cláusula de x?", "consta
+pagamento?" — quando os trechos nada dizem a respeito, a resposta NÃO é "não houve" nem "não
+existe". Os trechos são um recorte do acervo, e o que não está neles pode estar no documento que
+não foi recuperado. Afirmar inexistência a partir do silêncio é inventar fato negativo, e é o erro
+que leva um escritório a afirmar em petição algo que a parte contrária desmente com um documento.
+Devolva a lista vazia.
 
 Ao responder sobre conflito coletivo, identifique ocupantes e comunidades pelo papel, nunca pelo
 nome, e nunca devolva endereço residencial.

@@ -8,7 +8,11 @@ import {
   TIMELINE_INPUT,
   TIMELINE_OUTPUT,
 } from './contratos.js';
-import { CRONOLOGIA_PODE_SER_VAZIA, DATA_DE_REFERENCIA_DO_CHECKLIST } from './acervo.js';
+import {
+  CRONOLOGIA_PODE_SER_VAZIA,
+  DATA_DE_REFERENCIA_DO_CHECKLIST,
+  RECUSA_SEM_SUSTENTACAO,
+} from './acervo.js';
 import { SOURCE_IS_DATA } from './separacao.js';
 
 /**
@@ -136,7 +140,7 @@ Responda somente com o JSON do contrato de saída, sem texto ao redor.`,
 
 export const groundedAnswerPromptV1 = {
   identifier: 'lex-os.grounded-answer.mock',
-  version: 'grounded-answer-mock-v2',
+  version: 'grounded-answer-mock-v3',
   purpose: 'Answer one case-scoped question using only authorized source chunks and citations.',
   specialty: null,
   task: 'GROUNDED_ANSWER',
@@ -147,8 +151,9 @@ ${SOURCE_IS_DATA}
 
 Regra que não tem exceção: toda afirmação sua precisa vir de pelo menos um trecho fornecido, e
 você declara de quais. Conhecimento seu sobre direito, sobre o mundo ou sobre casos parecidos
-não é fonte e não entra na resposta. Se os trechos não sustentam a resposta, diga que a
-evidência é insuficiente — é resposta melhor do que uma frase plausível sem lastro.
+não é fonte e não entra na resposta.
+
+${RECUSA_SEM_SUSTENTACAO}
 
 Você pode resumir, conectar e ordenar o que está nos trechos. Não pode acrescentar fato que
 não esteja neles, nem preencher lacuna com o que costuma ser verdade.

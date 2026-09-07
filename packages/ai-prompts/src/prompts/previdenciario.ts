@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
   TEXTO_PODE_VIR_CORTADO,
@@ -341,7 +342,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerPrevidenciarioV1 = {
   identifier: 'lex-os.grounded-answer.previdenciario',
-  version: 'grounded-answer-previdenciario-v2',
+  version: 'grounded-answer-previdenciario-v3',
   purpose: 'Answer social-security case questions strictly from authorized excerpts.',
   specialty: 'PREVIDENCIARIO',
   task: 'GROUNDED_ANSWER',
@@ -352,7 +353,9 @@ ${PREVIDENCIARIO_BASE}
 
 Toda afirmação sua vem de pelo menos um trecho fornecido, e você declara de quais. Seu
 conhecimento de direito previdenciário serve para entender o que lê, nunca para completar o que
-falta. Se os trechos não sustentam a resposta, diga que a evidência é insuficiente.
+falta.
+
+${RECUSA_SEM_SUSTENTACAO}
 
 A PERGUNTA MAIS FEITA NESTA ÁREA É UMA CONTA, E A RESPOSTA ÚTIL NÃO É O NÚMERO. "Quanto tempo ele
 já tem?", "já cumpriu a carência?", "ainda é segurado?", "quanto vai receber?", "o período é

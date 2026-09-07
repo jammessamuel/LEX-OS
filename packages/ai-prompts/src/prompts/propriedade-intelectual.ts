@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
   TEXTO_PODE_VIR_CORTADO,
@@ -299,7 +300,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerPiV1 = {
   identifier: 'lex-os.grounded-answer.propriedade-intelectual',
-  version: 'grounded-answer-propriedade-intelectual-v3',
+  version: 'grounded-answer-propriedade-intelectual-v4',
   purpose: 'Answer intellectual-property questions strictly from authorized excerpts.',
   specialty: 'PROPRIEDADE_INTELECTUAL',
   task: 'GROUNDED_ANSWER',
@@ -321,9 +322,7 @@ nula", "houve plágio", "a licença cobre este uso" dependem de exame técnico e
 contratual. Responda com o que os trechos registram — o que o certificado declara, o que a
 cláusula escreve, o que o laudo mediu — e diga que a conclusão não está nos trechos.
 
-Sem sustentação nos trechos, devolva a lista de afirmações vazia. Não complete com conhecimento
-próprio de propriedade intelectual, não suponha o que a cláusula seguinte diria, e não use o que
-você sabe sobre a prática do instituto.
+${RECUSA_SEM_SUSTENTACAO}
 
 ${QUEBRE_A_AFIRMACAO}
 

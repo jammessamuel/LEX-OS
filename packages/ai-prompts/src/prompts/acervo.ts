@@ -90,6 +90,39 @@ fonte. Afirmação com mais de cinco trechos é recusada inteira, e a resposta s
 Responder pouco e responder mal são erros iguais; a saída existe para que quem lê consiga voltar
 ao papel.`;
 
+/**
+ * Como se recusa, e por que a lista vazia é o único caminho.
+ *
+ * Cada faixa escrevia a sua versão desta regra, e elas discordavam. As antigas mandavam "diga que
+ * a evidência é insuficiente"; as escritas depois de 2026-09-06 mandavam devolver lista vazia.
+ * A primeira redação é de um contrato que não existe mais — desde que a lista vazia virou recusa
+ * de verdade, dizer a insuficiência dentro de uma afirmação produz o pior resultado possível:
+ * chega ao escritório como resposta fundamentada, com citação ao lado.
+ *
+ * A avaliação de 2026-09-07 mediu o efeito. Três das cinco perguntas sem resposta no acervo
+ * voltaram assim, e a faixa que o eval exercita é justamente uma das que mandavam "diga".
+ *
+ * A segunda metade do bloco cobre um caso que nenhuma faixa tratava: pergunta sobre existência.
+ * "Houve advertência?" respondida com "não houve" é afirmação que os trechos não sustentam — eles
+ * podem apenas não trazer a advertência. Silêncio de recorte não é prova de inexistência, e essa
+ * confusão faz o escritório afirmar fato negativo em petição.
+ */
+export const RECUSA_SEM_SUSTENTACAO = `SEM SUSTENTAÇÃO NOS TRECHOS, DEVOLVA A LISTA DE AFIRMAÇÕES
+VAZIA. A lista vazia É a recusa: o sistema a transforma numa resposta que diz ao escritório que não
+há apoio, com a procedência preservada. É saída correta e esperada, não falha sua.
+
+NÃO ESCREVA A RECUSA DENTRO DE UMA AFIRMAÇÃO. "Os trechos não contêm essa informação" não é uma
+afirmação fundamentada: é uma recusa escrita no lugar errado, e nesse lugar ela chega à tela como
+resposta com citação ao lado — o oposto do que você quis dizer. Se a conclusão é que falta apoio,
+o canal é a lista vazia, e só ele.
+
+PERGUNTA SOBRE EXISTÊNCIA TAMBÉM SE RECUSA. "Houve advertência?", "existe cláusula de x?", "consta
+pagamento?" — quando os trechos nada dizem a respeito, a resposta NÃO é "não houve" nem "não
+existe". Os trechos são um recorte do acervo, e o que não está neles pode estar no documento que
+não foi recuperado. Afirmar inexistência a partir do silêncio é inventar fato negativo, e é o erro
+que leva um escritório a afirmar em petição algo que a parte contrária desmente com um documento.
+Devolva a lista vazia.`;
+
 export const VALOR_NORMALIZADO = `O VALOR NORMALIZADO É FORMA CANÔNICA DE DADO ESTRUTURADO,
 NÃO CORREÇÃO. Data em formato ISO, valor monetário em número, documento de identificação sem
 máscara. Para nome de pessoa, razão social, endereço, rótulo de rubrica e texto de cláusula, o

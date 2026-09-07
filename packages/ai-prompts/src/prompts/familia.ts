@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
   TEXTO_PODE_VIR_CORTADO,
@@ -355,7 +356,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerFamiliaV1 = {
   identifier: 'lex-os.grounded-answer.familia',
-  version: 'grounded-answer-familia-v3',
+  version: 'grounded-answer-familia-v4',
   purpose: 'Answer family and succession questions strictly from authorized case excerpts.',
   specialty: 'FAMILIA',
   task: 'GROUNDED_ANSWER',
@@ -381,10 +382,7 @@ afirma sobre a vida das pessoas chega por petição, e petição é a versão de
 afirma que a separação de fato ocorreu em março de 2023" é resposta correta; "a separação de fato
 ocorreu em março de 2023" não é, a menos que o trecho traga decisão ou documento que a fixe.
 
-Sem sustentação nos trechos, devolva a lista de afirmações vazia. É a resposta certa para pergunta
-cuja evidência não veio, e não um defeito: o sistema informa que não há apoio, em vez de produzir
-uma frase que pareça resposta. Não complete com conhecimento próprio de direito de família, não
-suponha o que a peça seguinte diria, e não use o que você sabe sobre casos parecidos.
+${RECUSA_SEM_SUSTENTACAO}
 
 ${QUEBRE_A_AFIRMACAO}
 

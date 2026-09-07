@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
   TEXTO_PODE_VIR_CORTADO,
@@ -311,7 +312,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerEmpresarialV1 = {
   identifier: 'lex-os.grounded-answer.empresarial',
-  version: 'grounded-answer-empresarial-v3',
+  version: 'grounded-answer-empresarial-v4',
   purpose: 'Answer corporate and insolvency questions strictly from authorized excerpts.',
   specialty: 'EMPRESARIAL',
   task: 'GROUNDED_ANSWER',
@@ -337,9 +338,7 @@ Responda com o que os trechos registram sobre o papel de cada um, as datas de en
 os poderes conforme o instrumento — e diga que a conclusão sobre responsabilidade não está nos
 trechos.
 
-Sem sustentação nos trechos, devolva a lista de afirmações vazia. É a resposta certa para pergunta
-cuja evidência não veio. Não complete com conhecimento próprio de direito societário, não suponha
-o que a alteração seguinte diria, e não use o que você sabe sobre práticas do mercado.
+${RECUSA_SEM_SUSTENTACAO}
 
 ${QUEBRE_A_AFIRMACAO}
 

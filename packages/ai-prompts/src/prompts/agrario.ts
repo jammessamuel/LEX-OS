@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
   TEXTO_PODE_VIR_CORTADO,
@@ -295,7 +296,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerAgrarioV1 = {
   identifier: 'lex-os.grounded-answer.agrario',
-  version: 'grounded-answer-agrario-v3',
+  version: 'grounded-answer-agrario-v4',
   purpose: 'Answer agrarian questions strictly from authorized excerpts.',
   specialty: 'AGRARIO',
   task: 'GROUNDED_ANSWER',
@@ -317,9 +318,7 @@ garantia vale", "a posse é boa", "cabe reintegração" dependem de qualificaç�
 com o que os trechos registram — como o instrumento se intitula, como remunera, o que a matrícula
 mostra — e diga que a conclusão não está nos trechos.
 
-Sem sustentação nos trechos, devolva a lista de afirmações vazia. Não complete com conhecimento
-próprio de direito agrário, não suponha o que a cláusula seguinte diria, e não use o que você sabe
-sobre a prática do setor.
+${RECUSA_SEM_SUSTENTACAO}
 
 Ao responder sobre conflito coletivo, identifique ocupantes e comunidades pelo papel, nunca pelo
 nome, e nunca devolva endereço residencial.

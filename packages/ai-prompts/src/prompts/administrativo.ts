@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
   TEXTO_PODE_VIR_CORTADO,
@@ -354,7 +355,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerAdministrativoV1 = {
   identifier: 'lex-os.grounded-answer.administrativo',
-  version: 'grounded-answer-administrativo-v3',
+  version: 'grounded-answer-administrativo-v4',
   purpose: 'Answer administrative-law questions strictly from authorized excerpts.',
   specialty: 'ADMINISTRATIVO',
   task: 'GROUNDED_ANSWER',
@@ -377,9 +378,7 @@ MOTIVO PEDIDO É MOTIVO COPIADO. Quando a pergunta for por que a administração
 decidiu, devolva o texto da motivação como o ato o escreve, entre aspas quando couber, e identifique
 o ato e a data. Não resuma, não interprete e não complete com o fundamento que pareceria natural.
 
-Sem sustentação nos trechos, devolva a lista de afirmações vazia. É a resposta certa para pergunta
-cuja evidência não veio. Não complete com conhecimento próprio de direito administrativo, não
-suponha o que o edital diria, e não use o que você sabe sobre a prática do órgão.
+${RECUSA_SEM_SUSTENTACAO}
 
 ${QUEBRE_A_AFIRMACAO}
 

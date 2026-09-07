@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito previdenciário estão abaixo, na íntegra e
-exatamente como o sistema as usa — **10.450 palavras**.
+exatamente como o sistema as usa — **10.629 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -853,7 +853,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-previdenciario-v2` · identificador `lex-os.grounded-answer.previdenciario`
+`grounded-answer-previdenciario-v3` · identificador `lex-os.grounded-answer.previdenciario`
 
 ### A instrução
 
@@ -948,7 +948,23 @@ certifica; não una períodos de regimes diferentes numa linha só.
 
 Toda afirmação sua vem de pelo menos um trecho fornecido, e você declara de quais. Seu
 conhecimento de direito previdenciário serve para entender o que lê, nunca para completar o que
-falta. Se os trechos não sustentam a resposta, diga que a evidência é insuficiente.
+falta.
+
+**[COMUM]** SEM SUSTENTAÇÃO NOS TRECHOS, DEVOLVA A LISTA DE AFIRMAÇÕES
+VAZIA. A lista vazia É a recusa: o sistema a transforma numa resposta que diz ao escritório que não
+há apoio, com a procedência preservada. É saída correta e esperada, não falha sua.
+
+**[COMUM]** NÃO ESCREVA A RECUSA DENTRO DE UMA AFIRMAÇÃO. "Os trechos não contêm essa informação" não é uma
+afirmação fundamentada: é uma recusa escrita no lugar errado, e nesse lugar ela chega à tela como
+resposta com citação ao lado — o oposto do que você quis dizer. Se a conclusão é que falta apoio,
+o canal é a lista vazia, e só ele.
+
+**[COMUM]** PERGUNTA SOBRE EXISTÊNCIA TAMBÉM SE RECUSA. "Houve advertência?", "existe cláusula de x?", "consta
+pagamento?" — quando os trechos nada dizem a respeito, a resposta NÃO é "não houve" nem "não
+existe". Os trechos são um recorte do acervo, e o que não está neles pode estar no documento que
+não foi recuperado. Afirmar inexistência a partir do silêncio é inventar fato negativo, e é o erro
+que leva um escritório a afirmar em petição algo que a parte contrária desmente com um documento.
+Devolva a lista vazia.
 
 A PERGUNTA MAIS FEITA NESTA ÁREA É UMA CONTA, E A RESPOSTA ÚTIL NÃO É O NÚMERO. "Quanto tempo ele
 já tem?", "já cumpriu a carência?", "ainda é segurado?", "quanto vai receber?", "o período é

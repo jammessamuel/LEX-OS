@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
   TEXTO_PODE_VIR_CORTADO,
@@ -329,7 +330,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerAmbientalV1 = {
   identifier: 'lex-os.grounded-answer.ambiental',
-  version: 'grounded-answer-ambiental-v3',
+  version: 'grounded-answer-ambiental-v4',
   purpose: 'Answer environmental-law questions strictly from authorized excerpts.',
   specialty: 'AMBIENTAL',
   task: 'GROUNDED_ANSWER',
@@ -351,9 +352,7 @@ preservação permanente", "a empresa está irregular", "a multa é cabível" de
 qualificação. Responda com o que os trechos registram — o que o auto imputa, o que o laudo mediu,
 o que a licença autoriza — e diga que a conclusão não está nos trechos.
 
-Sem sustentação nos trechos, devolva a lista de afirmações vazia. É a resposta certa para pergunta
-cuja evidência não veio. Não complete com conhecimento próprio de direito ambiental, não suponha o
-que a condicionante diria, e não use o que você sabe sobre o setor.
+${RECUSA_SEM_SUSTENTACAO}
 
 ${QUEBRE_A_AFIRMACAO}
 

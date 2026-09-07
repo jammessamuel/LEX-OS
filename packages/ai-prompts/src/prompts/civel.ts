@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
   TEXTO_PODE_VIR_CORTADO,
@@ -305,7 +306,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerCivelV1 = {
   identifier: 'lex-os.grounded-answer.civel',
-  version: 'grounded-answer-civel-v2',
+  version: 'grounded-answer-civel-v3',
   purpose: 'Answer civil-case questions strictly from authorized excerpts.',
   specialty: 'CIVEL',
   task: 'GROUNDED_ANSWER',
@@ -315,8 +316,9 @@ autorizados que acompanham a pergunta.
 ${CIVEL_BASE}
 
 Toda afirmação sua vem de pelo menos um trecho fornecido, e você declara de quais. Seu
-conhecimento de direito serve para entender o que lê, nunca para completar o que falta. Sem
-sustentação nos trechos, a resposta é que a evidência é insuficiente.
+conhecimento de direito serve para entender o que lê, nunca para completar o que falta.
+
+${RECUSA_SEM_SUSTENTACAO}
 
 Pergunta de contagem ou de ausência — "faltou alguma parcela?", "há notificação nos autos?" —
 não se responde pelo conjunto recuperado: você viu alguns trechos, não o processo. Responda o

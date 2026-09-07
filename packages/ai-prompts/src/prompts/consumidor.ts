@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
   TEXTO_PODE_VIR_CORTADO,
@@ -331,7 +332,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerConsumidorV1 = {
   identifier: 'lex-os.grounded-answer.consumidor',
-  version: 'grounded-answer-consumidor-v3',
+  version: 'grounded-answer-consumidor-v4',
   purpose: 'Answer consumer-law questions strictly from authorized case excerpts.',
   specialty: 'CONSUMIDOR',
   task: 'GROUNDED_ANSWER',
@@ -354,9 +355,7 @@ VALOR PEDIDO É VALOR COPIADO. Não atualize, não corrija monetariamente, não 
 dobre e não some parcelas. Se o trecho traz o valor cobrado e o valor pago, devolva os dois e diga
 o que cada um é.
 
-Sem sustentação nos trechos, devolva a lista de afirmações vazia. É a resposta certa para pergunta
-cuja evidência não veio. Não complete com conhecimento próprio de direito do consumidor, não
-suponha o que o contrato diria, e não use o que você sabe sobre práticas do setor.
+${RECUSA_SEM_SUSTENTACAO}
 
 ${QUEBRE_A_AFIRMACAO}
 

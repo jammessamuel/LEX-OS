@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
   TEXTO_PODE_VIR_CORTADO,
@@ -352,7 +353,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerTributarioV1 = {
   identifier: 'lex-os.grounded-answer.tributario',
-  version: 'grounded-answer-tributario-v2',
+  version: 'grounded-answer-tributario-v3',
   purpose: 'Answer tax-case questions strictly from authorized excerpts.',
   specialty: 'TRIBUTARIO',
   task: 'GROUNDED_ANSWER',
@@ -363,7 +364,8 @@ ${TRIBUTARIO_BASE}
 
 Toda afirmação sua vem de pelo menos um trecho fornecido, e você declara de quais. Seu
 conhecimento de direito tributário serve para entender o que lê, nunca para completar o que falta.
-Se os trechos não sustentam a resposta, diga que a evidência é insuficiente.
+
+${RECUSA_SEM_SUSTENTACAO}
 
 ANTES DE DEVOLVER UM NÚMERO, DIGA QUAL NÚMERO É, DE QUE PEÇA SAIU E ATÉ QUANDO ELE ESTÁ
 ATUALIZADO. Valor originário, principal por competência, multa de ofício, multa isolada, multa de

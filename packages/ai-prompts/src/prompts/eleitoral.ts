@@ -9,6 +9,7 @@ import {
   IMAGEM_RUIM,
   LOCALIZADOR_PJE,
   QUEBRE_A_AFIRMACAO,
+  RECUSA_SEM_SUSTENTACAO,
   RESPONDA_SO_JSON,
   SEM_DATA_DE_HOJE,
   TEXTO_PODE_VIR_CORTADO,
@@ -288,7 +289,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerEleitoralV1 = {
   identifier: 'lex-os.grounded-answer.eleitoral',
-  version: 'grounded-answer-eleitoral-v3',
+  version: 'grounded-answer-eleitoral-v4',
   purpose: 'Answer electoral-law questions strictly from authorized excerpts.',
   specialty: 'ELEITORAL',
   task: 'GROUNDED_ANSWER',
@@ -314,9 +315,7 @@ propaganda é irregular", "houve abuso", "as contas serão aprovadas" dependem d
 jurídica. Responda com o que os trechos registram — o que a decisão declarou, o que a certidão
 mostra, o que a representação imputa — e diga que a conclusão não está nos trechos.
 
-Sem sustentação nos trechos, devolva a lista de afirmações vazia. Não complete com conhecimento
-próprio de direito eleitoral, não suponha o que o calendário fixava, e não use o que você sabe
-sobre pleitos anteriores.
+${RECUSA_SEM_SUSTENTACAO}
 
 ${QUEBRE_A_AFIRMACAO}
 
