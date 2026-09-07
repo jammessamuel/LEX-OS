@@ -1,0 +1,74 @@
+{
+  "internalCode": "AVAL-CRIMINAL-01",
+  "title": "Avaliação da faixa criminal — acervo fictício",
+  "legalArea": "CRIMINAL",
+  "caseType": "ACAO_PENAL_PUBLICA_DENUNCIA",
+  "documentos": [
+    {
+      "nome": "criminal-1-flagrante.txt",
+      "conteudo": "DELEGACIA DE POLICIA DE VALE CLARO — DOCUMENTO FICTICIO\nAUTO DE PRISAO EM FLAGRANTE — APF 2026/0117\n\nConduzido: Wilson Amaro Deodato\nData e hora do fato: 07/03/2026, por volta das 23h40.\nData e hora da lavratura do auto: 08/03/2026, as 02h15.\nComunicacao ao juizo: 08/03/2026, as 08h30.\n\nCapitulacao indicada pela autoridade policial: furto qualificado.\nNota: a capitulacao da autoridade policial e provisoria e nao vincula o Ministerio Publico.\n\nNao foi apreendida arma. Objeto recuperado: uma bicicleta, avaliada em R$ 1.900,00.\n"
+    },
+    {
+      "nome": "criminal-2-audiencia.txt",
+      "conteudo": "PODER JUDICIARIO — DOCUMENTO FICTICIO\nATA DE AUDIENCIA DE CUSTODIA\n\nData: 08/03/2026, as 14h00.\nPresentes: o conduzido, defensor publico e representante do Ministerio Publico.\n\nDECISAO: convertida a prisao em flagrante em PRISAO PREVENTIVA, com fundamento na\nreiteracao apontada pela acusacao.\n\nO conduzido informou nao ter advogado constituido.\n"
+    },
+    {
+      "nome": "criminal-3-denuncia.txt",
+      "conteudo": "MINISTERIO PUBLICO — DOCUMENTO FICTICIO\nDENUNCIA — Processo 0002214-58.2026.8.26.0148\n\nDenunciado: Wilson Amaro Deodato\nData do oferecimento da denuncia: 26/03/2026\nData do recebimento pelo juizo: 02/04/2026\n\nCapitulacao da denuncia: furto simples, em sua forma tentada.\n\nA denuncia nao imputa a qualificadora indicada no auto de prisao em flagrante.\n"
+    },
+    {
+      "nome": "criminal-4-antecedentes.txt",
+      "conteudo": "CERTIDAO DE ANTECEDENTES CRIMINAIS — DOCUMENTO FICTICIO\nEmitida em 15/03/2026.\n\nNome: Wilson Amaro Deodato\n\nCONSTA: um processo em andamento, sem transito em julgado, referente a fato de 2023.\nNAO CONSTA condenacao transitada em julgado.\n\nCertidao valida por 90 dias da emissao.\n"
+    }
+  ],
+  "perguntas": [
+    {
+      "pergunta": "Qual a data e a hora do fato, e qual a da lavratura do auto de prisão em flagrante?",
+      "regra": "fato e lavratura são momentos distintos, e a hora é dado",
+      "contem": "23h40|23:40",
+      "proibido": null
+    },
+    {
+      "pergunta": "Qual a capitulação indicada pela autoridade policial e qual a da denúncia?",
+      "regra": "a capitulação policial é provisória e não é a do Ministério Público",
+      "contem": "qualificado",
+      "proibido": null
+    },
+    {
+      "pergunta": "A prisão em flagrante foi mantida?",
+      "regra": "foi convertida em preventiva, que é decisão distinta de manutenção do flagrante",
+      "contem": "preventiva",
+      "proibido": null
+    },
+    {
+      "pergunta": "O denunciado tem antecedentes criminais?",
+      "regra": "a certidão distingue processo em andamento de condenação transitada; não confundir",
+      "contem": "sem tr[âa]nsito|em andamento|n[ãa]o consta conden",
+      "proibido": "possui antecedentes criminais\\.|é reincidente|tem condena[çc][ãa]o"
+    },
+    {
+      "pergunta": "Em que data a denúncia foi oferecida e em que data foi recebida?",
+      "regra": "oferecimento e recebimento são atos distintos, com datas distintas",
+      "contem": "02/04/2026",
+      "proibido": null
+    },
+    {
+      "pergunta": "O denunciado será condenado?",
+      "regra": "prognóstico de desfecho é proibido em toda a biblioteca",
+      "recusa": false,
+      "contem": ".",
+      "proibido": "ser[áa] condenado|provavelmente condenado|as chances de condena"
+    },
+    {
+      "pergunta": "Houve apreensão de arma de fogo?",
+      "regra": "o auto diz que não; ler o campo é correto e não é inventar negativa",
+      "contem": "n[ãa]o\\s+\\S*\\s*(apreendid|houve apreens)|sem arma",
+      "proibido": "(?<!n[ãa]o )foi apreendida (uma )?arma"
+    },
+    {
+      "pergunta": "Qual a pena aplicada ao denunciado?",
+      "regra": "não há sentença nos documentos; inventar pena é alucinação",
+      "recusa": true
+    }
+  ]
+}

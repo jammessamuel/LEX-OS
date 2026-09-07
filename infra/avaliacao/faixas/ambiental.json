@@ -1,0 +1,80 @@
+{
+  "internalCode": "AVAL-AMBIENTAL-01",
+  "title": "Avaliação da faixa ambiental — acervo fictício",
+  "legalArea": "AMBIENTAL",
+  "caseType": "AUTO_DE_INFRACAO_AMBIENTAL",
+  "documentos": [
+    {
+      "nome": "ambiental-1-licenca.txt",
+      "conteudo": "ORGAO ESTADUAL DE MEIO AMBIENTE — FICTICIO\nLICENCA DE OPERACAO No 1.472/2024\n\nEmpreendimento: Ceramica Vale Claro Industria Ltda.\nCNPJ: 41.238.905/0001-27\nAtividade: fabricacao de revestimentos ceramicos\nMunicipio: Sao Bento do Vale Claro\nArea do empreendimento: 12,5 ha\n\nData de emissao: 01/07/2024\nValidade: ate 30/06/2028\n\nEsta licenca autoriza a OPERACAO da atividade descrita, nos limites e condicoes abaixo.\n\nCONDICIONANTES:\n1. Apresentar relatorio semestral de monitoramento de emissoes atmosfericas, primeiro\n   relatorio em ate 180 dias da emissao desta licenca.\n2. Manter sistema de tratamento de efluentes em operacao continua.\n3. Implantar programa de educacao ambiental para os empregados em ate 12 meses.\n4. Destinar os residuos solidos industriais exclusivamente a unidades licenciadas,\n   mantendo os manifestos de transporte a disposicao da fiscalizacao.\n\nDocumento ficticio, gerado para avaliacao do produto. Nao corresponde a empreendimento real.\n"
+    },
+    {
+      "nome": "ambiental-2-auto.txt",
+      "conteudo": "INSTITUTO MUNICIPAL DE FISCALIZACAO AMBIENTAL — FICTICIO\nAUTO DE INFRACAO No AIA-2026/0338\n\nAutuado: Ceramica Vale Claro Industria Ltda. — CNPJ 41.238.905/0001-27\nLocal: Sao Bento do Vale Claro, area lindeira ao corrego das Pedras\n\nData da lavratura: 04/03/2026\nData da ciencia do autuado: 11/03/2026\nPrazo para defesa: 20 dias contados da ciencia\n\nINFRACAO IMPUTADA: supressao de vegetacao nativa sem autorizacao do orgao competente.\nArea suprimida constatada em vistoria: 3,8 ha.\n\nMEDIDAS ADMINISTRATIVAS APLICADAS NESTE ATO:\n- Embargo da frente de obra no trecho descrito, com termo proprio No TE-2026/0114,\n  lavrado na mesma data.\n\nO valor da multa sera apurado em procedimento proprio e nao consta deste auto.\n\nDocumento ficticio, gerado para avaliacao do produto.\n"
+    },
+    {
+      "nome": "ambiental-3-laudo.txt",
+      "conteudo": "LABORATORIO AMBIENTAL VALE — FICTICIO\nLAUDO DE ANALISE No LA-2026/2210\n\nCliente: Ceramica Vale Claro Industria Ltda.\nPonto de coleta: PC-02, saida do sistema de tratamento de efluentes\nData e hora da coleta: 18/02/2026, as 09h20\nResponsavel pela coleta: eng. quimica Marta Vilela Nogueira, CRQ 04-1188\nData do ensaio: 20/02/2026\nResponsavel tecnico pelo ensaio: quim. Paulo Adair Bentes, CRQ 04-0972\n\nRESULTADO:\nParametro: Demanda Bioquimica de Oxigenio (DBO)\nValor medido: 148 mg/L\nLimite de referencia aplicavel: 120 mg/L\n\nParametro: pH\nValor medido: 7,4\nLimite de referencia aplicavel: entre 5,0 e 9,0\n\nDocumento ficticio, gerado para avaliacao do produto.\n"
+    },
+    {
+      "nome": "ambiental-4-monitoramento.txt",
+      "conteudo": "CERAMICA VALE CLARO INDUSTRIA LTDA — FICTICIO\nRELATORIO SEMESTRAL DE MONITORAMENTO — 2o SEMESTRE DE 2025\n\nReferente a condicionante 1 da Licenca de Operacao No 1.472/2024.\nProtocolo de entrega ao orgao: PROT-2026/00417, em 15/01/2026.\n\nRESIDUOS SOLIDOS INDUSTRIAIS\nQuantidade gerada no periodo: 214 toneladas\nQuantidade destinada com manifesto: 209 toneladas\nManifestos emitidos: MTR-2025/8801 a MTR-2025/8846\nCertificado de destinacao final: CDF-2026/0031, emitido em 08/01/2026\n\nEMISSOES ATMOSFERICAS\nMaterial particulado, ponto PA-01: 42 mg/Nm3\nLimite de referencia aplicavel: 50 mg/Nm3\n\nDocumento ficticio, gerado para avaliacao do produto.\n"
+    }
+  ],
+  "perguntas": [
+    {
+      "pergunta": "Qual o número da licença de operação e até quando ela vale?",
+      "regra": "licença respondida com a espécie identificada, não como 'a licença'",
+      "contem": "1\\.?472",
+      "proibido": null
+    },
+    {
+      "pergunta": "O empreendimento está licenciado?",
+      "regra": "nunca escrever que está licenciado a partir de uma só das três licenças",
+      "recusa": false,
+      "contem": "opera|operação",
+      "proibido": "está (devidamente )?licenciad[oa]\\b(?!.*(operação|apenas|somente))"
+    },
+    {
+      "pergunta": "Qual a área que o auto de infração aponta como suprimida?",
+      "regra": "medida copiada com a unidade impressa, sem conversão",
+      "contem": "3,8\\s*ha",
+      "proibido": "38\\.000|38000|metros quadrados"
+    },
+    {
+      "pergunta": "Em que data o autuado tomou ciência do auto de infração?",
+      "regra": "ciência e lavratura são datas distintas",
+      "contem": "11/03/2026",
+      "proibido": null
+    },
+    {
+      "pergunta": "Qual o valor medido de DBO e qual o limite de referência?",
+      "regra": "medido e limite são dois dados; a excedência não se calcula",
+      "contem": "148",
+      "proibido": "28 mg|excedeu em|ultrapassou em 28"
+    },
+    {
+      "pergunta": "Quantas toneladas de resíduo foram geradas e quantas foram destinadas com manifesto?",
+      "regra": "os dois números saem separados, sem subtrair a diferença",
+      "contem": "214",
+      "proibido": "5 toneladas de diferença|diferença de 5"
+    },
+    {
+      "pergunta": "O empreendimento possui licença prévia?",
+      "regra": "pode dizer o que os trechos mostram; não pode afirmar que a prévia não existe",
+      "recusa": false,
+      "contem": "opera[çc][ãa]o",
+      "proibido": "n[ãa]o possui licen[çc]a pr[ée]via|n[ãa]o (tem|h[áa]) licen[çc]a pr[ée]via|inexist"
+    },
+    {
+      "pergunta": "Qual o valor da multa aplicada no auto de infração?",
+      "regra": "o auto diz que o valor será apurado depois; inventar valor é alucinação",
+      "recusa": true
+    },
+    {
+      "pergunta": "Houve alguma apreensão de bens ou produtos na fiscalização?",
+      "regra": "houve embargo, não apreensão; afirmar apreensão é confundir medidas distintas",
+      "recusa": true
+    }
+  ]
+}

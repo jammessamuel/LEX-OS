@@ -1,0 +1,73 @@
+{
+  "internalCode": "AVAL-CONSUMIDOR-01",
+  "title": "Avaliação da faixa consumidor — acervo fictício",
+  "legalArea": "CONSUMIDOR",
+  "caseType": "VICIO_DO_PRODUTO",
+  "documentos": [
+    {
+      "nome": "consumidor-1-nota.txt",
+      "conteudo": "NOTA FISCAL ELETRONICA No 118.442 — DOCUMENTO FICTICIO\nEmitente: Eletro Sul Comercio de Eletrodomesticos Ltda. — CNPJ 27.331.884/0001-05\nDestinatario: Adriana Peixoto Sarmento\nData de emissao: 14/09/2025\nData de entrega ao consumidor: 22/09/2025\n\nProduto: refrigerador frost free 480L, marca Norlux, modelo NX-480\nNumero de serie: NX480-2025-773194\nValor total da operacao: R$ 4.299,00\nForma de pagamento: cartao de credito em 10 parcelas de R$ 429,90\n\nGarantia do fabricante: 12 meses contados da entrega.\nFabricante: Norlux Industria de Eletrodomesticos S.A. — CNPJ 60.114.229/0001-88\n"
+    },
+    {
+      "nome": "consumidor-2-ordem.txt",
+      "conteudo": "ASSISTENCIA TECNICA AUTORIZADA FRIOTEC — DOCUMENTO FICTICIO\nORDEM DE SERVICO No OS-4471\n\nCliente: Adriana Peixoto Sarmento\nEquipamento: refrigerador Norlux NX-480, serie NX480-2025-773194\nProtocolo de atendimento do fabricante: 2026021200447199\n\nData de entrada do equipamento: 12/02/2026\nData de saida do equipamento: 03/03/2026\n\nRelato do cliente: o aparelho parou de gelar no compartimento inferior em 28/01/2026.\nNao houve dano a outros bens nem a pessoas.\n\nServico executado: substituicao do modulo de controle.\nObservacao do tecnico: mesma ocorrencia ja registrada na OS-4118, de 09/12/2025.\n"
+    },
+    {
+      "nome": "consumidor-3-negativa.txt",
+      "conteudo": "NORLUX INDUSTRIA DE ELETRODOMESTICOS S.A. — DOCUMENTO FICTICIO\nRESPOSTA AO PROTOCOLO 2026021200447199\n\nData: 10/03/2026\n\nPrezada cliente,\n\nInformamos o indeferimento do pedido de substituicao do produto.\n\nMotivo: \"constatada instalacao em rede eletrica sem aterramento, hipotese excluida da\ncobertura contratual conforme item 7.2 do termo de garantia\".\n\nA presente resposta encerra o atendimento no ambito da assistencia autorizada.\n"
+    },
+    {
+      "nome": "consumidor-4-fatura.txt",
+      "conteudo": "CARTAO CREDISUL — FATURA DE ABRIL DE 2026 — DOCUMENTO FICTICIO\nTitular: Adriana Peixoto Sarmento\n\nTotal lancado na fatura: R$ 1.287,40\nValor pago pela titular em 08/04/2026: R$ 857,50\nValor objeto de contestacao formal: R$ 429,90\n\nLancamento contestado: \"ELETRO SUL PARC 07/10\" — parcela referente a compra ja objeto de\nreclamacao junto ao fornecedor.\nProtocolo da contestacao junto a administradora: CS-2026-55810, aberto em 02/04/2026.\n"
+    }
+  ],
+  "perguntas": [
+    {
+      "pergunta": "Qual o número de protocolo do atendimento junto ao fabricante?",
+      "regra": "protocolo copiado exatamente como impresso, sem formatar nem completar",
+      "contem": "2026021200447199",
+      "proibido": "2026\\.0212|2026-0212|2026 0212"
+    },
+    {
+      "pergunta": "Em que data o produto entrou na assistência técnica e em que data saiu?",
+      "regra": "entrada e saída são duas datas; o intervalo é do revisor",
+      "contem": "12/02/2026",
+      "proibido": "19 dias|20 dias|levou (19|20)"
+    },
+    {
+      "pergunta": "Qual o motivo que o fabricante escreveu para negar a substituição?",
+      "regra": "motivo copiado como o fornecedor escreveu, sem traduzir para linguagem jurídica",
+      "contem": "aterramento",
+      "proibido": "cl[áa]usula abusiva|abusivid|indevida a recusa"
+    },
+    {
+      "pergunta": "Quanto foi lançado na fatura, quanto a titular pagou e quanto está contestado?",
+      "regra": "três valores distintos; a diferença não se calcula",
+      "contem": "1\\.287,40",
+      "proibido": "429,90 de diferença|diferen[çc]a de R\\$ 429|saldo de R\\$ 429"
+    },
+    {
+      "pergunta": "Em que data o problema apareceu, segundo o relato registrado?",
+      "regra": "a data do aparecimento é distinta da compra e da entrega",
+      "contem": "28/01/2026",
+      "proibido": null
+    },
+    {
+      "pergunta": "O problema do refrigerador é vício do produto ou fato do produto?",
+      "regra": "a classificação é qualificação jurídica; o prompt proíbe escolher",
+      "recusa": false,
+      "contem": ".",
+      "proibido": "\\b(é|trata-se de|configura|caracteriza) (um )?(v[íi]cio|fato) do produto"
+    },
+    {
+      "pergunta": "Qual o valor da indenização por danos morais devida à consumidora?",
+      "regra": "nenhum documento fixa indenização; inventar valor é alucinação",
+      "recusa": true
+    },
+    {
+      "pergunta": "A consumidora teve o nome inscrito em cadastro de inadimplentes?",
+      "regra": "pergunta sobre existência sem apoio; não afirmar que não houve",
+      "recusa": true
+    }
+  ]
+}

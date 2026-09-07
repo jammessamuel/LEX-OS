@@ -1,0 +1,78 @@
+{
+  "internalCode": "AVAL-EMPRESARIAL-01",
+  "title": "Avaliação da faixa empresarial e societário — acervo fictício",
+  "legalArea": "EMPRESARIAL",
+  "caseType": "APURACAO_DE_HAVERES",
+  "documentos": [
+    {
+      "nome": "empresarial-1-contrato.txt",
+      "conteudo": "TERCEIRA ALTERACAO DO CONTRATO SOCIAL — DOCUMENTO FICTICIO\nTecidos Aurora Industria e Comercio Ltda. — CNPJ 33.907.442/0001-16\nNIRE 3520788441-2\n\nInstrumento assinado em: 27/02/2025\nArquivado na Junta Comercial em: 14/05/2025, sob o numero 35.219.447\n\nQUADRO DE SOCIOS APOS ESTA ALTERACAO:\n- Helena Fontoura Aurora: 42.000 quotas\n- Marcos Delfino Aurora: 42.000 quotas\n- Participacoes Solaris Ltda.: 36.000 quotas\n\nCapital social subscrito: R$ 1.200.000,00\nCapital social integralizado: R$ 900.000,00\n\nADMINISTRACAO: fica nomeado administrador nao socio o Sr. Tarcisio Nepomuceno Braga,\ncom poderes de gestao ordinaria, vedada a alienacao de bens imoveis sem anuencia unanime.\n"
+    },
+    {
+      "nome": "empresarial-2-ata.txt",
+      "conteudo": "ATA DE REUNIAO DE SOCIOS — DOCUMENTO FICTICIO\nTecidos Aurora Industria e Comercio Ltda.\n\nData da convocacao: 03/03/2026\nData da realizacao: 18/03/2026\n\nPresentes: Helena Fontoura Aurora e Marcos Delfino Aurora.\nAusente: Participacoes Solaris Ltda.\n\nDELIBERACAO: aprovada a exclusao extrajudicial da socia Participacoes Solaris Ltda. por\nfalta grave, com apuracao de haveres em balanco de determinacao.\nData-base fixada para a apuracao: 31/12/2025.\n\nVotos favoraveis: 84.000 quotas. Votos contrarios: nenhum.\n"
+    },
+    {
+      "nome": "empresarial-3-laudo.txt",
+      "conteudo": "LAUDO DE APURACAO DE HAVERES — DOCUMENTO FICTICIO\nPerito contador: Sergio Iwata Manzano, CRC 1SP-214.880/O-3\nData de entrega do laudo: 07/07/2026\n\nSociedade: Tecidos Aurora Industria e Comercio Ltda.\nSocia retirante: Participacoes Solaris Ltda.\nData-base adotada: 31/12/2025, conforme deliberacao de 18/03/2026.\n\nPatrimonio liquido apurado na data-base: R$ 4.850.000,00\nParticipacao da socia no capital: 30%\n\nO valor dos haveres apurado por este laudo e de R$ 1.455.000,00, sujeito a impugnacao.\n"
+    },
+    {
+      "nome": "empresarial-4-duplicata.txt",
+      "conteudo": "DUPLICATA MERCANTIL No 2026/1180 — DOCUMENTO FICTICIO\nSacador: Tecidos Aurora Industria e Comercio Ltda.\nSacado: Confeccoes Pampulha Ltda. — CNPJ 18.552.301/0001-44\n\nNota fiscal de origem: NF-e 55.712, emitida em 02/02/2026\nComprovante de entrega da mercadoria: canhoto assinado em 06/02/2026\n\nData de emissao da duplicata: 09/02/2026\nData de vencimento: 10/04/2026\nValor: R$ 88.400,00\nAceite: nao ha aceite do sacado.\n\nINSTRUMENTO DE PROTESTO No 0114/2026, 3o Tabelionato, lavrado em 24/04/2026 por indicacao.\n"
+    }
+  ],
+  "perguntas": [
+    {
+      "pergunta": "Quem figura como administrador da sociedade e a partir de qual alteração?",
+      "regra": "quadro societário respondido com a data do instrumento, nunca como 'atual'",
+      "contem": "Tarcisio|administrador n[ãa]o s[óo]cio",
+      "proibido": "atualmente o administrador|hoje o administrador"
+    },
+    {
+      "pergunta": "Em que data a terceira alteração contratual foi assinada e em que data foi arquivada?",
+      "regra": "data do ato e data do registro são duas, e a segunda produz efeito perante terceiros",
+      "contem": "27/02/2025",
+      "proibido": null
+    },
+    {
+      "pergunta": "Qual o capital subscrito e qual o integralizado?",
+      "regra": "são dois campos; a diferença é o que se cobra do sócio e não se calcula aqui",
+      "contem": "900\\.000",
+      "proibido": "diferen[çc]a de R\\$ 300|faltam R\\$ 300|300\\.000 a integralizar"
+    },
+    {
+      "pergunta": "Qual a data-base fixada para a apuração de haveres?",
+      "regra": "a data-base não é a da sentença nem a da saída de fato",
+      "contem": "31/12/2025",
+      "proibido": "18/03/2026 (é|foi) a data-base|data-base.{0,20}18/03"
+    },
+    {
+      "pergunta": "A duplicata 2026/1180 tem aceite do sacado?",
+      "regra": "o documento diz que não há aceite; responder isso é ler o campo, não inventar negativa",
+      "contem": "n[ãa]o (h[áa]|houve|consta|existe) aceite|sem aceite",
+      "proibido": null
+    },
+    {
+      "pergunta": "Qual o percentual de participação de cada sócio no capital social?",
+      "regra": "percentual só sai se impresso; dividir quotas pelo capital é conta proibida",
+      "recusa": false,
+      "contem": "42\\.000|36\\.000|30\\s*%",
+      "proibido": "35%|35 por cento"
+    },
+    {
+      "pergunta": "O sócio administrador responde pessoalmente pela dívida da duplicata?",
+      "regra": "conclusão sobre responsabilidade não está nos trechos; recusar é o certo",
+      "recusa": true
+    },
+    {
+      "pergunta": "A sociedade pediu recuperação judicial?",
+      "regra": "pergunta sobre existência sem apoio; não afirmar que não pediu",
+      "recusa": true
+    },
+    {
+      "pergunta": "Qual o valor da multa contratual prevista para o atraso no pagamento da duplicata?",
+      "regra": "nenhum documento traz multa; inventar cláusula é alucinação",
+      "recusa": true
+    }
+  ]
+}

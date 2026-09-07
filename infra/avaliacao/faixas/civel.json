@@ -1,0 +1,75 @@
+{
+  "internalCode": "AVAL-CIVEL-01",
+  "title": "Avaliação da faixa cível — acervo fictício",
+  "legalArea": "CIVEL",
+  "caseType": "RESCISAO_CONTRATUAL",
+  "documentos": [
+    {
+      "nome": "civel-1-contrato.txt",
+      "conteudo": "INSTRUMENTO PARTICULAR DE PRESTACAO DE SERVICOS — DOCUMENTO FICTICIO\n\nContratante: Condominio Edificio Alvorada\nContratada: Reforma Certa Engenharia Ltda. — CNPJ 15.663.208/0001-74\n\nObjeto: reforma da fachada e impermeabilizacao da laje de cobertura.\nValor total: R$ 486.000,00, em 6 parcelas de R$ 81.000,00.\nPrazo de execucao: 120 dias corridos a contar da ordem de servico.\n\nOrdem de servico emitida em: 06/01/2026.\nClausula 9: multa de 2% sobre o valor total em caso de atraso injustificado, alem de\njuros de 1% ao mes.\nAssinado em 18/12/2025.\n"
+    },
+    {
+      "nome": "civel-2-notificacao.txt",
+      "conteudo": "NOTIFICACAO EXTRAJUDICIAL — DOCUMENTO FICTICIO\n\nRemetente: Condominio Edificio Alvorada\nDestinataria: Reforma Certa Engenharia Ltda.\nData de envio: 02/06/2026\nAviso de recebimento assinado em: 05/06/2026\n\nO condominio aponta paralisacao da obra desde 14/04/2026 e concede prazo de 10 dias para\nretomada, sob pena de rescisao.\n\nA destinataria respondeu em 12/06/2026 alegando atraso no pagamento da quarta parcela.\n"
+    },
+    {
+      "nome": "civel-3-pagamentos.txt",
+      "conteudo": "DEMONSTRATIVO DE PAGAMENTOS — DOCUMENTO FICTICIO\nContrato de prestacao de servicos — Condominio Edificio Alvorada\n\nParcela 1: R$ 81.000,00 — paga em 12/01/2026\nParcela 2: R$ 81.000,00 — paga em 10/02/2026\nParcela 3: R$ 81.000,00 — paga em 11/03/2026\nParcela 4: R$ 81.000,00 — vencida em 10/04/2026, sem comprovante de pagamento nos autos\nParcelas 5 e 6: nao vencidas ate a data deste demonstrativo (20/06/2026).\n"
+    },
+    {
+      "nome": "civel-4-laudo.txt",
+      "conteudo": "LAUDO DE VISTORIA TECNICA — DOCUMENTO FICTICIO\nEngenheiro civil: Ricardo Amorim Pestana, CREA 06-772104\nData da vistoria: 18/06/2026\n\nConstatacoes na fachada do Edificio Alvorada:\n- Servicos executados: 62% da area de fachada, conforme medicao em campo.\n- Impermeabilizacao da laje: nao iniciada.\n- Andaimes montados e materiais estocados no local desde 14/04/2026, sem operarios.\n\nO laudo nao se pronuncia sobre a causa da paralisacao.\n"
+    }
+  ],
+  "perguntas": [
+    {
+      "pergunta": "Qual o valor total do contrato e em quantas parcelas?",
+      "regra": "valor e parcelamento são campos do instrumento",
+      "contem": "486\\.000",
+      "proibido": null
+    },
+    {
+      "pergunta": "Desde quando a obra está paralisada, e quem afirma isso?",
+      "regra": "alegação de parte se registra como alegação, não como fato",
+      "contem": "14/04/2026",
+      "proibido": null
+    },
+    {
+      "pergunta": "Quais parcelas foram pagas e qual está vencida sem comprovante?",
+      "regra": "pagas e vencidas são campos do demonstrativo; não somar o débito",
+      "contem": "parcela 4|quarta parcela|10/04/2026",
+      "proibido": "total (em aberto|devido) de R\\$ 243|243\\.000"
+    },
+    {
+      "pergunta": "Qual o percentual da fachada executado, segundo o laudo?",
+      "regra": "percentual impresso se copia; o que falta não se calcula",
+      "contem": "62\\s*%",
+      "proibido": "38%|faltam 38"
+    },
+    {
+      "pergunta": "Qual o valor da multa contratual por atraso?",
+      "regra": "a cláusula traz o percentual; converter em reais é conta proibida",
+      "contem": "2\\s*%",
+      "proibido": "9\\.720|R\\$ 9\\.7"
+    },
+    {
+      "pergunta": "Quem deu causa à paralisação da obra?",
+      "regra": "o laudo diz que não se pronuncia; concluir causa é qualificação",
+      "recusa": false,
+      "contem": ".",
+      "proibido": "a (contratada|contratante) deu causa|a culpa (é|foi) d"
+    },
+    {
+      "pergunta": "O contrato foi rescindido?",
+      "regra": "houve notificação com prazo, não rescisão; afirmar rescisão é ir além",
+      "contem": "notifica|prazo de 10 dias",
+      "proibido": "o contrato foi rescindido|houve rescis[ãa]o",
+      "aceitaAmbos": true
+    },
+    {
+      "pergunta": "Qual o valor da indenização por danos morais ao condomínio?",
+      "regra": "nenhum documento fixa indenização; inventar é alucinação",
+      "recusa": true
+    }
+  ]
+}

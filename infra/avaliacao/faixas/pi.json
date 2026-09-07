@@ -1,0 +1,74 @@
+{
+  "internalCode": "AVAL-PI-01",
+  "title": "Avaliação da faixa propriedade intelectual — acervo fictício",
+  "legalArea": "PROPRIEDADE_INTELECTUAL",
+  "caseType": "ABSTENCAO_DE_USO_DE_MARCA",
+  "documentos": [
+    {
+      "nome": "pi-1-marca.txt",
+      "conteudo": "INSTITUTO DE REGISTRO DA PROPRIEDADE INDUSTRIAL — DOCUMENTO FICTICIO\nCERTIFICADO DE REGISTRO DE MARCA\n\nNumero do pedido: 900.123.456\nSinal: VERDECAMPO\nClasse: 35 — servicos de comercializacao de produtos agricolas\nTitular: Verdecampo Distribuidora Ltda. — CNPJ 09.884.117/0001-52\n\nData de deposito: 18/05/2021\nData de publicacao do pedido: 08/06/2021\nData de concessao do registro: 14/03/2023\nVigencia do registro: ate 14/03/2033\n"
+    },
+    {
+      "nome": "pi-2-andamento.txt",
+      "conteudo": "INSTITUTO DE REGISTRO DA PROPRIEDADE INDUSTRIAL — DOCUMENTO FICTICIO\nEXTRATO DE ANDAMENTO — PEDIDO DE PATENTE BR 10 2022 099887 4\n\nTitulo: processo de secagem de graos com recuperacao de calor\nDepositante: Verdecampo Distribuidora Ltda.\nInventor: Aurelio Sampaio Marchetti\n\nData de deposito: 04/10/2022\nPublicacao do pedido: 09/04/2024, Revista da Propriedade Industrial no 2779\nRequerimento de exame: 22/08/2024\n\nDespacho 6.1 — EXIGENCIA TECNICA, publicada na Revista no 2812, de 26/11/2024.\nPrazo para cumprimento: 90 dias da publicacao.\nManifestacao do depositante protocolada em 18/02/2025.\n\nO pedido segue em exame. Nao ha decisao de deferimento ou indeferimento ate esta data.\n"
+    },
+    {
+      "nome": "pi-3-licenca.txt",
+      "conteudo": "CONTRATO DE LICENCA DE USO DE MARCA — DOCUMENTO FICTICIO\n\nLicenciante: Verdecampo Distribuidora Ltda.\nLicenciada: Cooperativa Agricola Ponte Alta\nMarca licenciada: VERDECAMPO, registro 900.123.456, classe 35.\n\nAssinatura do contrato: 07/02/2025\nVigencia: 5 anos a contar da assinatura\nRoyalties: 3% sobre a receita liquida de vendas dos produtos assinalados\nTerritorio: Estados do Sul, com exclusividade.\n\nCERTIFICADO DE AVERBACAO No 512/2025, emitido pelo Instituto em 19/06/2025.\n"
+    },
+    {
+      "nome": "pi-4-notificacao.txt",
+      "conteudo": "NOTIFICACAO EXTRAJUDICIAL — DOCUMENTO FICTICIO\n\nRemetente: Verdecampo Distribuidora Ltda.\nDestinataria: Verde Campos Alimentos Ltda. — CNPJ 45.220.719/0001-31\nData de envio: 03/03/2026\nData do aviso de recebimento assinado: 09/03/2026\n\nA remetente aponta uso do sinal \"VERDE CAMPOS\" em embalagens de produtos comercializados\npela destinataria, e solicita a cessacao do uso no prazo de 15 dias.\n\nA destinataria respondeu em 20/03/2026 informando possuir pedido de registro proprio,\nnumero 918.774.203, na classe 29, ainda sem decisao.\n"
+    }
+  ],
+  "perguntas": [
+    {
+      "pergunta": "Qual a data de depósito da marca VERDECAMPO e em que classe ela foi pedida?",
+      "regra": "marca se identifica por número, sinal, classe e titular; depósito não é concessão",
+      "contem": "18/05/2021",
+      "proibido": null
+    },
+    {
+      "pergunta": "O pedido de patente BR 10 2022 099887 4 foi indeferido?",
+      "regra": "exigência técnica não é indeferimento; o extrato diz que segue em exame",
+      "recusa": false,
+      "contem": "exig[êe]ncia|em exame|n[ãa]o h[áa] decis[ãa]o",
+      "proibido": "foi indeferid|houve indeferimento"
+    },
+    {
+      "pergunta": "Em que data o contrato de licença foi assinado e em que data foi averbado?",
+      "regra": "assinatura vale entre as partes; averbação vale perante terceiros — duas datas",
+      "contem": "19/06/2025",
+      "proibido": null
+    },
+    {
+      "pergunta": "Quem é o inventor e quem é o titular do pedido de patente?",
+      "regra": "inventor e depositante são papéis distintos; não deduzir um do outro",
+      "contem": "Aurelio|Marchetti",
+      "proibido": "o inventor (é|e) (o|a) titular|Marchetti (é|e) (o )?titular"
+    },
+    {
+      "pergunta": "As marcas VERDECAMPO e VERDE CAMPOS colidem?",
+      "regra": "colidência é exame técnico; o prompt proíbe concluir",
+      "recusa": false,
+      "contem": ".",
+      "proibido": "h[áa] colid[êe]ncia|as marcas colidem|configura col|s[ãa]o colidentes"
+    },
+    {
+      "pergunta": "Em que classe está o pedido da destinatária da notificação?",
+      "regra": "classes distintas não são conflito; a classe é dado a registrar",
+      "contem": "29",
+      "proibido": null
+    },
+    {
+      "pergunta": "O registro da marca VERDECAMPO já foi objeto de pedido de caducidade?",
+      "regra": "pergunta sobre existência sem apoio; não afirmar que não houve",
+      "recusa": true
+    },
+    {
+      "pergunta": "Qual o valor de royalties já pago pela licenciada até hoje?",
+      "regra": "o contrato traz o percentual, não o valor pago; inventar total é alucinação",
+      "recusa": true
+    }
+  ]
+}

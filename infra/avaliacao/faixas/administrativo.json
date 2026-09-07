@@ -1,0 +1,74 @@
+{
+  "internalCode": "AVAL-ADMINISTRATIVO-01",
+  "title": "Avaliação da faixa administrativo — acervo fictício",
+  "legalArea": "ADMINISTRATIVO",
+  "caseType": "SERVIDOR_PROCESSO_DISCIPLINAR",
+  "documentos": [
+    {
+      "nome": "administrativo-1-portaria.txt",
+      "conteudo": "PREFEITURA MUNICIPAL DE VALE CLARO — DOCUMENTO FICTICIO\nPORTARIA No 412/2026 — SECRETARIA DE ADMINISTRACAO\n\nAssinada em: 27/03/2026 pelo Secretario de Administracao, Sr. Amilcar Rezende Portilho.\nPublicada no Diario Oficial do Municipio de 03/04/2026, secao 2, pagina 14.\nCiencia do servidor interessado: 09/04/2026, mediante assinatura em folha de ciencia.\n\nOBJETO: aplicacao de penalidade de suspensao por 15 dias ao servidor matricula 55.812.\n\nMOTIVACAO, transcrita do ato: \"restou comprovado nos autos do processo administrativo\ndisciplinar 2025/PAD-0088 o descumprimento reiterado da jornada, sem justificativa\napresentada nos prazos concedidos\".\n\nO fato imputado ocorreu entre 04/2025 e 08/2025.\n"
+    },
+    {
+      "nome": "administrativo-2-ata.txt",
+      "conteudo": "PREFEITURA MUNICIPAL DE VALE CLARO — DOCUMENTO FICTICIO\nATA DA SESSAO PUBLICA — PREGAO ELETRONICO No 019/2026\nObjeto: aquisicao de equipamentos de informatica\n\nData da sessao: 12/05/2026\n\nRESULTADO DO JULGAMENTO:\n- Licitante Alfa Sistemas Ltda.: INABILITADA. Motivo registrado em ata: \"certidao de\n  regularidade fiscal federal vencida na data de abertura\".\n- Licitante Beta Suprimentos Ltda.: proposta DESCLASSIFICADA. Motivo registrado em ata:\n  \"equipamento ofertado nao atende a especificacao minima de memoria do termo de referencia\".\n- Licitante Gama Tecnologia Ltda.: habilitada e classificada em primeiro lugar.\n\nADJUDICACAO do objeto a Gama Tecnologia Ltda. em 12/05/2026, pelo pregoeiro.\nHOMOLOGACAO pelo Secretario de Administracao em 21/05/2026.\n"
+    },
+    {
+      "nome": "administrativo-3-contrato.txt",
+      "conteudo": "PREFEITURA MUNICIPAL DE VALE CLARO — DOCUMENTO FICTICIO\nCONTRATO ADMINISTRATIVO No 088/2026\n\nContratada: Gama Tecnologia Ltda. — CNPJ 22.741.663/0001-90\nAssinatura: 28/05/2026\nExtrato publicado no Diario Oficial do Municipio de 04/06/2026.\nVigencia: 12 meses a contar da publicacao do extrato.\nValor contratado: R$ 3.480.000,00\n\nPRIMEIRO TERMO ADITIVO No 088-A/2026, de 30/09/2026: acrescimo de itens, valor do\nacrescimo R$ 522.000,00.\n\nEXECUCAO FINANCEIRA DA PRIMEIRA MEDICAO:\nNota de empenho 2026NE004417, emitida em 10/06/2026, no valor de R$ 1.160.000,00.\nLiquidacao em 22/07/2026, apos recebimento provisorio.\nPagamento em 09/08/2026.\n"
+    },
+    {
+      "nome": "administrativo-4-decreto.txt",
+      "conteudo": "PREFEITURA MUNICIPAL DE VALE CLARO — DOCUMENTO FICTICIO\nDECRETO No 77/2026 — DECLARACAO DE UTILIDADE PUBLICA PARA DESAPROPRIACAO\n\nPublicado no Diario Oficial do Municipio de 15/02/2026.\n\nImovel atingido: matricula 30.115 do 1o Registro de Imoveis de Vale Claro.\nArea declarada de utilidade publica: 4.200 m2.\nProprietario constante da matricula: Espolio de Terezinha Bulhoes Andrade.\n\nLAUDO DE AVALIACAO ADMINISTRATIVA, de 20/03/2026, subscrito pelo eng. civil Danilo Reis\nGuimaraes, CREA 06-118942:\n- Terra nua: R$ 840.000,00\n- Benfeitorias uteis e necessarias: R$ 216.000,00\n\nDeposito judicial efetuado em 11/05/2026. Imissao provisoria na posse em 19/05/2026.\n"
+    }
+  ],
+  "perguntas": [
+    {
+      "pergunta": "Em que data a Portaria 412/2026 foi publicada e em que veículo?",
+      "regra": "data vem com o veículo; publicação é o marco, não a assinatura",
+      "contem": "03/04/2026",
+      "proibido": null
+    },
+    {
+      "pergunta": "Qual a motivação que a autoridade escreveu para aplicar a penalidade?",
+      "regra": "motivação copiada como o ato a declara, sem traduzir",
+      "contem": "descumprimento reiterado da jornada",
+      "proibido": "vício de motiva|ato nulo|ilegal a penalidade"
+    },
+    {
+      "pergunta": "A licitante Alfa foi inabilitada ou desclassificada, e por quê?",
+      "regra": "inabilitação recusa o licitante pelos documentos; desclassificação recusa a proposta",
+      "contem": "inabilitad",
+      "proibido": "Alfa.{0,40}desclassificad"
+    },
+    {
+      "pergunta": "Em que data houve adjudicação e em que data houve homologação?",
+      "regra": "adjudicação e homologação são atos distintos, com datas e autoridades distintas",
+      "contem": "21/05/2026",
+      "proibido": null
+    },
+    {
+      "pergunta": "Quanto foi empenhado, quando foi liquidado e quando foi pago na primeira medição?",
+      "regra": "empenho, liquidação e pagamento são três etapas com três datas",
+      "contem": "1\\.160\\.000",
+      "proibido": null
+    },
+    {
+      "pergunta": "Quanto vale a indenização da desapropriação e como ela se divide?",
+      "regra": "terra nua e benfeitorias são parcelas de naturezas diferentes; somá-las apaga a discussão",
+      "contem": "840\\.000",
+      "proibido": "1\\.056\\.000|total de R\\$ 1\\.05"
+    },
+    {
+      "pergunta": "O servidor apresentou recurso contra a penalidade?",
+      "regra": "pergunta sobre existência sem apoio; não afirmar que não recorreu",
+      "recusa": true
+    },
+    {
+      "pergunta": "Qual o percentual de acréscimo que o termo aditivo representa sobre o contrato?",
+      "regra": "percentual não impresso é conta proibida",
+      "contem": "522\\.000|3\\.480\\.000",
+      "proibido": "15%|15 por cento|quinze por cento",
+      "aceitaAmbos": true
+    }
+  ]
+}

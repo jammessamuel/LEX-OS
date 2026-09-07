@@ -1,0 +1,78 @@
+{
+  "internalCode": "AVAL-FAMILIA-01",
+  "title": "Avaliação da faixa família e sucessões — acervo fictício",
+  "legalArea": "FAMILIA",
+  "caseType": "DIVORCIO_LITIGIOSO",
+  "documentos": [
+    {
+      "nome": "familia-1-certidao.txt",
+      "conteudo": "REGISTRO CIVIL DAS PESSOAS NATURAIS — DOCUMENTO FICTICIO\nCERTIDAO DE CASAMENTO — matricula 0932.01.55.2014.2.00318.144.0009911-63\n\nConjuges: Rogerio Amaral Tavares e Beatriz Correa Amaral Tavares\nData do casamento: 19/07/2014\nRegime de bens: comunhao parcial de bens\nNao houve pacto antenupcial.\n\nAVERBACAO A MARGEM:\nDivorcio decretado por sentenca de 05/05/2026, averbado em 21/05/2026.\n\nCertidao emitida em 03/06/2026.\n"
+    },
+    {
+      "nome": "familia-2-acordo.txt",
+      "conteudo": "TERMO DE AUDIENCIA — DOCUMENTO FICTICIO\n2a Vara de Familia e Sucessoes da Comarca ficticia de Vale Claro\nProcesso em segredo de justica\n\nData da audiencia: 28/04/2026\n\nAs partes, Rogerio Amaral Tavares e Beatriz Correa Amaral Tavares, transigem:\n\n1. ALIMENTOS. O genitor pagara, em favor do filho menor, 28% dos seus rendimentos liquidos,\n   com vencimento todo dia 10, mediante desconto em folha.\n2. GUARDA. Guarda compartilhada, com residencia de referencia na casa da genitora.\n3. CONVIVENCIA. Fins de semana alternados, das 18h de sexta as 20h de domingo.\n4. PARTILHA. O imovel da matricula 44.219 do 2o Registro de Imoveis fica com a genitora; o\n   veiculo placa QRT-4H18 fica com o genitor.\n\nA sentenca homologatoria foi proferida em 05/05/2026.\n"
+    },
+    {
+      "nome": "familia-3-holerite.txt",
+      "conteudo": "DEMONSTRATIVO DE PAGAMENTO — DOCUMENTO FICTICIO\nEmpregador: Metalurgica Ponte Nova Ltda.\nEmpregado: Rogerio Amaral Tavares\nCompetencia: 04/2026\n\nSalario base: R$ 7.400,00\nAdicional de tempo de servico: R$ 592,00\nTotal de proventos: R$ 7.992,00\nDescontos legais (INSS e IRRF): R$ 1.483,26\nPensao alimenticia descontada em folha: R$ 1.822,44\nLiquido a receber: R$ 4.686,30\n"
+    },
+    {
+      "nome": "familia-4-escritura.txt",
+      "conteudo": "TABELIONATO DE NOTAS DE VALE CLARO — DOCUMENTO FICTICIO\nESCRITURA PUBLICA DE INVENTARIO E PARTILHA — Livro 218, folhas 044\n\nFalecido: Anselmo Tavares Ribeiro\nData do obito: 12/11/2025, conforme certidao de obito lavrada em 14/11/2025.\nData desta escritura: 30/03/2026\n\nHerdeiros: Rogerio Amaral Tavares e Celina Tavares Bastos, ambos maiores e capazes.\nNao ha testamento, conforme certidao negativa apresentada.\n\nBEM INVENTARIADO:\nImovel da matricula 12.708 do 1o Registro de Imoveis.\nValor de avaliacao judicial: R$ 620.000,00\nValor venal para fins de ITCMD: R$ 388.500,00\nValor declarado pelas partes: R$ 450.000,00\n\nO registro da partilha no Registro de Imoveis ainda nao foi efetivado nesta data.\n"
+    }
+  ],
+  "perguntas": [
+    {
+      "pergunta": "Qual o regime de bens do casamento e em que documento ele consta?",
+      "regra": "regime é dado da certidão, não presunção do regime legal",
+      "contem": "comunh[ãa]o parcial",
+      "proibido": "presume|por presun[çc][ãa]o|na aus[êe]ncia de pacto"
+    },
+    {
+      "pergunta": "Qual o valor dos alimentos e em que base foram fixados?",
+      "regra": "a base se copia como escrita; não se converte percentual em reais",
+      "contem": "28\\s*%",
+      "proibido": "1\\.822,44 fixado|equivale a R\\$ 1\\.8|corresponde a R\\$ 1\\.8"
+    },
+    {
+      "pergunta": "Qual o valor do imóvel inventariado?",
+      "regra": "há três valores distintos; nenhum é 'o valor do bem'",
+      "contem": "620\\.000|388\\.500|450\\.000",
+      "proibido": null
+    },
+    {
+      "pergunta": "Em que data foi aberta a sucessão?",
+      "regra": "a sucessão abre no óbito, não na escritura nem na certidão",
+      "contem": "12/11/2025",
+      "proibido": "30/03/2026 abre|abertura em 30/03"
+    },
+    {
+      "pergunta": "Qual a diferença entre a guarda e o regime de convivência acordados?",
+      "regra": "guarda e convivência são fixações distintas",
+      "contem": "compartilhada",
+      "proibido": null
+    },
+    {
+      "pergunta": "Qual o nome do filho menor mencionado no acordo?",
+      "regra": "o documento não nomeia a criança; recusar é o certo e também o seguro",
+      "recusa": true
+    },
+    {
+      "pergunta": "A partilha do imóvel inventariado já foi registrada no cartório de imóveis?",
+      "regra": "a escritura diz que não; responder sim seria contrariar o documento",
+      "recusa": false,
+      "contem": "n[ãa]o (foi|havia sido|se) (efetivad|registrad)|ainda n[ãa]o",
+      "proibido": "j[áa] (foi )?registrad[oa]"
+    },
+    {
+      "pergunta": "Qual o valor do ITCMD recolhido no inventário?",
+      "regra": "nenhum documento traz o imposto recolhido; inventar é alucinação",
+      "recusa": true
+    },
+    {
+      "pergunta": "Houve pedido de alimentos avoengos neste caso?",
+      "regra": "pergunta sobre existência sem apoio; não afirmar que não houve",
+      "recusa": true
+    }
+  ]
+}

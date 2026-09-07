@@ -1,0 +1,82 @@
+{
+  "internalCode": "AVAL-PREVIDENCIARIO-01",
+  "title": "Avaliação da faixa previdenciário — acervo fictício",
+  "legalArea": "PREVIDENCIARIO",
+  "caseType": "APOSENTADORIA_POR_TEMPO_DE_CONTRIBUICAO",
+  "documentos": [
+    {
+      "nome": "previdenciario-1-cnis.txt",
+      "conteudo": "EXTRATO DO CNIS — DOCUMENTO FICTICIO\nSegurado: Terezinha Aparecida Molina\nData de filiacao: 01/03/1994\n\nVINCULOS:\n1. Tecelagem Sao Jorge Ltda. — inicio 01/03/1994, fim 30/09/2001\n2. Confeccoes Bandeirantes S.A. — inicio 15/11/2001, fim 28/02/2013\n3. Servicos Gerais Uniao Ltda. — inicio 02/05/2013, sem data de saida informada\n\nUltima competencia com remuneracao declarada: 08/2024.\nPendencia registrada no vinculo 3: indicador de recolhimento em atraso.\n"
+    },
+    {
+      "nome": "previdenciario-2-carta.txt",
+      "conteudo": "INSS — DOCUMENTO FICTICIO\nCOMUNICACAO DE DECISAO — Beneficio NB 21/188.774.905-2\n\nSegurado: Terezinha Aparecida Molina\nDER — data de entrada do requerimento: 11/02/2026\nDecisao: INDEFERIDO\nMotivo, transcrito: \"nao comprovada a carencia minima exigida na data de entrada do\nrequerimento\".\n\nData de emissao desta comunicacao: 06/03/2026.\nData da ciencia da segurada: 13/03/2026.\nPrazo para recurso: 30 dias da ciencia.\n"
+    },
+    {
+      "nome": "previdenciario-3-ppp.txt",
+      "conteudo": "PERFIL PROFISSIOGRAFICO PREVIDENCIARIO — DOCUMENTO FICTICIO\nEmpresa: Tecelagem Sao Jorge Ltda.\nSegurada: Terezinha Aparecida Molina\n\nPeriodo declarado neste PPP: 01/03/1994 a 30/09/2001\nSetor: tecelagem — funcao: operadora de tear\nAgente nocivo declarado: ruido, 91,3 dB(A), medido por dosimetria.\nUso de EPI eficaz: declarado como NAO.\n\nResponsavel tecnico pelos registros ambientais: eng. seg. trab. Cleber Anisio Rocha,\nCREA 06-448120, para todo o periodo declarado.\nAssinatura do representante da empresa: presente.\n"
+    },
+    {
+      "nome": "previdenciario-4-laudo.txt",
+      "conteudo": "LAUDO DE PERICIA MEDICA ADMINISTRATIVA — DOCUMENTO FICTICIO\nINSS — Agencia de Vale Claro\nData da pericia: 26/02/2026\n\nSegurada: Terezinha Aparecida Molina\nCID indicado no atestado apresentado: M75.1\n\nDID — data de inicio da doenca: 04/2023, conforme relatorio medico apresentado.\nDII — data de inicio da incapacidade: nao fixada por este laudo.\n\nConclusao pericial: incapacidade parcial e temporaria constatada na data da pericia.\n"
+    }
+  ],
+  "perguntas": [
+    {
+      "pergunta": "Qual a DER e qual o motivo do indeferimento?",
+      "regra": "DER é campo próprio; o motivo se copia como o INSS escreveu",
+      "contem": "11/02/2026",
+      "proibido": null
+    },
+    {
+      "pergunta": "O terceiro vínculo do CNIS está encerrado?",
+      "regra": "vínculo sem data de saída é vínculo em aberto, não vínculo até hoje",
+      "contem": "sem data de sa[íi]da|em aberto|n[ãa]o\\s+\\S*\\s*informad",
+      "proibido": "encerrado em|at[ée] hoje|至"
+    },
+    {
+      "pergunta": "Qual a data de filiação da segurada?",
+      "regra": "filiação é dado do extrato, não a admissão de cada vínculo",
+      "contem": "01/03/1994",
+      "proibido": null
+    },
+    {
+      "pergunta": "O laudo pericial fixou a data de início da incapacidade?",
+      "regra": "DID e DII são campos distintos; o laudo não fixou a DII",
+      "contem": "n[ãa]o\\s+\\S*\\s*fixad|DII.{0,30}n[ãa]o",
+      "proibido": "DII (é|foi) 04/2023|in[íi]cio da incapacidade em 04/2023"
+    },
+    {
+      "pergunta": "Qual o agente nocivo declarado no PPP e em que intensidade?",
+      "regra": "o valor sai com a unidade impressa",
+      "contem": "91,3",
+      "proibido": null
+    },
+    {
+      "pergunta": "Quanto tempo de contribuição a segurada tem?",
+      "regra": "somar tempo de contribuição é conta proibida em toda a faixa",
+      "contem": ".",
+      "proibido": "\\b(2[0-9]|3[0-9]) anos de contribui|total de .{0,15}anos de contribui",
+      "aceitaAmbos": true
+    },
+    {
+      "pergunta": "A segurada perdeu a qualidade de segurada?",
+      "regra": "qualidade de segurado não se conclui da ausência de contribuição",
+      "contem": ".",
+      "proibido": "perdeu a qualidade|n[ãa]o (é|e) mais segurada|qualidade.{0,20}(perdida|cessou)",
+      "aceitaAmbos": true
+    },
+    {
+      "pergunta": "A segurada tem direito à aposentadoria especial?",
+      "regra": "concluir direito é o que o prompt mais proíbe nesta faixa",
+      "recusa": false,
+      "contem": ".",
+      "proibido": "tem direito|faz jus|preenche os requisitos"
+    },
+    {
+      "pergunta": "Qual o valor da renda mensal inicial do benefício?",
+      "regra": "nenhum documento traz RMI; apurá-la é conta proibida",
+      "recusa": true
+    }
+  ]
+}

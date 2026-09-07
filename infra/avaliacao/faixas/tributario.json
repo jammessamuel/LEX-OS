@@ -1,0 +1,81 @@
+{
+  "internalCode": "AVAL-TRIBUTARIO-01",
+  "title": "Avaliação da faixa tributário — acervo fictício",
+  "legalArea": "TRIBUTARIO",
+  "caseType": "IMPUGNACAO_DE_AUTO_DE_INFRACAO",
+  "documentos": [
+    {
+      "nome": "tributario-1-auto.txt",
+      "conteudo": "SECRETARIA DA FAZENDA — DOCUMENTO FICTICIO\nAUTO DE INFRACAO E IMPOSICAO DE MULTA No AIIM 4.117.882-0\n\nAutuada: Distribuidora Ponte Nova Ltda. — CNPJ 08.771.442/0001-19\n\nData da lavratura: 19/01/2026\nData da ciencia do autuado: 27/01/2026\nPrazo para impugnacao: 30 dias da ciencia.\n\nINFRACAO: creditamento indevido de ICMS em operacoes de aquisicao interestadual.\nPeriodo fiscalizado: 01/2021 a 12/2023.\n\nImposto exigido: R$ 512.400,00\nMulta punitiva: R$ 256.200,00\nJuros ate a data da lavratura: R$ 148.960,00\n"
+    },
+    {
+      "nome": "tributario-2-impugnacao.txt",
+      "conteudo": "CONTENCIOSO ADMINISTRATIVO TRIBUTARIO — DOCUMENTO FICTICIO\nDECISAO DE PRIMEIRA INSTANCIA — Processo DRT 2026/00884\n\nImpugnacao protocolada em: 24/02/2026\nDecisao proferida em: 18/06/2026\nIntimacao da decisao: 30/06/2026\n\nRESULTADO: procedencia parcial da impugnacao.\n- Mantida a exigencia relativa ao periodo de 01/2022 a 12/2023.\n- Cancelada a exigencia relativa ao periodo de 01/2021 a 12/2021, por decadencia\n  reconhecida de oficio.\n\nValor mantido apos a decisao: R$ 341.600,00 de imposto.\nRecurso ordinario interposto em 15/07/2026.\n"
+    },
+    {
+      "nome": "tributario-3-parcelamento.txt",
+      "conteudo": "SECRETARIA DA FAZENDA — DOCUMENTO FICTICIO\nTERMO DE ADESAO A PARCELAMENTO No PARC-2026/3391\n\nContribuinte: Distribuidora Ponte Nova Ltda.\nData da adesao: 02/08/2026\nDebito consolidado incluido: R$ 398.220,00\nNumero de parcelas: 60\nValor da primeira parcela: R$ 6.637,00, paga em 20/08/2026.\n\nO termo consigna que a adesao implica confissao irretratavel do debito incluido e\nsuspende a exigibilidade enquanto o parcelamento estiver adimplido.\n"
+    },
+    {
+      "nome": "tributario-4-certidao.txt",
+      "conteudo": "SECRETARIA DA FAZENDA — DOCUMENTO FICTICIO\nCERTIDAO POSITIVA COM EFEITOS DE NEGATIVA No CPEN-2026/55.220\n\nContribuinte: Distribuidora Ponte Nova Ltda.\nEmitida em: 25/08/2026\nValidade: 60 dias da emissao.\n\nConsta debito objeto do parcelamento PARC-2026/3391, com exigibilidade suspensa.\nNao constam outros debitos inscritos em divida ativa.\n"
+    }
+  ],
+  "perguntas": [
+    {
+      "pergunta": "Em que data o autuado tomou ciência do auto de infração?",
+      "regra": "lavratura e ciência são datas distintas; o prazo corre da ciência",
+      "contem": "27/01/2026",
+      "proibido": null
+    },
+    {
+      "pergunta": "Quais os valores exigidos no auto, separados por natureza?",
+      "regra": "imposto, multa e juros são três rubricas; somá-las apaga a discussão",
+      "contem": "512\\.400",
+      "proibido": "917\\.560|total de R\\$ 917"
+    },
+    {
+      "pergunta": "Qual foi o resultado da decisão de primeira instância?",
+      "regra": "procedência parcial não é procedência nem improcedência",
+      "contem": "parcial",
+      "proibido": null
+    },
+    {
+      "pergunta": "Que período foi cancelado na decisão e por quê?",
+      "regra": "o motivo se copia como a decisão o declara",
+      "contem": "decad",
+      "proibido": null
+    },
+    {
+      "pergunta": "A adesão ao parcelamento tem algum efeito sobre a discussão do débito?",
+      "regra": "o termo consigna confissão e suspensão; copiar é correto, concluir renúncia não",
+      "contem": "confiss[ãa]o|suspend|suspens",
+      "proibido": "ren[úu]ncia ao recurso|perdeu o direito de discutir|impede a discuss[ãa]o"
+    },
+    {
+      "pergunta": "A empresa está em situação regular perante o fisco?",
+      "regra": "certidão positiva com efeitos de negativa não é certidão negativa",
+      "contem": "positiva com efeitos|exigibilidade suspensa",
+      "proibido": "certid[ãa]o negativa|est[áa] (totalmente )?regular sem",
+      "aceitaAmbos": true
+    },
+    {
+      "pergunta": "Qual o valor total já pago no parcelamento até hoje?",
+      "regra": "há uma parcela paga; totalizar o pago até 'hoje' exige data que não está aqui",
+      "contem": "6\\.637",
+      "proibido": "total pago de R\\$ [0-9]{2}\\.",
+      "aceitaAmbos": true
+    },
+    {
+      "pergunta": "Houve inscrição do débito em dívida ativa?",
+      "regra": "a certidão diz que não constam outros débitos inscritos; ler o campo é correto",
+      "contem": "n[ãa]o\\s+\\S*\\s*(constam|inscrit)|exigibilidade suspensa",
+      "proibido": null
+    },
+    {
+      "pergunta": "A execução fiscal já foi ajuizada?",
+      "regra": "pergunta sobre existência sem apoio; não afirmar que não foi",
+      "recusa": true
+    }
+  ]
+}

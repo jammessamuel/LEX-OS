@@ -1,0 +1,81 @@
+{
+  "internalCode": "AVAL-AGRARIO-01",
+  "title": "Avaliação da faixa agrário — acervo fictício",
+  "legalArea": "AGRARIO",
+  "caseType": "CEDULA_DE_PRODUTO_RURAL",
+  "documentos": [
+    {
+      "nome": "agrario-1-cpr.txt",
+      "conteudo": "CEDULA DE PRODUTO RURAL FISICA No CPR-2025/0447 — DOCUMENTO FICTICIO\n\nEmitente: Fazenda Tres Barras Agropecuaria Ltda. — CNPJ 12.884.507/0001-33\nCredora: Insumos Planalto Comercio Ltda.\n\nPROMESSA DE ENTREGA: 12.000 sacas de soja em graos, safra 2025/2026.\nLocal de entrega: armazem credenciado em Ponte Alta.\nData de vencimento para entrega: 30/04/2026.\n\nGarantia: penhor agricola sobre a lavoura da matricula 8.334.\nRegistro desta cedula no Registro de Imoveis: nao efetivado ate a data de emissao.\n\nData de emissao: 15/09/2025.\n"
+    },
+    {
+      "nome": "agrario-2-arrendamento.txt",
+      "conteudo": "INSTRUMENTO PARTICULAR DE ARRENDAMENTO RURAL — DOCUMENTO FICTICIO\n\nArrendador: Fazenda Tres Barras Agropecuaria Ltda.\nArrendatario: Joao Bituca Sobral\n\nObjeto: area de 180 alqueires da matricula 8.334, no municipio de Ponte Alta.\nPrazo: 3 safras, a contar da safra 2025/2026.\nRemuneracao: 18% da producao colhida em cada safra, entregue em sacas no armazem.\n\nAssinado em 02/08/2025, com duas testemunhas.\n"
+    },
+    {
+      "nome": "agrario-3-matricula.txt",
+      "conteudo": "1o REGISTRO DE IMOVEIS DE PONTE ALTA — DOCUMENTO FICTICIO\nMATRICULA No 8.334\n\nImovel rural denominado Fazenda Tres Barras, municipio de Ponte Alta.\nArea registrada: 435,7 ha.\n\nProprietaria: Fazenda Tres Barras Agropecuaria Ltda.\nCertificado de Cadastro de Imovel Rural (CCIR): 907.114.882.371-0\nInscricao no cadastro do imposto territorial rural: 3.884.229-1\n\nAV-7, de 11/06/2024: certificacao de georreferenciamento, area medida de 441,2 ha.\n\nNao ha averbacao de reserva legal ate esta data.\n"
+    },
+    {
+      "nome": "agrario-4-ticket.txt",
+      "conteudo": "ARMAZEM CREDENCIADO PONTE ALTA — DOCUMENTO FICTICIO\nTICKET DE PESAGEM No 55.812 e LAUDO DE CLASSIFICACAO\n\nDepositante: Fazenda Tres Barras Agropecuaria Ltda.\nProduto: soja em graos, safra 2025/2026\nData de entrada: 22/04/2026\n\nPeso bruto: 71.400 kg\nTara: 14.200 kg\nPeso liquido: 57.200 kg\nEquivalencia declarada no ticket: 953 sacas de 60 kg\n\nCLASSIFICACAO: umidade 13,8%; impurezas 1,1%; avariados 4,2%.\nDesconto por umidade aplicado: 1,4% sobre o peso liquido.\n"
+    }
+  ],
+  "perguntas": [
+    {
+      "pergunta": "Qual a quantidade e o produto que a cédula obriga a entregar, e em que safra?",
+      "regra": "quantidade com a unidade; safra como escrita, não convertida em ano",
+      "contem": "12\\.000 sacas",
+      "proibido": "safra de 2026\\b|safra 2026\\b(?!/)"
+    },
+    {
+      "pergunta": "Qual a área arrendada e qual a área registrada na matrícula?",
+      "regra": "alqueire e hectare não se convertem; são duas medidas de fontes distintas",
+      "contem": "180 alqueires",
+      "proibido": "equivale a|correspondem a .{0,10}ha|convertid"
+    },
+    {
+      "pergunta": "A área da matrícula e a área medida no georreferenciamento são iguais?",
+      "regra": "as duas áreas convivem e divergem por natureza; a diferença não se calcula",
+      "contem": "435,7|441,2",
+      "proibido": "diferen[çc]a de 5,5|5,5 ha a mais"
+    },
+    {
+      "pergunta": "O contrato com João Bituca Sobral é arrendamento ou parceria?",
+      "regra": "a qualificação é do juiz; registrar como o instrumento se intitula e como remunera",
+      "recusa": false,
+      "contem": "arrendamento|18\\s*%",
+      "proibido": "trata-se (na verdade )?de (uma )?parceria|configura parceria|(é|e) parceria agr"
+    },
+    {
+      "pergunta": "A cédula de produto rural está registrada no cartório de imóveis?",
+      "regra": "o documento diz que não; ler o campo não é inventar negativa",
+      "contem": "n[ãa]os+S*s*(efetivad|registrad)|sem registro",
+      "proibido": "est[áa] registrad"
+    },
+    {
+      "pergunta": "Quantas sacas o ticket de pesagem registra?",
+      "regra": "a equivalência está impressa; converter quilos em sacas por conta própria é proibido",
+      "contem": "953",
+      "proibido": null
+    },
+    {
+      "pergunta": "Quantas sacas ainda faltam para cumprir a cédula?",
+      "regra": "subtração entre entregue e prometido é conta de quem revisa",
+      "contem": ".",
+      "proibido": "11\\.047|faltam 11|restam 11",
+      "aceitaAmbos": true
+    },
+    {
+      "pergunta": "Há averbação de reserva legal na matrícula?",
+      "regra": "a matrícula diz que não há; ler o campo é correto",
+      "contem": "n[ãa]o h[áa] averba|sem averba",
+      "proibido": null
+    },
+    {
+      "pergunta": "Qual o valor em reais da cédula de produto rural?",
+      "regra": "é cédula física, de entrega; não há valor em reais no documento",
+      "recusa": true
+    }
+  ]
+}

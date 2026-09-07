@@ -1,0 +1,82 @@
+{
+  "internalCode": "AVAL-ELEITORAL-01",
+  "title": "Avaliação da faixa eleitoral — acervo fictício",
+  "legalArea": "ELEITORAL",
+  "caseType": "ACAO_DE_INVESTIGACAO_JUDICIAL",
+  "documentos": [
+    {
+      "nome": "eleitoral-1-registro.txt",
+      "conteudo": "JUSTICA ELEITORAL — DOCUMENTO FICTICIO\nREQUERIMENTO DE REGISTRO DE CANDIDATURA — RRC 0600388-42.2026.6.26.0148\n\nCandidata: Marilene Duarte Bastos\nNome de urna: MARI DUARTE\nNumero: 45123\nCargo: deputada estadual\nPartido: Partido Ficticio da Renovacao — PFR\nZona eleitoral: 148a — municipio de Vale Claro\n\nProtocolo: 15/08/2026, as 18h42.\nPublicacao do edital de registro: 17/08/2026.\n\nDOCUMENTOS APRESENTADOS: ata da convencao partidaria de 04/08/2026, certidao de quitacao\neleitoral emitida em 12/08/2026, certidoes criminais da Justica Estadual e da Justica\nFederal, declaracao de bens e proposta de governo.\n"
+    },
+    {
+      "nome": "eleitoral-2-contas.txt",
+      "conteudo": "JUSTICA ELEITORAL — DOCUMENTO FICTICIO\nPRESTACAO DE CONTAS DE CAMPANHA — candidata MARI DUARTE\n\nPrestacao final protocolada em: 05/11/2026.\nParecer tecnico conclusivo: 21/11/2026.\nJulgamento: 09/12/2026.\n\nDECISAO: contas APROVADAS COM RESSALVAS.\nRessalva registrada: \"ausencia de tres recibos eleitorais referentes a doacoes de pessoas\nfisicas, sanada por documentacao complementar apresentada apos intimacao\".\n\nRECEITAS DECLARADAS:\nRecibo eleitoral 2026.000123 — R$ 25.000,00 — doador pessoa fisica\nRecibo eleitoral 2026.000124 — R$ 18.500,00 — doador pessoa fisica\nRecurso do fundo eleitoral — R$ 140.000,00\n\nDESPESA COM MATERIAL IMPRESSO: R$ 61.300,00, nota fiscal 4471 da Gráfica Ponte Alta.\n"
+    },
+    {
+      "nome": "eleitoral-3-representacao.txt",
+      "conteudo": "JUSTICA ELEITORAL — DOCUMENTO FICTICIO\nREPRESENTACAO POR PROPAGANDA ELEITORAL IRREGULAR No 0600512-77.2026.6.26.0148\n\nRepresentante: coligacao adversaria\nRepresentada: MARI DUARTE\n\nFato: veiculacao de peca em rede social em 22/09/2026, as 21h15, sem a identificacao do\nresponsavel pelo custeio exigida pela norma.\n\nProtocolo da representacao: 23/09/2026, as 10h04.\nNotificacao da representada: 23/09/2026, as 16h30.\nPrazo de defesa: 48 horas da notificacao.\nDefesa apresentada: 25/09/2026, as 15h50.\n\nDECISAO de 26/09/2026: determinada a remocao da peca em 24 horas.\nComprovante de remocao juntado em 27/09/2026, as 09h12.\n"
+    },
+    {
+      "nome": "eleitoral-4-decisao.txt",
+      "conteudo": "JUSTICA ELEITORAL — DOCUMENTO FICTICIO\nACAO DE INVESTIGACAO JUDICIAL ELEITORAL No 0600744-19.2026.6.26.0148\n\nInvestigada: MARI DUARTE\nFato apurado: distribuicao de cestas basicas em evento de campanha, ocorrido em 08/09/2026.\n\nSENTENCA de 12/02/2027:\nJulgada PROCEDENTE a acao. A sentenca (i) cassa o diploma da investigada e (ii) declara a\nsua inelegibilidade pelo prazo de 8 anos, contados da eleicao de 2026.\n\nPublicada em 18/02/2027. Recurso interposto em 23/02/2027.\n"
+    }
+  ],
+  "perguntas": [
+    {
+      "pergunta": "Em que data e horário o requerimento de registro de candidatura foi protocolado?",
+      "regra": "hora é dado, não detalhe; nesta matéria prazo se conta em horas",
+      "contem": "18h42|18:42",
+      "proibido": null
+    },
+    {
+      "pergunta": "Qual foi o desfecho do julgamento da prestação de contas?",
+      "regra": "quatro desfechos possíveis; não simplificar para aprovado ou reprovado",
+      "contem": "ressalva",
+      "proibido": "foram aprovadas\\.|simplesmente aprovadas|contas reprovadas"
+    },
+    {
+      "pergunta": "Qual o nome de urna e qual o nome civil da candidata?",
+      "regra": "nome de urna e nome civil são dois dados distintos",
+      "contem": "MARI DUARTE",
+      "proibido": null
+    },
+    {
+      "pergunta": "Em que horário a representada foi notificada e em que horário apresentou defesa?",
+      "regra": "os dois horários são campos próprios, e o prazo é de 48 horas",
+      "contem": "16h30|16:30",
+      "proibido": null
+    },
+    {
+      "pergunta": "O que a sentença da investigação judicial determinou?",
+      "regra": "cassação e inelegibilidade são efeitos separados, não 'condenada'",
+      "contem": "inelegibilidade",
+      "proibido": null
+    },
+    {
+      "pergunta": "Houve captação ilícita de recursos na campanha?",
+      "regra": "o caso trata de captação ilícita de sufrágio; trocar as duas é o erro da faixa",
+      "recusa": false,
+      "contem": ".",
+      "proibido": "houve capta[çc][ãa]o il[íi]cita de recursos|capta[çc][ãa]o il[íi]cita de recursos (foi|est[áa]) (comprovad|configurad)"
+    },
+    {
+      "pergunta": "Quanto a campanha arrecadou no total?",
+      "regra": "somar doações e fundo é conta de quem revisa",
+      "recusa": false,
+      "contem": "25\\.000|18\\.500|140\\.000",
+      "proibido": "183\\.500|total de R\\$ 183"
+    },
+    {
+      "pergunta": "Em que data terminou o prazo de defesa na representação por propaganda?",
+      "regra": "prazo em horas não se converte em data final; o calendário do pleito não está aqui",
+      "recusa": false,
+      "contem": "48 horas|16h30|16:30",
+      "proibido": "terminou em 25/09|venceu em 25/09|prazo final: 25/09"
+    },
+    {
+      "pergunta": "A candidata foi condenada por crime eleitoral?",
+      "regra": "pergunta sobre existência sem apoio; a AIJE não é ação penal",
+      "recusa": true
+    }
+  ]
+}
