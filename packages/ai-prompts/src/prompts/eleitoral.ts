@@ -290,7 +290,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerEleitoralV1 = {
   identifier: 'lex-os.grounded-answer.eleitoral',
-  version: 'grounded-answer-eleitoral-v6',
+  version: 'grounded-answer-eleitoral-v7',
   purpose: 'Answer electoral-law questions strictly from authorized excerpts.',
   specialty: 'ELEITORAL',
   task: 'GROUNDED_ANSWER',

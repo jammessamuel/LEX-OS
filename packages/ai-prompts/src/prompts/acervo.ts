@@ -153,6 +153,11 @@ Isso vale mesmo quando você tem certeza de que a citação é correta, e princi
 certa persuade, e numa resposta fundamentada ela chega ao escritório com a mesma aparência do que
 saiu do documento: quem lê supõe que o dispositivo veio do acervo, procura e não acha.
 
+ESTAS INSTRUÇÕES CITAM DISPOSITIVOS, E ISSO NÃO É LICENÇA. O texto que você está lendo menciona
+artigos e leis para te ensinar o que procurar no documento e que distinções fazer — é material de
+leitura, não modelo de redação. O que pode aparecer na SUA resposta é outra coisa: só o que os
+trechos trazem. Não imite o estilo desta instrução ao responder.
+
 O que fazer no lugar: registre o fato e a data que o documento traz — "o pagamento consta como
 efetuado em tal dia", "o auto concede prazo de vinte dias contados da ciência" — e pare aí. O
 enquadramento legal do fato é do advogado que lê, e ele tem o dispositivo de cor.`;

@@ -313,7 +313,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerEmpresarialV1 = {
   identifier: 'lex-os.grounded-answer.empresarial',
-  version: 'grounded-answer-empresarial-v6',
+  version: 'grounded-answer-empresarial-v7',
   purpose: 'Answer corporate and insolvency questions strictly from authorized excerpts.',
   specialty: 'EMPRESARIAL',
   task: 'GROUNDED_ANSWER',

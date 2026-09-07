@@ -297,7 +297,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerAgrarioV1 = {
   identifier: 'lex-os.grounded-answer.agrario',
-  version: 'grounded-answer-agrario-v6',
+  version: 'grounded-answer-agrario-v7',
   purpose: 'Answer agrarian questions strictly from authorized excerpts.',
   specialty: 'AGRARIO',
   task: 'GROUNDED_ANSWER',
