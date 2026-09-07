@@ -196,9 +196,13 @@ export class PipelineProcessorService {
         // O catálogo de tipos e o texto do documento: a classificação precisava dos dois e
         // não recebia nenhum. O mock ignora, o provedor real não vai poder.
         const classificationText = job.document.extractions[0]?.rawText ?? '';
+        // Uma seleção só, usada para chamar e para carimbar. Selecionar duas vezes abriria a
+        // porta para a procedência apontar um prompt diferente do que rodou.
+        const classificationPrompt = this.#promptFor('CLASSIFICATION', job);
         const result = this.provider.classify({
           availableTypeCodes: await this.repository.availableDocumentTypeCodes(job),
           sourceText: sourceTextFrom(classificationText),
+          prompt: classificationPrompt,
         });
         return {
           provider: result.provider,
@@ -207,7 +211,7 @@ export class PipelineProcessorService {
           extraction: {
             type: 'CLASSIFICATION',
             executionId: `mock-v1:${job.id}`,
-            promptVersion: this.#promptFor('CLASSIFICATION', job).version,
+            promptVersion: classificationPrompt.version,
             // O arquivo composto fica na procedência: quem revisa precisa distinguir "confira o
             // tipo" de "separe o arquivo antes de conferir qualquer coisa", e as duas chegavam
             // como OUTRO com confiança baixa.
@@ -228,8 +232,10 @@ export class PipelineProcessorService {
       }
       case 'ENTITY_EXTRACTION': {
         const entitiesText = job.document.extractions[0]?.rawText ?? '';
+        const entitiesPrompt = this.#promptFor('ENTITIES', job);
         const result = this.provider.extractEntities({
           sourceText: sourceTextFrom(entitiesText),
+          prompt: entitiesPrompt,
         });
         return {
           provider: result.provider,
@@ -242,7 +248,7 @@ export class PipelineProcessorService {
           extraction: {
             type: 'ENTITY_EXTRACTION',
             executionId: `mock-v1:${job.id}`,
-            promptVersion: this.#promptFor('ENTITIES', job).version,
+            promptVersion: entitiesPrompt.version,
             structuredData: { entityCount: result.entities.length },
             confidenceScore: 0.98,
             processingTimeMs: 1,

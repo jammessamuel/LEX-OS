@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { RuntimeConfig } from '@lex-os/config';
 
+import type { PromptSpecification } from '@lex-os/ai-prompts';
 import { isValidCnpj, isValidCpf, somenteDigitos } from '@lex-os/shared';
 
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
@@ -17,6 +18,19 @@ import { frasePerto, type SourceText } from './review-processing.provider.js';
 export interface ClassificationInput {
   availableTypeCodes: readonly string[];
   sourceText: SourceText;
+  /**
+   * A instrução que a especialidade do caso escolheu.
+   *
+   * Estava faltando, e a falta era invisível porque a procedência mentia bonito: a extração
+   * gravava `promptVersion` vindo de `promptFor`, então o dossiê afirmava que o documento fora
+   * classificado sob a instrução de família ou de licitação, e essa instrução nunca saía do
+   * pacote. Cronologia e checklist já recebiam o prompt; classificação e entidades recebiam só
+   * o carimbo dele — vinte dos cinquenta prompts da biblioteca, estruturalmente inalcançáveis.
+   *
+   * O mock ignora, como ignora o texto do documento na maior parte do que faz. O provedor real
+   * não vai poder — é o mesmo raciocínio que trouxe `availableTypeCodes` e `sourceText` para cá.
+   */
+  prompt: PromptSpecification;
 }
 
 export interface MockTextResult {
@@ -36,7 +50,7 @@ export interface ProcessingProvider {
     /** O arquivo reúne mais de um documento e precisa ser separado antes de valer. */
     composite: boolean;
   };
-  extractEntities(input: { sourceText: SourceText }): {
+  extractEntities(input: { sourceText: SourceText; prompt: PromptSpecification }): {
     provider: string;
     modelName: string;
     entities: readonly {
@@ -194,7 +208,7 @@ export class MockProcessingProvider implements ProcessingProvider {
     };
   }
 
-  extractEntities(input: { sourceText: SourceText }): {
+  extractEntities(input: { sourceText: SourceText; prompt: PromptSpecification }): {
     provider: string;
     modelName: string;
     entities: readonly {
