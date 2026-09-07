@@ -1,7 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import type { PromptSpecification } from '@lex-os/ai-prompts';
+import {
+  MAX_AFIRMACOES_POR_RESPOSTA,
+  MAX_CITACOES_POR_AFIRMACAO,
+  type PromptSpecification,
+} from '@lex-os/ai-prompts';
 import type { RuntimeConfig } from '@lex-os/config';
 
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
@@ -126,14 +130,25 @@ function costOf(usage: AnthropicUsage, inputPerMillion: string, outputPerMillion
  *
  * Repetido na instrução porque o contrato de saída do prompt é schema para nós e não chega ao
  * modelo. O serviço valida de novo o que voltar: esta instrução pede, ela não garante.
+ *
+ * Os dois tetos vêm das constantes, e isso não é preciosismo. Este texto é a última coisa que o
+ * modelo lê antes de responder, e até 2026-09-07 ele omitia o teto de afirmações e trazia o de
+ * citações escrito à mão como "cinco". Um limite que o parser cobra, o modelo não conhece e a
+ * instrução não repete é exatamente o defeito que já derrubou chamadas nesta base — e a cópia
+ * literal é como ele volta, porque mudar o contrato não move a string.
  */
 function outputContract(sources: readonly GroundedLanguageModelSource[]): string {
   return [
     'Responda somente com um objeto JSON, sem cercas de código e sem texto ao redor:',
     '{"claims":[{"text":"...","sourceChunkIds":["..."]}]}',
     '',
-    'Cada afirmação cita de um a cinco identificadores, e cada identificador precisa ser um dos',
-    `seguintes, exatamente como escritos: ${sources.map((source) => source.chunkId).join(', ')}.`,
+    `A lista tem no máximo ${MAX_AFIRMACOES_POR_RESPOSTA} afirmações. Precisando de mais para`,
+    'cobrir a pergunta, reúna fatos próximos numa afirmação só em vez de exceder o limite —',
+    'passar do teto invalida a resposta inteira e o escritório não recebe nada.',
+    '',
+    `Cada afirmação cita de um a ${MAX_CITACOES_POR_AFIRMACAO} identificadores, e cada`,
+    'identificador precisa ser um dos seguintes, exatamente como escritos:',
+    `${sources.map((source) => source.chunkId).join(', ')}.`,
     'Identificador que não estiver nessa lista invalida a resposta inteira.',
     'Sem sustentação nos trechos, devolva {"claims":[]}.',
   ].join('\n');
