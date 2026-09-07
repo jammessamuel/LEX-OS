@@ -3,6 +3,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { cnjSegmentName, isValidCnj, normalizeCnj } from '@lex-os/shared/cnj';
+import { legalSpecialties, specialtyFor } from '@lex-os/shared/legal-specialties';
 
 import { ApiError, request } from '../api/client.js';
 import {
@@ -96,6 +97,20 @@ function toTechnicalCode(value: string): string {
 function toIsoDate(value: string): string | null {
   return value === '' ? null : `${value}T12:00:00.000Z`;
 }
+
+/**
+ * A faixa que o texto digitado alcança, ou `null` quando nenhuma.
+ *
+ * O campo continua aberto de propósito: `legalArea` é texto livre no banco, escritórios atendem
+ * áreas que ninguém catalogou, e fechar a lista invalidaria caso já cadastrado. O que faltava
+ * era o contrário — a tela não dizia que existem treze faixas com instrução própria, e quem
+ * escrevia uma área fora delas caía no prompt genérico sem nenhum aviso. Perdia a instrução
+ * especializada e não ficava sabendo.
+ */
+const especialidade = computed(() => specialtyFor(toTechnicalCode(form.legalArea)));
+
+/** Os tipos de caso da faixa alcançada, para o segundo campo sugerir o que aquela área comporta. */
+const tiposDaEspecialidade = computed(() => especialidade.value?.caseTypes ?? []);
 
 function normalizeCostForComparison(value: string): string {
   const [integer = '0', fraction = ''] = value.replace(',', '.').trim().split('.');
@@ -294,9 +309,29 @@ onMounted(() => void load());
             id="case-legal-area"
             v-model="form.legalArea"
             required
+            list="areas-juridicas"
             placeholder="Ex.: Direito trabalhista"
           />
-          <span class="field__hint">Escreva normalmente; o sistema padroniza o cadastro.</span>
+          <datalist id="areas-juridicas">
+            <option v-for="faixa in legalSpecialties" :key="faixa.code" :value="faixa.name" />
+          </datalist>
+          <!--
+            A dica muda conforme o que foi digitado, e é aqui que o silêncio se quebra: área
+            reconhecida diz qual instrução vai rodar; área fora do catálogo avisa que o caso usará
+            a instrução genérica, em vez de deixar o escritório descobrir isso pela qualidade da
+            análise semanas depois.
+          -->
+          <span v-if="especialidade" class="field__hint">
+            Análise com a instrução de {{ especialidade.name.toLocaleLowerCase('pt-BR') }}.
+          </span>
+          <span v-else-if="form.legalArea.trim() !== ''" class="field__hint">
+            Área sem instrução própria: o caso será analisado com a instrução geral. As áreas com
+            instrução especializada aparecem na lista do campo.
+          </span>
+          <span v-else class="field__hint">
+            Escreva normalmente; o sistema padroniza o cadastro. A lista sugere as áreas com
+            instrução especializada.
+          </span>
         </label>
         <label class="field">
           <span class="label">Tipo de caso</span>
@@ -304,8 +339,16 @@ onMounted(() => void load());
             id="case-type"
             v-model="form.caseType"
             required
+            list="tipos-de-caso"
             placeholder="Ex.: Reclamação trabalhista"
           />
+          <datalist id="tipos-de-caso">
+            <option v-for="tipo in tiposDaEspecialidade" :key="tipo.code" :value="tipo.name" />
+          </datalist>
+          <span v-if="tiposDaEspecialidade.length > 0" class="field__hint">
+            {{ tiposDaEspecialidade.length }} tipos catalogados nesta área; escrever outro também
+            vale.
+          </span>
         </label>
         <label class="field">
           <span class="label">Situação</span>

@@ -51,6 +51,50 @@ async function loadCase(caseId: string): Promise<void> {
   }
 }
 const extractions = ref<Extraction[]>([]);
+
+/**
+ * Dois avisos que o pipeline grava e que a tela não mostrava.
+ *
+ * `structuredData` chega como `unknown` de propósito — o formato varia por etapa —, e por isso
+ * ninguém o lia. Só que duas coisas gravadas ali mudam o que a pessoa faz com o documento, e
+ * ficar sem elas custa caro: um arquivo que reúne várias peças precisa ser separado antes de
+ * qualquer conferência, e um documento que a análise não conseguiu ler produz cronologia vazia
+ * igualzinha à de um documento que simplesmente não tem fato datado.
+ *
+ * A leitura é estreita e validada em vez de convertida: campo ausente ou de outro tipo devolve
+ * `false`, que é o comportamento certo para procedência antiga, gravada antes de o campo existir.
+ */
+function campoBooleano(dado: unknown, nome: string): boolean {
+  return (
+    typeof dado === 'object' && dado !== null && (dado as Record<string, unknown>)[nome] === true
+  );
+}
+
+function campoTexto(dado: unknown, nome: string): string | null {
+  if (typeof dado !== 'object' || dado === null) {
+    return null;
+  }
+  const valor = (dado as Record<string, unknown>)[nome];
+  return typeof valor === 'string' ? valor : null;
+}
+
+/** O arquivo reúne mais de um documento, segundo a classificação. */
+const arquivoComposto = computed(() =>
+  extractions.value.some(
+    (extraction) =>
+      extraction.extractionType === 'CLASSIFICATION' &&
+      campoBooleano(extraction.structuredData, 'composite'),
+  ),
+);
+
+/** A análise de cronologia declarou não conseguir ler o documento. */
+const cronologiaIlegivel = computed(() =>
+  extractions.value.some(
+    (extraction) =>
+      extraction.extractionType === 'TIMELINE_ANALYSIS' &&
+      campoTexto(extraction.structuredData, 'outcome') === 'UNREADABLE',
+  ),
+);
 const loading = ref(true);
 const failure = ref<ApiError | null>(null);
 const confirmationFailure = ref<ApiError | null>(null);
@@ -524,20 +568,38 @@ onMounted(() => {
               <p class="empty__b">Nenhuma execução registrada ainda.</p>
             </div>
 
-            <ol v-else class="trail">
-              <li v-for="extraction in extractions" :key="extraction.id" class="trail__item">
-                <span class="trail__what">
-                  {{ extractionTypeLabels[extraction.extractionType] }}
-                </span>
-                <span class="trail__who data">
-                  {{ providerLabel(extraction.provider) }} · {{ extraction.modelName }}
-                </span>
-                <span class="trail__when data">
-                  {{ formatDateTime(extraction.createdAt) }} · confiança
-                  {{ formatConfidence(extraction.confidenceScore) }}
-                </span>
-              </li>
-            </ol>
+            <template v-else>
+              <!--
+                Os dois avisos ficam acima da trilha, e não dentro dela, porque não são detalhe de
+                uma etapa: mudam o que a pessoa faz com o arquivo inteiro. Composto significa
+                separar antes de conferir; ilegível significa que a cronologia vazia não é ausência
+                de fato.
+              -->
+              <p v-if="arquivoComposto" class="aviso" role="status">
+                <strong>Este arquivo reúne mais de um documento.</strong> A classificação vale para
+                a peça predominante. Separe os documentos antes de conferir tipo e exigências.
+              </p>
+              <p v-if="cronologiaIlegivel" class="aviso" role="status">
+                <strong>A análise não conseguiu ler este documento.</strong> A cronologia sem fatos
+                aqui não significa que o documento não tenha datas — significa que a imagem ou o
+                texto não permitiram lê-las. Um novo escaneamento costuma resolver.
+              </p>
+
+              <ol class="trail">
+                <li v-for="extraction in extractions" :key="extraction.id" class="trail__item">
+                  <span class="trail__what">
+                    {{ extractionTypeLabels[extraction.extractionType] }}
+                  </span>
+                  <span class="trail__who data">
+                    {{ providerLabel(extraction.provider) }} · {{ extraction.modelName }}
+                  </span>
+                  <span class="trail__when data">
+                    {{ formatDateTime(extraction.createdAt) }} · confiança
+                    {{ formatConfidence(extraction.confidenceScore) }}
+                  </span>
+                </li>
+              </ol>
+            </template>
           </section>
         </div>
       </div>
@@ -776,6 +838,29 @@ onMounted(() => {
 .trail__when {
   font-size: 0.78rem;
   color: var(--text-3);
+}
+
+/*
+ * Aviso que muda o que a pessoa faz com o arquivo — separar antes de conferir, ou reescanear.
+ *
+ * Usa o par `--pendente` porque é exatamente isso: algo que exige ação humana antes de o
+ * documento valer. Os tokens já trazem os dois temas, então não há cor crua aqui e nada precisa
+ * ser redefinido sob `prefers-color-scheme`.
+ */
+.aviso {
+  margin: var(--space-3) var(--space-4) 0;
+  padding: var(--space-3);
+  border-left: 3px solid var(--pendente);
+  background: var(--pendente-bg);
+  border-radius: var(--radius-sm);
+  font-size: var(--step--1);
+  color: var(--text-2);
+  max-width: 68ch;
+}
+
+.aviso strong {
+  color: var(--text);
+  font-weight: 600;
 }
 
 .empty {

@@ -3,7 +3,8 @@
   "compilerOptions": {
     "paths": {
       "@lex-os/shared/cnj": ["../../packages/shared/src/cnj.ts"],
-      "@lex-os/shared/legal-vocabulary": ["../../packages/shared/src/legal-vocabulary.ts"]
+      "@lex-os/shared/legal-vocabulary": ["../../packages/shared/src/legal-vocabulary.ts"],
+      "@lex-os/shared/legal-specialties": ["../../packages/shared/src/legal-specialties.ts"]
     }
   },
   "include": [

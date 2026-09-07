@@ -243,4 +243,61 @@ describe('CaseFormView', () => {
       mocks.request.mock.calls.some(([path]) => path === '/cases/case-1/processing-budget'),
     ).toBe(false);
   });
+
+  it('diz qual instrução vai rodar quando a área é reconhecida', async () => {
+    mocks.request.mockResolvedValue({
+      data: [],
+      pageInfo: { nextCursor: null, hasNextPage: false },
+    });
+    const wrapper = mount(CaseFormView, {
+      global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } },
+    });
+    await flushPromises();
+
+    await wrapper.get('#case-legal-area').setValue('Direito de família');
+    await flushPromises();
+
+    // Um apelido do catálogo, não o código canônico: é assim que um advogado escreve.
+    expect(wrapper.text()).toContain('instrução de direito de família e sucessões');
+  });
+
+  it('avisa que a área fora do catálogo cai na instrução geral, em vez de calar', async () => {
+    // O campo continua aberto de propósito, porque escritório atende área que ninguém catalogou.
+    // O defeito não era aceitar o texto: era não dizer que aquela escolha troca a instrução
+    // especializada pela genérica, o que o escritório só descobriria pela qualidade da análise.
+    mocks.request.mockResolvedValue({
+      data: [],
+      pageInfo: { nextCursor: null, hasNextPage: false },
+    });
+    const wrapper = mount(CaseFormView, {
+      global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } },
+    });
+    await flushPromises();
+
+    await wrapper.get('#case-legal-area').setValue('Direito marítimo');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Área sem instrução própria');
+    expect(wrapper.text()).not.toContain('Análise com a instrução de');
+  });
+
+  it('sugere os tipos de caso da área escolhida, e nenhum antes dela', async () => {
+    mocks.request.mockResolvedValue({
+      data: [],
+      pageInfo: { nextCursor: null, hasNextPage: false },
+    });
+    const wrapper = mount(CaseFormView, {
+      global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } },
+    });
+    await flushPromises();
+
+    expect(wrapper.find('#tipos-de-caso option').exists()).toBe(false);
+
+    await wrapper.get('#case-legal-area').setValue('Ambiental');
+    await flushPromises();
+
+    const tipos = wrapper.findAll('#tipos-de-caso option').map((o) => o.attributes('value'));
+    expect(tipos.length).toBeGreaterThan(10);
+    expect(tipos).toContain('Licença de operação');
+  });
 });

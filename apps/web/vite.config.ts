@@ -16,6 +16,13 @@ export default defineConfig({
       '@lex-os/shared/legal-vocabulary': fileURLToPath(
         new URL('../../packages/shared/src/legal-vocabulary.ts', import.meta.url),
       ),
+      // O catálogo de especialidades entra pelo mesmo caminho, e pelo mesmo motivo: a tela precisa
+      // oferecer exatamente as faixas que a biblioteca de prompts reconhece. Uma cópia da lista
+      // aqui divergiria no dia em que uma faixa nova entrasse, e o cliente escolheria uma área
+      // que não existe.
+      '@lex-os/shared/legal-specialties': fileURLToPath(
+        new URL('../../packages/shared/src/legal-specialties.ts', import.meta.url),
+      ),
     },
   },
   server: {
