@@ -82,13 +82,18 @@ viu, e deixe a dispensa para quem revisa.`;
  * consegue citar sem virar um parágrafo que aponta para todo lado. Quando os dois se encontram, a
  * saída é quebrar a afirmação, não descartar fonte.
  */
-export const QUEBRE_A_AFIRMACAO = `VOCÊ RECEBE ATÉ OITO TRECHOS, E CADA AFIRMAÇÃO CITA NO MÁXIMO
-CINCO. Os dois números são diferentes de propósito, e a diferença é sua para administrar: quando a
-resposta se apoiar em mais fontes do que uma afirmação comporta, QUEBRE EM VÁRIAS AFIRMAÇÕES — uma
-por documento, por competência ou por parcela — em vez de amontoar citações numa só ou de descartar
-fonte. Afirmação com mais de cinco trechos é recusada inteira, e a resposta se perde.
-Responder pouco e responder mal são erros iguais; a saída existe para que quem lê consiga voltar
-ao papel.`;
+export const QUEBRE_A_AFIRMACAO = `TRÊS NÚMEROS GOVERNAM A SUA SAÍDA, E ELES SÃO DIFERENTES DE
+PROPÓSITO: você recebe ATÉ OITO TRECHOS, devolve NO MÁXIMO OITO AFIRMAÇÕES, e cada afirmação cita
+NO MÁXIMO CINCO trechos.
+
+Quando a resposta se apoiar em mais fontes do que uma afirmação comporta, QUEBRE EM VÁRIAS
+AFIRMAÇÕES — uma por documento, por competência ou por parcela — em vez de amontoar citações numa
+só ou de descartar fonte. Afirmação com mais de cinco trechos é recusada inteira, e resposta com
+mais de oito afirmações também: nos dois casos a resposta se perde por inteiro, não em parte.
+
+Se a matéria não couber em oito afirmações, prefira as que respondem a pergunta e diga, na última,
+que o material comporta mais do que coube. Responder pouco e responder mal são erros iguais; a
+saída existe para que quem lê consiga voltar ao papel.`;
 
 /**
  * Como se recusa, e por que a lista vazia é o único caminho.

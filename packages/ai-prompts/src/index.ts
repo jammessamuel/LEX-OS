@@ -29,6 +29,22 @@ export {
 // recorta por ele e o provedor real vai depender do mesmo numero.
 export { SOURCE_TEXT_LIMIT } from './prompts/contratos.js';
 
+import { GROUNDED_OUTPUT } from './prompts/contratos.js';
+
+/**
+ * Quantas afirmações uma resposta fundamentada comporta.
+ *
+ * Sai daqui, e não de um número escrito à mão no validador da API, porque foi assim que ele
+ * divergiu: o parser recusava mais de cinco, o contrato não declarava teto nenhum, e o prompt
+ * mandava quebrar a afirmação — três lugares dizendo coisas diferentes sobre o mesmo limite.
+ * Exportar o valor do contrato faz o validador e o texto seguirem o mesmo número por construção.
+ */
+export const MAX_AFIRMACOES_POR_RESPOSTA: number = GROUNDED_OUTPUT.properties.claims.maxItems;
+
+/** Quantos trechos uma única afirmação pode citar. Mesma razão: um número, um lugar. */
+export const MAX_CITACOES_POR_AFIRMACAO: number =
+  GROUNDED_OUTPUT.properties.claims.items.properties.sourceChunkIds.maxItems;
+
 export { administrativoPrompts } from './prompts/administrativo.js';
 export { agrarioPrompts } from './prompts/agrario.js';
 export { ambientalPrompts } from './prompts/ambiental.js';

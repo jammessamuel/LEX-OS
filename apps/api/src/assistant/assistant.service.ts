@@ -1,5 +1,9 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { promptFor } from '@lex-os/ai-prompts';
+import {
+  MAX_AFIRMACOES_POR_RESPOSTA,
+  MAX_CITACOES_POR_AFIRMACAO,
+  promptFor,
+} from '@lex-os/ai-prompts';
 import type { RuntimeConfig } from '@lex-os/config';
 
 import { AuditService, type RequestAuditMetadata } from '../audit/audit.service.js';
@@ -103,13 +107,15 @@ function parseProviderOutput(
     !/^(0|[1-9]\d{0,11})(\.\d{1,6})?$/u.test(value.costAmount) ||
     value.costCurrency !== 'BRL' ||
     !Array.isArray(value.claims) ||
-    // Lista vazia é resposta, não saída inválida. O contrato de saída manda, com todas as
-    // letras, "sem sustentação nos trechos, devolva claims vazio" — e este parser recusava
-    // exatamente isso. O modelo que obedecia derrubava a chamada; o que funcionava era o que
-    // desobedecia, embrulhando a recusa numa afirmação, e a tela então a exibia como resposta
-    // fundamentada, com citação ao lado. Um eval sobre o caso da demonstração encontrou três
-    // perguntas assim.
-    value.claims.length > 5
+    // Não há piso: lista vazia é recusa, não saída inválida. Este parser já recusou exatamente o
+    // que a instrução mandava fazer, e o modelo que obedecia derrubava a chamada enquanto o que
+    // desobedecia "funcionava", embrulhando a recusa numa afirmação que a tela exibia como
+    // resposta fundamentada.
+    //
+    // E o teto vem do contrato, não de um número escrito aqui — foi assim que ele divergiu:
+    // parser em cinco, contrato sem teto declarado, prompt mandando quebrar a afirmação. O
+    // modelo obedecia, produzia seis e levava 502.
+    value.claims.length > MAX_AFIRMACOES_POR_RESPOSTA
   ) {
     throw invalidOutput();
   }
@@ -121,7 +127,7 @@ function parseProviderOutput(
       !boundedText(claim.text, 2000) ||
       !Array.isArray(claim.sourceChunkIds) ||
       claim.sourceChunkIds.length === 0 ||
-      claim.sourceChunkIds.length > 5 ||
+      claim.sourceChunkIds.length > MAX_CITACOES_POR_AFIRMACAO ||
       claim.sourceChunkIds.some(
         (chunkId) => typeof chunkId !== 'string' || !authorizedChunkIds.has(chunkId),
       ) ||

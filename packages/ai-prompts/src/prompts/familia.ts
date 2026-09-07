@@ -356,7 +356,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerFamiliaV1 = {
   identifier: 'lex-os.grounded-answer.familia',
-  version: 'grounded-answer-familia-v4',
+  version: 'grounded-answer-familia-v5',
   purpose: 'Answer family and succession questions strictly from authorized case excerpts.',
   specialty: 'FAMILIA',
   task: 'GROUNDED_ANSWER',

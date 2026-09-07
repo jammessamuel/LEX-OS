@@ -212,6 +212,15 @@ export const GROUNDED_OUTPUT = {
       // com citação ao lado. A instrução sempre mandou devolver lista vazia; era o contrato que
       // não deixava.
       minItems: 0,
+      // O teto existia só no parser, em cinco, e nem o contrato nem o prompt o declaravam. Era
+      // herança do tempo em que a recuperação trazia cinco trechos: uma afirmação por trecho,
+      // cinco trechos, cinco afirmações. A recuperação foi a oito pelo ADR-017 e este número
+      // ficou — e aí a instrução passou a mandar QUEBRAR a afirmação quando ela precisasse de
+      // mais de cinco citações, empurrando o modelo para além de um limite que ele não conhecia.
+      // Resultado medido em 2026-09-07: 502 intermitente em quatro faixas, sempre que a resposta
+      // se organizava em seis ou mais afirmações. Agora acompanha a recuperação e está escrito
+      // nos três lugares — contrato, parser e prompt.
+      maxItems: 8,
       items: {
         type: 'object',
         additionalProperties: false,

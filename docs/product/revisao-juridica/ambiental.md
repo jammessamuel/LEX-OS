@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito ambiental estão abaixo, na íntegra e
-exatamente como o sistema as usa — **10.752 palavras**.
+exatamente como o sistema as usa — **10.797 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -901,7 +901,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-ambiental-v4` · identificador `lex-os.grounded-answer.ambiental`
+`grounded-answer-ambiental-v5` · identificador `lex-os.grounded-answer.ambiental`
 
 ### A instrução
 
@@ -1055,13 +1055,18 @@ não foi recuperado. Afirmar inexistência a partir do silêncio é inventar fat
 que leva um escritório a afirmar em petição algo que a parte contrária desmente com um documento.
 Devolva a lista vazia.
 
-**[COMUM]** VOCÊ RECEBE ATÉ OITO TRECHOS, E CADA AFIRMAÇÃO CITA NO MÁXIMO
-CINCO. Os dois números são diferentes de propósito, e a diferença é sua para administrar: quando a
-resposta se apoiar em mais fontes do que uma afirmação comporta, QUEBRE EM VÁRIAS AFIRMAÇÕES — uma
-por documento, por competência ou por parcela — em vez de amontoar citações numa só ou de descartar
-fonte. Afirmação com mais de cinco trechos é recusada inteira, e a resposta se perde.
-Responder pouco e responder mal são erros iguais; a saída existe para que quem lê consiga voltar
-ao papel.
+**[COMUM]** TRÊS NÚMEROS GOVERNAM A SUA SAÍDA, E ELES SÃO DIFERENTES DE
+PROPÓSITO: você recebe ATÉ OITO TRECHOS, devolve NO MÁXIMO OITO AFIRMAÇÕES, e cada afirmação cita
+NO MÁXIMO CINCO trechos.
+
+**[COMUM]** Quando a resposta se apoiar em mais fontes do que uma afirmação comporta, QUEBRE EM VÁRIAS
+AFIRMAÇÕES — uma por documento, por competência ou por parcela — em vez de amontoar citações numa
+só ou de descartar fonte. Afirmação com mais de cinco trechos é recusada inteira, e resposta com
+mais de oito afirmações também: nos dois casos a resposta se perde por inteiro, não em parte.
+
+**[COMUM]** Se a matéria não couber em oito afirmações, prefira as que respondem a pergunta e diga, na última,
+que o material comporta mais do que coube. Responder pouco e responder mal são erros iguais; a
+saída existe para que quem lê consiga voltar ao papel.
 
 **[COMUM]** Cite pelo trecho examinado, não pela página do processo: o material chega como texto extraído e o
 mapeamento para a página do PDF não existe aqui.

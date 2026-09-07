@@ -342,7 +342,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerPrevidenciarioV1 = {
   identifier: 'lex-os.grounded-answer.previdenciario',
-  version: 'grounded-answer-previdenciario-v3',
+  version: 'grounded-answer-previdenciario-v4',
   purpose: 'Answer social-security case questions strictly from authorized excerpts.',
   specialty: 'PREVIDENCIARIO',
   task: 'GROUNDED_ANSWER',
