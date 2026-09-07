@@ -5,12 +5,14 @@ import {
   promptFor,
 } from '@lex-os/ai-prompts';
 import type { RuntimeConfig } from '@lex-os/config';
+import { writeStructuredLog } from '@lex-os/shared';
 
 import { AuditService, type RequestAuditMetadata } from '../audit/audit.service.js';
 import type { ActorContext } from '../auth/actor-context.js';
 import { CasesService } from '../cases/cases.service.js';
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
 import { ApiException } from '../http/api-exception.js';
+import { getRequestContext } from '../observability/request-context.js';
 import type { SearchCitationDto, SearchResultDto } from '../search/dto/search-response.dto.js';
 import { SearchService } from '../search/search.service.js';
 import type { GroundedAnswerRequestDto } from './dto/grounded-answer-request.dto.js';
@@ -99,6 +101,26 @@ class SaidaInvalidaError extends Error {
 
 function recusa(regra: string): never {
   throw new SaidaInvalidaError(regra);
+}
+
+/**
+ * O motivo da falha vai para o log, além da trilha.
+ *
+ * São canais com propósitos diferentes e o produto precisa dos dois: a trilha é registro do que
+ * aconteceu com o caso, lida na tela e sujeita a redação; o log é diagnóstico de operação, lido
+ * em `railway logs` por quem está consertando. O motivo é o único campo aqui que não é
+ * identificador — e é nome de regra ou mensagem do adaptador, nunca texto de documento.
+ */
+function registraFalhaDoModelo(mensagem: string, motivo: string, versaoDoPrompt: string): void {
+  writeStructuredLog({
+    level: 'error',
+    service: 'lex-os-api',
+    message: mensagem,
+    // A mesma correlação do `http_request_completed` que registra o 502: as duas linhas ficam
+    // lado a lado no log, e a referência que o escritório vê na tela leva até elas.
+    correlationId: getRequestContext()?.correlationId ?? 'unknown',
+    metadata: { motivo, prompt_version: versaoDoPrompt },
+  });
 }
 
 function parseProviderOutput(
@@ -311,6 +333,11 @@ export class AssistantService {
         },
         ...metadata,
       });
+      registraFalhaDoModelo(
+        'assistant_provider_failure',
+        erro instanceof Error ? erro.message : 'unknown provider failure',
+        prompt.version,
+      );
       // O custo desta chamada existe no provedor e não é debitado do teto do caso: o adaptador
       // falha antes de informar quanto custou, e gravar um número inventado seria pior do que
       // não gravar. Limitação conhecida, registrada aqui e não escondida.
@@ -339,6 +366,11 @@ export class AssistantService {
         },
         ...metadata,
       });
+      // A trilha guarda; o log diagnostica. `mapAuditLog` não expõe `newData` — e não deve, é a
+      // fronteira de redação —, então quem opera não alcança o motivo pela API. Sem esta linha o
+      // registro existe e continua inalcançável: em 2026-09-07 um 502 apareceu no teste de fumaça
+      // e a regra estava gravada num banco sem proxy público. Nome de regra não é conteúdo.
+      registraFalhaDoModelo('assistant_invalid_output', erro.regra, prompt.version);
       throw invalidOutput();
     }
     const sourceChunkIds = [...new Set(parsed.claims.flatMap((claim) => claim.sourceChunkIds))];
