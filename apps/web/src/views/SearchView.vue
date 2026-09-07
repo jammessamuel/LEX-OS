@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import { ApiError, request } from '../api/client.js';
 import type {
@@ -24,6 +24,11 @@ const executedQuery = ref('');
 const loadingCases = ref(true);
 const submitting = ref<'answer' | 'search' | null>(null);
 const failure = ref<ApiError | null>(null);
+
+// Repetir só faz sentido onde repetir muda o resultado. Escolher o caso, escrever a pergunta
+// curta e não ter fonte autorizada são estados que insistir não resolve — oferecer o botão ali
+// seria botão que não faz nada, que a regra 4 do `ui-harness.md` reprova.
+const repetivel = computed(() => failure.value?.code === 'INVALID_LANGUAGE_MODEL_OUTPUT');
 
 function apiError(error: unknown, fallback: string): ApiError {
   return error instanceof ApiError
@@ -159,6 +164,20 @@ onMounted(() => void loadCases());
     <div v-if="failure" class="state state--error result" role="alert">
       <h2 class="state__title">Não foi possível concluir</h2>
       <p class="state__body">{{ failure.message }}</p>
+      <!--
+        A saída sem apoio é descartada de propósito, e por isso a falha é passageira: a mesma
+        pergunta costuma sair inteira na tentativa seguinte. Sem este botão o leitor fica diante
+        de um beco — a pergunta continua no campo, mas nada diz que vale insistir.
+      -->
+      <button
+        v-if="repetivel"
+        class="btn"
+        type="button"
+        :disabled="submitting !== null"
+        @click="ask"
+      >
+        {{ submitting === 'answer' ? 'Analisando fontes…' : 'Perguntar novamente' }}
+      </button>
       <p v-if="failure.requestId" class="state__ref data">Referência: {{ failure.requestId }}</p>
     </div>
 

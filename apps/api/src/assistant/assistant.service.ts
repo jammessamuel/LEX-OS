@@ -174,11 +174,21 @@ function parseProviderOutput(
   };
 }
 
+/**
+ * A mensagem é lida por advogado, não por quem mantém o código.
+ *
+ * "O provedor retornou uma resposta sem ancoragem válida" reprovava na regra 1 do
+ * `ui-harness.md`: nomeia um componente que o leitor não conhece, usa vocabulário interno e não
+ * diz o que fazer. A informação que importa para quem está na tela é outra — a resposta foi
+ * descartada em vez de exibida sem apoio, e perguntar de novo costuma bastar.
+ *
+ * O nome da regra que caiu não entra aqui: vai para a trilha, em `assistant.answer.invalid`.
+ */
 function invalidOutput(): ApiException {
   return new ApiException(
     HttpStatus.BAD_GATEWAY,
     'INVALID_LANGUAGE_MODEL_OUTPUT',
-    'O provedor retornou uma resposta sem ancoragem válida.',
+    'A resposta não veio em forma utilizável e foi descartada em vez de exibida sem apoio nos documentos. Perguntar novamente costuma resolver.',
   );
 }
 
