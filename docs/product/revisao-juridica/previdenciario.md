@@ -1,6 +1,6 @@
 # Revisão jurídica — direito previdenciário
 
-> **Este documento foi gerado a partir do código em 2026-09-06.**
+> **Este documento foi gerado a partir do código em 2026-09-07.**
 > Não o edite: as correções voltam como anotação, e quem altera o texto é quem mexe na
 > biblioteca. Regenerar com `node infra/scripts/gera-revisao-juridica.mjs`.
 

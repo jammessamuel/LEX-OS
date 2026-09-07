@@ -111,7 +111,10 @@ NA LICITAÇÃO, CADA FASE TEM PEÇA PRÓPRIA E NENHUMA SUBSTITUI A OUTRA. Edital
 esclarecimento, impugnação, sessão pública com a sua ata, julgamento das propostas, habilitação,
 recurso, adjudicação, homologação e contrato. Registre cada uma como o documento a apresenta, e
 nunca funda adjudicação com homologação: são atos distintos, de datas distintas, e às vezes de
-autoridades distintas.
+autoridades distintas. INABILITAÇÃO E DESCLASSIFICAÇÃO TAMBÉM NÃO SÃO A MESMA COISA: a primeira
+recusa o licitante pelos documentos de habilitação, a segunda recusa a proposta pelo conteúdo
+dela. Copie o motivo que a ata registra e diga qual das duas ocorreu, porque o recurso e o pedido
+que cabem mudam conforme a resposta.
 
 CONTRATO ADMINISTRATIVO VIVE DE ADITIVOS E APOSTILAMENTOS, E OS DOIS NÃO SÃO A MESMA COISA. O
 aditivo altera o contrato e é bilateral; o apostilamento registra alteração que independe de
@@ -120,11 +123,38 @@ documento o trouxer, sem somar acréscimos e sem calcular percentual sobre o val
 
 EMPENHO, LIQUIDAÇÃO E PAGAMENTO SÃO TRÊS ETAPAS COM TRÊS DATAS. Empenho reserva o recurso;
 liquidação reconhece a dívida depois de conferida a entrega; pagamento é a saída. Uma cobrança
-contra a administração se instrui com as três, e tratá-las como uma só é o engano frequente aqui.`;
+contra a administração se instrui com as três, e tratá-las como uma só é o engano frequente aqui.
+
+INTERVENÇÃO NA PROPRIEDADE É OUTRO MUNDO DOCUMENTAL, E NÃO SE PARECE COM LICITAÇÃO. Desapropriação
+e servidão administrativa começam por ato declaratório do poder público — decreto ou equivalente —,
+seguem por avaliação e por oferta, e podem passar por imissão provisória na posse mediante
+depósito antes de qualquer discussão sobre o preço. Registre o ato declaratório com a sua
+publicação, a descrição e a matrícula do bem atingido, a área declarada, o valor ofertado, o valor
+apurado em cada laudo, o depósito com a sua data, e a data da imissão na posse. DESAPROPRIAÇÃO
+TRANSFERE A PROPRIEDADE; SERVIDÃO SÓ IMPÕE ÔNUS SOBRE ELA e o bem continua do particular — nunca
+troque uma pela outra. Nunca declare qual valor é o justo: registre cada avaliação com quem a
+assinou e quando.
+
+A ADMINISTRAÇÃO TAMBÉM É PROCESSADA PARA PRESTAR, E ESSE CASO TEM DOCUMENTO PRÓPRIO. Fornecimento
+de medicamento e de tratamento, vaga em creche e em escola, e serviço público negado ao indivíduo
+se instruem com prescrição ou laudo do profissional, negativa administrativa ou comprovante de
+espera, e comprovação de que o pedido foi feito na via administrativa antes da judicial. Registre
+a data da prescrição, a data do pedido administrativo, a data da negativa ou o registro da fila, e
+a data de cada decisão que determinou a prestação. NÃO CONCLUA urgência, hipossuficiência nem
+existência do dever de fornecer: registre o que o laudo descreve e o que a administração respondeu.
+
+LICENÇA, ALVARÁ E AUTORIZAÇÃO SÃO ATOS DE CONSENTIMENTO COM REGIMES DIFERENTES, e o que decide o
+caso é a data de emissão, a de validade e a do ato que a cassou ou suspendeu. Registre as três
+separadamente e copie a condição que o próprio documento impõe, quando impuser alguma.
+
+QUEM PODE PEDIR NEM SEMPRE É QUEM FOI ATINGIDO. Ação popular é proposta por cidadão em defesa do
+patrimônio público, e ação civil pública tem legitimados próprios — em nenhuma das duas o autor é
+necessariamente o lesado. Registre quem a peça aponta como autor e em que qualidade, porque disso
+depende o objeto do processo, e não presuma interesse individual onde o pedido é coletivo.`;
 
 export const timelineAdministrativoV1 = {
   identifier: 'lex-os.timeline.administrativo',
-  version: 'timeline-administrativo-v1',
+  version: 'timeline-administrativo-v2',
   purpose: 'Extract dated administrative-law facts with re-checkable provenance.',
   specialty: 'ADMINISTRATIVO',
   task: 'TIMELINE',
@@ -161,6 +191,16 @@ resultado, homologação do concurso, prazo de validade tal como o edital o decl
 nomeação, posse e entrada em exercício. Nomeação, posse e exercício são três atos com três datas e
 efeitos diferentes — trocá-los altera a contagem de tempo de serviço e a data do direito à
 remuneração.
+
+DATAS DE INTERVENÇÃO NA PROPRIEDADE: publicação do ato declaratório, avaliação administrativa,
+oferta, ajuizamento, depósito, imissão provisória na posse, laudo do perito do juízo, sentença que
+fixa a indenização e o trânsito. A data da imissão é a que separa o período em que o bem ainda
+estava com o particular, e registrá-la errada desloca toda a discussão de frutos e de juros.
+
+DATAS DE PRESTAÇÃO AO INDIVÍDUO: prescrição ou laudo, pedido administrativo com protocolo, negativa
+ou entrada na fila, decisão liminar que determinou a prestação, prazo fixado para cumprimento, e a
+data em que a prestação de fato ocorreu. Decisão e cumprimento são eventos distintos, e o intervalo
+entre eles é o que sustenta pedido de bloqueio ou de multa.
 
 DATAS DE SANÇÃO E DE AUTO DE INFRAÇÃO: lavratura do auto, ciência do autuado, prazo de defesa,
 decisão de primeira instância, recurso, decisão final, inscrição em dívida ativa e ajuizamento da
@@ -226,7 +266,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const checklistAdministrativoV1 = {
   identifier: 'lex-os.checklist.administrativo',
-  version: 'checklist-administrativo-v1',
+  version: 'checklist-administrativo-v2',
   purpose: 'Match received documents against administrative-law documentary requirements.',
   specialty: 'ADMINISTRATIVO',
   task: 'CHECKLIST',
@@ -266,7 +306,21 @@ não se satisfaz com a outra.
 
 DOCUMENTOS DE SERVIDOR: portaria de nomeação, termo de posse, ficha funcional, contracheques,
 portaria de instauração do processo disciplinar, relatório da comissão e o ato de julgamento.
-Contracheque isolado não comprova regime jurídico: registre o que ele apresenta.
+Contracheque isolado não comprova regime jurídico: registre o que ele apresenta. Quando a exigência
+tratar de vantagem, gratificação ou reenquadramento, o contracheque precisa mostrar a rubrica
+discutida: sem a rubrica visível é o documento certo em versão insuficiente.
+
+DOCUMENTOS DE INTERVENÇÃO NA PROPRIEDADE: ato declaratório publicado, matrícula atualizada do
+imóvel atingido, planta ou memorial descritivo da área, laudo de avaliação com identificação e
+registro do avaliador, comprovante do depósito, e o auto de imissão na posse. Laudo sem
+identificação profissional é documento certo com defeito de forma: o estado é inválido, não
+ilegível.
+
+DOCUMENTOS DE PRESTAÇÃO AO INDIVÍDUO: prescrição ou laudo com data, identificação e registro do
+profissional, relatório que descreva a necessidade, protocolo do pedido administrativo, negativa
+por escrito ou comprovante de espera na fila, e comprovante de hipossuficiência quando a exigência
+o pedir. RECEITA SEM DATA OU SEM REGISTRO PROFISSIONAL não atende exigência que dependa de
+prescrição válida, e prescrição antiga se afere contra a data de referência da entrada.
 
 ${DATA_DE_REFERENCIA_DO_CHECKLIST}
 
@@ -300,7 +354,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const groundedAnswerAdministrativoV1 = {
   identifier: 'lex-os.grounded-answer.administrativo',
-  version: 'grounded-answer-administrativo-v1',
+  version: 'grounded-answer-administrativo-v2',
   purpose: 'Answer administrative-law questions strictly from authorized excerpts.',
   specialty: 'ADMINISTRATIVO',
   task: 'GROUNDED_ANSWER',
@@ -356,7 +410,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const classificationAdministrativoV1 = {
   identifier: 'lex-os.classification.administrativo',
-  version: 'classification-administrativo-v1',
+  version: 'classification-administrativo-v2',
   purpose: 'Classify administrative-law documents into the catalogued document types.',
   specialty: 'ADMINISTRATIVO',
   task: 'CLASSIFICATION',
@@ -390,6 +444,15 @@ Auto de infração, notificação e intimação são peças distintas do mesmo p
 
 Relatório de comissão disciplinar e ato de julgamento são duas peças: a primeira propõe, a segunda
 decide, e só a segunda produz a penalidade.
+
+Decreto declaratório de utilidade pública, laudo de avaliação e auto de imissão na posse compõem a
+mesma desapropriação e são três documentos de emissores diferentes — poder executivo, avaliador e
+juízo.
+
+Prescrição médica, laudo e relatório de necessidade parecem a mesma peça e não são: a prescrição
+indica o que usar, o laudo descreve o quadro, e o relatório justifica o pedido.
+
+Alvará, licença e certidão de regularidade saem do mesmo órgão com finalidades distintas.
 
 ARQUIVO COM MAIS DE UM DOCUMENTO É A REGRA AQUI, porque o processo administrativo é digitalizado
 inteiro e chega como um PDF único com dezenas de peças. Quando o arquivo reunir peças distintas,
@@ -431,7 +494,7 @@ ${RESPONDA_SO_JSON}`,
 
 export const entitiesAdministrativoV1 = {
   identifier: 'lex-os.entities.administrativo',
-  version: 'entities-administrativo-v1',
+  version: 'entities-administrativo-v2',
   purpose: 'Extract administrative-law entities with resolvable character offsets.',
   specialty: 'ADMINISTRATIVO',
   task: 'ENTITIES',
@@ -443,8 +506,18 @@ O QUE SE EXTRAI AQUI: número do processo administrativo, número e espécie do 
 órgão e da autoridade com o cargo, veículo e data da publicação com seção e página, número do
 edital e modalidade da licitação, número do contrato e dos aditivos, valores contratados,
 aditados, empenhados e pagos com a respectiva rubrica, número da nota de empenho, número do auto
-de infração, valor da multa, matrícula funcional do servidor, cargo e regime, e número do acórdão
-do tribunal de contas.
+de infração, valor da multa, matrícula funcional do servidor, cargo, regime e rubrica de vantagem
+ou gratificação, e número do acórdão do tribunal de contas.
+
+EM INTERVENÇÃO NA PROPRIEDADE extraia também a matrícula e o cartório do imóvel, a área declarada
+com a unidade tal como impressa, o valor ofertado, o valor de cada laudo com quem o assinou, e o
+valor depositado. Área em metros quadrados e em hectares não se convertem: copie a unidade do
+documento.
+
+EM PRESTAÇÃO AO INDIVÍDUO extraia o nome do medicamento ou do procedimento como prescrito, a
+posologia quando constar, o registro profissional de quem prescreveu, e o número do protocolo do
+pedido administrativo. Dado de saúde é sensível: extraia o que a exigência do caso precisa e não
+transcreva diagnóstico além do que o campo pede.
 
 NÚMERO DE PROCESSO ADMINISTRATIVO NÃO É NÚMERO DE PROCESSO JUDICIAL, e os dois costumam aparecer
 na mesma página quando o administrativo vem juntado aos autos. O judicial segue o padrão nacional
