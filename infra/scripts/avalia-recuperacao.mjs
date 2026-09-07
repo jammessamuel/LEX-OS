@@ -331,6 +331,29 @@ async function faseResposta() {
       ` · latência mediana ${latencias[Math.floor(latencias.length / 2)] ?? 0} ms` +
       ` · pior ${latencias.at(-1) ?? 0} ms`,
   );
+
+  // A média sobre as onze não serve para comparar tetos, e essa confusão já custou uma projeção
+  // errada: recusa produz saída curta e barata, então quanto mais o assistente recusa, menor a
+  // média — o que faria um teto pior parecer mais econômico. As duas metades se medem separadas,
+  // e é a de responder que se compara entre execuções.
+  const media = (conjunto) =>
+    conjunto.length === 0
+      ? 0
+      : conjunto.reduce((total, item) => total + item.custo, 0) / conjunto.length;
+  const mediana = (conjunto) => {
+    const ms = conjunto.map((item) => item.ms).sort((a, b) => a - b);
+    return ms.length === 0 ? 0 : (ms[Math.floor(ms.length / 2)] ?? 0);
+  };
+  const respondeu = validas.filter((item) => item.achado !== undefined);
+  const recusou = validas.filter((item) => item.achado === undefined);
+  linha(
+    `  respondendo (${respondeu.length}): R$ ${media(respondeu).toFixed(4)} por resposta · ` +
+      `mediana ${mediana(respondeu)} ms`,
+  );
+  linha(
+    `  recusando   (${recusou.length}): R$ ${media(recusou).toFixed(4)} por resposta · ` +
+      `mediana ${mediana(recusou)} ms`,
+  );
 }
 
 await autenticar();

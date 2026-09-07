@@ -1508,3 +1508,37 @@ pergunta vaga respondível; tornam uma pergunta precisa alcançável.
 Subir ou baixar o número pede execução nova de `infra/scripts/avalia-recuperacao.mjs` e
 atualização de `docs/product/avaliacao-recuperacao.md` com a data da medida. Um teto escolhido sem
 medida volta a ser exatamente o que este ADR acabou de substituir.
+
+### Adendo de 2026-09-07 — o que a medição mostrou
+
+A decisão não muda; o que muda é que dois números dela deixaram de ser estimativa. Este adendo
+não reescreve nada acima: a tabela original registra o que se sabia no dia da decisão, e é assim
+que ela precisa continuar legível.
+
+| Teto | Cobertura | Custo por resposta        | Latência mediana |
+| ---- | --------- | ------------------------- | ---------------- |
+| 5    | 5/6       | R$ 0,1424                 | 7.455 ms         |
+| 8 \* | 6/6       | R$ 0,2217 — **projetado** | não medida       |
+| 8    | 6/6       | **R$ 0,1590 — medido**    | **9.483 ms**     |
+
+**A projeção errou para mais, em 39%.** Ela escalou o custo total pela razão de crescimento dos
+trechos: as posições 6 a 8 acrescentam 56% ao contexto das cinco primeiras, e eu apliquei esses
+56% à conta inteira. Os trechos são a parte menor da entrada — o prompt da especialidade domina —,
+então escalar o todo pelo crescimento de uma parte inflou o resultado. O acréscimo real de subir
+de cinco para oito é de **R$ 0,0166 por resposta, ou 12%**, e não os 56% que este ADR usou como
+argumento contrário a números maiores.
+
+Isso reforça a decisão em vez de abalá-la, e vale dizer com todas as letras porque o erro foi na
+direção conservadora: o teto de oito custa menos do que se disse ao aprová-lo. O argumento contra
+passar de oito, porém, **não era o custo** e continua de pé — é que o contrato cita no máximo cinco
+trechos por afirmação, e trecho que entra sem poder ser citado é ruído.
+
+A latência de responder subiu de 7.455 ms para 9.483 ms de mediana, com pior caso de 19.386 ms.
+É acréscimo real de 27%, e é o preço de olhar mais material.
+
+**Um defeito nasceu deste ADR e foi corrigido no mesmo dia.** O bloco compartilhado dos prompts
+dizia "cada afirmação cita no máximo cinco trechos, e você recebe no máximo cinco". A segunda
+metade virou mentira aqui, e o modelo passou a citar mais de cinco numa afirmação só, o que o
+parser recusa: a pergunta que motivou este ADR devolvia `502` com `limit=8` e respondia com
+`limit=5`. O prompt passou a declarar os dois números e a mandar quebrar a afirmação. Fica o
+registro de que **subir o teto exige reler o que os prompts afirmam sobre o tamanho da entrada.**

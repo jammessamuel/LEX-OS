@@ -1,7 +1,9 @@
 # Avaliação da recuperação e da resposta fundamentada
 
-**Medida em 2026-09-06**, contra o caso `RT-2026-0008` do ambiente de demonstração, com o
-adaptador real de modelo e `CASE_ARCHIVE=fictional`. Instrumento:
+**Medida em 2026-09-06 e reexecutada em 2026-09-07**, contra o caso `RT-2026-0008` do ambiente de
+demonstração, com o adaptador real de modelo e `CASE_ARCHIVE=fictional`. A segunda execução é a
+que traz custo e latência do teto de oito já no ar, e a que encontrou o defeito que subir o teto
+causou. Instrumento:
 `infra/scripts/avalia-recuperacao.mjs`, versionado ao lado deste documento.
 
 O ADR-016 fixou o teto de cinco trechos e disse, por escrito, o que permitiria reabri-lo:
@@ -51,16 +53,34 @@ nunca viu o trecho.
 
 ### Resposta — cobertura, latência e custo nas alternativas
 
-| Teto | Cobertura | Custo médio  | Latência mediana | Pior caso  |
-| ---- | --------- | ------------ | ---------------- | ---------- |
-| 3    | 3/6       | R$ 0,1190    | 6.612 ms         | 13.433 ms  |
-| 5    | 5/6       | R$ 0,1424    | 7.455 ms         | 19.053 ms  |
-| 8 \* | 6/6 \*    | R$ 0,2217 \* | não medida       | não medida |
+| Teto  | Cobertura | Custo por resposta     | Latência mediana | Pior caso  |
+| ----- | --------- | ---------------------- | ---------------- | ---------- |
+| 3     | 3/6       | R$ 0,1190              | 6.612 ms         | 13.433 ms  |
+| 5     | 5/6       | R$ 0,1424              | 7.455 ms         | 19.053 ms  |
+| 8 \*  | 6/6       | R$ 0,2217 — projetado  | não medida       | não medida |
+| **8** | **6/6**   | **R$ 0,1590 — medido** | **9.483 ms**     | 19.386 ms  |
 
-\* Projeção, não medida: o contrato recusa `limit` acima de cinco, então a chamada não existe. O
-custo vem do tamanho medido dos trechos nas posições 6 a 8 — em média 716, 690 e 762 caracteres,
-que acrescentam 56% ao contexto das cinco primeiras. A cobertura de 6/6 vem da posição medida, e
-essa parte é fato: com oito trechos o TRCT entra.
+A última linha é de **2026-09-07**, com o teto de oito já no ar. As três primeiras são de
+2026-09-06 e ficam onde estão: apagá-las esconderia que a decisão foi tomada sobre uma projeção
+errada.
+
+**A projeção errou para mais, em 39%.** Ela escalou o custo total pela razão de crescimento dos
+trechos — as posições 6 a 8 acrescentam 56% ao contexto das cinco primeiras, e eu apliquei esses
+56% à conta inteira. Os trechos são a parte menor da entrada, porque o prompt da especialidade
+domina, então escalar o todo pelo crescimento de uma parte inflou o número. O acréscimo real de
+cinco para oito é **R$ 0,0166 por resposta, ou 12%**.
+
+A latência é o que faltava e agora existe: mediana de 9.483 ms para responder, contra 7.455 ms em
+cinco, com pior caso de 19.386 ms — acréscimo real de 27%, o preço de olhar mais material.
+
+Recusar é bem mais barato e mais rápido: R$ 0,0951 e 3.541 ms de mediana. Por isso as duas metades
+passaram a ser medidas separadas no instrumento — a média sobre todas as perguntas **cai** quanto
+mais o assistente recusa, o que faria um teto pior parecer mais econômico.
+
+\* Como se projetou, em 06/09: o contrato então recusava `limit` acima de cinco, e a chamada não
+existia. O custo veio do tamanho medido dos trechos nas posições 6 a 8 — em média 716, 690 e 762
+caracteres. A cobertura de 6/6 vinha da posição medida, e essa parte era fato: com oito trechos o
+TRCT entra, e a execução de 07/09 confirmou que ele entra **e é respondido**.
 
 Há um resultado que merece leitura cuidadosa. Em três trechos a recuperação já entregava 5 de 6
 respostas **em mãos**, mas só 3 de 6 respostas **saíram com o dado**. Ou seja: em dois casos o
@@ -121,12 +141,21 @@ cada metade contribuiu. Ficam registrados.
 Autoriza a decisão sobre o teto a deixar de ser intuição. Os números estão acima, o instrumento
 está no repositório e a execução é repetível.
 
-**O teto foi para oito, e por ADR.** Oito cobre 6/6 por R$ 0,2217 por resposta, contra 5/6 por
-R$ 0,1424 — 56% mais caro por um sexto a mais de cobertura. A troca foi aceita porque a pergunta
-que faltava tem resposta literal no acervo: com teto cinco o sistema guardava o TRCT e não o
-entregava, e silêncio sobre documento que existe parece ausência de prova. O registro é o
+**O teto foi para oito, e por ADR.** A troca foi aceita porque a pergunta que faltava tem resposta
+literal no acervo: com teto cinco o sistema guardava o TRCT e não o entregava, e silêncio sobre
+documento que existe parece ausência de prova. O registro é o
 [ADR-017](../decisions/decisoes.md#adr-017-ampliar-a-recuperação-do-assistente-para-oito-trechos).
-A latência em oito continua não medida e entra na próxima execução.
+
+Medido em 07/09, custa **R$ 0,1590 por resposta** contra R$ 0,1424 em cinco — 12% a mais, e não os
+56% que a projeção anunciava. O erro foi na direção conservadora: aprovou-se a troca achando-a mais
+cara do que é.
+
+**Uma coisa a decisão quebrou, e o eval seguinte encontrou.** O bloco compartilhado dos prompts
+dizia "cada afirmação cita no máximo cinco trechos, e você recebe no máximo cinco". A segunda
+metade deixou de ser verdade com o teto de oito, e o modelo passou a citar mais de cinco numa
+afirmação só — que o parser recusa. A pergunta do TRCT devolvia `502` com `limit=8` e respondia com
+`limit=5`. Corrigido no mesmo dia, e fica a lição: **subir o teto exige reler o que os prompts
+afirmam sobre o tamanho da entrada.**
 
 Também não autoriza tratar 6/6 como meta. Seis perguntas fictícias sobre um caso trabalhista não
 representam o acervo de um escritório. O que esta avaliação estabelece é uma régua, não um
