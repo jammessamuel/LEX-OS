@@ -360,6 +360,27 @@ export type DomainAuditEvent =
         reason: string;
       };
     })
+  /**
+   * O provedor respondeu, e a resposta não passou no contrato.
+   *
+   * Terceiro desfecho, diferente dos dois acima: não é recusa, e o provedor não falhou — ele
+   * devolveu um objeto que viola alguma regra da saída. Antes deste registro o `502` chegava ao
+   * escritório sem dizer qual regra, e ninguém conseguia responder "por quê" sem reproduzir a
+   * chamada. Em 2026-09-07 isso custou horas de adivinhação num teto de cinco afirmações que o
+   * código impunha e o contrato não declarava.
+   *
+   * `regra` é nome de regra e nunca conteúdo: `claims_acima_do_teto`, `claim_sem_citacao`.
+   */
+  | (DomainAuditBase & {
+      action: 'assistant.answer.invalid';
+      entityType: 'assistant_answer';
+      newData: {
+        caseId: string;
+        questionLength: number;
+        promptVersion: string;
+        regra: string;
+      };
+    })
   | (DomainAuditBase & {
       action: 'assistant.answer.generated';
       entityType: 'assistant_answer';

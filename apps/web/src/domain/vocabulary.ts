@@ -306,6 +306,8 @@ const AUDIT_ACTION_LABELS: Readonly<Record<string, string>> = {
   // Recusar é o sistema funcionando; falhar é o provedor não ter entregue resposta utilizável.
   // A trilha precisa distinguir, porque quem lê tira conclusões opostas de cada uma.
   'assistant.answer.failed': 'Falha do provedor ao responder',
+  // Terceiro desfecho: o provedor respondeu e a resposta violou o contrato de saída.
+  'assistant.answer.invalid': 'Resposta do provedor fora do contrato',
   'audit.log.listed': 'Trilha de auditoria consultada',
   'auth.login.blocked': 'Entrada bloqueada',
   'auth.login.failed': 'Tentativa de entrada malsucedida',

@@ -515,6 +515,32 @@ describe('Delivery 9 authorized text and semantic search', () => {
     assert.ok(String(trilha.rows[0]?.new_data?.promptVersion ?? '').length > 0);
   });
 
+  it('registra na trilha QUAL regra do contrato a resposta violou', async () => {
+    // O 502 do contrato inválido era mudo. Em 2026-09-07 o parser recusava mais de cinco
+    // afirmações enquanto a instrução mandava quebrar a afirmação em mais partes: o escritório
+    // via "sem ancoragem válida", o log via 502, e a trilha não via nada. O defeito só apareceu
+    // depois de horas de adivinhação sobre uma falha que o próprio código sabia explicar.
+    const invalida = await answer({
+      question: 'cláusula rescisória na pergunta cuja saída vem fora do contrato',
+      caseId: standardSource.caseId,
+      mode: 'LEXICAL',
+    }).expect(502);
+
+    // A mensagem ao escritório continua a mesma: para quem lê a tela o que importa é que a
+    // resposta não veio ancorada, não qual campo o provedor errou.
+    assert.equal(invalida.body.code, 'INVALID_LANGUAGE_MODEL_OUTPUT');
+
+    const trilha = await pool.query(
+      `SELECT action, new_data FROM audit_logs
+       WHERE organization_id = $1 AND action = 'assistant.answer.invalid'
+       ORDER BY created_at DESC LIMIT 1`,
+      [ORGANIZATION_ID],
+    );
+    assert.equal(trilha.rows[0]?.action, 'assistant.answer.invalid');
+    assert.equal(trilha.rows[0]?.new_data?.regra, 'claim_sem_citacao');
+    assert.ok(String(trilha.rows[0]?.new_data?.promptVersion ?? '').length > 0);
+  });
+
   it('recusa a pergunta quando o caso já bateu no teto, sem chamar o modelo', async () => {
     // A recusa por falta de folga vive no teste unitário `assistant-budget`: com o provedor
     // determinístico o preço é zero, a folga exigida é zero, e ela fica inalcançável por aqui.

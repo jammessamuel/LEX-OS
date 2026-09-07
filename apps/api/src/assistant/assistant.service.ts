@@ -79,6 +79,28 @@ function fixedCostAmount(value: string): string {
   return `${whole}.${fraction.padEnd(6, '0')}`;
 }
 
+/**
+ * O 502 do contrato inválido não dizia qual regra caiu, e isso custou caro.
+ *
+ * Em 2026-09-07 o parser recusava mais de cinco afirmações enquanto a instrução mandava quebrar
+ * a afirmação em mais partes. O escritório via "o provedor retornou uma resposta sem ancoragem
+ * válida", o log via `502`, a trilha não via nada — e o defeito só apareceu depois de horas de
+ * adivinhação sobre uma falha que o próprio código sabia explicar.
+ *
+ * O motivo é nome de regra, nunca conteúdo: entra na trilha e no log, e não sai na resposta. A
+ * mensagem ao cliente continua a mesma, porque para quem lê a tela o que importa é que a resposta
+ * não veio ancorada, não qual campo o provedor errou.
+ */
+class SaidaInvalidaError extends Error {
+  constructor(readonly regra: string) {
+    super(`invalid provider output: ${regra}`);
+  }
+}
+
+function recusa(regra: string): never {
+  throw new SaidaInvalidaError(regra);
+}
+
 function parseProviderOutput(
   value: unknown,
   authorizedChunkIds: Set<string>,
@@ -94,46 +116,46 @@ function parseProviderOutput(
     'costCurrency',
     'claims',
   ] as const;
-  if (
-    !isRecord(value) ||
-    !hasOnlyKeys(value, topLevelKeys) ||
-    value.schemaVersion !== 1 ||
-    !boundedText(value.provider, 120) ||
-    !boundedText(value.modelName, 160) ||
-    !boundedText(value.modelVersion, 120) ||
-    !boundedText(value.promptVersion, 80) ||
-    !boundedText(value.executionId, 160) ||
-    typeof value.costAmount !== 'string' ||
-    !/^(0|[1-9]\d{0,11})(\.\d{1,6})?$/u.test(value.costAmount) ||
-    value.costCurrency !== 'BRL' ||
-    !Array.isArray(value.claims) ||
-    // Não há piso: lista vazia é recusa, não saída inválida. Este parser já recusou exatamente o
-    // que a instrução mandava fazer, e o modelo que obedecia derrubava a chamada enquanto o que
-    // desobedecia "funcionava", embrulhando a recusa numa afirmação que a tela exibia como
-    // resposta fundamentada.
-    //
-    // E o teto vem do contrato, não de um número escrito aqui — foi assim que ele divergiu:
-    // parser em cinco, contrato sem teto declarado, prompt mandando quebrar a afirmação. O
-    // modelo obedecia, produzia seis e levava 502.
-    value.claims.length > MAX_AFIRMACOES_POR_RESPOSTA
-  ) {
-    throw invalidOutput();
-  }
+  if (!isRecord(value)) recusa('nao_e_objeto');
+  if (!hasOnlyKeys(value, topLevelKeys)) recusa('campos_do_topo_divergem');
+  if (value.schemaVersion !== 1) recusa('schema_version');
+  if (!boundedText(value.provider, 120)) recusa('provider');
+  if (!boundedText(value.modelName, 160)) recusa('model_name');
+  if (!boundedText(value.modelVersion, 120)) recusa('model_version');
+  if (!boundedText(value.promptVersion, 80)) recusa('prompt_version');
+  if (!boundedText(value.executionId, 160)) recusa('execution_id');
+  if (typeof value.costAmount !== 'string') recusa('cost_amount_nao_e_texto');
+  if (!/^(0|[1-9]\d{0,11})(\.\d{1,6})?$/u.test(value.costAmount)) recusa('cost_amount_formato');
+  if (value.costCurrency !== 'BRL') recusa('cost_currency');
+  if (!Array.isArray(value.claims)) recusa('claims_nao_e_lista');
+  // Não há piso: lista vazia é recusa, não saída inválida. Este parser já recusou exatamente o
+  // que a instrução mandava fazer, e o modelo que obedecia derrubava a chamada enquanto o que
+  // desobedecia "funcionava", embrulhando a recusa numa afirmação que a tela exibia como
+  // resposta fundamentada.
+  //
+  // E o teto vem do contrato, não de um número escrito aqui — foi assim que ele divergiu:
+  // parser em cinco, contrato sem teto declarado, prompt mandando quebrar a afirmação. O
+  // modelo obedecia, produzia seis e levava 502.
+  if (value.claims.length > MAX_AFIRMACOES_POR_RESPOSTA) recusa('claims_acima_do_teto');
 
   const claims = value.claims.map((claim) => {
+    if (!isRecord(claim)) recusa('claim_nao_e_objeto');
+    if (!hasOnlyKeys(claim, ['text', 'sourceChunkIds'])) recusa('claim_campos_divergem');
+    if (!boundedText(claim.text, 2000)) recusa('claim_texto');
+    if (!Array.isArray(claim.sourceChunkIds)) recusa('claim_citacoes_nao_e_lista');
+    if (claim.sourceChunkIds.length === 0) recusa('claim_sem_citacao');
+    if (claim.sourceChunkIds.length > MAX_CITACOES_POR_AFIRMACAO) {
+      recusa('claim_citacoes_acima_do_teto');
+    }
     if (
-      !isRecord(claim) ||
-      !hasOnlyKeys(claim, ['text', 'sourceChunkIds']) ||
-      !boundedText(claim.text, 2000) ||
-      !Array.isArray(claim.sourceChunkIds) ||
-      claim.sourceChunkIds.length === 0 ||
-      claim.sourceChunkIds.length > MAX_CITACOES_POR_AFIRMACAO ||
       claim.sourceChunkIds.some(
         (chunkId) => typeof chunkId !== 'string' || !authorizedChunkIds.has(chunkId),
-      ) ||
-      new Set(claim.sourceChunkIds).size !== claim.sourceChunkIds.length
+      )
     ) {
-      throw invalidOutput();
+      recusa('claim_citacao_nao_autorizada');
+    }
+    if (new Set(claim.sourceChunkIds).size !== claim.sourceChunkIds.length) {
+      recusa('claim_citacao_repetida');
     }
     return { text: claim.text.trim(), sourceChunkIds: claim.sourceChunkIds as string[] };
   });
@@ -168,7 +190,7 @@ function mapClaim(
     .map((chunkId) => sources.get(chunkId)?.citation)
     .filter((citation): citation is SearchCitationDto => citation !== undefined);
   if (citations.length !== claim.sourceChunkIds.length) {
-    throw invalidOutput();
+    recusa('citacao_sem_trecho_correspondente');
   }
   return { text: claim.text, citations };
 }
@@ -284,8 +306,31 @@ export class AssistantService {
       // não gravar. Limitação conhecida, registrada aqui e não escondida.
       throw invalidOutput();
     }
-    const parsed = parseProviderOutput(rawOutput, new Set(sources.keys()));
-    const claims = parsed.claims.map((claim) => mapClaim(claim, sources));
+    let parsed: ParsedProviderOutput;
+    let claims: GroundedClaimDto[];
+    try {
+      parsed = parseProviderOutput(rawOutput, new Set(sources.keys()));
+      claims = parsed.claims.map((claim) => mapClaim(claim, sources));
+    } catch (erro) {
+      if (!(erro instanceof SaidaInvalidaError)) throw erro;
+      await this.audit.recordDomain({
+        organizationId: actor.organizationId,
+        userId: actor.userId,
+        entityId: null,
+        entityType: 'assistant_answer',
+        action: 'assistant.answer.invalid',
+        newData: {
+          caseId: input.caseId,
+          questionLength: input.question.length,
+          promptVersion: prompt.version,
+          // Nome de regra, não conteúdo: `claims_acima_do_teto`, `claim_sem_citacao`. É o que
+          // faltava para saber por que a chamada morreu sem precisar reproduzi-la.
+          regra: erro.regra,
+        },
+        ...metadata,
+      });
+      throw invalidOutput();
+    }
     const sourceChunkIds = [...new Set(parsed.claims.flatMap((claim) => claim.sourceChunkIds))];
 
     // O modelo leu os trechos e nenhum sustenta a resposta. Até aqui a recusa só existia quando

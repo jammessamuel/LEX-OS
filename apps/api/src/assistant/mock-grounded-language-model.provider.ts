@@ -38,6 +38,24 @@ export class MockGroundedLanguageModelProvider implements GroundedLanguageModelP
       throw new Error('The model did not return the requested JSON object.');
     }
 
+    // Terceiro desfecho: o provedor responde e a resposta viola o contrato. Ele não falha e não
+    // recusa — devolve uma afirmação sem citação, que é a violação mais comum e a que o produto
+    // menos pode deixar passar. Até 2026-09-07 isso virava um 502 mudo, sem dizer qual regra
+    // caiu; o mock precisa produzi-lo para o teste conseguir conferir que agora a trilha diz.
+    if (input.question.toLowerCase().includes('fora do contrato')) {
+      return Promise.resolve({
+        schemaVersion: 1,
+        provider: 'lex-os-mock-language-model',
+        modelName: 'deterministic-grounded-v1',
+        modelVersion: '1',
+        promptVersion: input.prompt.version,
+        executionId: randomUUID(),
+        costAmount: '0.000000',
+        costCurrency: 'BRL',
+        claims: [{ text: 'Afirmação sem nenhuma citação.', sourceChunkIds: [] }],
+      });
+    }
+
     // A pergunta e as fontes são campos separados. O texto recuperado é somente dado hostil:
     // nunca é concatenado às instruções nem interpretado como autorização para ferramentas.
     return Promise.resolve({

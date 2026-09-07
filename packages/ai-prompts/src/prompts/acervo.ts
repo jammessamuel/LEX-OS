@@ -135,14 +135,20 @@ Devolva a lista vazia.`;
  * COMPLETAR o que falta. É a formulação certa e não bastou: ela descreve uma atitude, e o modelo
  * precisa de uma proibição operável.
  *
- * Medido em 2026-09-07 sobre o caso trabalhista da demonstração, cujos documentos não citam um
- * único dispositivo: perguntado se o pagamento das rescisórias foi feito no prazo, o assistente
- * respondeu duas vezes em duas invocando "artigo 477 da CLT". A citação está correta — e é
- * exatamente isso que a torna perigosa, porque persuade. Quem lê a tela vê uma resposta
- * fundamentada, com citação ao lado, e supõe que o dispositivo saiu do acervo.
- *
  * A regra abaixo é mecânica e conferível, ao contrário de "não complete": ou o dispositivo está
  * no trecho, ou não sai na resposta.
+ *
+ * O que a fez nascer, porém, era medição errada, e fica registrado porque o erro é instrutivo.
+ * Em 2026-09-07 o assistente respondeu "dentro do prazo do artigo 477 da CLT" no caso trabalhista
+ * da demonstração, e eu tratei isso como direito inventado sobre a premissa de que nenhum
+ * documento fictício cita dispositivo. A premissa nunca foi conferida NESTE acervo. O recibo de
+ * rescisão diz, com todas as letras, "Pagamento efetuado em 20/05/2026, dentro do prazo do artigo
+ * 477, parágrafo 6, da CLT" — a resposta estava ancorada, e esta regra a autoriza.
+ *
+ * Três reescritas de instrução não mudaram aquele resultado, e não deviam mesmo. Antes de mexer
+ * no prompt pela quarta vez, confira se o trecho traz o que a resposta traz: `rawText` da extração
+ * de OCR é o texto do documento, e a busca lexical não serve para isso porque casa por
+ * proximidade — "CLT" casa com "CLÁUSULA".
  */
 export const DIREITO_SO_O_DOS_TRECHOS = `NÃO CITE DISPOSITIVO QUE OS TRECHOS NÃO CITEM. Artigo,
 parágrafo, inciso, lei, súmula, enunciado, tema repetitivo, código: se está escrito no trecho, você
@@ -165,17 +171,17 @@ enquadramento legal do fato é do advogado que lê, e ele tem o dispositivo de c
 /**
  * A pergunta meio sustentada, que é onde o direito inventado realmente entra.
  *
- * Medido em 2026-09-07, e o resultado desmontou a explicação anterior. Perguntado "foi proposta
- * dentro do prazo legal?", o tributário, o cível e o consumidor RECUSAM — certo, porque o acervo
- * não estabelece prazo nenhum. O trabalhista responde, e cita o artigo 477. A diferença não está
- * no estilo da pergunta nem em quantos artigos o prompt da faixa cita: está em que o acervo
- * trabalhista TEM as duas datas. O modelo consegue o fato e só lhe falta a norma — então ele
- * completa a norma.
+ * Medido em 2026-09-07: perguntados "foi proposta dentro do prazo legal?", o tributário, o cível
+ * e o consumidor RECUSAM os três. E recusar ali é perder informação, não ganhar segurança — os
+ * trechos trazem as datas, trazem o valor, trazem o que a cláusula diz. Só não trazem a régua que
+ * decide, e por causa dessa metade que falta a outra metade era jogada fora.
  *
- * Recusar era a saída errada, e é por isso que proibir citar não bastou: as datas existem e
- * jogá-las fora empobrece a resposta. Faltava dizer o que fazer com a metade que se sustenta,
- * e o contrato de saída sempre comportou isso — afirmação factual citada, sem conclusão. É o
- * mesmo defeito de sempre nesta base: o caminho honesto existia e a instrução não o nomeava.
+ * O contrato de saída sempre comportou o meio-termo: afirmação factual citada, sem conclusão.
+ * Faltava a instrução nomeá-lo — é o defeito recorrente desta base, o caminho honesto existindo
+ * sem que nada dissesse ao modelo que ele existe.
+ *
+ * A metade que falta é também onde o dispositivo ausente entraria, se fosse entrar: para tapar o
+ * buraco entre o fato que se tem e a conclusão que se pediu.
  */
 export const FATO_SIM_CONCLUSAO_NAO = `QUANDO OS TRECHOS DÃO O FATO MAS NÃO DÃO A CONCLUSÃO,
 ENTREGUE O FATO E PARE. Perguntas do tipo "foi feito dentro do prazo?", "está correto?", "é
