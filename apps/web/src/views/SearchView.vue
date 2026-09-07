@@ -161,7 +161,28 @@ onMounted(() => void loadCases());
       </div>
     </form>
 
-    <div v-if="failure" class="state state--error result" role="alert">
+    <!--
+      A resposta ancorada levou de 1,4 a 18,8 segundos nas medições de 2026-09-07, e até aqui a
+      espera existia só como rótulo de botão. Dezoito segundos de tela parada quebram uma
+      apresentação, e o `ui-harness` já exigia o estado: carregando não é opcional.
+
+      O esqueleto antecipa a forma do que vem — afirmação e suas fontes —, e o texto diz o que
+      está sendo feito de verdade. Nada de etapas fingidas: só o que se sabe.
+    -->
+    <div v-if="submitting === 'answer'" class="result answer" aria-busy="true">
+      <div class="answer__flag">Conteúdo gerado por máquina</div>
+      <h2>Lendo os trechos autorizados do caso</h2>
+      <p class="visually-hidden">Analisando as fontes para produzir a resposta ancorada.</p>
+      <ol class="claims">
+        <li v-for="row in 3" :key="row">
+          <span class="skeleton" style="width: 92%" />
+          <span class="skeleton" style="width: 74%" />
+          <span class="skeleton skeleton--citation" style="width: 38%" />
+        </li>
+      </ol>
+    </div>
+
+    <div v-else-if="failure" class="state state--error result" role="alert">
       <h2 class="state__title">Não foi possível concluir</h2>
       <p class="state__body">{{ failure.message }}</p>
       <!--
@@ -176,7 +197,7 @@ onMounted(() => void loadCases());
         :disabled="submitting !== null"
         @click="ask"
       >
-        {{ submitting === 'answer' ? 'Analisando fontes…' : 'Perguntar novamente' }}
+        Perguntar novamente
       </button>
       <p v-if="failure.requestId" class="state__ref data">Referência: {{ failure.requestId }}</p>
     </div>
@@ -388,6 +409,18 @@ onMounted(() => void loadCases());
   display: grid;
   gap: var(--space-5);
   padding: var(--space-5) 0 var(--space-4) 1.3rem;
+}
+
+/* O esqueleto ocupa a mesma caixa da afirmação, para a resposta não pular quando chegar. */
+.claims .skeleton {
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.claims .skeleton--citation {
+  margin-top: var(--space-3);
+  margin-bottom: 0;
+  height: 0.5rem;
 }
 
 .citations {

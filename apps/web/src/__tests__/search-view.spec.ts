@@ -149,6 +149,51 @@ describe('SearchView', () => {
     expect(wrapper.text()).not.toContain('Nenhuma fonte autorizada');
   });
 
+  it('mostra a espera enquanto a resposta é produzida, e não a tela parada', async () => {
+    // A resposta levou de 1,4 a 18,8 segundos nas medições de 2026-09-07, e a espera existia só
+    // como rótulo de botão. Dezoito segundos de tela parada quebram uma apresentação.
+    let liberar = (): void => {};
+    request.mockImplementation(async (path: string) => {
+      if (path === '/cases') {
+        return {
+          data: [{ id: 'case-1', internalCode: 'DEMO-1', title: 'Caso fictício' }],
+          pageInfo: { nextCursor: null, hasNextPage: false },
+        };
+      }
+      await new Promise<void>((resolve) => {
+        liberar = resolve;
+      });
+      return {
+        status: 'ANSWER',
+        machineGenerated: true,
+        disclaimer: 'Exige revisão humana.',
+        answer: 'Resposta ancorada.',
+        claims: [{ text: 'Afirmação sustentada.', citations: [citation] }],
+        model: null,
+        refusalReason: null,
+      };
+    });
+    const wrapper = mountView();
+    await flushPromises();
+    await wrapper.get('textarea').setValue('pergunta que demora');
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text().includes('Responder'))
+      ?.trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('[aria-busy="true"]').exists()).toBe(true);
+    expect(wrapper.findAll('.skeleton').length).toBeGreaterThan(0);
+    expect(wrapper.text()).toContain('Lendo os trechos autorizados');
+
+    liberar();
+    await flushPromises();
+
+    // E a espera some quando o conteúdo chega, em vez de conviver com ele.
+    expect(wrapper.find('[aria-busy="true"]').exists()).toBe(false);
+    expect(wrapper.text()).toContain('Afirmação sustentada');
+  });
+
   it('oferece perguntar novamente quando a saída do modelo é descartada', async () => {
     // A saída sem apoio é descartada de propósito, e a falha é passageira: em 2026-09-07 as duas
     // perguntas que haviam falhado saíram inteiras nas dez tentativas seguintes. Sem este botão o
