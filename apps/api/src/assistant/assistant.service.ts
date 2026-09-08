@@ -23,6 +23,7 @@ import type {
 } from './dto/grounded-answer-response.dto.js';
 import {
   GROUNDED_LANGUAGE_MODEL_PROVIDER,
+  TETO_TOKENS_DE_SAIDA,
   type GroundedLanguageModelProvider,
 } from './grounded-language-model.provider.js';
 import { groundedSystemPromptHash } from './grounded-system-prompt.js';
@@ -42,14 +43,14 @@ interface ParsedProviderOutput {
  * dentro do teto: com folga menor que uma resposta, a despesa acontece e não pode ser gravada.
  * Exigir esta folga antes de chamar o modelo transforma o teto em teto de verdade.
  *
- * O teto de saída é conhecido — o próprio adaptador o envia. A entrada é limitada pelo prompt
- * mais os trechos recuperados, hoje no máximo oito pelo ADR-017; o valor abaixo é uma cota
- * generosa dela, porque errar para mais aqui recusa uma pergunta a mais, e errar para menos
- * deixa o gasto furar o teto. Oito trechos medem cerca de seis mil caracteres na avaliação de
- * 2026-09-06, bem dentro da cota — que existe para não precisar ser recalculada a cada ajuste
- * do teto, e não para ser exata.
+ * O teto de saída vem da porta — o mesmo número que o adaptador envia como `max_tokens`, para a
+ * reserva e o gasto não divergirem. A entrada é limitada pelo prompt mais os trechos
+ * recuperados, hoje no máximo oito pelo ADR-017; o valor abaixo é uma cota generosa dela,
+ * porque errar para mais aqui recusa uma pergunta a mais, e errar para menos deixa o gasto
+ * furar o teto. Oito trechos medem cerca de seis mil caracteres na avaliação de 2026-09-06,
+ * bem dentro da cota — que existe para não precisar ser recalculada a cada ajuste do teto,
+ * e não para ser exata.
  */
-const TETO_TOKENS_DE_SAIDA = 4096;
 const COTA_TOKENS_DE_ENTRADA = 32_000;
 
 function custoMaximoDeUmaResposta(config: RuntimeConfig): string {

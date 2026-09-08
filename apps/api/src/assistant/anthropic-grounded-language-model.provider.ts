@@ -5,9 +5,10 @@ import type { PromptSpecification } from '@lex-os/ai-prompts';
 import type { RuntimeConfig } from '@lex-os/config';
 
 import { RUNTIME_CONFIG } from '../config/runtime-config.module.js';
-import type {
-  GroundedLanguageModelProvider,
-  GroundedLanguageModelSource,
+import {
+  TETO_TOKENS_DE_SAIDA,
+  type GroundedLanguageModelProvider,
+  type GroundedLanguageModelSource,
 } from './grounded-language-model.provider.js';
 import { groundedSystemPrompt } from './grounded-system-prompt.js';
 
@@ -29,9 +30,6 @@ import { groundedSystemPrompt } from './grounded-system-prompt.js';
 const ENDPOINT = 'https://api.anthropic.com/v1/messages';
 const VERSION_HEADER = '2023-06-01';
 const TIMEOUT_MS = 60_000;
-// 2048 derrubou o demo em 2026-09-03: a resposta cresceu, o JSON cortou no meio do teto e o
-// parse quebrou. O teto é só proteção de custo — a resposta típica usa 600–900 tokens.
-const MAX_OUTPUT_TOKENS = 4096;
 
 interface AnthropicUsage {
   input_tokens: number;
@@ -276,7 +274,7 @@ export class AnthropicGroundedLanguageModelProvider implements GroundedLanguageM
         },
         body: JSON.stringify({
           model: this.#config.languageModel.modelName,
-          max_tokens: MAX_OUTPUT_TOKENS,
+          max_tokens: TETO_TOKENS_DE_SAIDA,
           // Instrução no `system`, material do processo no `user`, em blocos rotulados. A
           // separação é estrutural (AGENTS.md, "documento é dado, não instrução"): concatenar
           // os dois deixaria um documento pedir o que quisesse.
