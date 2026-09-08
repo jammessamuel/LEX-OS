@@ -192,6 +192,41 @@ describe('AnthropicGroundedLanguageModelProvider', () => {
     mock.restoreAll();
   });
 
+  it('descreve a forma da saída ilegível sem deixar o texto vazar', async () => {
+    // Em 2026-09-08 um 502 disse só "o modelo não devolveu o objeto JSON pedido", e o
+    // `stop_reason` não era `max_tokens` — logo, não foi truncamento. Sobravam hipóteses
+    // opostas e indistinguíveis: prosa em vez de JSON, cerca mal fechada, ou aspas do documento
+    // entrando na string sem escape. Escolher entre elas exigia ler o texto, que é exatamente o
+    // que não se pode fazer. A forma resolve: contagem e índice, nunca conteúdo.
+    const provider = new AnthropicGroundedLanguageModelProvider(config());
+    const saidaQuebrada =
+      '{"claims":[{"text":"O empregado JOAO DA SILVA, CPF 000.000.000-00, disse "estou dispensado"",';
+    mock.method(globalThis, 'fetch', async () =>
+      resposta({
+        stop_reason: 'end_turn',
+        model: 'modelo-ficticio',
+        usage: { input_tokens: 10, output_tokens: 10 },
+        content: [{ type: 'text', text: saidaQuebrada }],
+      }),
+    );
+    await assert.rejects(
+      () => provider.generate({ prompt, question: 'p', sources }),
+      (error) => {
+        // Nada do texto do modelo, que aqui carrega nome e CPF de propósito.
+        assert.equal(error.message.includes('000.000.000-00'), false);
+        assert.equal(error.message.includes('JOAO DA SILVA'), false);
+        assert.equal(error.message.includes('dispensado'), false);
+        // E a forma, que é o que permite diagnosticar sem ler.
+        assert.match(error.message, /len=\d+/u);
+        assert.match(error.message, /abre=\d+ fecha=\d+/u);
+        assert.match(error.message, /aspas=\d+ escapes=\d+/u);
+        assert.match(error.message, /erro_em=\d+/u);
+        return true;
+      },
+    );
+    mock.restoreAll();
+  });
+
   it('não põe a chave nem o corpo do fornecedor na falha de rede', async () => {
     const provider = new AnthropicGroundedLanguageModelProvider(config());
     mock.method(globalThis, 'fetch', async () => ({

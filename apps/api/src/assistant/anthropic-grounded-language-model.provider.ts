@@ -51,7 +51,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * cerca de código e texto ao redor não afrouxa nada de segurança — o que importa continua
  * sendo o objeto validado depois; sem objeto parseável, a recusa segue igual.
  */
-function jsonObjectIn(text: string): unknown {
+interface RecorteDeJson {
+  /** O objeto, quando algum recorte parseou. */
+  objeto: unknown;
+  /** Onde o último `JSON.parse` desistiu. Índice, nunca a mensagem — ela cita o texto. */
+  posicaoDoErro: number | null;
+}
+
+function posicaoDoErroDeJson(erro: unknown): number | null {
+  if (!(erro instanceof SyntaxError)) return null;
+  const achado = /position (\d+)/u.exec(erro.message)?.[1];
+  return achado === undefined ? null : Number(achado);
+}
+
+function jsonObjectIn(text: string): RecorteDeJson {
   const candidates = [text];
   const fenced = /```(?:json)?\s*([\s\S]*?)```/u.exec(text)?.[1];
   if (fenced !== undefined) {
@@ -62,14 +75,44 @@ function jsonObjectIn(text: string): unknown {
   if (first !== -1 && last > first) {
     candidates.push(text.slice(first, last + 1));
   }
+  let posicaoDoErro: number | null = null;
   for (const candidate of candidates) {
     try {
-      return JSON.parse(candidate);
-    } catch {
-      // Tenta o próximo recorte; a recusa única acontece depois de todos falharem.
+      return { objeto: JSON.parse(candidate), posicaoDoErro: null };
+    } catch (erro) {
+      // Tenta o próximo recorte; a recusa única acontece depois de todos falharem. A posição
+      // do último erro é a única pista de forma que sobrevive à recusa, e por isso viaja junto
+      // em vez de morar num estado de módulo, que duas chamadas simultâneas atropelariam.
+      posicaoDoErro = posicaoDoErroDeJson(erro);
     }
   }
-  return undefined;
+  return { objeto: undefined, posicaoDoErro };
+}
+
+/**
+ * A forma do que o modelo devolveu, para diagnosticar sem ler.
+ *
+ * Em 2026-09-08 uma pergunta que pede transcrição extensa falhou uma vez em três com "o modelo
+ * não devolveu o objeto JSON pedido" — e `stop_reason` não era `max_tokens`, então não foi
+ * truncamento. Sem saber a forma do texto, as hipóteses restantes são indistinguíveis: prosa em
+ * vez de JSON, cerca mal fechada, ou aspas e quebras de linha do documento entrando na string
+ * sem escape, que é o risco próprio de mandar transcrever.
+ *
+ * Nada aqui é conteúdo: comprimento, contagem de delimitadores e o índice onde o parse parou.
+ * A mensagem do erro fica de fora justamente porque ela cita o texto.
+ */
+function formaDaSaida(text: string, posicaoDoErro: number | null): string {
+  const contar = (alvo: string): number => text.split(alvo).length - 1;
+  return [
+    `len=${text.length}`,
+    `abre=${contar('{')}`,
+    `fecha=${contar('}')}`,
+    `aspas=${contar('"')}`,
+    `escapes=${contar('\\"')}`,
+    `quebras=${contar('\n')}`,
+    `cerca=${text.includes('```') ? 1 : 0}`,
+    `erro_em=${posicaoDoErro ?? -1}`,
+  ].join(' ');
 }
 
 function stopReasonOf(body: unknown): string {
@@ -150,15 +193,21 @@ export class AnthropicGroundedLanguageModelProvider implements GroundedLanguageM
     const usage = usageOf(body);
     const text = textOf(body);
 
-    const parsed = jsonObjectIn(text);
+    const { objeto: parsed, posicaoDoErro } = jsonObjectIn(text);
     if (parsed === undefined) {
       // O texto do modelo não entra no erro: ele pode carregar trecho de documento, e mensagem
       // de erro viaja para log e para a resposta da API. O motivo de parada entra — é metadado
       // da chamada, e "max_tokens" transforma um mistério num diagnóstico.
+      //
+      // A forma entra pelo mesmo motivo, e resolve o que sobrava. Sem ela, "não devolveu o
+      // objeto pedido" cobre hipóteses opostas — prosa em vez de JSON, cerca mal fechada, ou
+      // aspas do documento entrando na string sem escape — e não dá para escolher entre elas
+      // sem ler o texto, que é justamente o que não se pode fazer.
       throw new Error(
-        stopReasonOf(body) === 'max_tokens'
+        (stopReasonOf(body) === 'max_tokens'
           ? 'The model output hit the output-token ceiling before completing the JSON object.'
-          : 'The model did not return the requested JSON object.',
+          : 'The model did not return the requested JSON object.') +
+          ` [${formaDaSaida(text, posicaoDoErro)}]`,
       );
     }
     if (!isRecord(parsed)) {
