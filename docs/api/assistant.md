@@ -2,7 +2,7 @@
 
 **Status:** Backend contract implemented during authorized Delivery 10
 
-**Last updated:** 2026-08-13
+**Last updated:** 2026-09-07
 
 ## Contract
 
@@ -41,16 +41,19 @@ answer.
 
 ## Grounding and provenance
 
-Every accepted answer is machine-labelled and split into claims. Each claim must cite one to three
+Every accepted answer is machine-labelled and split into claims. Each claim must cite one to five
 chunk identifiers from the authorized retrieval set; the API resolves those identifiers back to
 document/page/offset citations before responding. Unknown, missing, duplicated, or unresolvable
 source identifiers make the entire provider output fail closed with
 `502 INVALID_LANGUAGE_MODEL_OUTPUT`.
 
 The top-level `answer` is only a presentation join of the validated claims. Model metadata records
-provider, model, model version, prompt version, execution ID, and exact six-decimal BRL cost. The
-prompt specification is versioned in `packages/ai-prompts` and treats retrieved document text as
-hostile evidence, never as an instruction channel.
+provider, model, model version, prompt version, the SHA-256 hash of the effective system
+instruction, execution ID, and exact six-decimal BRL cost. The hash covers the selected prompt
+text and the output contract actually appended by the adapter, but never the question or document
+content. It is persisted in the append-only audit event for generated, refused-after-model,
+failed, and invalid executions. The prompt specification is versioned in `packages/ai-prompts` and
+treats retrieved document text as hostile evidence, never as an instruction channel.
 
 ## Audit and production boundary
 
@@ -58,6 +61,8 @@ Generated and refused attempts append allowlisted audit events. They contain the
 question length, status/counts, cited chunk identifiers, and model/cost provenance where present;
 they never store the question, answer, source excerpts, authorization headers, or document content.
 
-The current language-model adapter is deterministic and has zero mock cost. It refuses production
-startup. A real provider requires a governed adapter, production cost policy, schema/provenance
-validation, operational limits, and ADR-011 accounting before it may receive legal content.
+The runtime supports the deterministic zero-cost mock and an Anthropic adapter. Production refuses
+the mock, while the Anthropic adapter is restricted to `CASE_ARCHIVE=fictional` and requires an
+API key plus explicit input/output cost configuration. No provider may receive a real client
+archive until the ADR-012 and ADR-016 external governance gates are demonstrably complete and a
+separately authorized delivery removes the fail-closed archive guard.

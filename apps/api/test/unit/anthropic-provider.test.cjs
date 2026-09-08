@@ -94,6 +94,7 @@ describe('AnthropicGroundedLanguageModelProvider', () => {
 
   it('separa instrução de material do processo na chamada', async () => {
     const provider = new AnthropicGroundedLanguageModelProvider(config());
+    const { groundedSystemPrompt } = await import('../../dist/assistant/grounded-system-prompt.js');
     let enviado = null;
     mock.method(globalThis, 'fetch', async (_url, init) => {
       enviado = JSON.parse(init.body);
@@ -108,6 +109,9 @@ describe('AnthropicGroundedLanguageModelProvider', () => {
     // A instrução vai no `system`; o trecho recuperado vai no `user`, rotulado como dado. Se
     // um dia forem concatenados, um documento passa a poder pedir o que quiser.
     assert.match(enviado.system, /INSTRUÇÃO FICTÍCIA/u);
+    // O hash da procedência é calculado sobre esta mesma renderização. Igualdade exata impede
+    // que o adaptador volte a manter uma segunda cópia da instrução e as duas divirjam.
+    assert.equal(enviado.system, groundedSystemPrompt(prompt, sources));
     assert.equal(enviado.system.includes('Texto fictício do documento'), false);
     const material = enviado.messages[0].content.map((bloco) => bloco.text).join('\n');
     assert.match(material, /Texto fictício do documento/u);

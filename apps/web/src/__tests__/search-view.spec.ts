@@ -128,6 +128,7 @@ describe('SearchView', () => {
           modelName: 'deterministic-grounded-v1',
           modelVersion: '1',
           promptVersion: '1.0.0',
+          promptHash: 'd8e8fca2dc0f896fd7cb4cb0031ba2493e1d4cbe4e8f4ea941d5f664fe9e7c8c',
           executionId: 'exec-1',
           costAmount: '0.000000',
           costCurrency: 'BRL',

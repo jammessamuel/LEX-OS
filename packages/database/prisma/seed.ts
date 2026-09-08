@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import argon2 from 'argon2';
 
 import { createPrismaClient, withTransaction } from '../src/client.js';
+import { assertFictionalSeedTarget } from './seed-safety.js';
 
 const IDS = {
   organization: '00000000-0000-4000-8000-000000000001',
@@ -271,6 +272,7 @@ async function main(): Promise<void> {
   }
 
   const databaseUrl = requiredEnvironment('DATABASE_URL');
+  assertFictionalSeedTarget(databaseUrl, process.env);
   const seedAdminPassword = requiredEnvironment('SEED_ADMIN_PASSWORD');
   const passwordHash = await argon2.hash(seedAdminPassword, {
     type: argon2.argon2id,

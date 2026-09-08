@@ -129,8 +129,10 @@ railway config apply
 ```
 
 Aplique somente um plano sem exclusões ou alterações inesperadas. O arquivo da API executa as
-migrações forward revisadas como etapa de pré-deploy; o worker nunca executa migrações. O deploy do
-código continua sendo uma operação separada:
+migrações forward revisadas como etapa de pré-deploy; o worker nunca executa migrações. API,
+worker e web de staging acompanham a `main` com `checkSuites`: depois do push, a Railway só inicia
+a construção quando o GitHub Actions termina com sucesso. Os comandos abaixo ficam reservados
+para uma intervenção manual deliberada; não use upload local como fluxo normal:
 
 ```bash
 railway up --service api --environment staging
@@ -175,7 +177,7 @@ Os testes de contrato de autenticação e tenant da API também exigem o Postgre
 
 ## Fluxo de banco de dados
 
-O `.env` do repositório deve definir `DATABASE_URL` e um `SEED_ADMIN_PASSWORD` exclusivamente local. Para o banco do Compose, use o endpoint PostgreSQL na porta `5433` do host.
+O `.env` do repositório deve definir `DATABASE_URL` e um `SEED_ADMIN_PASSWORD` exclusivamente local. Para o banco do Compose, use o endpoint PostgreSQL na porta `5433` do host. O seed recusa destinos remotos por padrão; uma base remota isolada e comprovadamente fictícia só pode ser autorizada definindo `SEED_REMOTE_DATABASE_TARGET` com o alvo exato no formato `host:porta/banco`. Essa autorização não substitui a proibição de executar o seed com `NODE_ENV=production`.
 
 ```bash
 pnpm infra:dependencies

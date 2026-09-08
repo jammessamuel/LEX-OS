@@ -27,12 +27,8 @@ const DOCKERFILE_PATH = 'infra/docker/Dockerfile';
  * `checkSuites` fecha a trava que falta: com ela o Railway espera as verificações do GitHub
  * concluírem antes de construir, e uma esteira vermelha deixa de virar implantação.
  *
- * **Ela ainda não está valendo, e é importante não confundir.** A origem foi conectada em
- * 2026-09-07 por `railway service source connect`, porque a CLI instalada é 5.40.1 e este arquivo
- * exige 5.42.1 ou mais — `railway config plan` recusa antes de ler qualquer coisa. Aquele comando
- * não expõe `checkSuites`, então o gatilho hoje dispara no push e não ao fim do CI. Esta linha
- * descreve o estado pretendido e passa a valer quando alguém atualizar a CLI e rodar
- * `railway config apply`. Até lá, esteira vermelha implanta.
+ * Aplicado em staging e produção em 2026-09-07 com Railway CLI 5.49.1. API, worker e o web de
+ * staging seguem a `main` e só iniciam a construção depois que as verificações do GitHub passam.
  */
 const REPOSITORIO = 'jammessamuel/LEX-OS';
 
@@ -157,6 +153,7 @@ export default defineRailway((context) => {
 
   const web = isStaging
     ? service('web', {
+        source: origemDoRepositorio(),
         build: applicationBuild(),
         deploy: {
           startCommand:

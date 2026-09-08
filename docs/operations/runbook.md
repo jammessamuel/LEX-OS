@@ -2,7 +2,7 @@
 
 **Status:** Delivery 16 accepted; production use remains blocked
 
-**Last updated:** 2026-08-28
+**Last updated:** 2026-09-07
 
 ## Scope and safety boundary
 
@@ -154,9 +154,10 @@ lint, typecheck, unit, integration/API, migration validation, build/container, d
 desktop/mobile Playwright, and recovery rehearsal gates. Failed Playwright runs retain screenshots,
 videos, traces, and the HTML report for seven days. CI does not deploy.
 
-Staging deployments remain manual and separately authorized. Confirm health, migration status, web
-login, one fictional case flow, and worker readiness after deployment. Never promote the current
-deterministic/mock stack to production.
+Deployments remain separately authorized, but the linked Railway services now start automatically
+from `main` only after GitHub checks pass. Confirm health, migration status, web login, one
+fictional case flow, and worker readiness after deployment. Never admit a real archive while the
+ADR-012/016 gates remain closed.
 
 ## Deploy (hosted demo)
 
@@ -164,10 +165,11 @@ deterministic/mock stack to production.
   `vercel deploy --cwd apps/web --prebuilt --prod --yes`.
 - Infrastructure: select the target environment, run `railway config plan`, review it, and run
   `railway config apply` only when the plan contains no unexpected deletion or replacement.
-- Backend: `railway up --service api --detach` and `railway up --service worker --detach`
-  from the repository root. `.railway/railway.ts` gives the API its
-  `pnpm db:migrate:deploy` pre-deploy command; the worker never runs migrations.
-- CI performs no deploy, by design.
+- Backend: push reviewed code to `main`. Railway follows that repository for API and worker in both
+  environments, waits for the GitHub check suite, and then builds the exact accepted commit.
+  `.railway/railway.ts` gives the API its `pnpm db:migrate:deploy` pre-deploy command; the worker
+  never runs migrations. Do not replace this path with an uncommitted local-directory upload.
+- CI contains no deployment command; Railway observes its result through `checkSuites`.
 
 **A new required variable goes to the platform before the code that reads it.** The config
 loader throws at startup, so a container missing one never becomes healthy, and Railway keeps
@@ -203,10 +205,12 @@ depois de reprocessar. A ordem importa.
 1. **Confirme a infraestrutura antes do código.** Se `.railway/railway.ts` mudou, selecione
    `production`, execute `railway config plan` e aplique somente o plano revisado. O arquivo único
    já mantém comandos separados para API e worker; não troque arquivos de configuração à mão.
-2. **Implante o worker antes do api.** Quem reprocessa é o worker; o api só recebe o pedido:
-   `railway up --service worker --environment production --detach`.
-3. **Implante o api:** `railway up --service api --environment production --detach`. O pre-deploy
-   aplica migrações pendentes.
+2. **Envie o commit revisado para `main`.** Aguarde primeiro a CI verde e depois os deploys de API
+   e worker na Railway. O pre-deploy da API aplica migrações pendentes. Mudança de schema precisa
+   ser compatível com a versão anterior ou sair antes em uma migração de expansão; API e worker
+   podem construir em paralelo depois do mesmo check suite.
+3. **Confirme o release.** Verifique migration status, readiness da API e `worker_ready` no mesmo
+   SHA antes de publicar ou reprocessar um caso.
 4. **Reprocesse os documentos do caso da apresentação.** Pela API, `POST /documents/{id}/reprocess`
    em cada um. Sem isto a cronologia continua mostrando os eventos antigos: extração é
    append-only, e o reprocessamento acrescenta a leitura nova preservando a anterior.

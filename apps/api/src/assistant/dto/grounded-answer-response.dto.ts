@@ -23,6 +23,12 @@ export class GroundedAnswerModelDto {
   @ApiProperty()
   promptVersion!: string;
 
+  @ApiProperty({
+    description: 'SHA-256 hexadecimal da instrução efetiva usada nesta execução.',
+    example: 'd8e8fca2dc0f896fd7cb4cb0031ba2493e1d4cbe4e8f4ea941d5f664fe9e7c8c',
+  })
+  promptHash!: string;
+
   @ApiProperty()
   executionId!: string;
 

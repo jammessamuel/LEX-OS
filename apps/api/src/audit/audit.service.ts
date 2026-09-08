@@ -51,6 +51,27 @@ export interface CaseAuditSnapshot {
   responsibleUserId: string | null;
 }
 
+interface AssistantModelAuditProvenance {
+  provider: string;
+  modelName: string;
+  modelVersion: string;
+  promptVersion: string;
+  promptHash: string;
+  executionId: string;
+  costAmount: string;
+  costCurrency: string;
+}
+
+type AssistantModelNotExecuted = {
+  [Field in keyof AssistantModelAuditProvenance]?: never;
+};
+
+type AssistantRefusalAuditData = {
+  caseId: string;
+  questionLength: number;
+  status: 'INSUFFICIENT_EVIDENCE';
+} & (AssistantModelNotExecuted | AssistantModelAuditProvenance);
+
 export type DomainAuditEvent =
   | (DomainAuditBase & {
       action: 'person.created';
@@ -335,11 +356,7 @@ export type DomainAuditEvent =
   | (DomainAuditBase & {
       action: 'assistant.answer.refused';
       entityType: 'assistant_answer';
-      newData: {
-        caseId: string;
-        questionLength: number;
-        status: 'INSUFFICIENT_EVIDENCE';
-      };
+      newData: AssistantRefusalAuditData;
     })
   /**
    * O provedor não devolveu resposta utilizável.
@@ -357,6 +374,7 @@ export type DomainAuditEvent =
         caseId: string;
         questionLength: number;
         promptVersion: string;
+        promptHash: string;
         reason: string;
       };
     })
@@ -378,24 +396,18 @@ export type DomainAuditEvent =
         caseId: string;
         questionLength: number;
         promptVersion: string;
+        promptHash: string;
         regra: string;
       };
     })
   | (DomainAuditBase & {
       action: 'assistant.answer.generated';
       entityType: 'assistant_answer';
-      newData: {
+      newData: AssistantModelAuditProvenance & {
         caseId: string;
         questionLength: number;
         claimCount: number;
         sourceChunkIds: string[];
-        provider: string;
-        modelName: string;
-        modelVersion: string;
-        promptVersion: string;
-        executionId: string;
-        costAmount: string;
-        costCurrency: string;
       };
     })
   | (DomainAuditBase & {

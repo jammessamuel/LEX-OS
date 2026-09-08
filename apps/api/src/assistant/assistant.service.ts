@@ -25,6 +25,7 @@ import {
   GROUNDED_LANGUAGE_MODEL_PROVIDER,
   type GroundedLanguageModelProvider,
 } from './grounded-language-model.provider.js';
+import { groundedSystemPromptHash } from './grounded-system-prompt.js';
 
 const disclaimer =
   'Conteúdo gerado por máquina a partir de fontes autorizadas; não é parecer jurídico e exige revisão humana.';
@@ -111,7 +112,12 @@ function recusa(regra: string): never {
  * em `railway logs` por quem está consertando. O motivo é o único campo aqui que não é
  * identificador — e é nome de regra ou mensagem do adaptador, nunca texto de documento.
  */
-function registraFalhaDoModelo(mensagem: string, motivo: string, versaoDoPrompt: string): void {
+function registraFalhaDoModelo(
+  mensagem: string,
+  motivo: string,
+  versaoDoPrompt: string,
+  hashDoPrompt: string,
+): void {
   writeStructuredLog({
     level: 'error',
     service: 'lex-os-api',
@@ -119,13 +125,15 @@ function registraFalhaDoModelo(mensagem: string, motivo: string, versaoDoPrompt:
     // A mesma correlação do `http_request_completed` que registra o 502: as duas linhas ficam
     // lado a lado no log, e a referência que o escritório vê na tela leva até elas.
     correlationId: getRequestContext()?.correlationId ?? 'unknown',
-    metadata: { motivo, prompt_version: versaoDoPrompt },
+    metadata: { motivo, prompt_version: versaoDoPrompt, prompt_hash: hashDoPrompt },
   });
 }
 
 function parseProviderOutput(
   value: unknown,
   authorizedChunkIds: Set<string>,
+  promptVersion: string,
+  promptHash: string,
 ): ParsedProviderOutput {
   const topLevelKeys = [
     'schemaVersion',
@@ -145,6 +153,7 @@ function parseProviderOutput(
   if (!boundedText(value.modelName, 160)) recusa('model_name');
   if (!boundedText(value.modelVersion, 120)) recusa('model_version');
   if (!boundedText(value.promptVersion, 80)) recusa('prompt_version');
+  if (value.promptVersion !== promptVersion) recusa('prompt_version_diverge');
   if (!boundedText(value.executionId, 160)) recusa('execution_id');
   if (typeof value.costAmount !== 'string') recusa('cost_amount_nao_e_texto');
   if (!/^(0|[1-9]\d{0,11})(\.\d{1,6})?$/u.test(value.costAmount)) recusa('cost_amount_formato');
@@ -187,7 +196,8 @@ function parseProviderOutput(
       provider: value.provider,
       modelName: value.modelName,
       modelVersion: value.modelVersion,
-      promptVersion: value.promptVersion,
+      promptVersion,
+      promptHash,
       executionId: value.executionId,
       costAmount: fixedCostAmount(value.costAmount),
       costCurrency: 'BRL',
@@ -296,6 +306,14 @@ export class AssistantService {
     const prompt = promptFor('GROUNDED_ANSWER', legalArea, {
       caseArchive: this.config.caseArchive,
     });
+    const modelSources = retrieval.results.map((result) => ({
+      chunkId: result.chunkId,
+      content: result.excerpt,
+    }));
+    // A versão identifica o artefato da biblioteca; o hash identifica a instrução efetiva,
+    // incluindo o contrato acrescentado pelo adaptador. Assim uma mudança nessa camada não fica
+    // invisível na procedência mesmo quando alguém esquecer de subir a versão do artefato.
+    const promptHash = groundedSystemPromptHash(prompt, modelSources);
     // A falha do provedor é esperada e precisa ter tratamento próprio. Sem este `catch`, o
     // adaptador real lançava `Error` puro quando o modelo não devolvia o objeto JSON pedido, e
     // a falha escapava como 500 `http_request_failed_unexpectedly` — "erro interno" na tela do
@@ -311,10 +329,7 @@ export class AssistantService {
       rawOutput = await this.languageModel.generate({
         prompt,
         question: input.question,
-        sources: retrieval.results.map((result) => ({
-          chunkId: result.chunkId,
-          content: result.excerpt,
-        })),
+        sources: modelSources,
       });
     } catch (erro) {
       await this.audit.recordDomain({
@@ -327,6 +342,7 @@ export class AssistantService {
           caseId: input.caseId,
           questionLength: input.question.length,
           promptVersion: prompt.version,
+          promptHash,
           // A mensagem do adaptador é metadado da chamada e nunca carrega texto de documento —
           // o próprio adaptador cuida disso ao montá-la.
           reason: erro instanceof Error ? erro.message : 'unknown provider failure',
@@ -337,6 +353,7 @@ export class AssistantService {
         'assistant_provider_failure',
         erro instanceof Error ? erro.message : 'unknown provider failure',
         prompt.version,
+        promptHash,
       );
       // O custo desta chamada existe no provedor e não é debitado do teto do caso: o adaptador
       // falha antes de informar quanto custou, e gravar um número inventado seria pior do que
@@ -346,7 +363,7 @@ export class AssistantService {
     let parsed: ParsedProviderOutput;
     let claims: GroundedClaimDto[];
     try {
-      parsed = parseProviderOutput(rawOutput, new Set(sources.keys()));
+      parsed = parseProviderOutput(rawOutput, new Set(sources.keys()), prompt.version, promptHash);
       claims = parsed.claims.map((claim) => mapClaim(claim, sources));
     } catch (erro) {
       if (!(erro instanceof SaidaInvalidaError)) throw erro;
@@ -360,6 +377,7 @@ export class AssistantService {
           caseId: input.caseId,
           questionLength: input.question.length,
           promptVersion: prompt.version,
+          promptHash,
           // Nome de regra, não conteúdo: `claims_acima_do_teto`, `claim_sem_citacao`. É o que
           // faltava para saber por que a chamada morreu sem precisar reproduzi-la.
           regra: erro.regra,
@@ -370,7 +388,7 @@ export class AssistantService {
       // fronteira de redação —, então quem opera não alcança o motivo pela API. Sem esta linha o
       // registro existe e continua inalcançável: em 2026-09-07 um 502 apareceu no teste de fumaça
       // e a regra estava gravada num banco sem proxy público. Nome de regra não é conteúdo.
-      registraFalhaDoModelo('assistant_invalid_output', erro.regra, prompt.version);
+      registraFalhaDoModelo('assistant_invalid_output', erro.regra, prompt.version, promptHash);
       throw invalidOutput();
     }
     const sourceChunkIds = [...new Set(parsed.claims.flatMap((claim) => claim.sourceChunkIds))];

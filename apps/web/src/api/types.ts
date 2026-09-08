@@ -584,6 +584,7 @@ export interface GroundedAnswerResponse {
     modelName: string;
     modelVersion: string;
     promptVersion: string;
+    promptHash: string;
     executionId: string;
     costAmount: string;
     costCurrency: string;

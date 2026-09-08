@@ -125,3 +125,18 @@ node infra/scripts/avalia-faixa.mjs ambiental      # roda uma
 reaproveitado entre execuções, com prefixo `AVAL-` para não se confundir com caso de apresentação.
 Ao mudar as perguntas, mude a data no topo deste documento: um número desta tabela só é comparável
 com outro medido sobre a mesma lista.
+
+Antes da primeira pergunta, o instrumento confere código, área e tipo do caso, além de nome,
+tamanho e SHA-256 de cada arquivo contra um manifesto derivado da fixture. `COMPLETED` e
+`NEEDS_REVIEW` são os únicos términos úteis do preparo; `PENDING`, `QUEUED` e `PROCESSING` aguardam
+até o tempo limite, e `FAILED` interrompe a rodada. Erro de transporte, reprovação de conteúdo ou
+preparo incompleto termina com código de saída diferente de zero.
+Leituras `GET` toleram falhas transitórias; operações `POST` não são repetidas automaticamente,
+porque uma resposta perdida não prova que o servidor deixou de criar o caso ou cobrar a execução
+do modelo.
+
+Cada execução grava em `tmp/avaliacoes/faixas/` um artefato JSON versionado com a identidade e os
+hashes do corpus, SHA do harness, resultado por pergunta, motivo disponível, latência, custo,
+modelo e versão efetiva do prompt devolvida pela API. Para associar inequivocamente uma execução
+remota ao alvo, informe também `EVAL_TARGET_GIT_SHA`, `EVAL_DEPLOYMENT_ID` e, se útil,
+`EVAL_DEPLOYMENT_ENVIRONMENT`; `EVAL_OUTPUT_FILE` muda o destino do artefato.

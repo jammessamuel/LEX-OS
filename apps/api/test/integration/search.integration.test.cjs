@@ -478,14 +478,16 @@ describe('Delivery 9 authorized text and semantic search', () => {
     // A procedência acompanha a recusa: quem pergunta depois precisa saber qual instrução e qual
     // modelo concluíram que não havia resposta.
     assert.ok(recusa.body.model.promptVersion);
+    assert.match(recusa.body.model.promptHash, /^[a-f0-9]{64}$/u);
 
     const trilha = await pool.query(
-      `SELECT action FROM audit_logs
+      `SELECT action, new_data FROM audit_logs
        WHERE organization_id = $1 AND action = 'assistant.answer.refused'
        ORDER BY created_at DESC LIMIT 1`,
       [ORGANIZATION_ID],
     );
     assert.equal(trilha.rows[0]?.action, 'assistant.answer.refused');
+    assert.equal(trilha.rows[0]?.new_data?.promptHash, recusa.body.model.promptHash);
   });
 
   it('trata a falha do provedor como 502 auditado, e não como erro interno', async () => {
@@ -513,6 +515,7 @@ describe('Delivery 9 authorized text and semantic search', () => {
     assert.equal(trilha.rows[0]?.action, 'assistant.answer.failed');
     assert.ok(String(trilha.rows[0]?.new_data?.reason ?? '').length > 0);
     assert.ok(String(trilha.rows[0]?.new_data?.promptVersion ?? '').length > 0);
+    assert.match(String(trilha.rows[0]?.new_data?.promptHash ?? ''), /^[a-f0-9]{64}$/u);
   });
 
   it('registra na trilha QUAL regra do contrato a resposta violou', async () => {
@@ -539,6 +542,7 @@ describe('Delivery 9 authorized text and semantic search', () => {
     assert.equal(trilha.rows[0]?.action, 'assistant.answer.invalid');
     assert.equal(trilha.rows[0]?.new_data?.regra, 'claim_sem_citacao');
     assert.ok(String(trilha.rows[0]?.new_data?.promptVersion ?? '').length > 0);
+    assert.match(String(trilha.rows[0]?.new_data?.promptHash ?? ''), /^[a-f0-9]{64}$/u);
   });
 
   it('recusa a pergunta quando o caso já bateu no teto, sem chamar o modelo', async () => {
@@ -594,6 +598,7 @@ describe('Delivery 9 authorized text and semantic search', () => {
       promptFor('GROUNDED_ANSWER', 'TRABALHISTA', { caseArchive: 'fictional' }).version,
     );
     assert.match(grounded.body.model.promptVersion, /trabalhista/u);
+    assert.match(grounded.body.model.promptHash, /^[a-f0-9]{64}$/u);
     assert.equal(
       grounded.body.claims.every((claim) => claim.citations.length > 0),
       true,
@@ -700,6 +705,7 @@ describe('Delivery 9 authorized text and semantic search', () => {
     assert.ok(generated);
     assert.equal(generated.new_data.sourceChunkIds.includes(standardSource.chunkId), true);
     assert.equal(generated.new_data.modelVersion, '1');
+    assert.equal(generated.new_data.promptHash, response.body.model.promptHash);
     const serialized = JSON.stringify(audit.rows);
     assert.equal(serialized.includes(privateQuestion), false);
     assert.equal(serialized.includes(response.body.answer), false);
