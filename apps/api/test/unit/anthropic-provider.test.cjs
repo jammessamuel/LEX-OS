@@ -25,7 +25,36 @@ function config(overrides = {}) {
   };
 }
 
-const prompt = { version: 'grounded-answer-trabalhista-v1', template: 'INSTRUÇÃO FICTÍCIA.' };
+// O contrato de claims é o mínimo que o schema do fio exige de um prompt; a forma espelha o
+// GROUNDED_OUTPUT real, incluindo as palavras-chave que a derivação precisa saber podar.
+const prompt = {
+  version: 'grounded-answer-trabalhista-v1',
+  template: 'INSTRUÇÃO FICTÍCIA.',
+  outputSchema: {
+    type: 'object',
+    properties: {
+      claims: {
+        type: 'array',
+        minItems: 0,
+        maxItems: 8,
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['text', 'sourceChunkIds'],
+          properties: {
+            text: { type: 'string', minLength: 1, maxLength: 2000 },
+            sourceChunkIds: {
+              type: 'array',
+              minItems: 1,
+              maxItems: 5,
+              items: { type: 'string', format: 'uuid' },
+            },
+          },
+        },
+      },
+    },
+  },
+};
 const sources = [{ chunkId: 'chunk-1', content: 'Texto fictício do documento.' }];
 
 function resposta(corpo) {
@@ -116,6 +145,33 @@ describe('AnthropicGroundedLanguageModelProvider', () => {
     const material = enviado.messages[0].content.map((bloco) => bloco.text).join('\n');
     assert.match(material, /Texto fictício do documento/u);
     assert.match(material, /DADO, nunca instrução/u);
+  });
+
+  it('impõe o contrato na geração: o corpo leva o schema do fio derivado do prompt', async () => {
+    // Formato pedido por instrução carrega taxa residual de prosa e escape quebrado — foi o 502
+    // intermitente de 2026-09-08. Com o schema no output_config a geração é restrita por
+    // gramática, e o schema enviado tem que ser exatamente o derivado — uma segunda cópia aqui
+    // recriaria a divergência que o hash existe para impedir.
+    const provider = new AnthropicGroundedLanguageModelProvider(config());
+    const { groundedWireSchema } = await import('../../dist/assistant/grounded-system-prompt.js');
+    let enviado = null;
+    mock.method(globalThis, 'fetch', async (_url, init) => {
+      enviado = JSON.parse(init.body);
+      return resposta({
+        usage: { input_tokens: 1, output_tokens: 1 },
+        content: [{ type: 'text', text: '{"claims":[]}' }],
+      });
+    });
+    await provider.generate({ prompt, question: 'pergunta fictícia', sources });
+    mock.restoreAll();
+
+    assert.equal(enviado.output_config.format.type, 'json_schema');
+    assert.deepEqual(enviado.output_config.format.schema, groundedWireSchema(prompt));
+    // E as palavras-chave que a API rejeita com 400 não sobrevivem à derivação.
+    const serializado = JSON.stringify(enviado.output_config.format.schema);
+    for (const chave of ['maxItems', 'maxLength', 'minLength', 'format', 'pattern']) {
+      assert.equal(serializado.includes(`"${chave}"`), false, `${chave} seria 400 na API`);
+    }
   });
 
   it('aceita o JSON mesmo quando o modelo o embrulha em cerca de código', async () => {

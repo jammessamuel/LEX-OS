@@ -10,7 +10,7 @@ import {
   type GroundedLanguageModelProvider,
   type GroundedLanguageModelSource,
 } from './grounded-language-model.provider.js';
-import { groundedSystemPrompt } from './grounded-system-prompt.js';
+import { groundedSystemPrompt, groundedWireSchema } from './grounded-system-prompt.js';
 
 /**
  * Adaptador de modelo de linguagem real, atrás da porta que já existia.
@@ -275,6 +275,13 @@ export class AnthropicGroundedLanguageModelProvider implements GroundedLanguageM
         body: JSON.stringify({
           model: this.#config.languageModel.modelName,
           max_tokens: TETO_TOKENS_DE_SAIDA,
+          // O formato deixa de ser pedido e passa a ser imposto: a API restringe a geração à
+          // gramática do schema, e "não devolveu o objeto JSON pedido" deixa de existir em
+          // término normal — as exceções documentadas, recusa e teto, já são decididas pelo
+          // stop_reason antes do parse. O schema é derivado do contrato do prompt e estável
+          // entre requisições; o parser do serviço segue validando tudo, porque garantia de
+          // fornecedor não substitui a nossa.
+          output_config: { format: { type: 'json_schema', schema: groundedWireSchema(prompt) } },
           // Instrução no `system`, material do processo no `user`, em blocos rotulados. A
           // separação é estrutural (AGENTS.md, "documento é dado, não instrução"): concatenar
           // os dois deixaria um documento pedir o que quisesse.

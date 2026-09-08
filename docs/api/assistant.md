@@ -2,7 +2,7 @@
 
 **Status:** Backend contract implemented during authorized Delivery 10
 
-**Last updated:** 2026-09-07
+**Last updated:** 2026-09-08
 
 ## Contract
 
@@ -41,19 +41,30 @@ answer.
 
 ## Grounding and provenance
 
-Every accepted answer is machine-labelled and split into claims. Each claim must cite one to five
-chunk identifiers from the authorized retrieval set; the API resolves those identifiers back to
-document/page/offset citations before responding. Unknown, missing, duplicated, or unresolvable
-source identifiers make the entire provider output fail closed with
-`502 INVALID_LANGUAGE_MODEL_OUTPUT`.
+Every accepted answer is machine-labelled and split into claims. A response carries at most eight
+claims, and each claim must cite one to five chunk identifiers from the authorized retrieval set;
+the API resolves those identifiers back to document/page/offset citations before responding.
+Unknown, missing, duplicated, or unresolvable source identifiers — or more claims than the
+ceiling — make the entire provider output fail closed with `502 INVALID_LANGUAGE_MODEL_OUTPUT`.
+Both ceilings come from the versioned output contract in `packages/ai-prompts`, which the parser
+reads instead of keeping its own copy.
+
+Since 2026-09-08 the output format is enforced at generation time, not merely requested: the
+Anthropic adapter sends a structured-output schema derived from the same contract
+(`output_config.format`), so a normally terminated response is grammar-constrained to valid JSON.
+The two documented exceptions — a provider safety refusal and an output-token truncation — are
+decided by `stop_reason` before any parsing and fail closed with named reasons. The service-side
+parser still validates everything afterwards: a vendor guarantee does not replace our own.
 
 The top-level `answer` is only a presentation join of the validated claims. Model metadata records
-provider, model, model version, prompt version, the SHA-256 hash of the effective system
-instruction, execution ID, and exact six-decimal BRL cost. The hash covers the selected prompt
-text and the output contract actually appended by the adapter, but never the question or document
-content. It is persisted in the append-only audit event for generated, refused-after-model,
-failed, and invalid executions. The prompt specification is versioned in `packages/ai-prompts` and
-treats retrieved document text as hostile evidence, never as an instruction channel.
+provider, model, model version, prompt version, the SHA-256 hash of the effective instruction,
+execution ID, and exact six-decimal BRL cost. The hash covers the selected prompt text, the output
+contract appended by the adapter, and the structured-output schema enforced at the provider
+boundary — but never the question or document content. It is computed for mock runs too, as the
+fingerprint of what would govern a real call. It is persisted in the append-only audit event for
+generated, refused-after-model, failed, and invalid executions. The prompt specification is
+versioned in `packages/ai-prompts` and treats retrieved document text as hostile evidence, never
+as an instruction channel.
 
 ## Audit and production boundary
 
