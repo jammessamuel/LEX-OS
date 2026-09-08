@@ -1,43 +1,43 @@
 # Ordem de execução — estado por ADR e o que vem a seguir
 
-**Data:** 2026-09-06
+**Data:** 2026-09-08
 **Para que serve:** não se perder. Dezessete ADRs decidiram coisas ao longo de meses; algumas
 viraram código, outras esperam, e algumas esperam sem que ninguém lembre por quê. Este
 documento diz, de cada uma, o que está de pé — e monta **uma** ordem de execução que atravessa
 todas.
 
-Estado verificado no código em 2026-09-06, não deduzido dos ADRs.
+Estado verificado no código em 2026-09-08, não deduzido dos ADRs.
 
 ---
 
 ## 1. Onde estamos, ADR por ADR
 
-| ADR     | Decisão                        | Construído                                                                        | Aberto                                                                                        |
-| ------- | ------------------------------ | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                             | —                                                                                             |
-| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 19 migrações                             | —                                                                                             |
-| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                            | —                                                                                             |
-| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos                  | —                                                                                             |
-| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                                          | —                                                                                             |
-| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real atrás da porta                  | Contrato padrão proíbe treino; aceite empresarial e demais portões do 012 pendem              |
-| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP                          | —                                                                                             |
-| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                                        | —                                                                                             |
-| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada e sem sustentação nos trechos, citação obrigatória | — Teto de 8 fontes pelo ADR-017, medido em 06/09                                              |
-| **010** | Canais de entrada              | ✅ Upload                                                                         | Superado pelo ADR-016; e-mail passou a conector futuro                                        |
-| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos             | —                                                                                             |
-| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                                   | Transferência, região única e responsável nomeado                                             |
-| **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos                | —                                                                                             |
-| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código             | Itens 4–7 adiados **por decisão**, não por esquecimento                                       |
-| **015** | Biblioteca de prompts          | ✅ Todos os itens · ✅ 50 prompts em 10 faixas (20 atestados, 30 rascunho)        | Acervo real segue recusado em todas as faixas: sem inscrição ativa, e seis faixas sem leitura |
-| **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                               | Condições externas permanecem falhando fechado; decisão 1 superada pelo ADR-017               |
-| **017** | Recuperação em oito trechos    | ✅ Teto e padrão em oito · ✅ avaliação versionada e repetível                    | Latência em oito ainda não medida — entra na próxima execução da avaliação                    |
+| ADR     | Decisão                        | Construído                                                                        | Aberto                                                                           |
+| ------- | ------------------------------ | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **001** | Monólito modular, 2 raízes     | ✅ `apps/api` e `apps/worker`, fronteiras respeitadas                             | —                                                                                |
+| **002** | PostgreSQL + Prisma            | ✅ PG 18, Prisma 7.9.1 com `adapter-pg`, 19 migrações                             | —                                                                                |
+| **003** | Armazenamento de objetos       | ✅ Adaptador S3/MinIO, URL assinada, worker só escreve                            | —                                                                                |
+| **004** | Multi-tenancy por organização  | ✅ `organization_id` em toda leitura e escrita, testes negativos                  | —                                                                                |
+| **005** | pgvector                       | ✅ Busca híbrida, embeddings versionados                                          | —                                                                                |
+| **006** | IA agnóstica de provedor       | ✅ Portas + mocks fail-closed · ✅ Adaptador real · ✅ Formato imposto na geração | Contrato padrão proíbe treino; aceite empresarial e demais portões do 012 pendem |
+| **007** | Trabalho em segundo plano      | ✅ BullMQ, `processing_job`, nada pesado em handler HTTP                          | —                                                                                |
+| **008** | Nomenclatura técnica em inglês | ✅ Código, rotas e colunas                                                        | —                                                                                |
+| **009** | Assistente fundamentado        | ✅ Recusa sem fonte autorizada e sem sustentação nos trechos, citação obrigatória | — Teto de 8 fontes pelo ADR-017, medido em 06/09                                 |
+| **010** | Canais de entrada              | ✅ Upload                                                                         | Superado pelo ADR-016; e-mail passou a conector futuro                           |
+| **011** | Modelo de custo                | ✅ Cotação, teto por caso, agregação por organização, termos escritos             | —                                                                                |
+| **012** | Retenção, legal hold, LGPD     | ✅ Sem purga · ✅ Legal hold · ✅ Suboperadores                                   | Transferência, região única e responsável nomeado                                |
+| **013** | Notificações internas          | ✅ Caixa de saída + despachante (Entrega 13) · ✅ Os três gatilhos                | —                                                                                |
+| **014** | Identidade e acesso            | ✅ Itens 1, 2 (Entrega 13) e 3 — TOTP (Entrega 14). Item 8 sem código             | Itens 4–7 adiados **por decisão**, não por esquecimento                          |
+| **015** | Biblioteca de prompts          | ✅ Todos os itens · ✅ 70 prompts em 13 faixas + os genéricos                     | **Zero atestações vigentes** (15 vencidas, 50 nunca lidas) — ver seção 4         |
+| **016** | Encerramento seguro do MVP     | ✅ Escopo fechado · ✅ senha fora do `localStorage`                               | Condições externas permanecem falhando fechado; decisão 1 superada pelo ADR-017  |
+| **017** | Recuperação em oito trechos    | ✅ Teto e padrão em oito · ✅ avaliação versionada · ✅ latência medida em 08/09  | —                                                                                |
 
 **Leitura rápida:** a fila do MVP fechou em 28/08; o uso real reabriu uma fila curta entre 01 e
-06/09 — a Fila F da seção 3 — e ela fechou no mesmo dia 06. O que continua fora do alcance de
-engenharia:
-aceite empresarial e transferência internacional (012), decisão sobre região única (012),
-responsável por titulares (012) e assinatura profissional dos prompts (015). Conectores futuros
-exigem novo incremento.
+06/09 — a Fila F — e a avaliação por faixa abriu a última, a Fila G, entre 07 e 08/09. As duas
+fecharam. **Nenhuma fila de código está aberta hoje.** O que continua fora do alcance de
+engenharia: aceite empresarial e transferência internacional (012), decisão sobre região única
+(012), responsável por titulares (012) e a leitura de 65 prompts por advogado com inscrição ativa
+(015). Conectores futuros exigem novo incremento.
 
 ---
 
@@ -345,14 +345,69 @@ pesquisa: o texto saiu do universo documental de cada área, não de fichas leva
 
 ---
 
+### Fila G — a avaliação por faixa e a morte do 502 (07/09 a 08/09)
+
+Dezesseis commits. A fila nasceu do terceiro método: **exercitar cada especialidade contra um
+acervo próprio**. As doze faixas nunca tinham sido medidas porque não havia caso — e não se mede
+o que não tem acervo. Cada uma ganhou quatro documentos fictícios com as armadilhas da matéria
+plantadas dentro. Instrumento em `infra/scripts/avalia-faixa.mjs`, resultado em
+[`avaliacao-por-faixa.md`](avaliacao-por-faixa.md).
+
+**O que a avaliação encontrou, e era grave:**
+
+| O que estava errado                                                        | Estado                 |
+| -------------------------------------------------------------------------- | ---------------------- |
+| Teto que o código impunha, o contrato não declarava e o modelo desconhecia | ✅ `655a8d0`           |
+| Falha do provedor saindo como erro interno, sem rastro na trilha           | ✅ `45ffd5d`           |
+| `502` mudo: não dizia qual regra do contrato caiu                          | ✅ `53511db`           |
+| A trilha guardava o motivo e não o entregava a quem opera                  | ✅ `bb02c7c`           |
+| Adaptador não dizia ao modelo o teto de afirmações                         | ✅ `cf2f0f8`           |
+| Pergunta meio sustentada: recusa jogava fora as datas que os trechos têm   | ✅ `84b76c3`           |
+| Tela: jargão interno no erro, sem saída, e espera de 25s sem estado        | ✅ `0090672` `ab96e81` |
+
+**O 502 intermitente morreu na raiz em 08/09, e o caminho até lá é o registro mais útil daqui.**
+Três hipóteses foram levantadas e **derrubadas por medição, não por opinião**: não era violação de
+contrato (o log nomeou `assistant_provider_failure`), não era truncamento (`stop_reason` não era
+`max_tokens`), e não era escape de aspas (pergunta exigindo citação literal passou limpa). A causa
+era estrutural e tem cura oficial: **formato pedido por instrução carrega taxa residual
+irredutível**. Passou a ser imposto por gramática — `output_config.format` com schema **derivado**
+do `GROUNDED_OUTPUT`, nunca uma segunda cópia (`f2dfac1`, `1267328`, `f32b2f0`).
+
+Prova: **0 falhas em 18** na pergunta que falhava 1 em 3 — se nada tivesse mudado, a chance era
+0,07%. Regressão de faixa no cível: 8/8, melhor que o 7/8 original, cuja única falha era
+exatamente a de provedor. Latência mediana medida no mesmo lote: 6,9 s por pergunta de faixa,
+24–34 s na transcrição longa — o que fecha o item aberto do ADR-017.
+
+**Rastreabilidade da instrução efetiva** (`04e492a`): a procedência passou a carregar o SHA-256 da
+instrução realmente enviada, incluindo o schema que restringe a geração. O tipo da fonte é
+`{ chunkId }` e nada mais, então o compilador impede conteúdo de documento de entrar no hash. O
+seed passou a recusar banco remoto sem alvo declarado, e a CI passou a travar o deploy da Railway
+por `checkSuites`.
+
+**Duas lições de método, que valem mais que os commits:**
+
+1. **Confira a premissa da medição antes de agir sobre o resultado.** Três commits perseguiram
+   "o assistente cita artigo que os documentos não têm" sobre a premissa de que nenhum documento
+   fictício cita dispositivo. A premissa nunca foi conferida naquele acervo — o recibo de rescisão
+   diz, com todas as letras, "dentro do prazo do artigo 477, parágrafo 6, da CLT". Não havia
+   defeito. Regra de parada: **se duas reescritas não movem a medição, a próxima ação é conferir a
+   premissa, não escrever a terceira.**
+2. **Para conferir presença literal, `rawText` da extração de OCR — nunca a busca lexical.** Ela
+   casa por proximidade: `"CLT"` retornou trecho cujo texto era `CLÁUSULA`.
+
+---
+
 ## 4. O que decide a próxima sessão
 
-A Fila A fechou em 26/08, a Fila B foi conferida em 28/08 e o C1 fechou em 27/08. A Fila F,
-acima, foi aberta pelo uso real entre 01/09 e 06/09 e tem cinco itens de código vivos — todos da
-mesma família, e todos executáveis por uma sessão.
+A Fila A fechou em 26/08, a Fila B foi conferida em 28/08, o C1 fechou em 27/08, a Fila F fechou
+em 06/09 e a Fila G em 08/09. **Nenhuma fila de código está aberta.** Conferido em 08/09: zero
+`@ts-ignore`, zero `eslint-disable`, zero `: any` e zero teste pulado no código-fonte; nenhum
+marcador de trabalho pendente; todas as portas verdes.
 
-O que **não** é executável por uma sessão continua sendo o de sempre, e é o que decide se o
-produto sai do fictício:
+Duas limitações seguem **declaradas e não agendadas**, ambas presas ao mesmo portão externo: a
+busca semântica não contribui nada enquanto o embedding for mock, e o custo de uma chamada que
+falha não é debitado do teto do caso — o adaptador falha antes de saber quanto custou, e gravar
+número inventado seria pior.
 
 O que resta exige ato externo verificável; autorização genérica de engenharia não o substitui:
 
@@ -361,7 +416,23 @@ O que resta exige ato externo verificável; autorização genérica de engenhari
 | Aceite dos termos/DPA em organização da SAMUEL DEV LTDA e configuração de retenção | 012      | Sociedade, comercial | Evidência contratual do provedor      |
 | Cláusulas-padrão da ANPD e decisão sobre a incompatibilidade com região única      | 012      | Sociedade, jurídico  | Qualquer acervo de cliente brasileiro |
 | Responsável e canal público nomeados para atendimento a titular                    | 012      | Sociedade            | Procedimento de titular completo      |
-| Assinatura das 15 versões por advogado com OAB ativa                               | 015, i.2 | Advogado             | A biblioteca deixar de ser rascunho   |
+| Leitura e assinatura de **65 prompts** por advogado com OAB ativa                  | 015, i.2 | Advogado             | A biblioteca deixar de ser rascunho   |
+
+**O número mudou, e para pior — de propósito.** Em 06/09 este documento dizia "20 atestados,
+30 rascunho". Hoje a conta é outra:
+
+| Estado                                                  | Quantos |
+| ------------------------------------------------------- | ------- |
+| Atestados **e vigentes**                                | **0**   |
+| Atestados mas vencidos (versão subiu depois da leitura) | 15      |
+| Rascunho, nunca lidos                                   | 50      |
+
+Os quinze venceram porque as versões subiram em 07 e 08/09. Isso **é o mecanismo funcionando**:
+a atestação carrega contra qual versão do texto foi dada, e um texto reescrito depois da
+assinatura volta sozinho a precisar de leitura. O efeito prático, porém, precisa ser dito sem
+rodeio: **nenhuma instrução da biblioteca tem hoje assinatura vigente**, e `reviewGapFor` continua
+recusando todas sobre acervo real — que é o comportamento correto. Os cadernos de leitura estão
+em `docs/product/revisao-juridica/`.
 
 O pacote de execução e as minutas estão em
 [`docs/legal/pacote-liberacao-acervo-real.md`](../legal/pacote-liberacao-acervo-real.md).
@@ -381,6 +452,19 @@ o que o produto exibe errado; **perguntar ao produto o que ele não sabe mostra 
 sem saber** — e essa é a falha que o cliente não consegue detectar sozinho, porque uma resposta
 inventada com citação ao lado parece exatamente uma resposta correta. Foi assim que se descobriu
 que a recusa não cabia no contrato de saída. A avaliação está versionada e repete a medida.
+
+Em 07/09 apareceu o terceiro, e ele mede o que os dois primeiros não alcançam: **exercitar cada
+especialidade contra um acervo próprio, com uma pergunta por regra que o prompt afirma.** Medir
+"respondeu bem" não diz nada sobre o produto; medir "obedeceu à regra escrita" aponta o parágrafo
+a corrigir quando falha. Os três se somam e nenhum substitui o outro — a tela mostra o que se
+exibe errado, a pergunta sem resposta mostra o que se afirma sem saber, e a faixa mostra se a
+instrução que escrevemos é seguida.
+
+Uma advertência sobre os três, que custou caro em 07/09: **nove das falhas encontradas eram da
+régua, não do produto** — expressão que só aceitava uma redação, exigência de resposta onde
+recusar era mais seguro, e a mais didática, proibir a frase "foi apreendida arma", reprovando a
+resposta correta, que era "**não** foi apreendida arma". O valor não esteve no placar, e sim em
+ter obrigado a olhar resposta por resposta.
 
 ---
 
