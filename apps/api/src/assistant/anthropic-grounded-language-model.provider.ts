@@ -191,23 +191,47 @@ export class AnthropicGroundedLanguageModelProvider implements GroundedLanguageM
   }): Promise<unknown> {
     const body = await this.#call(input.prompt, input.question, input.sources);
     const usage = usageOf(body);
-    const text = textOf(body);
 
+    // Os dois desfechos que a documentação nomeia são decididos pelo `stop_reason`, ANTES de
+    // extrair texto ou tentar parse. A ordem não é estilo: com geração restrita por gramática,
+    // uma saída truncada em `max_tokens` é PREFIXO de JSON válido, e o recorte
+    // primeira-chave-até-última-chave do parse abaixo aceitaria um objeto menor —
+    // silenciosamente, com afirmações faltando. E a recusa de segurança vem como prosa: passar
+    // pelo parse a rotularia de "não devolveu JSON", que é a mensagem errada para quem
+    // diagnostica depois.
+    const stopReason = stopReasonOf(body);
+    if (stopReason === 'refusal') {
+      // Nada do texto entra: a recusa é prosa do fornecedor e pode citar o que enviamos.
+      throw new Error('The model refused the request for safety reasons and returned no JSON.');
+    }
+    if (stopReason === 'max_tokens') {
+      // Com o pensamento adaptativo, o teto pode estourar ainda DENTRO do bloco de pensamento —
+      // e aí não existe bloco de texto nenhum. `textOf` lançaria "no content block", que é a
+      // mensagem errada; a forma de um texto vazio (len=0) conta a história certa.
+      let textoTruncado = '';
+      try {
+        textoTruncado = textOf(body);
+      } catch {
+        // Sem texto: a forma vazia já diz que o teto comeu tudo antes do primeiro caractere.
+      }
+      throw new Error(
+        'The model output hit the output-token ceiling before completing the JSON object.' +
+          ` [${formaDaSaida(textoTruncado, null)}]`,
+      );
+    }
+
+    const text = textOf(body);
     const { objeto: parsed, posicaoDoErro } = jsonObjectIn(text);
     if (parsed === undefined) {
       // O texto do modelo não entra no erro: ele pode carregar trecho de documento, e mensagem
-      // de erro viaja para log e para a resposta da API. O motivo de parada entra — é metadado
-      // da chamada, e "max_tokens" transforma um mistério num diagnóstico.
+      // de erro viaja para log e para a resposta da API.
       //
       // A forma entra pelo mesmo motivo, e resolve o que sobrava. Sem ela, "não devolveu o
       // objeto pedido" cobre hipóteses opostas — prosa em vez de JSON, cerca mal fechada, ou
       // aspas do documento entrando na string sem escape — e não dá para escolher entre elas
       // sem ler o texto, que é justamente o que não se pode fazer.
       throw new Error(
-        (stopReasonOf(body) === 'max_tokens'
-          ? 'The model output hit the output-token ceiling before completing the JSON object.'
-          : 'The model did not return the requested JSON object.') +
-          ` [${formaDaSaida(text, posicaoDoErro)}]`,
+        `The model did not return the requested JSON object. [${formaDaSaida(text, posicaoDoErro)}]`,
       );
     }
     if (!isRecord(parsed)) {

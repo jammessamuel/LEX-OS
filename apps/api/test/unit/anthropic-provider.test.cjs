@@ -192,6 +192,89 @@ describe('AnthropicGroundedLanguageModelProvider', () => {
     mock.restoreAll();
   });
 
+  it('nomeia a recusa de segurança do fornecedor, sem deixar a prosa dela vazar', async () => {
+    // A recusa vem como prosa com HTTP 200 e stop_reason "refusal" — a documentação diz que ela
+    // tem precedência sobre qualquer contrato de formato. Passar pelo parse a rotularia de "não
+    // devolveu JSON", que manda quem diagnostica para a hipótese errada. E o texto da recusa é
+    // prosa do fornecedor, que pode citar o que enviamos: não entra na mensagem.
+    const provider = new AnthropicGroundedLanguageModelProvider(config());
+    mock.method(globalThis, 'fetch', async () =>
+      resposta({
+        stop_reason: 'refusal',
+        model: 'modelo-ficticio',
+        usage: { input_tokens: 10, output_tokens: 10 },
+        content: [
+          {
+            type: 'text',
+            text: 'Não posso transcrever este documento pois contém o CPF 000.000.000-00.',
+          },
+        ],
+      }),
+    );
+    await assert.rejects(
+      () => provider.generate({ prompt, question: 'p', sources }),
+      (error) => {
+        assert.match(error.message, /refused the request for safety reasons/u);
+        assert.equal(error.message.includes('000.000.000-00'), false);
+        assert.equal(error.message.includes('transcrever'), false);
+        return true;
+      },
+    );
+    mock.restoreAll();
+  });
+
+  it('trata truncamento como truncamento mesmo quando o prefixo parsearia como JSON menor', async () => {
+    // Com geração restrita por gramática, a saída cortada em max_tokens é PREFIXO de JSON
+    // válido. O recorte primeira-chave-até-última-chave do parse aceitaria um objeto menor —
+    // silenciosamente, com afirmações faltando. É por isso que o stop_reason decide ANTES do
+    // parse: este prefixo abaixo parseia como {"claims":[{...}]} de uma afirmação, e a resposta
+    // verdadeira tinha mais.
+    const provider = new AnthropicGroundedLanguageModelProvider(config());
+    const prefixoTruncado =
+      '{"claims":[{"text":"Primeira afirmação completa.","sourceChunkIds":["chunk-1"]},{"text":"Segunda afirmação que foi cor';
+    mock.method(globalThis, 'fetch', async () =>
+      resposta({
+        stop_reason: 'max_tokens',
+        model: 'modelo-ficticio',
+        usage: { input_tokens: 10, output_tokens: 10 },
+        content: [{ type: 'text', text: prefixoTruncado }],
+      }),
+    );
+    await assert.rejects(
+      () => provider.generate({ prompt, question: 'p', sources }),
+      (error) => {
+        assert.match(error.message, /output-token ceiling/u);
+        assert.equal(error.message.includes('Primeira afirmação'), false);
+        return true;
+      },
+    );
+    mock.restoreAll();
+  });
+
+  it('não perde o nome do truncamento quando o teto come até o bloco de texto', async () => {
+    // Com o pensamento adaptativo, o teto pode estourar dentro do bloco de pensamento — a
+    // resposta chega sem bloco de texto nenhum. Sem o cuidado, textOf lançaria "no content
+    // block", apagando o diagnóstico; a forma vazia (len=0) conta a história certa.
+    const provider = new AnthropicGroundedLanguageModelProvider(config());
+    mock.method(globalThis, 'fetch', async () =>
+      resposta({
+        stop_reason: 'max_tokens',
+        model: 'modelo-ficticio',
+        usage: { input_tokens: 10, output_tokens: 10 },
+        content: [{ type: 'thinking', thinking: 'raciocínio interminável' }],
+      }),
+    );
+    await assert.rejects(
+      () => provider.generate({ prompt, question: 'p', sources }),
+      (error) => {
+        assert.match(error.message, /output-token ceiling/u);
+        assert.match(error.message, /len=0/u);
+        return true;
+      },
+    );
+    mock.restoreAll();
+  });
+
   it('descreve a forma da saída ilegível sem deixar o texto vazar', async () => {
     // Em 2026-09-08 um 502 disse só "o modelo não devolveu o objeto JSON pedido", e o
     // `stop_reason` não era `max_tokens` — logo, não foi truncamento. Sobravam hipóteses
