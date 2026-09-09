@@ -133,10 +133,33 @@ material fictício, e o sistema recusa usá-las sobre acervo de cliente.`;
     r.oab === null
       ? `**sem número de inscrição registrado** — ${r.standing ?? 'situação não declarada'}`
       : `inscrição ${r.oab}`;
+
+  // Uma atestação vale contra a versão que foi lida, e o texto muda depois dela. Sem esta
+  // conferência o caderno apresentava como "já revisado" um texto reescrito depois da
+  // assinatura — e mandaria o advogado ler achando que só confere o trabalho de outro, quando
+  // na verdade é a primeira leitura daquela versão. Em 2026-09-09 as quinze atestações estavam
+  // nesse estado: subimos as versões em 07 e 08/09 e nenhuma cobria mais o texto vigente.
+  const defasados = prompts.filter(
+    (p) => p.review !== null && p.review.reviewedVersion !== p.version,
+  );
+  const aviso =
+    defasados.length === 0
+      ? ''
+      : `
+
+> **A leitura acima não cobre mais o texto deste caderno.** ${defasados.length} das
+> ${prompts.length} instruções foram alteradas depois dela, e a versão lida não é a que roda
+> hoje. O sistema já trata estas instruções como não revisadas — é o mecanismo funcionando, não
+> um descuido. **Trate este caderno como primeira leitura, não como conferência.**
+>
+> ${defasados
+          .map((p) => `\`${p.version}\` (lida em \`${p.review.reviewedVersion}\`)`)
+          .join(' · ')}`;
+
   // A situação da inscrição já vem pontuada da atestação; acrescentar ponto produzia "..".
   return `**Revisadas por ${r.name} em ${r.date}**, ${inscricao.replace(/\.$/u, '')}.
 
-${r.note}
+${r.note}${aviso}
 
 Antes desta leitura, as instruções também passaram por revisão automatizada.
 ${(REVISAO_AUTOMATIZADA.get(area) ?? REVISAO_PADRAO).replace(/^Passaram por/u, 'Foram')}

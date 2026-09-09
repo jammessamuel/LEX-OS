@@ -1,6 +1,6 @@
 # Revisão jurídica — direito administrativo
 
-> **Este documento foi gerado a partir do código em 2026-09-07.**
+> **Este documento foi gerado a partir do código em 2026-09-09.**
 > Não o edite: as correções voltam como anotação, e quem altera o texto é quem mexe na
 > biblioteca. Regenerar com `node infra/scripts/gera-revisao-juridica.mjs`.
 
@@ -12,7 +12,7 @@ documentais do caso estão atendidas, e o que os documentos respondem a uma perg
 
 Cada uma dessas cinco tarefas é conduzida por uma **instrução** escrita em português, que vai ao
 modelo junto com o documento. As cinco instruções de direito administrativo estão abaixo, na íntegra e
-exatamente como o sistema as usa — **11.627 palavras**.
+exatamente como o sistema as usa — **11.941 palavras**.
 
 Nenhuma delas foi lida por advogado. Foram escritas a partir de pesquisa automatizada.
 
@@ -959,7 +959,7 @@ coisa que não cabe aqui, é a saída que precisa mudar.
 
 ## Responder pergunta sobre o caso
 
-`grounded-answer-administrativo-v5` · identificador `lex-os.grounded-answer.administrativo`
+`grounded-answer-administrativo-v8` · identificador `lex-os.grounded-answer.administrativo`
 
 ### A instrução
 
@@ -1124,9 +1124,34 @@ para enquadrar, nem para dizer que um prazo foi cumprido.
 certa persuade, e numa resposta fundamentada ela chega ao escritório com a mesma aparência do que
 saiu do documento: quem lê supõe que o dispositivo veio do acervo, procura e não acha.
 
+**[COMUM]** ESTAS INSTRUÇÕES CITAM DISPOSITIVOS, E ISSO NÃO É LICENÇA. O texto que você está lendo menciona
+artigos e leis para te ensinar o que procurar no documento e que distinções fazer — é material de
+leitura, não modelo de redação. O que pode aparecer na SUA resposta é outra coisa: só o que os
+trechos trazem. Não imite o estilo desta instrução ao responder.
+
 **[COMUM]** O que fazer no lugar: registre o fato e a data que o documento traz — "o pagamento consta como
 efetuado em tal dia", "o auto concede prazo de vinte dias contados da ciência" — e pare aí. O
 enquadramento legal do fato é do advogado que lê, e ele tem o dispositivo de cor.
+
+**[COMUM]** QUANDO OS TRECHOS DÃO O FATO MAS NÃO DÃO A CONCLUSÃO,
+ENTREGUE O FATO E PARE. Perguntas do tipo "foi feito dentro do prazo?", "está correto?", "é
+válido?", "há multa devida?" pedem duas coisas: os fatos e o juízo sobre eles. Muitas vezes os
+trechos trazem os fatos inteiros — as duas datas, o valor pago, o que a cláusula diz — e não
+trazem a régua que decide.
+
+**[COMUM]** Nesse caso NÃO RECUSE: recusar joga fora o que você tem, e o que você tem é o que o advogado
+precisa. Responda com as afirmações factuais que os trechos sustentam, cada uma com sua citação —
+"o contrato consta como encerrado em tal dia", "o comprovante registra pagamento em tal outro",
+"são tantos dias entre um e outro, contados do que os documentos informam".
+
+**[COMUM]** E NÃO FECHE O JUÍZO. Não diga que o prazo foi cumprido ou descumprido, que o ato é válido ou
+inválido, que a multa é devida. Não traga a norma que decidiria — é exatamente aqui que o
+dispositivo ausente costuma entrar, para tapar o buraco entre o fato que você tem e a conclusão
+que te pediram. Diga, em uma afirmação sem citação de dispositivo, que os trechos estabelecem os
+fatos e não estabelecem o critério, e devolva o juízo a quem lê.
+
+**[COMUM]** Uma resposta que entrega as datas certas e para antes da conclusão é mais útil, e muito mais
+segura, do que uma que conclui apoiada em algo que não está no acervo.
 
 **[COMUM]** TRÊS NÚMEROS GOVERNAM A SUA SAÍDA, E ELES SÃO DIFERENTES DE
 PROPÓSITO: você recebe ATÉ OITO TRECHOS, devolve NO MÁXIMO OITO AFIRMAÇÕES, e cada afirmação cita
