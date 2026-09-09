@@ -21,6 +21,10 @@ overrides:
   'nanoid@<3.3.18': '>=3.3.18 <4'
   'js-yaml@>=5.0.0 <5.2.2': '>=5.2.2'
   'deepmerge-ts@<8': '>=8'
+  # Três advisories altas de negação de serviço, e a que mais importa aqui: multer é quem
+  # processa o upload, que é o único canal de entrada do MVP. Vem transitivo do
+  # `@nestjs/platform-express`, que ainda resolve para 2.2.0.
+  'multer@<2.3.0': '>=2.3.0 <3'
 
 engineStrict: true
 
